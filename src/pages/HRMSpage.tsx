@@ -34,6 +34,25 @@ const HRMSPage: React.FC = () => {
     return () => window.removeEventListener("message", onParentMessage);
   }, [childOrigin]);
 
+   useEffect(() => {
+     function onParentMessage(ev: MessageEvent) {
+       if (ev.origin !== childOrigin) return;
+       const msg = ev.data || {};
+
+       if (msg.type === "login-success") {
+         console.info("HRMSPage received login-success:", msg.payload);
+         setShowModal(false);
+         setShowIframe(true);
+       } else if (msg.type === "login-failed") {
+         console.warn("HRMSPage login failed:", msg.error);
+       }
+     }
+
+     window.addEventListener("message", onParentMessage);
+     return () => window.removeEventListener("message", onParentMessage);
+   }, [childOrigin]);
+
+
   const hiddenIframeStyle: React.CSSProperties = {
     position: "absolute",
     left: "-9999px",
