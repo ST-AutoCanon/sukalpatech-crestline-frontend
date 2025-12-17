@@ -53,14 +53,13 @@ export default function Home() {
                 <p className="text-3xl font-bold">Custom Made</p>
                 <p className="text-sm text-gray-300">Design Specialisation</p>
               </div>
-           
             </div>
           </div>
 
-          {/* ===== Right Container (Image) ===== */}        
+          {/* ===== Right Container (Image) ===== */}
           <div className="relative w-full lg:w-1/2 flex items-stretch m-0 p-0">
             <video
-              src="/360Video.mp4"
+              src="/crestline/public/360Video.mp4"
               autoPlay
               loop
               muted

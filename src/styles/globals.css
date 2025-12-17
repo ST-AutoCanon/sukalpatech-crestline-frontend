@@ -1,1 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 @import "tailwindcss";
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    /* font-family: 'Poppins', sans-serif; */
+    font-family: 'Inter', sans-serif;
+    background-color: transparent;
+}
+
+h1,
+p {
+    margin: 0;
+    padding: 0;
+}
+
+/* Gradient Background Class used in Home page */
+.gradient-bg {
+    background: linear-gradient(135deg, #0092B8 0%, #9810FA 100%);
+}
+
+/* button Gradient Class used in premiumCoach Section */
+.btn-gradient {
+    background: linear-gradient(90deg, #9810FA 0%, #E60076 100%);
+}
+
+.my-gradient {
+    background: linear-gradient(135deg, #0092B8 0%, #9810FA 100%) no-repeat padding-box;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+}
+
+
+
+@keyframes slide {
+    0% {
+        transform: translateX(0%);
+    }
+
+    20% {
+        transform: translateX(0%);
+    }
+
+    25% {
+        transform: translateX(-100%);
+    }
+
+    45% {
+        transform: translateX(-100%);
+    }
+
+    50% {
+        transform: translateX(-200%);
+    }
+
+    70% {
+        transform: translateX(-200%);
+    }
+
+    75% {
+        transform: translateX(-300%);
+    }
+
+    95% {
+        transform: translateX(-300%);
+    }
+
+    100% {
+        transform: translateX(0%);
+    }
+}
+
+.animate-slide {
+    animation: slide 14s infinite ease-in-out;
+}

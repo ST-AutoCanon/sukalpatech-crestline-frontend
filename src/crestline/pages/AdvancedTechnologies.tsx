@@ -7,11 +7,7 @@ import {
   Wifi,
   Wrench,
   Navigation,
-  Leaf,
   VolumeX,
-  Droplet,
-  Wind,
-  Box,
   Bus,
 } from "lucide-react";
 
@@ -111,41 +107,6 @@ export default function AdvancedTechnologies() {
   );
 }
 
-/* ===== Reusable Technology Card ===== */
-// function TechCard({
-//   icon,
-//   title,
-//   description,
-//   iconBg,
-// }: {
-//   icon: React.ReactNode;
-//   title: string;
-//   description: string;
-//   iconBg?: string;
-// }) {
-//   return (
-//     <div
-//       className="relative bg-white border border-gray-200 rounded-2xl p-6 text-left
-//   transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-1 group text-black"
-//     >
-//       {/* Gradient overlay for subtle movement */}
-//       <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-10 bg-gradient-to-r from-cyan-400 to-purple-500 transition-opacity duration-300"></div>
-
-//       <div
-//         className={`relative inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 ${iconBg} shadow-lg`}
-//       >
-//         {icon}
-//       </div>
-
-//       <h3 className="relative text-lg font-semibold text-black mb-2">
-//         {title}
-//       </h3>
-//       <p className="relative text-black text-sm leading-relaxed">
-//         {description}
-//       </p>
-//     </div>
-//   );
-// }
 
 function TechCard({ icon, title, description, iconBg }) {
   return (
