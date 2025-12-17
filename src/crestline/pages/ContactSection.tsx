@@ -35,7 +35,7 @@ export default function ContactSection() {
               icon={<Phone className="w-6 h-6 text-white" />}
               iconBg="bg-[linear-gradient(135deg,#00B8DB_0%,#9810FA_100%)]"
               title="Phone"
-              lines={["+91 9591104481", "Mon–Fri: 8:00 AM – 6:00 PM"]}
+              lines={["+91 9035099112", "Mon–Fri: 8:00 AM – 6:00 PM"]}
             />
 
             {/* Email */}
@@ -43,7 +43,7 @@ export default function ContactSection() {
               icon={<Mail className="w-6 h-6 text-white" />}
               iconBg="bg-[linear-gradient(135deg,#00B8DB_0%,#9810FA_100%)]"
               title="Email"
-              lines={["sales@crestline-tech.com"]}
+              lines={["info.crestlinetech@gmail.com"]}
             />
 
             {/* Address */}
