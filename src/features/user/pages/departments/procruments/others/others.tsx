@@ -1,0 +1,25 @@
+import React from "react";
+
+const Others: React.FC = () => {
+  return (
+    <div className="p-6 bg-white shadow rounded-lg border">
+      <h2 className="text-xl font-semibold mb-4 text-gray-800">
+        Other Information
+      </h2>
+
+      <p className="text-gray-700 mb-3">
+        This is the <strong>Others section</strong>. You can place any
+        additional procurement-related data or notes here.
+      </p>
+
+      <ul className="list-disc ml-6 text-gray-700 space-y-2">
+        <li>Random note: Procurement guidelines updated on 12/01/2025.</li>
+        <li>Upcoming features: Vendor Rating, PR Approval Flow.</li>
+        <li>Temporary information can be shown here.</li>
+        <li>Use this page for extra details.</li>
+      </ul>
+    </div>
+  );
+};
+
+export default Others;
