@@ -19,7 +19,7 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
   onSwitchToNormalLogin,
   onLoginSuccess,
   iframeId = "pulse-iframe",
-  childOrigin = "http://localhost:3001",
+  childOrigin = "https://www.pulsework.in",
   iframeLoaded = false,
 }) => {
   const [empId, setEmpId] = useState("");
