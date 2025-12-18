@@ -7,20 +7,20 @@ import { Eye, EyeOff } from "lucide-react";
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSwitchToRegister: () => void;
+  onSwitchToHRMSLogin: () => void;
 }
 
 const LoginModal: React.FC<LoginModalProps> = ({
   isOpen,
   onClose,
-  onSwitchToRegister,
+  onSwitchToHRMSLogin,
 }) => {
   const { login, error, loading } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -123,18 +123,12 @@ const [showPassword, setShowPassword] = useState(false);
             </button>
           </form>
 
-          <p className="text-center text-white/80 mt-6 text-sm">
-            Don’t have an account?{" "}
-            <span
-              onClick={() => {
-                onClose();
-                onSwitchToRegister();
-              }}
-              className="text-[#7AA0FF] hover:underline cursor-pointer"
-            >
-              Sign Up
-            </span>
-          </p>
+          <button
+            onClick={onSwitchToHRMSLogin}
+            className="text-[#7AA0FF] hover:underline text-center mt-6 font-medium"
+          >
+            Login with HRMS
+          </button>
         </div>
 
         {/* Close */}

@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import React, { Suspense, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-/* ================= PUBLIC (WEBSITE) ================= */
 import Navbar from "../../crestline/components/Navbar";
 import Footer from "../../crestline/components/Footer";
 
@@ -19,7 +19,8 @@ import AppointmentPage from "../../crestline/pages/AppointmentPage";
 import LoginModal from "../../crestline/components/LoginModal";
 import RegisterModal from "../../crestline/components/RegisterModal";
 
-/* ================= AUTH & DASHBOARD ================= */
+import HRMSPage from "../../crestline/pages/HRMSpage";
+
 import AuthLayout from "../../components/layout/AuthLayout";
 import Login from "../../features/auth/pages/Login";
 import { useAuth } from "../../features/auth/hooks/useAuth";
@@ -31,7 +32,6 @@ import DashboardHome from "../../features/admin/pages/DashboardHome";
 import EmployeeDashboardHome from "../../features/user/pages/EmployeeDashboardHome";
 import DepartmentPage from "../../features/admin/pages/Department";
 
-/* ================= EMPLOYEE LAZY MODULES ================= */
 const componentMap: Record<string, React.LazyExoticComponent<any>> = {
   procurement: React.lazy(
     () =>
@@ -54,7 +54,6 @@ const componentMap: Record<string, React.LazyExoticComponent<any>> = {
   ),
 };
 
-/* ================= AUTH GUARD ================= */
 const RequireAuth = ({
   children,
   roles,
@@ -75,17 +74,20 @@ const RequireAuth = ({
   return children;
 };
 
+type ModalState = "none" | "normal" | "register";
 
-
-
-/* ================= PUBLIC LAYOUT ================= */
 const WebsiteLayout = () => {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
+  const [modalState, setModalState] = useState<ModalState>("none");
 
-  const closeAll = () => {
-    setShowLogin(false);
-    setShowRegister(false);
+  const closeAll = () => setModalState("none");
+  const openLogin = () => setModalState("normal");
+  const openRegister = () => setModalState("register");
+
+  const navigate = useNavigate();
+
+  const openHRMS = () => {
+    closeAll();
+    navigate("/hrms");
   };
 
   const handleLoginSuccess = (token: string, user: any) => {
@@ -97,8 +99,9 @@ const WebsiteLayout = () => {
   return (
     <div className="flex flex-col min-h-screen text-white">
       <Navbar
-        onLoginClick={() => setShowLogin(true)}
-        onRegisterClick={() => setShowRegister(true)}
+        onLoginClick={openLogin}
+        onRegisterClick={openRegister}
+        onHRMSClick={openHRMS}
       />
 
       <main className="flex-grow">
@@ -116,46 +119,42 @@ const WebsiteLayout = () => {
           <Route path="/crestline/vehicles" element={<PremiumCoachModels />} />
           <Route path="/crestline/requestquote" element={<RequestQuote />} />
           <Route path="/crestline/appointment" element={<AppointmentPage />} />
+          <Route path="/hrms" element={<HRMSPage />} />
         </Routes>
       </main>
 
       <Footer />
 
       <LoginModal
-        isOpen={showLogin}
+        isOpen={modalState === "normal"}
         onClose={closeAll}
         onLoginSuccess={handleLoginSuccess}
         onSwitchToRegister={() => {
-          setShowLogin(false);
-          setShowRegister(true);
+          setModalState("register");
         }}
+        onSwitchToHRMSLogin={openHRMS}
       />
 
       <RegisterModal
-        isOpen={showRegister}
+        isOpen={modalState === "register"}
         onClose={closeAll}
         onSwitchToLogin={() => {
-          setShowRegister(false);
-          setShowLogin(true);
+          setModalState("normal");
         }}
       />
     </div>
   );
 };
 
-/* ================= ROOT ROUTES ================= */
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* PUBLIC WEBSITE */}
       <Route path="/*" element={<WebsiteLayout />} />
 
-      {/* AUTH */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
       </Route>
 
-      {/* EMPLOYEE DASHBOARD */}
       <Route
         path="/employee"
         element={
@@ -179,7 +178,6 @@ export default function AppRoutes() {
         ))}
       </Route>
 
-      {/* ADMIN DASHBOARD */}
       <Route
         path="/admin"
         element={
