@@ -17,7 +17,7 @@ const HRMSPage: React.FC = () => {
   const [navHeight, setNavHeight] = useState<number>(0);
 
   const iframeId = "pulse-iframe";
-  const childOrigin = "http://localhost:3001";
+  const childOrigin = "https://www.pulsework.in";
 
   useEffect(() => {
     function onParentMessage(ev: MessageEvent) {
