@@ -1,15 +1,20 @@
 import React, { useState } from "react";
 import Procurement from "./Procurement"; // Create PR
 import AllPRs from "./getAll_procurements"; // View PRs
+import EmployeeDashboard from "./procrumentHome"; // import the component
 
 const ProcurementPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"newPR" | "allPRs">("newPR");
+  const [showDashboard, setShowDashboard] = useState(false);
 
+  if (showDashboard) {
+    return <EmployeeDashboard />; // render dashboard directly
+  }
   return (
     <div className="p-10 max-w-4xl mx-auto">
-      <button
+          <button
         className="mt-6 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-        onClick={() => window.location.reload()}
+        onClick={() => setShowDashboard(true)} // show dashboard
       >
         Back to Dashboard
       </button>
