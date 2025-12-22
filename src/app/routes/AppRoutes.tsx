@@ -50,7 +50,7 @@ const componentMap: Record<string, React.LazyExoticComponent<any>> = {
       )
   ),
   finance: React.lazy(
-    () => import("../../features/user/pages/departments/Finance")
+    () => import("../../features/user/pages/departments/finance/FinanceHome")
   ),
 };
 
