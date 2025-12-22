@@ -54,6 +54,7 @@ const componentMap: Record<string, React.LazyExoticComponent<any>> = {
   ),
 };
 
+
 const RequireAuth = ({
   children,
   roles,
@@ -61,18 +62,23 @@ const RequireAuth = ({
   children: JSX.Element;
   roles: string[];
 }) => {
-  const { user, loading } = useAuth();
+  const { user, isInitializing } = useAuth();
 
-  if (loading) return <h3 style={{ padding: 20 }}>Loading...</h3>;
-  if (!user) {
-    return <Navigate to="/" replace />;
+  if (isInitializing) {
+    return <h3 style={{ padding: 20 }}>Restoring session...</h3>;
   }
-  if (!roles.includes(user.role.toLowerCase())) {
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!roles.includes(user.role)) {
     return <Navigate to="/login" replace />;
   }
 
   return children;
 };
+
 
 type ModalState = "none" | "normal" | "register";
 

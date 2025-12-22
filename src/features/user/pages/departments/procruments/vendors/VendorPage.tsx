@@ -1,18 +1,23 @@
 import React, { useState } from "react";
 import AddVendor from "./AddVendor";
 import AllVendors from "./AllVendors";
+import EmployeeDashboard from "../procrumentHome"; // import the component
 
 const VendorPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"addVendor" | "allVendors">(
     "addVendor"
   );
+  const [showDashboard, setShowDashboard] = useState(false);
 
+  if (showDashboard) {
+    return <EmployeeDashboard />; // render dashboard directly
+  }
   return (
     <div className="p-10 max-w-4xl mx-auto">
-      {/* Back Button */}
+      {/* Back Button */} 
       <button
         className="mt-6 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-        onClick={() => window.location.reload()}
+        onClick={() => setShowDashboard(true)} // show dashboard
       >
         Back to Dashboard
       </button>

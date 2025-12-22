@@ -1,15 +1,20 @@
 import React, { useState } from "react";
 import AddItem from "../store/AddItem";
 import ViewItems from "../store/ViewItems";
+import EmployeeDashboard from "../procrumentHome"; // import the component
 
 const StorePage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState<"add" | "view">("add");
+  const [showDashboard, setShowDashboard] = useState(false);
 
+  if (showDashboard) {
+    return <EmployeeDashboard />; // render dashboard directly
+  }
   return (
     <div className="p-10 max-w-4xl mx-auto">
       <button
         className="mt-6 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-        onClick={() => window.location.reload()}
+        onClick={() => setShowDashboard(true)} // show dashboard
       >
         Back to Dashboard
       </button>
