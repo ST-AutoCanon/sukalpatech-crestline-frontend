@@ -1,26 +1,26 @@
 import React, { useState } from "react";
-import FesibilityDashboard from "./FeasibilityHome"; // import the component
-import UpdateFeasibility from "./UpdateFeasibility"; // Form/page to update feasibility
-import ViewFeasibilityRequests from "./ViewFeasibilityReq"; // Page to view PRs
+import UpdateFinance from "./UpdateFinance"; // Form/page to update finance status
+import ViewFinanceRequests from "./ViewFinanceRequests"; // Page to view finance PRs
+import FinanceDashboard from "./FinanceHome"; // import the component
 
-const FeasibilityPage: React.FC = () => {
+const FinancePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"update" | "view">("update");
-  const [showDashboard, setShowDashboard] = useState(false);
+ const [showDashboard, setShowDashboard] = useState(false);
 
-  if (showDashboard) {
-    return <FesibilityDashboard />; // render dashboard directly
-  }
+ if (showDashboard) {
+   return <FinanceDashboard />; // render dashboard directly
+ }
   return (
     <div className="p-10 max-w-4xl mx-auto">
       <button
-        className="mt-6 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-60 mb-5"
+        className="mt-6 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
         onClick={() => setShowDashboard(true)} // show dashboard
       >
         Back to Dashboard
       </button>
 
       <h1 className="text-2xl font-bold mb-6 text-gray-800 mt-10">
-        Feasibility Requests
+        Finance PR Requests
       </h1>
 
       {/* --------- TOP BUTTONS ---------- */}
@@ -28,33 +28,33 @@ const FeasibilityPage: React.FC = () => {
         <button
           className={`px-4 py-2 rounded ${
             activeTab === "update"
-              ? "bg-blue-600 text-white"
+              ? "bg-green-600 text-white"
               : "bg-gray-200 text-gray-800"
           }`}
           onClick={() => setActiveTab("update")}
         >
-          Update Feasibility
+          Update Finance
         </button>
 
         <button
           className={`px-4 py-2 rounded ${
             activeTab === "view"
-              ? "bg-blue-600 text-white"
+              ? "bg-green-600 text-white"
               : "bg-gray-200 text-gray-800"
           }`}
           onClick={() => setActiveTab("view")}
         >
-          View Feasibility Requests
+          View Finance Requests
         </button>
       </div>
 
       {/* ---------- CONTENT SECTION BELOW ---------- */}
       <div className="mt-4">
-        {activeTab === "update" && <UpdateFeasibility />}
-        {activeTab === "view" && <ViewFeasibilityRequests />}
+        {activeTab === "update" && <UpdateFinance />}
+        {activeTab === "view" && <ViewFinanceRequests />}
       </div>
     </div>
   );
 };
 
-export default FeasibilityPage;
+export default FinancePage;
