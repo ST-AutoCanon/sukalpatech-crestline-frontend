@@ -131,10 +131,10 @@ const LoginModal: React.FC<LoginModalProps> = ({
           </button>
         </div>
 
-        {/* Close */}
+        {/* Close */}       
         <button
           onClick={onClose}
-          className="absolute top-3 right-4 text-white text-3xl"
+          className="fixed top-4 right-4 z-[999] text-white text-4xl"
         >
           &times;
         </button>

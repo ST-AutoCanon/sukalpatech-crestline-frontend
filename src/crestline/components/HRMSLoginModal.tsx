@@ -101,8 +101,8 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
   const buttonDisabled = !iframeLoaded || isLoggingIn;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="relative w-full max-w-4xl flex flex-col md:flex-row rounded-2xl overflow-hidden shadow-lg bg-white/10 backdrop-blur-xl border border-white/20">
+    <div className="fixed inset-0 z-50 flex items-center justify-center ">
+   <div className="relative w-full max-w-md sm:max-w-lg md:max-w-4xl flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-2xl border border-white/20 bg-white/10 backdrop-blur-xl">
         <div className="relative w-full md:w-1/2 h-48 md:h-auto">
           <img
             src={loginBg}
@@ -213,8 +213,7 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
 
         <button
           onClick={onClose}
-          className="absolute top-3 right-4 text-white text-3xl"
-          aria-label="Close"
+          className="fixed top-4 right-4 z-[999] text-white text-4xl"
         >
           &times;
         </button>
