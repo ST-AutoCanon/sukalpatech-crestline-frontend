@@ -3,7 +3,7 @@ import axios from "axios";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const addVendor = (token: string, payload: any) => {
-  return axios.post(`${BACKEND_URL}/api/procurement/vendor`, payload, {
+  return axios.post(`${BACKEND_URL}/api/vendor/vendor`, payload, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

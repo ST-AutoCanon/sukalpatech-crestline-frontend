@@ -61,7 +61,7 @@ export default function ViewPRPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:5001/api/new-finance/approved-finance-requests")
+    fetch("http://localhost:5001/api/new-store/finance-approved-store-requests")
       .then((res) => res.json())
       .then((data) => setPrs(data?.data || []))
       .catch((err) => console.error("Fetch PR Error:", err));

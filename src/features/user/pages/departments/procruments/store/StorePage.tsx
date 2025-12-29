@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import AddItem from "../store/AddItem";
-import ViewItems from "../store/ViewItems";
+import AddItem from "./UpdatePRstore";
+import ViewItems from "./ViewPRstore";
 import EmployeeDashboard from "../procrumentHome"; // import the component
 
 const StorePage: React.FC = () => {

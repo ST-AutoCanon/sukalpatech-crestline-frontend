@@ -33,7 +33,7 @@ interface Item {
   vendors: Vendor[];
 }
 
-interface FinancePR {
+interface StorePR {
   id: string;
   department?: string;
   requested_by?: string;
@@ -47,18 +47,18 @@ interface FinancePR {
   items: Item[];
 }
 
-export default function SubmittedFinanceRequestsPage() {
-  const API_BASE = "http://localhost:5001/api/new-finance";
+export default function SubmittedStoreRequestsPage() {
+  const API_BASE = "http://localhost:5001/api/new-store";
 
-  const [requests, setRequests] = useState<FinancePR[]>([]);
-  const [selectedPR, setSelectedPR] = useState<FinancePR | null>(null);
+  const [requests, setRequests] = useState<StorePR[]>([]);
+  const [selectedPR, setSelectedPR] = useState<StorePR | null>(null);
   const [newStatus, setNewStatus] = useState("");
   const [newComment, setNewComment] = useState("");
 
-  const FINANCE_STATUS_OPTIONS = [
-    "FINANCE APPROVED",
-    "FINANCE REJECTED",
-    "FINANCE PENDING",
+  const STORE_STATUS_OPTIONS = [
+    "STORE APPROVED",
+    "STORE REJECTED",
+    "STORE PENDING",
   ];
 
   const [updateData, setUpdateData] = useState<{
@@ -69,18 +69,20 @@ export default function SubmittedFinanceRequestsPage() {
     items: [],
   });
 
-  const fetchApprovedRequests = async () => {
+  const fetchFinanceApprovedStoreRequests = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/approved-finance-requests`);
+      const res = await axios.get(
+        `${API_BASE}/finance-approved-store-requests`
+      );
       setRequests(res.data.data || []);
     } catch (err) {
-      console.error("Error fetching approved finance requests:", err);
-      alert("Error fetching approved finance requests");
+      console.error("Error fetching finance-approved store requests:", err);
+      alert("Error fetching store requests");
     }
   };
 
   useEffect(() => {
-    fetchApprovedRequests();
+    fetchFinanceApprovedStoreRequests();
   }, []);
 
   const selectPR = (prId: string) => {
@@ -123,20 +125,22 @@ export default function SubmittedFinanceRequestsPage() {
     };
 
     try {
-      await axios.put(`${API_BASE}/finance-requests/${selectedPR.id}`, payload);
-      alert("Finance PR updated successfully");
-      fetchApprovedRequests();
+      await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload);
+      alert("Store PR updated successfully");
+      fetchFinanceApprovedStoreRequests();
       setNewStatus("");
       setNewComment("");
     } catch (err) {
-      console.error("Error updating Finance PR:", err);
-      alert("Error updating Finance PR");
+      console.error("Error updating Store PR:", err);
+      alert("Error updating Store PR");
     }
   };
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen text-black">
-      <h1 className="text-3xl font-bold mb-6">Approved Finance Requests</h1>
+      <h1 className="text-3xl font-bold mb-6">
+        Finance-Approved Store Requests
+      </h1>
 
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-2">Select a PR</h2>
@@ -158,7 +162,6 @@ export default function SubmittedFinanceRequestsPage() {
 
       {selectedPR && (
         <div className="bg-white p-6 rounded-xl shadow-md">
-          {/* PR Details */}
           <h2 className="text-xl font-semibold mb-4">PR Details</h2>
           <div className="mb-4">
             <p>
@@ -181,7 +184,6 @@ export default function SubmittedFinanceRequestsPage() {
             </p>
           </div>
 
-          {/* Previous Department Statuses */}
           <h3 className="font-bold mb-2">Previous Department Statuses</h3>
           <div className="mb-4">
             {updateData.department_statuses.length > 0 ? (
@@ -207,7 +209,6 @@ export default function SubmittedFinanceRequestsPage() {
             )}
           </div>
 
-          {/* New Department Status + Comment */}
           <h3 className="font-bold mb-2">Add New Department Status</h3>
           <div className="flex gap-2 items-center mb-4">
             <select
@@ -216,13 +217,11 @@ export default function SubmittedFinanceRequestsPage() {
               onChange={(e) => setNewStatus(e.target.value)}
             >
               <option value="">-- Select Status --</option>
-              {["FINANCE APPROVED", "FINANCE REJECTED", "FINANCE PENDING"].map(
-                (status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                )
-              )}
+              {STORE_STATUS_OPTIONS.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
             </select>
 
             <input
@@ -241,7 +240,6 @@ export default function SubmittedFinanceRequestsPage() {
             </button>
           </div>
 
-          {/* Items & Vendors (Read-Only) */}
           <h3 className="font-bold mt-4 mb-2">Items & Vendors (Read-Only)</h3>
           {updateData.items.map((item, i) => (
             <div key={i} className="mb-4 border p-2 rounded">

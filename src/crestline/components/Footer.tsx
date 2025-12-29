@@ -160,12 +160,12 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* --- Contact Section --- */}     
+        {/* --- Contact Section --- */}
 
         <div className="border-t border-gray-700 pt-5 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
           {/* PHONE */}
           <a
-            href="tel:+919591104481"
+            href="tel:+9108162006322"
             className="flex items-center gap-2 cursor-pointer group"
           >
             <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[linear-gradient(135deg,#0092B8_0%,#9810FA_100%)]">
@@ -174,14 +174,14 @@ export default function Footer() {
             <div>
               <p className="text-gray-400 text-xs">Phone</p>
               <p className="text-white text-sm group-hover:underline">
-                +91 9591104481
+                +91 08162006322
               </p>
             </div>
           </a>
 
           {/* WHATSAPP */}
           <a
-            href="https://wa.me/919591104481"
+            href="https://wa.me/918050070457"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 cursor-pointer group"
@@ -192,7 +192,7 @@ export default function Footer() {
             <div>
               <p className="text-gray-400 text-xs">WhatsApp</p>
               <p className="text-white text-sm group-hover:underline">
-                +91 9591104481
+                +91 8050070457
               </p>
             </div>
           </a>

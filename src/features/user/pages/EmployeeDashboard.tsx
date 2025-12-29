@@ -15,32 +15,24 @@ export default function EmployeeDashboard() {
   // Map API names to normalized keys
   const apiNameToKey: Record<string, string> = {
     procurement: "procurement",
-    store: "store",
-    "buisness development": "business-development",
     fessibility: "feasibility",
     feasibility: "feasibility",
     finance: "finance",
-    bd: "bd",
   };
 
   // Map normalized keys to routes
   const deptRoutes: Record<string, string> = {
     procurement: "/employee/procurement",
-    store: "/employee/store",
-    "business-development": "/employee/business-analysis",
     feasibility: "/employee/feasibility",
     finance: "/employee/finance",
-    bd: "/employee/business-analysis",
   };
 
   // Map route → display name for TopNav
   const departmentNames: Record<string, string> = {
     "/employee/procurement": "Procurement",
-    "/employee/store": "Store",
-    "/employee/business-analysis": "Business Analysis",
     "/employee/feasibility": "Feasibility",
     "/employee/finance": "Finance",
-    "/employee/dashboard": "Dashboard",
+    // "/employee/dashboard": "Dashboard",
   };
 
   if (!user) return <h3 className="p-6 text-lg">Loading user...</h3>;
@@ -58,7 +50,7 @@ export default function EmployeeDashboard() {
         <nav className="flex-1">
           <ul className="space-y-3">
             {/* Static Dashboard Link */}
-            <li>
+            {/* <li>
               <Link
                 to="/employee/dashboard"
                 className={`block px-3 py-2 rounded-md font-medium ${
@@ -69,7 +61,7 @@ export default function EmployeeDashboard() {
               >
                 Dashboard
               </Link>
-            </li>
+            </li> */}
 
             {/* Departments */}
             {departments.length === 0 && (

@@ -31,18 +31,12 @@ import EmployeeDashboard from "../../features/user/pages/EmployeeDashboard";
 import DashboardHome from "../../features/admin/pages/DashboardHome";
 import EmployeeDashboardHome from "../../features/user/pages/EmployeeDashboardHome";
 import DepartmentPage from "../../features/admin/pages/Department";
-
 const componentMap: Record<string, React.LazyExoticComponent<any>> = {
   procurement: React.lazy(
     () =>
       import("../../features/user/pages/departments/procruments/procrumentHome")
   ),
-  store: React.lazy(
-    () => import("../../features/user/pages/departments/Store")
-  ),
-  "business-analysis": React.lazy(
-    () => import("../../features/user/pages/departments/BusinessAnalysis")
-  ),
+
   feasibility: React.lazy(
     () =>
       import(
@@ -69,11 +63,11 @@ const RequireAuth = ({
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (!roles.includes(user.role)) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -169,6 +163,7 @@ export default function AppRoutes() {
           </RequireAuth>
         }
       >
+
         <Route index element={<EmployeeDashboardHome />} />
         <Route path="dashboard" element={<EmployeeDashboardHome />} />
         {Object.entries(componentMap).map(([key, Component]) => (
