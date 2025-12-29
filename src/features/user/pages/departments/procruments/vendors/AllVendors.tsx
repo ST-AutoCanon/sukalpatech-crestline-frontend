@@ -10,7 +10,7 @@ const AllVendors: React.FC = () => {
     const fetchVendors = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5001/api/procurement/vendors",
+          "http://localhost:5001/api/new-procurement/vendors",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
