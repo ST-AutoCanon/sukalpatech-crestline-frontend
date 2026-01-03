@@ -767,11 +767,326 @@
 
 // export default PRPage;
 
+// ///////////////
+// import { useState } from "react";
+// import axios from "axios";
+
+// export default function NewProcurementPage() {
+//   const API_BASE = "http://localhost:5001/api/new-procurement";
+
+//   const departments = [
+//     { id: 1, name: "Production" },
+//     { id: 2, name: "Purchase" },
+//     { id: 3, name: "Quality" },
+//     { id: 4, name: "IT" },
+//   ];
+
+//   const vendorList = [
+//     { id: 1, name: "Vendor One Pvt Ltd" },
+//     { id: 2, name: "Alpha Suppliers" },
+//     { id: 3, name: "TechnoTrade" },
+//     { id: 4, name: "Metro Traders" },
+//     { id: 5, name: "Elite Industrial" },
+//     { id: 6, name: "Prime Components" },
+//     { id: 7, name: "Galaxy Suppliers" },
+//     { id: 8, name: "ProTech Vendors" },
+//     { id: 9, name: "Universal Traders" },
+//     { id: 10, name: "Crestline Partners" },
+//   ];
+
+//   const [vendorFiles, setVendorFiles] = useState({});
+//   const [prData, setPrData] = useState({
+//     department: "",
+//     requested_by: 5,
+//     description: "",
+//     priority: "",
+//     required_date: "",
+//     remarks: "",
+//     items: [
+//       {
+//         item_code: "",
+//         item_name: "",
+//         quantity_required: "",
+//         vendors: [
+//           {
+//             vendor_id: "",
+//             unit_price: "",
+//             total_price: "",
+//             quotation_validity_date: "",
+//             status: "Submitted",
+//             vendor_status_updated_by: 5,
+//             comments: [],
+//             attachments: [],
+//           },
+//         ],
+//       },
+//     ],
+//   });
+
+//   const handlePRChange = (e) => {
+//     setPrData({ ...prData, [e.target.name]: e.target.value });
+//   };
+
+//   const handleItemChange = (i, field, value) => {
+//     const updated = [...prData.items];
+//     updated[i][field] = value;
+//     setPrData({ ...prData, items: updated });
+//   };
+
+//   const handleVendorChange = (i, vi, field, value) => {
+//     const updated = [...prData.items];
+//     updated[i].vendors[vi][field] = value;
+//     setPrData({ ...prData, items: updated });
+//   };
+
+//   const addItem = () => {
+//     setPrData({
+//       ...prData,
+//       items: [
+//         ...prData.items,
+//         { item_code: "", item_name: "", quantity_required: "", vendors: [] },
+//       ],
+//     });
+//   };
+
+//   const addVendor = (i) => {
+//     const updated = [...prData.items];
+//     updated[i].vendors.push({
+//       vendor_id: "",
+//       unit_price: "",
+//       total_price: "",
+//       quotation_validity_date: "",
+//       status: "Submitted",
+//       vendor_status_updated_by: 5,
+//       comments: [],
+//       attachments: [],
+//     });
+//     setPrData({ ...prData, items: updated });
+//   };
+
+//   const handleFileUpload = (i, vi, files) => {
+//     const key = `${i}-${vi}`;
+//     setVendorFiles({
+//       ...vendorFiles,
+//       [key]: Array.from(files),
+//     });
+//   };
+
+//   const handleComment = (i, vi, value) => {
+//     const updated = [...prData.items];
+//     updated[i].vendors[vi].comments = [{ comment: value, commented_by: 5 }];
+//     setPrData({ ...prData, items: updated });
+//   };
+
+//   const submitPR = async () => {
+//     try {
+//       const formData = new FormData();
+//       formData.append("data", JSON.stringify(prData));
+
+//       Object.values(vendorFiles).forEach((files) => {
+//         files.forEach((file) => formData.append("attachments", file));
+//       });
+
+//       await axios.post(`${API_BASE}/purchase-requests`, formData, {
+//         headers: { "Content-Type": "multipart/form-data" },
+//       });
+
+//       alert("PR Created Successfully");
+//     } catch (err) {
+//       console.error(err);
+//       alert("Error creating PR");
+//     }
+//   };
+
+//   return (
+//     <div className="p-8 min-h-screen bg-gray-100 text-black">
+//       <div className="max-w-6xl mx-auto">
+//         <h1 className="text-3xl font-bold mb-6">🛒 New Procurement Request</h1>
+
+//         {/* PR Header */}
+//         <div className="bg-white shadow-md rounded-xl p-6 mb-6">
+//           <h2 className="text-xl font-semibold mb-4 border-b pb-2">
+//             Request Information
+//           </h2>
+
+//           <div className="grid grid-cols-2 gap-4">
+//             <select
+//               name="department"
+//               className="border rounded-lg p-3 bg-gray-50"
+//               onChange={handlePRChange}
+//             >
+//               <option>Select Department</option>
+//               {departments.map((d) => (
+//                 <option key={d.id} value={d.name}>
+//                   {d.name}
+//                 </option>
+//               ))}
+//             </select>
+
+//             <select
+//               name="priority"
+//               className="border rounded-lg p-3 bg-gray-50"
+//               onChange={handlePRChange}
+//             >
+//               <option>Select Priority</option>
+//               <option value="LOW">Low</option>
+//               <option value="MEDIUM">Medium</option>
+//               <option value="HIGH">High</option>
+//             </select>
+
+//             <input
+//               type="date"
+//               name="required_date"
+//               className="border rounded-lg p-3 bg-gray-50"
+//               onChange={handlePRChange}
+//             />
+
+//             <input
+//               type="text"
+//               name="description"
+//               placeholder="Description"
+//               className="border rounded-lg p-3 bg-gray-50"
+//               onChange={handlePRChange}
+//             />
+
+//             <textarea
+//               name="remarks"
+//               placeholder="Remarks"
+//               className="border rounded-lg p-3 bg-gray-50 col-span-2"
+//               onChange={handlePRChange}
+//             ></textarea>
+//           </div>
+//         </div>
+
+//         {/* Items */}
+//         {prData.items.map((item, i) => (
+//           <div key={i} className="bg-white shadow-md rounded-xl p-6 mb-6">
+//             <div className="flex justify-between items-center mb-3">
+//               <h2 className="text-lg font-bold">📦 Item {i + 1}</h2>
+//             </div>
+
+//             <div className="grid grid-cols-3 gap-4">
+//               <input
+//                 className="border rounded-lg p-3 bg-gray-50"
+//                 placeholder="Item Code"
+//                 onChange={(e) =>
+//                   handleItemChange(i, "item_code", e.target.value)
+//                 }
+//               />
+
+//               <input
+//                 className="border rounded-lg p-3 bg-gray-50"
+//                 placeholder="Item Name"
+//                 onChange={(e) =>
+//                   handleItemChange(i, "item_name", e.target.value)
+//                 }
+//               />
+
+//               <input
+//                 className="border rounded-lg p-3 bg-gray-50"
+//                 placeholder="Quantity"
+//                 onChange={(e) =>
+//                   handleItemChange(i, "quantity_required", e.target.value)
+//                 }
+//               />
+//             </div>
+
+//             <button
+//               className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full"
+//               onClick={() => addVendor(i)}
+//             >
+//               ➕ Add Vendor
+//             </button>
+
+//             {/* Vendors */}
+//             {item.vendors.map((vendor, vi) => (
+//               <div key={vi} className="border rounded-xl p-4 mt-4 bg-gray-50">
+//                 <select
+//                   className="border rounded-lg p-3 w-full bg-white"
+//                   onChange={(e) =>
+//                     handleVendorChange(i, vi, "vendor_id", e.target.value)
+//                   }
+//                 >
+//                   <option>Select Vendor</option>
+//                   {vendorList.map((v) => (
+//                     <option key={v.id} value={v.id}>
+//                       {v.name}
+//                     </option>
+//                   ))}
+//                 </select>
+
+//                 <div className="grid grid-cols-3 gap-3 mt-3">
+//                   <input
+//                     className="border rounded-lg p-3 bg-white"
+//                     placeholder="Unit Price"
+//                     onChange={(e) =>
+//                       handleVendorChange(i, vi, "unit_price", e.target.value)
+//                     }
+//                   />
+//                   <input
+//                     className="border rounded-lg p-3 bg-white"
+//                     placeholder="Total Price"
+//                     onChange={(e) =>
+//                       handleVendorChange(i, vi, "total_price", e.target.value)
+//                     }
+//                   />
+//                   <input
+//                     type="date"
+//                     className="border rounded-lg p-3 bg-white"
+//                     onChange={(e) =>
+//                       handleVendorChange(
+//                         i,
+//                         vi,
+//                         "quotation_validity_date",
+//                         e.target.value
+//                       )
+//                     }
+//                   />
+//                 </div>
+
+//                 <textarea
+//                   className="border rounded-lg p-3 w-full mt-3 bg-white"
+//                   placeholder="Comment"
+//                   onChange={(e) => handleComment(i, vi, e.target.value)}
+//                 />
+
+//                 <input
+//                   type="file"
+//                   multiple
+//                   className="mt-3"
+//                   onChange={(e) => handleFileUpload(i, vi, e.target.files)}
+//                 />
+//               </div>
+//             ))}
+//           </div>
+//         ))}
+
+//         <button
+//           className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full"
+//           onClick={addItem}
+//         >
+//           ➕ Add Item
+//         </button>
+
+//         <button
+//           className="bg-black hover:bg-gray-800 text-white px-6 py-3 mt-6 rounded-full ml-4"
+//           onClick={submitPR}
+//         >
+//           🚀 Submit Purchase Request
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
 ///////////////
 import { useState } from "react";
 import axios from "axios";
+import { Upload } from "lucide-react";
 
-export default function NewProcurementPage() {
+export default function NewProcurementPage({ onClose }) {
   const API_BASE = "http://localhost:5001/api/new-procurement";
 
   const departments = [
@@ -892,6 +1207,7 @@ export default function NewProcurementPage() {
       });
 
       alert("PR Created Successfully");
+      onClose();
     } catch (err) {
       console.error(err);
       alert("Error creating PR");
@@ -899,181 +1215,243 @@ export default function NewProcurementPage() {
   };
 
   return (
-    <div className="p-8 min-h-screen bg-gray-100 text-black">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">🛒 New Procurement Request</h1>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+      <div className="w-[95%] max-w-7xl bg-white text-gray-900 rounded-xl overflow-y-auto max-h-[95vh]">
 
-        {/* PR Header */}
-        <div className="bg-white shadow-md rounded-xl p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4 border-b pb-2">
-            Request Information
+        {/* ================= HEADER ================= */}
+        <div className="flex justify-between items-center px-6 py-6">
+          <h2 className="text-xl font-semibold text-purple-600">
+            New Procurement Request
           </h2>
-
-          <div className="grid grid-cols-2 gap-4">
-            <select
-              name="department"
-              className="border rounded-lg p-3 bg-gray-50"
-              onChange={handlePRChange}
-            >
-              <option>Select Department</option>
-              {departments.map((d) => (
-                <option key={d.id} value={d.name}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              name="priority"
-              className="border rounded-lg p-3 bg-gray-50"
-              onChange={handlePRChange}
-            >
-              <option>Select Priority</option>
-              <option value="LOW">Low</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="HIGH">High</option>
-            </select>
-
-            <input
-              type="date"
-              name="required_date"
-              className="border rounded-lg p-3 bg-gray-50"
-              onChange={handlePRChange}
-            />
-
-            <input
-              type="text"
-              name="description"
-              placeholder="Description"
-              className="border rounded-lg p-3 bg-gray-50"
-              onChange={handlePRChange}
-            />
-
-            <textarea
-              name="remarks"
-              placeholder="Remarks"
-              className="border rounded-lg p-3 bg-gray-50 col-span-2"
-              onChange={handlePRChange}
-            ></textarea>
-          </div>
+          <button
+            onClick={onClose}
+            className="text-xl font-bold hover:text-red-600"
+          >
+            ×
+          </button>
         </div>
 
-        {/* Items */}
-        {prData.items.map((item, i) => (
-          <div key={i} className="bg-white shadow-md rounded-xl p-6 mb-6">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-bold">📦 Item {i + 1}</h2>
-            </div>
+        {/* ================= FORM ================= */}
+        <div className="p-6 space-y-6">
 
-            <div className="grid grid-cols-3 gap-4">
-              <input
-                className="border rounded-lg p-3 bg-gray-50"
-                placeholder="Item Code"
-                onChange={(e) =>
-                  handleItemChange(i, "item_code", e.target.value)
-                }
-              />
+          {/* -------- PR INFO ROW -------- */}
+          <div className="bg-gray-100 rounded-xl p-5">
+            <div className="grid grid-cols-5 gap-4">
+              <div>
+                <label className="text-sm text-gray-600">Description</label>
+                <input
+                  name="description"
+                  className="w-full border rounded-lg p-3 mt-1"
+                  onChange={handlePRChange}
+                />
+              </div>
 
-              <input
-                className="border rounded-lg p-3 bg-gray-50"
-                placeholder="Item Name"
-                onChange={(e) =>
-                  handleItemChange(i, "item_name", e.target.value)
-                }
-              />
-
-              <input
-                className="border rounded-lg p-3 bg-gray-50"
-                placeholder="Quantity"
-                onChange={(e) =>
-                  handleItemChange(i, "quantity_required", e.target.value)
-                }
-              />
-            </div>
-
-            <button
-              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full"
-              onClick={() => addVendor(i)}
-            >
-              ➕ Add Vendor
-            </button>
-
-            {/* Vendors */}
-            {item.vendors.map((vendor, vi) => (
-              <div key={vi} className="border rounded-xl p-4 mt-4 bg-gray-50">
+              <div>
+                <label className="text-sm text-gray-600">Priority</label>
                 <select
-                  className="border rounded-lg p-3 w-full bg-white"
-                  onChange={(e) =>
-                    handleVendorChange(i, vi, "vendor_id", e.target.value)
-                  }
+                  name="priority"
+                  className="w-full border rounded-lg p-3 mt-1 bg-white"
+                  onChange={handlePRChange}
                 >
-                  <option>Select Vendor</option>
-                  {vendorList.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.name}
+                  <option>Medium</option>
+                  <option>Low</option>
+                  <option>High</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-600">Required Date</label>
+                <input
+                  type="date"
+                  name="required_date"
+                  className="w-full border rounded-lg p-3 mt-1"
+                  onChange={handlePRChange}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-600">Department</label>
+                <select
+                  name="department"
+                  className="w-full border rounded-lg p-3 mt-1 bg-white"
+                  onChange={handlePRChange}
+                >
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.name}>
+                      {d.name}
                     </option>
                   ))}
                 </select>
+              </div>
 
-                <div className="grid grid-cols-3 gap-3 mt-3">
-                  <input
-                    className="border rounded-lg p-3 bg-white"
-                    placeholder="Unit Price"
-                    onChange={(e) =>
-                      handleVendorChange(i, vi, "unit_price", e.target.value)
-                    }
-                  />
-                  <input
-                    className="border rounded-lg p-3 bg-white"
-                    placeholder="Total Price"
-                    onChange={(e) =>
-                      handleVendorChange(i, vi, "total_price", e.target.value)
-                    }
-                  />
-                  <input
-                    type="date"
-                    className="border rounded-lg p-3 bg-white"
-                    onChange={(e) =>
-                      handleVendorChange(
-                        i,
-                        vi,
-                        "quotation_validity_date",
-                        e.target.value
-                      )
-                    }
-                  />
-                </div>
-
-                <textarea
-                  className="border rounded-lg p-3 w-full mt-3 bg-white"
-                  placeholder="Comment"
-                  onChange={(e) => handleComment(i, vi, e.target.value)}
-                />
-
+              <div>
+                <label className="text-sm text-gray-600">Remarks</label>
                 <input
-                  type="file"
-                  multiple
-                  className="mt-3"
-                  onChange={(e) => handleFileUpload(i, vi, e.target.files)}
+                  name="remarks"
+                  className="w-full border rounded-lg p-3 mt-1"
+                  onChange={handlePRChange}
                 />
               </div>
-            ))}
+            </div>
           </div>
-        ))}
 
-        <button
-          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full"
-          onClick={addItem}
-        >
-          ➕ Add Item
-        </button>
+          {/* ================= PRIMARY ACTIONS ================= */}
+          <div className="flex justify-end gap-4 mb-4">
+            <button
+              onClick={addItem}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+            >
+              + Add Item
+            </button>
 
-        <button
-          className="bg-black hover:bg-gray-800 text-white px-6 py-3 mt-6 rounded-full ml-4"
-          onClick={submitPR}
-        >
-          🚀 Submit Purchase Request
-        </button>
+            <button
+              onClick={submitPR}
+              className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white flex items-center gap-2"
+            >
+              <Upload size={16} />
+              Submit PR
+            </button>
+          </div>
+
+          {/* ================= ITEMS ================= */}
+          {prData.items.map((item, i) => (
+            <div key={i} className="bg-gray-100 rounded-xl p-5 space-y-4">
+
+              {/* -------- ITEM HEADER -------- */}
+              <div className="bg-gray-200 rounded-lg p-4">
+                <div className="grid grid-cols-3 gap-6">
+
+                  {/* ITEM CODE */}
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                      Item Code
+                    </span>
+                    <input
+                      className="flex-1 border rounded-lg px-3 py-2 bg-white"
+                      onChange={(e) => handleItemChange(i, "item_code", e.target.value)}
+                    />
+                  </div>
+
+                  {/* ITEM NAME */}
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                      Item Name
+                    </span>
+                    <input
+                      className="flex-1 border rounded-lg px-3 py-2 bg-white"
+                      onChange={(e) => handleItemChange(i, "item_name", e.target.value)}
+                    />
+                  </div>
+
+                  {/* QUANTITY */}
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                      Quantity
+                    </span>
+                    <input
+                      className="w-28 border rounded-lg px-3 py-2 bg-white"
+                      onChange={(e) =>
+                        handleItemChange(i, "quantity_required", e.target.value)
+                      }
+                    />
+                  </div>
+
+                </div>
+              </div>
+
+
+              {/* -------- VENDORS -------- */}
+              {item.vendors.map((vendor, vi) => (
+                <div
+                  key={vi}
+                  className="grid grid-cols-7 gap-3 items-end"
+                >
+                  <div>
+                    <label className="text-xs text-gray-600">Vendor</label>
+                    <select
+                      className="w-full p-2 border rounded bg-white mt-1"
+                      onChange={(e) =>
+                        handleVendorChange(i, vi, "vendor_id", e.target.value)
+                      }
+                    >
+                      <option>Select</option>
+                      {vendorList.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          {v.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-gray-600">Upload Quotation</label>
+                    <input
+                      type="file"
+                      className="w-full p-2 bg-white rounded border mt-1"
+                      onChange={(e) => handleFileUpload(i, vi, e.target.files)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-gray-600">Unit Price</label>
+                    <input
+                      className="w-full p-2 border rounded mt-1"
+                      onChange={(e) =>
+                        handleVendorChange(i, vi, "unit_price", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-gray-600">Total Price</label>
+                    <input
+                      className="w-full p-2 border rounded mt-1"
+                      onChange={(e) =>
+                        handleVendorChange(i, vi, "total_price", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-gray-600">Quotation Validity</label>
+                    <input
+                      type="date"
+                      className="w-full p-2 border rounded mt-1"
+                      onChange={(e) =>
+                        handleVendorChange(
+                          i,
+                          vi,
+                          "quotation_validity_date",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="text-xs text-gray-600">Comments</label>
+                    <input
+                      className="w-full p-2 border rounded mt-1"
+                      onChange={(e) => handleComment(i, vi, e.target.value)}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              {/* Add Vendor */}
+              <div className="flex w-full">
+                <button
+                  onClick={() => addVendor(i)}
+                  className="ml-auto px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                >
+                  +
+                </button>
+              </div>
+
+            </div>
+          ))}
+
+        </div>
       </div>
     </div>
   );
