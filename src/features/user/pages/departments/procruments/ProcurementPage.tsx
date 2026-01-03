@@ -437,17 +437,8 @@ const ProcurementPage: React.FC = () => {
 
           {/* RIGHT BUTTONS */}
           <div className="flex items-center gap-4">
-            {/* SEARCH */}
-            <div className="relative w-56">
-              <input
-                type="text"
-                placeholder="Search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-9 w-full rounded-md border border-gray-300 pl-3 pr-10 text-sm text-gray-700 placeholder-gray-400 outline-none focus:ring-1 focus:ring-violet-400"
-              />
-              <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            </div>
+          
+          
 
             {/* UPDATE PR PAGE BUTTON */}
             <button
@@ -455,11 +446,11 @@ const ProcurementPage: React.FC = () => {
               className="
                 flex items-center gap-2
                 rounded-lg
-                bg-gradient-to-r from-green-500 to-emerald-600
+                bg-gradient-to-r from-sky-500 to-purple-500
                 px-5 py-2.5
                 text-sm font-medium text-white
                 shadow-md
-                hover:from-green-600 hover:to-emerald-700
+                hover:from-blue-600 hover:to-purple-700
                 transition
               "
             >

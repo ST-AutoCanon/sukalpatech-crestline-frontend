@@ -58,9 +58,7 @@ const FinanceHome: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 to-blue-900 px-8 py-6">
-      {/* TITLE */}
-      <h1 className="text-2xl font-semibold text-white mb-10">Finance</h1>
-
+   
       {/* TABS */}
       <div className="flex gap-3 mt-6">
         <button

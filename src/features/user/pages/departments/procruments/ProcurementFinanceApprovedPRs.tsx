@@ -699,7 +699,7 @@ export default function SubmittedFinanceRequestsPage({ onClose }) {
 
   const submitUpdate = async () => {
     if (!selectedPR || !newStatus) {
-      alert("Please select finance status");
+      alert("Please select Procurement status");
       return;
     }
 
@@ -721,7 +721,7 @@ export default function SubmittedFinanceRequestsPage({ onClose }) {
       payload
     );
 
-    alert("Finance PR Updated");
+    alert("Procurement PR Updated");
     setModalOpen(false);
     onClose();
     fetchApprovedRequests();
@@ -1045,7 +1045,7 @@ export default function SubmittedFinanceRequestsPage({ onClose }) {
                         onChange={(e) => setNewStatus(e.target.value)}
                         className="bg-white border p-2 rounded"
                       >
-                        <option value="">Select Finance Status</option>
+                        <option value="">Select Procurement Status</option>
                         {FINANCE_STATUS_OPTIONS.map((s) => (
                           <option key={s} value={s}>
                             {s}
@@ -1070,7 +1070,7 @@ export default function SubmittedFinanceRequestsPage({ onClose }) {
                   onClick={submitUpdate}
                   className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
                 >
-                  Update Finance PR
+                  Update Procurement PR
                 </button>
               </div>
             </div>

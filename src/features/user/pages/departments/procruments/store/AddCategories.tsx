@@ -14,11 +14,18 @@
 //   root_category_id: number;
 // }
 
-// interface Variant {
+// interface Product {
 //   id: number;
 //   code: string;
 //   name: string;
 //   category_id: number;
+// }
+
+// interface Variant {
+//   id: number;
+//   code: string;
+//   name: string;
+//   product_id: number;
 // }
 
 // interface SubVariant {
@@ -34,16 +41,19 @@
 //   // Form states
 //   const [rootName, setRootName] = useState("");
 //   const [categoryName, setCategoryName] = useState("");
+//   const [productName, setProductName] = useState("");
 //   const [variantName, setVariantName] = useState("");
 //   const [subVariantName, setSubVariantName] = useState("");
 
 //   const [selectedRoot, setSelectedRoot] = useState<number | null>(null);
 //   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+//   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
 //   const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
 
 //   // Data lists
 //   const [roots, setRoots] = useState<RootCategory[]>([]);
 //   const [categories, setCategories] = useState<Category[]>([]);
+//   const [products, setProducts] = useState<Product[]>([]);
 //   const [variants, setVariants] = useState<Variant[]>([]);
 //   const [subVariants, setSubVariants] = useState<SubVariant[]>([]);
 
@@ -53,12 +63,12 @@
 //     {
 //       rootName: string;
 //       categoryName: string;
+//       productName: string;
 //       variantName: string;
 //       subVariantName: string;
 //     }[]
 //   >([]);
 
-//   // Fetch roots on load
 //   useEffect(() => {
 //     fetchRoots();
 //   }, []);
@@ -76,17 +86,34 @@
 //     try {
 //       const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`);
 //       setCategories(res.data || []);
+//       setProducts([]);
+//       setVariants([]);
+//       setSubVariants([]);
 //     } catch (err) {
 //       console.error("Error fetching categories:", err);
 //     }
 //   };
 
-//   const fetchVariants = async (categoryId: number) => {
+//   const fetchProducts = async (categoryId: number) => {
 //     try {
 //       const res = await axios.get(
-//         `${API_BASE}/variants?category_id=${categoryId}`
+//         `${API_BASE}/products?category_id=${categoryId}`
+//       );
+//       setProducts(res.data || []);
+//       setVariants([]);
+//       setSubVariants([]);
+//     } catch (err) {
+//       console.error("Error fetching products:", err);
+//     }
+//   };
+
+//   const fetchVariants = async (productId: number) => {
+//     try {
+//       const res = await axios.get(
+//         `${API_BASE}/variants?product_id=${productId}`
 //       );
 //       setVariants(res.data || []);
+//       setSubVariants([]);
 //     } catch (err) {
 //       console.error("Error fetching variants:", err);
 //     }
@@ -114,32 +141,51 @@
 //   const addCategory = async () => {
 //     if (!selectedRoot || !categoryName)
 //       return alert("Select root and enter category name");
+
 //     await axios.post(`${API_BASE}/category`, {
 //       name: categoryName,
 //       root_category_id: selectedRoot,
 //     });
+
 //     setCategoryName("");
 //     fetchCategories(selectedRoot);
 //   };
 
-//   const addVariant = async () => {
-//     if (!selectedCategory || !variantName)
-//       return alert("Select category and enter variant name");
-//     await axios.post(`${API_BASE}/variant`, {
-//       name: variantName,
+//   const addProduct = async () => {
+//     if (!selectedCategory || !productName)
+//       return alert("Select category and enter product name");
+
+//     await axios.post(`${API_BASE}/product`, {
+//       name: productName,
 //       category_id: selectedCategory,
 //     });
+
+//     setProductName("");
+//     fetchProducts(selectedCategory);
+//   };
+
+//   const addVariant = async () => {
+//     if (!selectedProduct || !variantName)
+//       return alert("Select product and enter variant name");
+
+//     await axios.post(`${API_BASE}/variant`, {
+//       name: variantName,
+//       product_id: selectedProduct,
+//     });
+
 //     setVariantName("");
-//     fetchVariants(selectedCategory);
+//     fetchVariants(selectedProduct);
 //   };
 
 //   const addSubVariant = async () => {
 //     if (!selectedVariant || !subVariantName)
 //       return alert("Select variant and enter sub-variant name");
+
 //     await axios.post(`${API_BASE}/sub-variant`, {
 //       name: subVariantName,
 //       variant_id: selectedVariant,
 //     });
+
 //     setSubVariantName("");
 //     fetchSubVariants(selectedVariant);
 //   };
@@ -147,17 +193,19 @@
 //   // Search handler
 //   const handleSearch = async () => {
 //     if (!searchQuery) return setSearchResults([]);
+
 //     try {
 //       const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`);
-//       // Map API response to only keep names
 //       const mappedResults = (res.data.data || res.data || []).map(
 //         (item: any) => ({
 //           rootName: item.root_category?.name || "",
 //           categoryName: item.category?.name || "",
+//           productName: item.product?.name || "",
 //           variantName: item.variant?.name || "",
 //           subVariantName: item.sub_variant?.name || "",
 //         })
 //       );
+
 //       setSearchResults(mappedResults);
 //     } catch (err) {
 //       console.error("Search error:", err);
@@ -165,156 +213,136 @@
 //   };
 
 //   return (
-//     <div className="p-8 bg-gray-100 min-h-screen">
-//       <h1 className="text-3xl font-bold mb-6 text-gray-800">
-//         Manage Categories & Variants
+//     <div className="p-8 bg-gray-100 min-h-scree text-black">
+//       <h1 className="text-3xl font-bold mb-6 text-g-800">
+//         Manage Categories, Products & Variants
 //       </h1>
 
-//       {/* Add Root Category */}
-//       <div className="mb-6 p-4 bg-white rounded shadow">
-//         <h2 className="font-semibold mb-2">Add Root Category</h2>
-//         <div className="flex gap-2">
-//           <input
-//             type="text"
-//             className="border p-2 rounded flex-1"
-//             placeholder="Root Category Name"
-//             value={rootName}
-//             onChange={(e) => setRootName(e.target.value)}
-//           />
-//           <button
-//             onClick={addRootCategory}
-//             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-//           >
-//             Add Root
-//           </button>
-//         </div>
-//       </div>
+//       {/* ROOT */}
+//       <Section
+//         title="Add Root Category"
+//         inputValue={rootName}
+//         onInputChange={setRootName}
+//         buttonLabel="Add Root"
+//         onSubmit={addRootCategory}
+//       />
 
-//       {/* Add Category */}
+//       {/* CATEGORY */}
 //       <div className="mb-6 p-4 bg-white rounded shadow">
 //         <h2 className="font-semibold mb-2">Add Category</h2>
 //         <div className="flex gap-2 mb-2">
-//           <select
-//             className="border p-2 rounded"
-//             value={selectedRoot || ""}
-//             onChange={(e) => {
-//               const id = Number(e.target.value);
+//           <Select
+//             placeholder="-- Select Root Category --"
+//             value={selectedRoot}
+//             options={roots}
+//             onChange={(id) => {
 //               setSelectedRoot(id);
 //               fetchCategories(id);
 //             }}
-//           >
-//             <option value="">-- Select Root Category --</option>
-//             {roots.map((r) => (
-//               <option key={r.id} value={r.id}>
-//                 {r.name}
-//               </option>
-//             ))}
-//           </select>
-//           <input
-//             type="text"
-//             className="border p-2 rounded flex-1"
-//             placeholder="Category Name"
-//             value={categoryName}
-//             onChange={(e) => setCategoryName(e.target.value)}
 //           />
-//           <button
-//             onClick={addCategory}
-//             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-//           >
+
+//           <Input
+//             value={categoryName}
+//             onChange={setCategoryName}
+//             placeholder="Category Name"
+//           />
+
+//           <Button onClick={addCategory} color="green">
 //             Add Category
-//           </button>
+//           </Button>
 //         </div>
 //       </div>
 
-//       {/* Add Variant */}
+//       {/* PRODUCT */}
+//       <div className="mb-6 p-4 bg-white rounded shadow">
+//         <h2 className="font-semibold mb-2">Add Product</h2>
+//         <div className="flex gap-2 mb-2">
+//           <Select
+//             placeholder="-- Select Category --"
+//             value={selectedCategory}
+//             options={categories}
+//             onChange={(id) => {
+//               setSelectedCategory(id);
+//               fetchProducts(id);
+//             }}
+//           />
+
+//           <Input
+//             value={productName}
+//             onChange={setProductName}
+//             placeholder="Product Name"
+//           />
+
+//           <Button onClick={addProduct} color="blue">
+//             Add Product
+//           </Button>
+//         </div>
+//       </div>
+
+//       {/* VARIANT */}
 //       <div className="mb-6 p-4 bg-white rounded shadow">
 //         <h2 className="font-semibold mb-2">Add Variant</h2>
 //         <div className="flex gap-2 mb-2">
-//           <select
-//             className="border p-2 rounded"
-//             value={selectedCategory || ""}
-//             onChange={(e) => {
-//               const id = Number(e.target.value);
-//               setSelectedCategory(id);
+//           <Select
+//             placeholder="-- Select Product --"
+//             value={selectedProduct}
+//             options={products}
+//             onChange={(id) => {
+//               setSelectedProduct(id);
 //               fetchVariants(id);
 //             }}
-//           >
-//             <option value="">-- Select Category --</option>
-//             {categories.map((c) => (
-//               <option key={c.id} value={c.id}>
-//                 {c.name}
-//               </option>
-//             ))}
-//           </select>
-//           <input
-//             type="text"
-//             className="border p-2 rounded flex-1"
-//             placeholder="Variant Name"
-//             value={variantName}
-//             onChange={(e) => setVariantName(e.target.value)}
 //           />
-//           <button
-//             onClick={addVariant}
-//             className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
-//           >
+
+//           <Input
+//             value={variantName}
+//             onChange={setVariantName}
+//             placeholder="Variant Name"
+//           />
+
+//           <Button onClick={addVariant} color="yellow">
 //             Add Variant
-//           </button>
+//           </Button>
 //         </div>
 //       </div>
 
-//       {/* Add Sub-Variant */}
+//       {/* SUB VARIANT */}
 //       <div className="mb-6 p-4 bg-white rounded shadow">
-//         <h2 className="font-semibold mb-2">Add Sub-Variant</h2>
+//         <h2 className="font-semibold mb-2">Add Sub Variant</h2>
 //         <div className="flex gap-2 mb-2">
-//           <select
-//             className="border p-2 rounded"
-//             value={selectedVariant || ""}
-//             onChange={(e) => {
-//               const id = Number(e.target.value);
+//           <Select
+//             placeholder="-- Select Variant --"
+//             value={selectedVariant}
+//             options={variants}
+//             onChange={(id) => {
 //               setSelectedVariant(id);
 //               fetchSubVariants(id);
 //             }}
-//           >
-//             <option value="">-- Select Variant --</option>
-//             {variants.map((v) => (
-//               <option key={v.id} value={v.id}>
-//                 {v.name}
-//               </option>
-//             ))}
-//           </select>
-//           <input
-//             type="text"
-//             className="border p-2 rounded flex-1"
-//             placeholder="Sub Variant Name"
-//             value={subVariantName}
-//             onChange={(e) => setSubVariantName(e.target.value)}
 //           />
-//           <button
-//             onClick={addSubVariant}
-//             className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-//           >
-//             Add Sub-Variant
-//           </button>
+
+//           <Input
+//             value={subVariantName}
+//             onChange={setSubVariantName}
+//             placeholder="Sub Variant Name"
+//           />
+
+//           <Button onClick={addSubVariant} color="purple">
+//             Add Sub Variant
+//           </Button>
 //         </div>
 //       </div>
 
-//       {/* Search */}
+//       {/* SEARCH */}
 //       <div className="mb-6 p-4 bg-white rounded shadow">
-//         <h2 className="font-semibold mb-2">Search Categories/Variants</h2>
+//         <h2 className="font-semibold mb-2">Search</h2>
 //         <div className="flex gap-2">
-//           <input
-//             type="text"
-//             className="border p-2 rounded flex-1"
-//             placeholder="Search by name..."
+//           <Input
 //             value={searchQuery}
-//             onChange={(e) => setSearchQuery(e.target.value)}
+//             onChange={setSearchQuery}
+//             placeholder="Search..."
 //           />
-//           <button
-//             onClick={handleSearch}
-//             className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
-//           >
+//           <Button onClick={handleSearch} color="gray">
 //             Search
-//           </button>
+//           </Button>
 //         </div>
 
 //         <div className="mt-4">
@@ -324,16 +352,19 @@
 //             searchResults.map((r, i) => (
 //               <div key={i} className="border p-2 rounded mb-2 bg-gray-50">
 //                 <p>
-//                   <strong>Root Category:</strong> {r.rootName}
+//                   <strong>Root:</strong> {r.rootName}
 //                 </p>
 //                 <p>
 //                   <strong>Category:</strong> {r.categoryName}
 //                 </p>
 //                 <p>
+//                   <strong>Product:</strong> {r.productName}
+//                 </p>
+//                 <p>
 //                   <strong>Variant:</strong> {r.variantName}
 //                 </p>
 //                 <p>
-//                   <strong>Sub-Variant:</strong> {r.subVariantName}
+//                   <strong>Sub Variant:</strong> {r.subVariantName}
 //                 </p>
 //               </div>
 //             ))
@@ -344,6 +375,68 @@
 //   );
 // }
 
+// // ---- Small UI Helper Components ----
+// const Select = ({ placeholder, value, options, onChange }: any) => (
+//   <select
+//     className="border p-2 rounded"
+//     value={value || ""}
+//     onChange={(e) => onChange(Number(e.target.value))}
+//   >
+//     <option value="">{placeholder}</option>
+//     {options.map((o: any) => (
+//       <option key={o.id} value={o.id}>
+//         {o.name}
+//       </option>
+//     ))}
+//   </select>
+// );
+
+// const Input = ({ value, onChange, placeholder }: any) => (
+//   <input
+//     type="text"
+//     className="border p-2 rounded flex-1"
+//     placeholder={placeholder}
+//     value={value}
+//     onChange={(e) => onChange(e.target.value)}
+//   />
+// );
+
+// const Button = ({ children, onClick, color }: any) => {
+//   const colors: any = {
+//     green: "bg-green-600 hover:bg-green-700",
+//     blue: "bg-blue-600 hover:bg-blue-700",
+//     yellow: "bg-yellow-600 hover:bg-yellow-700",
+//     purple: "bg-purple-600 hover:bg-purple-700",
+//     gray: "bg-gray-600 hover:bg-gray-700",
+//   };
+
+//   return (
+//     <button
+//       onClick={onClick}
+//       className={`${colors[color]} text-white px-4 py-2 rounded`}
+//     >
+//       {children}
+//     </button>
+//   );
+// };
+
+// const Section = ({
+//   title,
+//   inputValue,
+//   onInputChange,
+//   buttonLabel,
+//   onSubmit,
+// }: any) => (
+//   <div className="mb-6 p-4 bg-white rounded shadow">
+//     <h2 className="font-semibold mb-2">{title}</h2>
+//     <div className="flex gap-2">
+//       <Input value={inputValue} onChange={onInputChange} placeholder={title} />
+//       <Button onClick={onSubmit} color="blue">
+//         {buttonLabel}
+//       </Button>
+//     </div>
+//   </div>
+// );
 
 
 import { useEffect, useState } from "react";
@@ -386,7 +479,6 @@ interface SubVariant {
 export default function AddCategories() {
   const API_BASE = "http://localhost:5001/api/categories";
 
-  // Form states
   const [rootName, setRootName] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [productName, setProductName] = useState("");
@@ -398,24 +490,14 @@ export default function AddCategories() {
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
 
-  // Data lists
   const [roots, setRoots] = useState<RootCategory[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [variants, setVariants] = useState<Variant[]>([]);
   const [subVariants, setSubVariants] = useState<SubVariant[]>([]);
 
-  // Search
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<
-    {
-      rootName: string;
-      categoryName: string;
-      productName: string;
-      variantName: string;
-      subVariantName: string;
-    }[]
-  >([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
 
   useEffect(() => {
     fetchRoots();
@@ -474,11 +556,10 @@ export default function AddCategories() {
       );
       setSubVariants(res.data || []);
     } catch (err) {
-      console.error("Error fetching sub-variants:", err);
+      console.error("Error fetching subvariants:", err);
     }
   };
 
-  // Add handlers
   const addRootCategory = async () => {
     if (!rootName) return alert("Enter root category name");
     await axios.post(`${API_BASE}/root-category`, { name: rootName });
@@ -489,12 +570,10 @@ export default function AddCategories() {
   const addCategory = async () => {
     if (!selectedRoot || !categoryName)
       return alert("Select root and enter category name");
-
     await axios.post(`${API_BASE}/category`, {
       name: categoryName,
       root_category_id: selectedRoot,
     });
-
     setCategoryName("");
     fetchCategories(selectedRoot);
   };
@@ -502,12 +581,10 @@ export default function AddCategories() {
   const addProduct = async () => {
     if (!selectedCategory || !productName)
       return alert("Select category and enter product name");
-
     await axios.post(`${API_BASE}/product`, {
       name: productName,
       category_id: selectedCategory,
     });
-
     setProductName("");
     fetchProducts(selectedCategory);
   };
@@ -515,273 +592,281 @@ export default function AddCategories() {
   const addVariant = async () => {
     if (!selectedProduct || !variantName)
       return alert("Select product and enter variant name");
-
     await axios.post(`${API_BASE}/variant`, {
       name: variantName,
       product_id: selectedProduct,
     });
-
     setVariantName("");
     fetchVariants(selectedProduct);
   };
 
   const addSubVariant = async () => {
     if (!selectedVariant || !subVariantName)
-      return alert("Select variant and enter sub-variant name");
-
+      return alert("Select variant and enter subvariant name");
     await axios.post(`${API_BASE}/sub-variant`, {
       name: subVariantName,
       variant_id: selectedVariant,
     });
-
     setSubVariantName("");
     fetchSubVariants(selectedVariant);
   };
 
-  // Search handler
   const handleSearch = async () => {
     if (!searchQuery) return setSearchResults([]);
 
     try {
       const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`);
-      const mappedResults = (res.data.data || res.data || []).map(
-        (item: any) => ({
-          rootName: item.root_category?.name || "",
-          categoryName: item.category?.name || "",
-          productName: item.product?.name || "",
-          variantName: item.variant?.name || "",
-          subVariantName: item.sub_variant?.name || "",
-        })
-      );
-
-      setSearchResults(mappedResults);
+      const mapped = (res.data.data || res.data || []).map((item: any) => ({
+        root: item.root_category?.name || "",
+        category: item.category?.name || "",
+        product: item.product?.name || "",
+        variant: item.variant?.name || "",
+        subVariant: item.sub_variant?.name || "",
+      }));
+      setSearchResults(mapped);
     } catch (err) {
       console.error("Search error:", err);
     }
   };
 
   return (
-    <div className="p-8 bg-gray-100 min-h-scree text-black">
-      <h1 className="text-3xl font-bold mb-6 text-g-800">
-        Manage Categories, Products & Variants
-      </h1>
+    // <div
+    //   className="min-h-screen p-6 text-white"
+    //   style={{
+    //     background: "linear-gradient(135deg, #0f2c6b, #1b71c4, #1d87db)",
+    //   }}
+    // >
+    // <div className="min-h-screen p-6 text-white bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c]">
+    <div className="w-full h-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c]">
+      <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 mb-6">
+        <div className="grid grid-cols-5 gap-4">
+          {/* ROOT */}
+          <div>
+            <p className="text-sm mb-1">Root Category</p>
+            <input
+              value={rootName}
+              onChange={(e) => setRootName(e.target.value)}
+              className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+              placeholder="Enter Root Name"
+            />
+            <button
+              onClick={addRootCategory}
+              className="mt-2 w-full py-2 rounded bg-gradient-to-r from-cyan-500 to-purple-500"
+            >
+              Create Category
+            </button>
+          </div>
 
-      {/* ROOT */}
-      <Section
-        title="Add Root Category"
-        inputValue={rootName}
-        onInputChange={setRootName}
-        buttonLabel="Add Root"
-        onSubmit={addRootCategory}
-      />
+          {/* CATEGORY */}
+          <div>
+            <p className="text-sm mb-1">Category</p>
+            <select
+              className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+              value={selectedRoot || ""}
+              onChange={(e) => {
+                const id = Number(e.target.value);
+                setSelectedRoot(id);
+                fetchCategories(id);
+              }}
+            >
+              <option value="">Select Root Category</option>
+              {roots.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
 
-      {/* CATEGORY */}
-      <div className="mb-6 p-4 bg-white rounded shadow">
-        <h2 className="font-semibold mb-2">Add Category</h2>
-        <div className="flex gap-2 mb-2">
-          <Select
-            placeholder="-- Select Root Category --"
-            value={selectedRoot}
-            options={roots}
-            onChange={(id) => {
-              setSelectedRoot(id);
-              fetchCategories(id);
-            }}
-          />
+            <div className="flex gap-2 mt-2">
+              <input
+                value={categoryName}
+                onChange={(e) => setCategoryName(e.target.value)}
+                className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+                placeholder="Category"
+              />
+              <button
+                onClick={addCategory}
+                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500"
+              >
+                +
+              </button>
+            </div>
+          </div>
 
-          <Input
-            value={categoryName}
-            onChange={setCategoryName}
-            placeholder="Category Name"
-          />
+          {/* PRODUCT */}
+          <div>
+            <p className="text-sm mb-1">Product</p>
+            <select
+              className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+              value={selectedCategory || ""}
+              onChange={(e) => {
+                const id = Number(e.target.value);
+                setSelectedCategory(id);
+                fetchProducts(id);
+              }}
+            >
+              <option>Select Category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
 
-          <Button onClick={addCategory} color="green">
-            Add Category
-          </Button>
-        </div>
-      </div>
+            <div className="flex gap-2 mt-2">
+              <input
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+                placeholder="Product"
+              />
+              <button
+                onClick={addProduct}
+                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500"
+              >
+                +
+              </button>
+            </div>
+          </div>
 
-      {/* PRODUCT */}
-      <div className="mb-6 p-4 bg-white rounded shadow">
-        <h2 className="font-semibold mb-2">Add Product</h2>
-        <div className="flex gap-2 mb-2">
-          <Select
-            placeholder="-- Select Category --"
-            value={selectedCategory}
-            options={categories}
-            onChange={(id) => {
-              setSelectedCategory(id);
-              fetchProducts(id);
-            }}
-          />
+          {/* VARIANT */}
+          <div>
+            <p className="text-sm mb-1">Variant</p>
+            <select
+              className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+              value={selectedProduct || ""}
+              onChange={(e) => {
+                const id = Number(e.target.value);
+                setSelectedProduct(id);
+                fetchVariants(id);
+              }}
+            >
+              <option>Select Product</option>
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
 
-          <Input
-            value={productName}
-            onChange={setProductName}
-            placeholder="Product Name"
-          />
+            <div className="flex gap-2 mt-2">
+              <input
+                value={variantName}
+                onChange={(e) => setVariantName(e.target.value)}
+                className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+                placeholder="Variant"
+              />
+              <button
+                onClick={addVariant}
+                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500"
+              >
+                +
+              </button>
+            </div>
+          </div>
 
-          <Button onClick={addProduct} color="blue">
-            Add Product
-          </Button>
-        </div>
-      </div>
+          {/* SUB VARIANT */}
+          <div>
+            <p className="text-sm mb-1">Sub Variant</p>
+            <select
+              className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+              value={selectedVariant || ""}
+              onChange={(e) => {
+                const id = Number(e.target.value);
+                setSelectedVariant(id);
+                fetchSubVariants(id);
+              }}
+            >
+              <option>Select Variant</option>
+              {variants.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                </option>
+              ))}
+            </select>
 
-      {/* VARIANT */}
-      <div className="mb-6 p-4 bg-white rounded shadow">
-        <h2 className="font-semibold mb-2">Add Variant</h2>
-        <div className="flex gap-2 mb-2">
-          <Select
-            placeholder="-- Select Product --"
-            value={selectedProduct}
-            options={products}
-            onChange={(id) => {
-              setSelectedProduct(id);
-              fetchVariants(id);
-            }}
-          />
-
-          <Input
-            value={variantName}
-            onChange={setVariantName}
-            placeholder="Variant Name"
-          />
-
-          <Button onClick={addVariant} color="yellow">
-            Add Variant
-          </Button>
-        </div>
-      </div>
-
-      {/* SUB VARIANT */}
-      <div className="mb-6 p-4 bg-white rounded shadow">
-        <h2 className="font-semibold mb-2">Add Sub Variant</h2>
-        <div className="flex gap-2 mb-2">
-          <Select
-            placeholder="-- Select Variant --"
-            value={selectedVariant}
-            options={variants}
-            onChange={(id) => {
-              setSelectedVariant(id);
-              fetchSubVariants(id);
-            }}
-          />
-
-          <Input
-            value={subVariantName}
-            onChange={setSubVariantName}
-            placeholder="Sub Variant Name"
-          />
-
-          <Button onClick={addSubVariant} color="purple">
-            Add Sub Variant
-          </Button>
+            <div className="flex gap-2 mt-2">
+              <input
+                value={subVariantName}
+                onChange={(e) => setSubVariantName(e.target.value)}
+                className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+                placeholder="Sub Variant"
+              />
+              <button
+                onClick={addSubVariant}
+                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500"
+              >
+                +
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* SEARCH */}
-      <div className="mb-6 p-4 bg-white rounded shadow">
-        <h2 className="font-semibold mb-2">Search</h2>
-        <div className="flex gap-2">
-          <Input
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search..."
-          />
-          <Button onClick={handleSearch} color="gray">
-            Search
-          </Button>
-        </div>
+      <div className="flex justify-end mb-4">
+        <input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="p-2 rounded text-black w-1/3 bg-white placeholder-gray-400"
+          placeholder="Search"
+        />
+        {/* <button
+          onClick={handleSearch}
+          className="ml-2 px-6 rounded bg-gradient-to-r from-sky-500 to-purple-500"
+        >
+          Search
+        </button> */}
+        <button
+          onClick={handleSearch}
+          className="ml-2 px-6 py-2 rounded flex items-center gap-2 bg-gradient-to-r from-sky-500 to-purple-500"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
+            />
+          </svg>
+          Search
+        </button>
+      </div>
 
-        <div className="mt-4">
-          {searchResults.length === 0 ? (
-            <p>No results found</p>
-          ) : (
-            searchResults.map((r, i) => (
-              <div key={i} className="border p-2 rounded mb-2 bg-gray-50">
-                <p>
-                  <strong>Root:</strong> {r.rootName}
-                </p>
-                <p>
-                  <strong>Category:</strong> {r.categoryName}
-                </p>
-                <p>
-                  <strong>Product:</strong> {r.productName}
-                </p>
-                <p>
-                  <strong>Variant:</strong> {r.variantName}
-                </p>
-                <p>
-                  <strong>Sub Variant:</strong> {r.subVariantName}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
+      {/* TABLE */}
+      <div className="bg-white rounded text-black overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-2 text-left">SI</th>
+              <th className="p-2 text-left">Root Category</th>
+              <th className="p-2 text-left">Category</th>
+              <th className="p-2 text-left">Product</th>
+              <th className="p-2 text-left">Variant</th>
+              <th className="p-2 text-left">Sub Variant</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {searchResults.map((r, i) => (
+              <tr key={i} className="border-t">
+                <td className="p-2">{i + 1}</td>
+                <td className="p-2">{r.root}</td>
+                <td className="p-2">{r.category}</td>
+                <td className="p-2">{r.product}</td>
+                <td className="p-2">{r.variant}</td>
+                <td className="p-2">{r.subVariant}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
-
-// ---- Small UI Helper Components ----
-const Select = ({ placeholder, value, options, onChange }: any) => (
-  <select
-    className="border p-2 rounded"
-    value={value || ""}
-    onChange={(e) => onChange(Number(e.target.value))}
-  >
-    <option value="">{placeholder}</option>
-    {options.map((o: any) => (
-      <option key={o.id} value={o.id}>
-        {o.name}
-      </option>
-    ))}
-  </select>
-);
-
-const Input = ({ value, onChange, placeholder }: any) => (
-  <input
-    type="text"
-    className="border p-2 rounded flex-1"
-    placeholder={placeholder}
-    value={value}
-    onChange={(e) => onChange(e.target.value)}
-  />
-);
-
-const Button = ({ children, onClick, color }: any) => {
-  const colors: any = {
-    green: "bg-green-600 hover:bg-green-700",
-    blue: "bg-blue-600 hover:bg-blue-700",
-    yellow: "bg-yellow-600 hover:bg-yellow-700",
-    purple: "bg-purple-600 hover:bg-purple-700",
-    gray: "bg-gray-600 hover:bg-gray-700",
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      className={`${colors[color]} text-white px-4 py-2 rounded`}
-    >
-      {children}
-    </button>
-  );
-};
-
-const Section = ({
-  title,
-  inputValue,
-  onInputChange,
-  buttonLabel,
-  onSubmit,
-}: any) => (
-  <div className="mb-6 p-4 bg-white rounded shadow">
-    <h2 className="font-semibold mb-2">{title}</h2>
-    <div className="flex gap-2">
-      <Input value={inputValue} onChange={onInputChange} placeholder={title} />
-      <Button onClick={onSubmit} color="blue">
-        {buttonLabel}
-      </Button>
-    </div>
-  </div>
-);

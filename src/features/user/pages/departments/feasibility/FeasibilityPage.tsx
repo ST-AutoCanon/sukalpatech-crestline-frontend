@@ -89,17 +89,7 @@ const FeasibilityPage: React.FC = () => {
         </div>
 
         {/* RIGHT */}
-        <div className="flex items-center gap-3">
-          <div className="relative w-56">
-            <input
-              type="text"
-              placeholder="Search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-9 w-full rounded-md border border-gray-300 pl-3 pr-10 text-sm text-gray-700 placeholder-gray-400 outline-none focus:ring-1 focus:ring-violet-400"
-            />
-            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          </div>
+        <div className="flex items-center gap-3">        
 
           <button
             onClick={() => setActiveTab("update")}

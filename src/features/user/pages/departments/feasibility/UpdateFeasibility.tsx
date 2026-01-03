@@ -604,13 +604,22 @@
 //   );
 // }
 
+
+
 import { useState, useEffect } from "react";
 import axios from "axios";
 
 /* ================= TYPES ================= */
 
+interface DepartmentStatus {
+  department_status: string;
+  department_comment: string;
+  status_updated_by?: number;
+  updated_at?: string;
+}
+
 interface VendorComment {
-  id?: number | null;
+  id?: number;
   comment: string;
   commented_by: number;
   department_id?: number;
@@ -618,6 +627,7 @@ interface VendorComment {
 }
 
 interface Vendor {
+  id: number;
   vendor_id: number;
   status?: string;
   unit_price?: number;
@@ -626,20 +636,17 @@ interface Vendor {
 }
 
 interface Item {
+  id: number;
   item_code?: string;
   item_name?: string;
   quantity_required?: number;
   vendors: Vendor[];
 }
 
-interface DepartmentStatus {
-  department_status: string;
-  department_comment: string;
-}
-
 interface FeasibilityPR {
   id: string;
   department?: string;
+  requested_by?: string;
   description?: string;
   priority?: string;
   required_date?: string;
@@ -659,14 +666,25 @@ export default function SubmittedRequestsPage() {
 
   const [expandItems, setExpandItems] = useState(true);
   const [expandStatus, setExpandStatus] = useState(true);
+
   const [newStatus, setNewStatus] = useState("");
   const [newComment, setNewComment] = useState("");
+
+  const department_statuses = ["APPROVED", "REJECTED", "PENDING"];
+  const VENDOR_STATUS_OPTIONS = [
+    "Approved",
+    "Rejected",
+    "Pending",
+    "Submitted",
+  ];
 
   const [updateData, setUpdateData] = useState<{
     department_statuses: DepartmentStatus[];
     items: Item[];
-  }>({ department_statuses: [], items: [] });
-
+  }>({
+    department_statuses: [],
+    items: [],
+  });
   const [vendorUpdates, setVendorUpdates] = useState<{
     [key: string]: { status: string; comment: string };
   }>({});
@@ -691,8 +709,6 @@ export default function SubmittedRequestsPage() {
     return new Date(date).toLocaleDateString("en-GB"); // DD/MM/YYYY
   };
 
-  const VENDOR_STATUS_OPTIONS = ["APPROVED", "REJECTED", "PENDING"];
-
   /* ================= API ================= */
 
   useEffect(() => {
@@ -701,6 +717,8 @@ export default function SubmittedRequestsPage() {
     });
   }, []);
 
+  /* ================= HANDLERS ================= */
+
   const openPR = (pr: FeasibilityPR) => {
     setSelectedPR(pr);
     setUpdateData({
@@ -708,17 +726,34 @@ export default function SubmittedRequestsPage() {
       items: pr.items || [],
     });
     setModalOpen(true);
+    setNewStatus("");
+    setNewComment("");
   };
 
   const submitUpdate = async () => {
-    if (!selectedPR) return;
+    if (!selectedPR || !newStatus) {
+      alert("Please select Feasibility status");
+      return;
+    }
+
+    const payload = {
+      department_statuses: [
+        {
+          department_status: newStatus,
+          department_comment: newComment,
+          status_updated_by: 2,
+          updated_at: new Date().toISOString(),
+        },
+      ],
+      items: updateData.items,
+    };
 
     await axios.put(
       `${API_BASE}/feasibility-requests/${selectedPR.id}`,
-      updateData
+      payload
     );
 
-    alert("PR Updated Successfully");
+    alert("Feasibility PR Updated");
     setModalOpen(false);
   };
 
@@ -726,7 +761,7 @@ export default function SubmittedRequestsPage() {
 
   return (
     <div className="p-6 text-black">
-      {/* PR CARDS */}
+      {/* ================= PR CARDS ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
         {requests.map((pr) => (
           <div
@@ -912,26 +947,27 @@ export default function SubmittedRequestsPage() {
 
                           {/* Validity */}
                           <div className="border rounded px-2 py-1 bg-white text-sm text-center">
-                            {(vendor as any).quotation_validity_date
+                            {(vendor as any).validity
                               ? new Date(
-                                  (vendor as any).quotation_validity_date
+                                  (vendor as any).validity
                                 ).toLocaleDateString()
                               : ""}
                           </div>
 
                           {/* Attachments */}
                           <div className="border rounded px-2 py-1 bg-white text-sm text-center">
-                            {vendor.attachments?.length
-                              ? vendor.attachments.map((att, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="text-black hover:underline cursor-default mr-2"
-                                    title={att.file_name} // optional: show full name on hover
-                                  >
-                                    {att.file_name}
-                                  </span>
-                                ))
-                              : "-"}
+                            {(vendor as any).attachment ? (
+                              <a
+                                href={(vendor as any).attachment}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline"
+                              >
+                                {(vendor as any).attachment.split("/").pop()}
+                              </a>
+                            ) : (
+                              ""
+                            )}
                           </div>
 
                           {/* ADD COMMENT (same as bottom) */}
@@ -1039,7 +1075,7 @@ export default function SubmittedRequestsPage() {
                         className="bg-white border p-2 rounded"
                       >
                         <option value="">Select Feasibility Status</option>
-                        {VENDOR_STATUS_OPTIONS.map((s) => (
+                        {department_statuses.map((s) => (
                           <option key={s} value={s}>
                             {s}
                           </option>
@@ -1063,7 +1099,7 @@ export default function SubmittedRequestsPage() {
                   onClick={submitUpdate}
                   className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
                 >
-                  Update Finance PR
+                  Update Feasibility PR
                 </button>
               </div>
             </div>
@@ -1073,3 +1109,5 @@ export default function SubmittedRequestsPage() {
     </div>
   );
 }
+
+
