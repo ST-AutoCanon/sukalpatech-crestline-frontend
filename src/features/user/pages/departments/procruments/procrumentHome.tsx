@@ -83,8 +83,7 @@ const ProcurementHome: React.FC = () => {
 
       {/* ================= HEADER ================= */}
       <div className="w-full pt-8 px-8">
-        <h1 className=" text-3xl font-semibold">Procurement</h1>
-
+     
         {/* Tabs */}
         <div className="flex w-fit gap-2 rounded-full bg-white/10 p-2 mt-6">
           {tabs.map((tab) => {
