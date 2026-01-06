@@ -1,638 +1,3 @@
-// import { useEffect, useState } from "react";
-// import axios from "axios";
-// import Select from "react-select";
-
-// interface RootCategory {
-//   id: string;
-//   name: string;
-// }
-
-// interface Category {
-//   id: string;
-//   name: string;
-//   root_category_id: string;
-// }
-
-// interface Variant {
-//   id: string;
-//   name: string;
-//   category_id: string;
-// }
-
-// interface SubVariant {
-//   id: string;
-//   name: string;
-//   variant_id: string;
-// }
-
-// interface Vendor {
-//   vendor_id: number;
-//   vendor_name: string;
-// }
-
-// export default function AddItem() {
-//   const API_BASE = "http://localhost:5001/api";
-
-//   const [roots, setRoots] = useState<RootCategory[]>([]);
-//   const [categories, setCategories] = useState<Category[]>([]);
-//   const [variants, setVariants] = useState<Variant[]>([]);
-//   const [subVariants, setSubVariants] = useState<SubVariant[]>([]);
-
-//   const [selectedRoot, setSelectedRoot] = useState<string>("");
-//   const [selectedCategory, setSelectedCategory] = useState<string>("");
-//   const [selectedVariant, setSelectedVariant] = useState<string>("");
-//   const [selectedSubVariant, setSelectedSubVariant] = useState<string>("");
-
-//   const [itemName, setItemName] = useState("");
-//   const [selectedVendors, setSelectedVendors] = useState<Vendor[]>([]);
-//   const [vendorList, setVendorList] = useState<Vendor[]>([]);
-
-//   useEffect(() => {
-//     fetchRoots();
-//     fetchVendors();
-//   }, []);
-
-//   // Fetch vendors
-//   const fetchVendors = async () => {
-//     try {
-//       const res = await axios.get(`${API_BASE}/vendor/vendors`);
-//       console.log("Vendor API Response:", res.data);
-
-//       const vendors = Array.isArray(res.data?.data) ? res.data.data : [];
-//       setVendorList(vendors);
-//     } catch (err) {
-//       console.error("Fetch vendors error:", err);
-//       setVendorList([]);
-//     }
-//   };
-
-//   // Fetch roots
-//   const fetchRoots = async () => {
-//     try {
-//       const res = await axios.get(`${API_BASE}/categories/root-category`);
-//       setRoots(res.data.map((r: any) => ({ ...r, id: String(r.id) })));
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
-
-//   const fetchCategories = async (rootId: string) => {
-//     try {
-//       const res = await axios.get(
-//         `${API_BASE}/categories/list?root_id=${rootId}`
-//       );
-//       setCategories(res.data.map((c: any) => ({ ...c, id: String(c.id) })));
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
-
-//   const fetchVariants = async (categoryId: string) => {
-//     try {
-//       const res = await axios.get(
-//         `${API_BASE}/categories/variants?category_id=${categoryId}`
-//       );
-//       setVariants(res.data.map((v: any) => ({ ...v, id: String(v.id) })));
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
-
-//   const fetchSubVariants = async (variantId: string) => {
-//     try {
-//       const res = await axios.get(
-//         `${API_BASE}/categories/sub-variants?variant_id=${variantId}`
-//       );
-//       setSubVariants(res.data.map((sv: any) => ({ ...sv, id: String(sv.id) })));
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
-
-//   // Add Item
-//   const handleAddItem = async () => {
-//     if (!selectedRoot || !itemName)
-//       return alert("Root category and item name required");
-
-//     // const vendorsArray = selectedVendors.map((v) => ({
-//     //   vendor_id: v.vendor_id,
-//     //   vendor_name: v.vendor_name,
-//     // }));
-// const vendorsArray = selectedVendors.map((v) => ({
-//   vendor_id: v.vendor_id, // will now have actual numbers
-// }));
-//     console.log("Posting Vendors:", vendorsArray);
-
-//     try {
-//       await axios.post(`${API_BASE}/items/items`, {
-//         item_name: itemName,
-//         vendors: vendorsArray,
-//         root_category_id: selectedRoot,
-//         category_id: selectedCategory || null,
-//         variant_id: selectedVariant || null,
-//         sub_variant_id: selectedSubVariant || null,
-//       });
-
-//       setItemName("");
-//       setSelectedVendors([]);
-//       alert("Item added successfully");
-//     } catch (err) {
-//       console.error("Add item error:", err);
-//       alert("Failed to add item");
-//     }
-//   };
-
-//   return (
-//     <div className="p-10  mx-auto bg-gray-100 min-h-screen">
-//       <h1 className="text-2xl font-bold mb-4">Add Item</h1>
-
-//       <div className="overflow-x-auto">
-//         <table className="min-w-[1200px] bg-white rounded shadow text-sm">
-//           <thead>
-//             <tr className="bg-gray-200 text-left text-sm">
-//               <th className="p-2">Root Category</th>
-//               <th className="p-2">Category</th>
-//               <th className="p-2">Variant</th>
-//               <th className="p-2">Sub-Variant</th>
-//               <th className="p-2">Item Name</th>
-//               <th className="p-2">Vendors</th>
-//               <th className="p-2">Action</th>
-//             </tr>
-//           </thead>
-
-//           <tbody>
-//             <tr>
-//               {/* ROOT */}
-//               <td className="p-1">
-//                 <select
-//                   className="border p-1 rounded w-36 text-sm"
-//                   value={selectedRoot}
-//                   onChange={(e) => {
-//                     const id = e.target.value;
-//                     setSelectedRoot(id);
-//                     setSelectedCategory("");
-//                     setSelectedVariant("");
-//                     setSelectedSubVariant("");
-//                     fetchCategories(id);
-//                   }}
-//                 >
-//                   <option value="">--Select--</option>
-//                   {roots.map((r) => (
-//                     <option key={r.id} value={r.id}>
-//                       {r.name}
-//                     </option>
-//                   ))}
-//                 </select>
-//               </td>
-
-//               {/* CATEGORY */}
-//               <td className="p-1">
-//                 <select
-//                   className="border p-1 rounded w-36 text-sm"
-//                   value={selectedCategory}
-//                   onChange={(e) => {
-//                     const id = e.target.value;
-//                     setSelectedCategory(id);
-//                     setSelectedVariant("");
-//                     setSelectedSubVariant("");
-//                     fetchVariants(id);
-//                   }}
-//                 >
-//                   <option value="">--Select--</option>
-//                   {categories.map((c) => (
-//                     <option key={c.id} value={c.id}>
-//                       {c.name}
-//                     </option>
-//                   ))}
-//                 </select>
-//               </td>
-
-//               {/* VARIANT */}
-//               <td className="p-1">
-//                 <select
-//                   className="border p-1 rounded w-36 text-sm"
-//                   value={selectedVariant}
-//                   onChange={(e) => {
-//                     const id = e.target.value;
-//                     setSelectedVariant(id);
-//                     setSelectedSubVariant("");
-//                     fetchSubVariants(id);
-//                   }}
-//                 >
-//                   <option value="">--Select--</option>
-//                   {variants.map((v) => (
-//                     <option key={v.id} value={v.id}>
-//                       {v.name}
-//                     </option>
-//                   ))}
-//                 </select>
-//               </td>
-
-//               {/* SUB VARIANT */}
-//               <td className="p-1">
-//                 <select
-//                   className="border p-1 rounded w-36 text-sm"
-//                   value={selectedSubVariant}
-//                   onChange={(e) => setSelectedSubVariant(e.target.value)}
-//                 >
-//                   <option value="">--Select--</option>
-//                   {subVariants.map((sv) => (
-//                     <option key={sv.id} value={sv.id}>
-//                       {sv.name}
-//                     </option>
-//                   ))}
-//                 </select>
-//               </td>
-
-//               {/* ITEM NAME */}
-//               <td className="p-1">
-//                 <input
-//                   type="text"
-//                   className="border p-1 rounded w-48 text-sm"
-//                   placeholder="Item Name"
-//                   value={itemName}
-//                   onChange={(e) => setItemName(e.target.value)}
-//                 />
-//               </td>
-
-//               {/* VENDORS */}
-//               <td className="p-1 w-64">
-//                 <Select
-//                   isMulti
-//                   options={vendorList.map((v) => ({
-//                     value: v.vendor_id, // the ID
-//                     label: v.vendor_name, // the name
-//                   }))}
-//                   value={selectedVendors.map((v) => ({
-//                     value: v.vendor_id,
-//                     label: v.vendor_name,
-//                   }))}
-//                   onChange={(selected: any) =>
-//                     setSelectedVendors(
-//                       (selected || []).map((s: any) => ({
-//                         vendor_id: s.value, // 👈 this is important
-//                         vendor_name: s.label, // optional, only for display
-//                       }))
-//                     )
-//                   }
-//                   placeholder="Select Vendors"
-//                   menuPortalTarget={document.body}
-//                 />
-//               </td>
-
-//               {/* ACTION */}
-//               <td className="p-1">
-//                 <button
-//                   className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 text-sm"
-//                   onClick={handleAddItem}
-//                 >
-//                   Add
-//                 </button>
-//               </td>
-//             </tr>
-//           </tbody>
-//         </table>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-// import { useEffect, useState } from "react";
-// import axios from "axios";
-// import Select from "react-select";
-
-// interface RootCategory {
-//   id: string;
-//   name: string;
-// }
-
-// interface Category {
-//   id: string;
-//   name: string;
-//   root_category_id: string;
-// }
-
-// interface Product {
-//   id: string;
-//   name: string;
-//   category_id: string;
-// }
-
-// interface Variant {
-//   id: string;
-//   name: string;
-//   category_id: string;
-// }
-
-// interface SubVariant {
-//   id: string;
-//   name: string;
-//   variant_id: string;
-// }
-
-// interface Vendor {
-//   vendor_id: number;
-//   vendor_name: string;
-// }
-
-// export default function AddItem() {
-//   const API_BASE = "http://localhost:5001/api";
-
-//   const [roots, setRoots] = useState<RootCategory[]>([]);
-//   const [categories, setCategories] = useState<Category[]>([]);
-//   const [products, setProducts] = useState<Product[]>([]);
-//   const [variants, setVariants] = useState<Variant[]>([]);
-//   const [subVariants, setSubVariants] = useState<SubVariant[]>([]);
-
-//   const [selectedRoot, setSelectedRoot] = useState<string>("");
-//   const [selectedCategory, setSelectedCategory] = useState<string>("");
-//   const [selectedProduct, setSelectedProduct] = useState<string>(""); // 👈 New
-//   const [selectedVariant, setSelectedVariant] = useState<string>("");
-//   const [selectedSubVariant, setSelectedSubVariant] = useState<string>("");
-
-//   const [itemName, setItemName] = useState("");
-//   const [selectedVendors, setSelectedVendors] = useState<Vendor[]>([]);
-//   const [vendorList, setVendorList] = useState<Vendor[]>([]);
-
-//   useEffect(() => {
-//     fetchRoots();
-//     fetchVendors();
-//   }, []);
-
-//   // Fetch vendors
-//   const fetchVendors = async () => {
-//     try {
-//       const res = await axios.get(`${API_BASE}/vendor/vendors`);
-//       const vendors = Array.isArray(res.data?.data) ? res.data.data : [];
-//       setVendorList(vendors);
-//     } catch (err) {
-//       console.error(err);
-//       setVendorList([]);
-//     }
-//   };
-
-//   // Fetch roots
-//   const fetchRoots = async () => {
-//     try {
-//       const res = await axios.get(`${API_BASE}/categories/root-category`);
-//       setRoots(res.data.map((r: any) => ({ ...r, id: String(r.id) })));
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
-
-//   const fetchCategories = async (rootId: string) => {
-//     try {
-//       const res = await axios.get(
-//         `${API_BASE}/categories/list?root_id=${rootId}`
-//       );
-//       setCategories(res.data.map((c: any) => ({ ...c, id: String(c.id) })));
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
-
-// const fetchProducts = async (categoryId: string) => {
-//   try {
-//     const res = await axios.get(
-//       `${API_BASE}/products?category_id=${categoryId}`
-//     );
-//     setProducts(res.data.map((p: any) => ({ ...p, id: String(p.id) })));
-//   } catch (err) {
-//     console.error("Fetch products error:", err);
-//     setProducts([]);
-//   }
-// };
-
-
-//   const fetchVariants = async (categoryId: string) => {
-//     try {
-//       const res = await axios.get(
-//         `${API_BASE}/categories/variants?category_id=${categoryId}`
-//       );
-//       setVariants(res.data.map((v: any) => ({ ...v, id: String(v.id) })));
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
-
-//   const fetchSubVariants = async (variantId: string) => {
-//     try {
-//       const res = await axios.get(
-//         `${API_BASE}/categories/sub-variants?variant_id=${variantId}`
-//       );
-//       setSubVariants(res.data.map((sv: any) => ({ ...sv, id: String(sv.id) })));
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
-
-//   // Add Item
-//   const handleAddItem = async () => {
-//     if (!selectedRoot || !itemName)
-//       return alert("Root category and item name required");
-
-//     const vendorsArray = selectedVendors.map((v) => ({
-//       vendor_id: v.vendor_id,
-//     }));
-
-//     try {
-//       await axios.post(`${API_BASE}/items/items`, {
-//         item_name: itemName,
-//         vendors: vendorsArray,
-//         root_category_id: selectedRoot,
-//         category_id: selectedCategory || null,
-//         product_id: selectedProduct || null, // 👈 Added product_id
-//         variant_id: selectedVariant || null,
-//         sub_variant_id: selectedSubVariant || null,
-//       });
-
-//       setItemName("");
-//       setSelectedVendors([]);
-//       alert("Item added successfully");
-//     } catch (err) {
-//       console.error(err);
-//       alert("Failed to add item");
-//     }
-//   };
-
-//   return (
-//     <div className="p-10 mx-auto bg-gray-100 min-h-screen">
-//       <h1 className="text-2xl font-bold mb-4">Add Item</h1>
-
-//       <div className="overflow-x-auto">
-//         <table className="min-w-[1200px] bg-white rounded shadow text-sm">
-//           <thead>
-//             <tr className="bg-gray-200 text-left text-sm">
-//               <th className="p-2">Root Category</th>
-//               <th className="p-2">Category</th>
-//               <th className="p-2">Product</th> {/* 👈 New */}
-//               <th className="p-2">Variant</th>
-//               <th className="p-2">Sub-Variant</th>
-//               <th className="p-2">Item Name</th>
-//               <th className="p-2">Vendors</th>
-//               <th className="p-2">Action</th>
-//             </tr>
-//           </thead>
-
-//           <tbody>
-//             <tr>
-//               {/* ROOT */}
-//               <td className="p-1">
-//                 <select
-//                   className="border p-1 rounded w-36 text-sm"
-//                   value={selectedRoot}
-//                   onChange={(e) => {
-//                     const id = e.target.value;
-//                     setSelectedRoot(id);
-//                     setSelectedCategory("");
-//                     setSelectedProduct(""); // reset
-//                     setSelectedVariant("");
-//                     setSelectedSubVariant("");
-//                     fetchCategories(id);
-//                   }}
-//                 >
-//                   <option value="">--Select--</option>
-//                   {roots.map((r) => (
-//                     <option key={r.id} value={r.id}>
-//                       {r.name}
-//                     </option>
-//                   ))}
-//                 </select>
-//               </td>
-
-//               {/* CATEGORY */}
-//               <td className="p-1">
-//                 <select
-//                   className="border p-1 rounded w-36 text-sm"
-//                   value={selectedCategory}
-//                   onChange={(e) => {
-//                     const id = e.target.value;
-//                     setSelectedCategory(id);
-//                     setSelectedProduct(""); // reset product
-//                     setSelectedVariant("");
-//                     setSelectedSubVariant("");
-//                     fetchProducts(id); // 👈 fetch products
-//                     fetchVariants(id);
-//                   }}
-//                 >
-//                   <option value="">--Select--</option>
-//                   {categories.map((c) => (
-//                     <option key={c.id} value={c.id}>
-//                       {c.name}
-//                     </option>
-//                   ))}
-//                 </select>
-//               </td>
-
-//               {/* PRODUCT */}
-//               <td className="p-1">
-//                 <select
-//                   className="border p-1 rounded w-36 text-sm"
-//                   value={selectedProduct}
-//                   onChange={(e) => setSelectedProduct(e.target.value)}
-//                 >
-//                   <option value="">--Select--</option>
-//                   {products.map((p) => (
-//                     <option key={p.id} value={p.id}>
-//                       {p.name}
-//                     </option>
-//                   ))}
-//                 </select>
-//               </td>
-
-//               {/* VARIANT */}
-//               <td className="p-1">
-//                 <select
-//                   className="border p-1 rounded w-36 text-sm"
-//                   value={selectedVariant}
-//                   onChange={(e) => {
-//                     const id = e.target.value;
-//                     setSelectedVariant(id);
-//                     setSelectedSubVariant("");
-//                     fetchSubVariants(id);
-//                   }}
-//                 >
-//                   <option value="">--Select--</option>
-//                   {variants.map((v) => (
-//                     <option key={v.id} value={v.id}>
-//                       {v.name}
-//                     </option>
-//                   ))}
-//                 </select>
-//               </td>
-
-//               {/* SUB VARIANT */}
-//               <td className="p-1">
-//                 <select
-//                   className="border p-1 rounded w-36 text-sm"
-//                   value={selectedSubVariant}
-//                   onChange={(e) => setSelectedSubVariant(e.target.value)}
-//                 >
-//                   <option value="">--Select--</option>
-//                   {subVariants.map((sv) => (
-//                     <option key={sv.id} value={sv.id}>
-//                       {sv.name}
-//                     </option>
-//                   ))}
-//                 </select>
-//               </td>
-
-//               {/* ITEM NAME */}
-//               <td className="p-1">
-//                 <input
-//                   type="text"
-//                   className="border p-1 rounded w-48 text-sm"
-//                   placeholder="Item Name"
-//                   value={itemName}
-//                   onChange={(e) => setItemName(e.target.value)}
-//                 />
-//               </td>
-
-//               {/* VENDORS */}
-//               <td className="p-1 w-64">
-//                 <Select
-//                   isMulti
-//                   options={vendorList.map((v) => ({
-//                     value: v.vendor_id,
-//                     label: v.vendor_name,
-//                   }))}
-//                   value={selectedVendors.map((v) => ({
-//                     value: v.vendor_id,
-//                     label: v.vendor_name,
-//                   }))}
-//                   onChange={(selected: any) =>
-//                     setSelectedVendors(
-//                       (selected || []).map((s: any) => ({
-//                         vendor_id: s.value,
-//                         vendor_name: s.label,
-//                       }))
-//                     )
-//                   }
-//                   placeholder="Select Vendors"
-//                   menuPortalTarget={document.body}
-//                 />
-//               </td>
-
-//               {/* ACTION */}
-//               <td className="p-1">
-//                 <button
-//                   className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 text-sm"
-//                   onClick={handleAddItem}
-//                 >
-//                   Add
-//                 </button>
-//               </td>
-//             </tr>
-//           </tbody>
-//         </table>
-//       </div>
-//     </div>
-//   );
-// }
-
 
 
 import { useEffect, useState } from "react";
@@ -674,7 +39,7 @@ interface Vendor {
 }
 
 export default function AddItem() {
-  const API_BASE = "http://localhost:5001/api";
+  const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api`;
 
   const [roots, setRoots] = useState<RootCategory[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -682,11 +47,11 @@ export default function AddItem() {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [subVariants, setSubVariants] = useState<SubVariant[]>([]);
 
-  const [selectedRoot, setSelectedRoot] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedProduct, setSelectedProduct] = useState<string>("");
-  const [selectedVariant, setSelectedVariant] = useState<string>("");
-  const [selectedSubVariant, setSelectedSubVariant] = useState<string>("");
+  const [selectedRoot, setSelectedRoot] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState("");
+  const [selectedVariant, setSelectedVariant] = useState("");
+  const [selectedSubVariant, setSelectedSubVariant] = useState("");
 
   const [itemName, setItemName] = useState("");
   const [selectedVendors, setSelectedVendors] = useState<Vendor[]>([]);
@@ -698,13 +63,8 @@ export default function AddItem() {
   }, []);
 
   const fetchVendors = async () => {
-    try {
-      const res = await axios.get(`${API_BASE}/vendor/vendors`);
-      const vendors = Array.isArray(res.data?.data) ? res.data.data : [];
-      setVendorList(vendors);
-    } catch {
-      setVendorList([]);
-    }
+    const res = await axios.get(`${API_BASE}/vendor/vendors`);
+    setVendorList(res.data?.data || []);
   };
 
   const fetchRoots = async () => {
@@ -719,22 +79,11 @@ export default function AddItem() {
     setCategories(res.data.map((c: any) => ({ ...c, id: String(c.id) })));
   };
 
-  // 🔥 NEW — FETCH PRODUCTS
   const fetchProducts = async (categoryId: string) => {
-     const res = await axios.get(
-       `${API_BASE}/categories/products?category_id=${categoryId}`
-     );
+    const res = await axios.get(
+      `${API_BASE}/categories/products?category_id=${categoryId}`
+    );
     setProducts(res.data.map((p: any) => ({ ...p, id: String(p.id) })));
-    
-    // try {
-    //   const res = await axios.get(
-    //     `${API_BASE}/categories/products?category_id=${categoryId}`
-    //   );
-    //   setProducts(res.data.map((p: any) => ({ ...p, id: String(p.id) })));
-    // } catch (err) {
-    //   console.log("Fetch product error", err);
-    //   setProducts([]);
-    // }
   };
 
   const fetchVariants = async (productId: string) => {
@@ -755,16 +104,12 @@ export default function AddItem() {
     if (!selectedRoot || !itemName)
       return alert("Root category and item name required");
 
-    const vendorsArray = selectedVendors.map((v) => ({
-      vendor_id: v.vendor_id,
-    }));
-
     await axios.post(`${API_BASE}/items/items`, {
       item_name: itemName,
-      vendors: vendorsArray,
+      vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
       root_category_id: selectedRoot,
       category_id: selectedCategory || null,
-      product_id: selectedProduct || null, // ✅ ADDED
+      product_id: selectedProduct || null,
       variant_id: selectedVariant || null,
       sub_variant_id: selectedSubVariant || null,
     });
@@ -775,175 +120,113 @@ export default function AddItem() {
   };
 
   return (
-    <div className="p-10  mx-auto bg-gray-100 min-h-screen text-black">
+    <div className="p-4 md:p-10 bg-gray-100 min-h-screen text-black">
       <h1 className="text-2xl font-bold mb-4">Add Item</h1>
 
-      <div className="overflow-x-auto">
+      {/* ================= DESKTOP TABLE ================= */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="min-w-[1300px] bg-white rounded shadow text-sm">
           <thead>
-            <tr className="bg-gray-200 text-left text-sm">
-              <th className="p-2">Root Category</th>
+            <tr className="bg-gray-200 text-left">
+              <th className="p-2">Root</th>
               <th className="p-2">Category</th>
-              <th className="p-2">Product</th> {/* ✅ NEW */}
+              <th className="p-2">Product</th>
               <th className="p-2">Variant</th>
-              <th className="p-2">Sub-Variant</th>
-              <th className="p-2">Item Name</th>
+              <th className="p-2">Sub Variant</th>
+              <th className="p-2">Item</th>
               <th className="p-2">Vendors</th>
               <th className="p-2">Action</th>
             </tr>
           </thead>
-
           <tbody>
             <tr>
-              {/* ROOT */}
               <td className="p-1">
-                <select
-                  className="border p-1 rounded w-36 text-sm"
+                <select className="border p-1 w-36"
                   value={selectedRoot}
                   onChange={(e) => {
-                    const id = e.target.value;
-                    setSelectedRoot(id);
-                    setSelectedCategory("");
-                    setSelectedProduct("");
-                    setSelectedVariant("");
-                    setSelectedSubVariant("");
-                    fetchCategories(id);
-                  }}
-                >
-                  <option value="">--Select--</option>
-                  {roots.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name}
-                    </option>
-                  ))}
+                    setSelectedRoot(e.target.value);
+                    fetchCategories(e.target.value);
+                  }}>
+                  <option value="">Select</option>
+                  {roots.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                 </select>
               </td>
 
-              {/* CATEGORY */}
               <td className="p-1">
-                <select
-                  className="border p-1 rounded w-36 text-sm"
+                <select className="border p-1 w-36"
                   value={selectedCategory}
                   onChange={(e) => {
-                    const id = e.target.value;
-                    setSelectedCategory(id);
-                    setSelectedProduct("");
-                    setSelectedVariant("");
-                    setSelectedSubVariant("");
-                    fetchProducts(id); // ✅ Fetch Product
-                    // fetchVariants(id);
-                  }}
-                >
-                  <option value="">--Select--</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
+                    setSelectedCategory(e.target.value);
+                    fetchProducts(e.target.value);
+                  }}>
+                  <option value="">Select</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </td>
 
-              {/* ✅ PRODUCT DROPDOWN */}
               <td className="p-1">
-                <select
-                  className="border p-1 rounded w-36 text-sm"
+                <select className="border p-1 w-36"
                   value={selectedProduct}
-                  // onChange={(e) => setSelectedProduct(e.target.value)}
                   onChange={(e) => {
-                    const id = e.target.value;
-                    setSelectedProduct(id);                    
-                    setSelectedVariant("");
-                    setSelectedSubVariant("");
-                    // fetchProducts(id); // ✅ Fetch Product
-                    fetchVariants(id);
-                  }}
-                >
-                  <option value="">--Select--</option>
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
+                    setSelectedProduct(e.target.value);
+                    fetchVariants(e.target.value);
+                  }}>
+                  <option value="">Select</option>
+                  {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </td>
 
-              {/* VARIANT */}
               <td className="p-1">
-                <select
-                  className="border p-1 rounded w-36 text-sm"
+                <select className="border p-1 w-36"
                   value={selectedVariant}
                   onChange={(e) => {
-                    const id = e.target.value;
-                    setSelectedVariant(id);
-                    setSelectedSubVariant("");
-                    fetchSubVariants(id);
-                  }}
-                >
-                  <option value="">--Select--</option>
-                  {variants.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.name}
-                    </option>
-                  ))}
+                    setSelectedVariant(e.target.value);
+                    fetchSubVariants(e.target.value);
+                  }}>
+                  <option value="">Select</option>
+                  {variants.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
                 </select>
               </td>
 
-              {/* SUB VARIANT */}
               <td className="p-1">
-                <select
-                  className="border p-1 rounded w-36 text-sm"
+                <select className="border p-1 w-36"
                   value={selectedSubVariant}
-                  onChange={(e) => setSelectedSubVariant(e.target.value)}
-                >
-                  <option value="">--Select--</option>
-                  {subVariants.map((sv) => (
-                    <option key={sv.id} value={sv.id}>
-                      {sv.name}
-                    </option>
-                  ))}
+                  onChange={(e) => setSelectedSubVariant(e.target.value)}>
+                  <option value="">Select</option>
+                  {subVariants.map(sv => <option key={sv.id} value={sv.id}>{sv.name}</option>)}
                 </select>
               </td>
 
-              {/* ITEM NAME */}
               <td className="p-1">
-                <input
-                  type="text"
-                  className="border p-1 rounded w-48 text-sm"
-                  placeholder="Item Name"
+                <input className="border p-1 w-48"
                   value={itemName}
                   onChange={(e) => setItemName(e.target.value)}
                 />
               </td>
 
-              {/* VENDORS */}
               <td className="p-1 w-64">
                 <Select
                   isMulti
-                  options={vendorList.map((v) => ({
+                  options={vendorList.map(v => ({
                     value: v.vendor_id,
-                    label: v.vendor_name,
+                    label: v.vendor_name
                   }))}
-                  value={selectedVendors.map((v) => ({
+                  value={selectedVendors.map(v => ({
                     value: v.vendor_id,
-                    label: v.vendor_name,
+                    label: v.vendor_name
                   }))}
-                  onChange={(selected: any) =>
-                    setSelectedVendors(
-                      (selected || []).map((s: any) => ({
-                        vendor_id: s.value,
-                        vendor_name: s.label,
-                      }))
-                    )
-                  }
-                  placeholder="Select Vendors"
-                  menuPortalTarget={document.body}
+                  onChange={(s: any) =>
+                    setSelectedVendors((s || []).map((x: any) => ({
+                      vendor_id: x.value,
+                      vendor_name: x.label
+                    }))
+  )}
                 />
               </td>
 
-              {/* ACTION */}
               <td className="p-1">
                 <button
-                  className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 text-sm"
+                  className="bg-indigo-600 text-white px-3 py-1 rounded"
                   onClick={handleAddItem}
                 >
                   Add
@@ -953,6 +236,140 @@ export default function AddItem() {
           </tbody>
         </table>
       </div>
-    </div>
+
+      {/* ================= MOBILE VIEW ================= */}
+     {/* ================= MOBILE VIEW ================= */}
+<div className="block md:hidden bg-white p-4 rounded shadow space-y-4 text-sm">
+
+  {/* ROOT */}
+  <div>
+    <label className="block mb-1 font-medium">Root</label>
+    <select
+      className="border p-2 w-full rounded"
+      value={selectedRoot}
+      onChange={(e) => {
+        setSelectedRoot(e.target.value);
+        fetchCategories(e.target.value);
+      }}
+    >
+      <option value="">Select</option>
+      {roots.map(r => (
+        <option key={r.id} value={r.id}>{r.name}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* CATEGORY */}
+  <div>
+    <label className="block mb-1 font-medium">Category</label>
+    <select
+      className="border p-2 w-full rounded"
+      value={selectedCategory}
+      onChange={(e) => {
+        setSelectedCategory(e.target.value);
+        fetchProducts(e.target.value);
+      }}
+    >
+      <option value="">Select</option>
+      {categories.map(c => (
+        <option key={c.id} value={c.id}>{c.name}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* PRODUCT */}
+  <div>
+    <label className="block mb-1 font-medium">Product</label>
+    <select
+      className="border p-2 w-full rounded"
+      value={selectedProduct}
+      onChange={(e) => {
+        setSelectedProduct(e.target.value);
+        fetchVariants(e.target.value);
+      }}
+    >
+      <option value="">Select</option>
+      {products.map(p => (
+        <option key={p.id} value={p.id}>{p.name}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* VARIANT */}
+  <div>
+    <label className="block mb-1 font-medium">Variant</label>
+    <select
+      className="border p-2 w-full rounded"
+      value={selectedVariant}
+      onChange={(e) => {
+        setSelectedVariant(e.target.value);
+        fetchSubVariants(e.target.value);
+      }}
+    >
+      <option value="">Select</option>
+      {variants.map(v => (
+        <option key={v.id} value={v.id}>{v.name}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* SUB VARIANT */}
+  <div>
+    <label className="block mb-1 font-medium">Sub Variant</label>
+    <select
+      className="border p-2 w-full rounded"
+      value={selectedSubVariant}
+      onChange={(e) => setSelectedSubVariant(e.target.value)}
+    >
+      <option value="">Select</option>
+      {subVariants.map(sv => (
+        <option key={sv.id} value={sv.id}>{sv.name}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* ITEM NAME */}
+  <div>
+    <label className="block mb-1 font-medium">Item Name</label>
+    <input
+      className="border p-2 w-full rounded"
+      value={itemName}
+      onChange={(e) => setItemName(e.target.value)}
+    />
+  </div>
+
+  {/* VENDORS */}
+  <div>
+    <label className="block mb-1 font-medium">Vendors</label>
+    <Select
+      isMulti
+      options={vendorList.map(v => ({
+        value: v.vendor_id,
+        label: v.vendor_name,
+      }))}
+      value={selectedVendors.map(v => ({
+        value: v.vendor_id,
+        label: v.vendor_name,
+      }))}
+      onChange={(s: any) =>
+        setSelectedVendors((s || []).map((x: any) => ({
+          vendor_id: x.value,
+          vendor_name: x.label,
+        }))
+      )}
+    />
+  </div>
+
+  {/* ACTION */}
+  <button
+    className="w-full bg-indigo-600 text-white py-2 rounded"
+    onClick={handleAddItem}
+  >
+    Add
+  </button>
+
+</div>
+</div>
+
   );
 }
