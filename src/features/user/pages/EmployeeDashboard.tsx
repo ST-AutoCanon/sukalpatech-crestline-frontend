@@ -48,7 +48,7 @@ export default function EmployeeDashboard() {
       <div className="flex-1 flex flex-col">
         <TopNav departmentNames={departmentNames} />
 
-        <main className="flex-1  overflow-auto">
+        <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
       </div>
