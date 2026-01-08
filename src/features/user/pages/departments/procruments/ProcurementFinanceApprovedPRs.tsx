@@ -128,7 +128,7 @@ export default function SubmittedFinanceRequestsPage({ onClose }) {
 
   const submitUpdate = async () => {
     if (!selectedPR || !newStatus) {
-      alert("Please select finance status");
+      alert("Please select Procurement status");
       return;
     }
 
@@ -150,7 +150,7 @@ export default function SubmittedFinanceRequestsPage({ onClose }) {
       payload
     );
 
-    alert("Finance PR Updated");
+    alert("Procurement PR Updated");
     setModalOpen(false);
     onClose();
     fetchApprovedRequests();

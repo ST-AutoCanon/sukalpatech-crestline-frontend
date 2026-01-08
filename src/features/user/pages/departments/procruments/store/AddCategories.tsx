@@ -58,15 +58,7 @@ export default function AddCategories() {
   const [subVariants, setSubVariants] = useState<SubVariant[]>([]);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<
-    {
-      rootName: string;
-      categoryName: string;
-      productName: string;
-      variantName: string;
-      subVariantName: string;
-    }[]
-  >([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
 
   useEffect(() => {
     fetchRoots();
@@ -119,12 +111,10 @@ export default function AddCategories() {
   const addCategory = async () => {
     if (!selectedRoot || !categoryName)
       return alert("Select root and enter category name");
-
     await axios.post(`${API_BASE}/category`, {
       name: categoryName,
       root_category_id: selectedRoot,
     });
-
     setCategoryName("");
     fetchCategories(selectedRoot);
   };
@@ -132,12 +122,10 @@ export default function AddCategories() {
   const addProduct = async () => {
     if (!selectedCategory || !productName)
       return alert("Select category and enter product name");
-
     await axios.post(`${API_BASE}/product`, {
       name: productName,
       category_id: selectedCategory,
     });
-
     setProductName("");
     fetchProducts(selectedCategory);
   };
@@ -145,25 +133,21 @@ export default function AddCategories() {
   const addVariant = async () => {
     if (!selectedProduct || !variantName)
       return alert("Select product and enter variant name");
-
     await axios.post(`${API_BASE}/variant`, {
       name: variantName,
       product_id: selectedProduct,
     });
-
     setVariantName("");
     fetchVariants(selectedProduct);
   };
 
   const addSubVariant = async () => {
     if (!selectedVariant || !subVariantName)
-      return alert("Select variant and enter sub-variant name");
-
+      return alert("Select variant and enter subvariant name");
     await axios.post(`${API_BASE}/sub-variant`, {
       name: subVariantName,
       variant_id: selectedVariant,
     });
-
     setSubVariantName("");
     fetchSubVariants(selectedVariant);
   };

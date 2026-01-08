@@ -1,5 +1,7 @@
 
 
+
+
 import { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -108,6 +110,8 @@ export default function SubmittedRequestsPage() {
       setRequests(res.data.data || []);
     });
   }, []);
+
+  /* ================= HANDLERS ================= */
 
   const openPR = (pr: FeasibilityPR) => {
     setSelectedPR(pr);
@@ -356,3 +360,5 @@ export default function SubmittedRequestsPage() {
     </div>
   );
 }
+
+
