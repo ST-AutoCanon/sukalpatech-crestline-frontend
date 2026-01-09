@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Select from "react-select";
@@ -8,31 +6,22 @@ interface RootCategory {
   id: string;
   name: string;
 }
-
 interface Category {
   id: string;
   name: string;
-  root_category_id: string;
 }
-
 interface Product {
   id: string;
   name: string;
-  category_id: string;
 }
-
 interface Variant {
   id: string;
   name: string;
-  product_id: string;
 }
-
 interface SubVariant {
   id: string;
   name: string;
-  variant_id: string;
 }
-
 interface Vendor {
   vendor_id: number;
   vendor_name: string;
@@ -57,14 +46,21 @@ export default function AddItem() {
   const [selectedVendors, setSelectedVendors] = useState<Vendor[]>([]);
   const [vendorList, setVendorList] = useState<Vendor[]>([]);
 
+  const [search, setSearch] = useState("");
+  const [items, setItems] = useState<any[]>([]);
+
   useEffect(() => {
     fetchRoots();
     fetchVendors();
   }, []);
 
   const fetchVendors = async () => {
-    const res = await axios.get(`${API_BASE}/vendor/vendors`);
-    setVendorList(res.data?.data || []);
+    try {
+      const res = await axios.get(`${API_BASE}/vendor/vendors`);
+      setVendorList(Array.isArray(res.data?.data) ? res.data.data : []);
+    } catch {
+      setVendorList([]);
+    }
   };
 
   const fetchRoots = async () => {
@@ -73,9 +69,7 @@ export default function AddItem() {
   };
 
   const fetchCategories = async (rootId: string) => {
-    const res = await axios.get(
-      `${API_BASE}/categories/list?root_id=${rootId}`
-    );
+    const res = await axios.get(`${API_BASE}/categories/list?root_id=${rootId}`);
     setCategories(res.data.map((c: any) => ({ ...c, id: String(c.id) })));
   };
 
@@ -101,8 +95,10 @@ export default function AddItem() {
   };
 
   const handleAddItem = async () => {
-    if (!selectedRoot || !itemName)
-      return alert("Root category and item name required");
+    if (!selectedRoot || !itemName) {
+      alert("Root category and item name required");
+      return;
+    }
 
     await axios.post(`${API_BASE}/items/items`, {
       item_name: itemName,
@@ -115,261 +111,181 @@ export default function AddItem() {
     });
 
     alert("Item added successfully");
+
     setItemName("");
     setSelectedVendors([]);
+    setSelectedRoot("");
+    setSelectedCategory("");
+    setSelectedProduct("");
+    setSelectedVariant("");
+    setSelectedSubVariant("");
+    setCategories([]);
+    setProducts([]);
+    setVariants([]);
+    setSubVariants([]);
+  };
+
+  const handleSearch = async () => {
+    if (!search) return;
+    const res = await axios.get(`${API_BASE}/items/search?query=${search}`);
+    setItems(res.data?.data || []);
+  };
+
+  const getVendorName = (id: number) => {
+    const v = vendorList.find((x) => x.vendor_id === id);
+    return v ? v.vendor_name : `Vendor ${id}`;
   };
 
   return (
-    <div className="p-4 md:p-10 bg-gray-100 min-h-screen text-black">
-      <h1 className="text-2xl font-bold mb-4">Add Item</h1>
+    <div className="w-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto space-y-8">
 
-      {/* ================= DESKTOP TABLE ================= */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="min-w-[1300px] bg-white rounded shadow text-sm">
-          <thead>
-            <tr className="bg-gray-200 text-left">
-              <th className="p-2">Root</th>
-              <th className="p-2">Category</th>
-              <th className="p-2">Product</th>
-              <th className="p-2">Variant</th>
-              <th className="p-2">Sub Variant</th>
-              <th className="p-2">Item</th>
-              <th className="p-2">Vendors</th>
-              <th className="p-2">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="p-1">
-                <select className="border p-1 w-36"
-                  value={selectedRoot}
-                  onChange={(e) => {
-                    setSelectedRoot(e.target.value);
-                    fetchCategories(e.target.value);
-                  }}>
-                  <option value="">Select</option>
-                  {roots.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                </select>
-              </td>
+        {/* ADD ITEM */}
+        <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20">
+          <h1 className="text-xl font-semibold text-white mb-6">Add Item</h1>
 
-              <td className="p-1">
-                <select className="border p-1 w-36"
-                  value={selectedCategory}
-                  onChange={(e) => {
-                    setSelectedCategory(e.target.value);
-                    fetchProducts(e.target.value);
-                  }}>
-                  <option value="">Select</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </td>
+          {/* DROPDOWNS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-black">
+            <select className="p-2 rounded bg-white" value={selectedRoot}
+              onChange={(e) => {
+                setSelectedRoot(e.target.value);
+                setSelectedCategory("");
+                setSelectedProduct("");
+                setSelectedVariant("");
+                setSelectedSubVariant("");
+                fetchCategories(e.target.value);
+              }}>
+              <option value="">Select Root Category</option>
+              {roots.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+            </select>
 
-              <td className="p-1">
-                <select className="border p-1 w-36"
-                  value={selectedProduct}
-                  onChange={(e) => {
-                    setSelectedProduct(e.target.value);
-                    fetchVariants(e.target.value);
-                  }}>
-                  <option value="">Select</option>
-                  {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
-              </td>
+            <select className="p-2 rounded bg-white" value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setSelectedProduct("");
+                setSelectedVariant("");
+                setSelectedSubVariant("");
+                fetchProducts(e.target.value);
+              }}>
+              <option value="">Select Category</option>
+              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
 
-              <td className="p-1">
-                <select className="border p-1 w-36"
-                  value={selectedVariant}
-                  onChange={(e) => {
-                    setSelectedVariant(e.target.value);
-                    fetchSubVariants(e.target.value);
-                  }}>
-                  <option value="">Select</option>
-                  {variants.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-                </select>
-              </td>
+            <select className="p-2 rounded bg-white" value={selectedProduct}
+              onChange={(e) => {
+                setSelectedProduct(e.target.value);
+                setSelectedVariant("");
+                setSelectedSubVariant("");
+                fetchVariants(e.target.value);
+              }}>
+              <option value="">Select Product</option>
+              {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
 
-              <td className="p-1">
-                <select className="border p-1 w-36"
-                  value={selectedSubVariant}
-                  onChange={(e) => setSelectedSubVariant(e.target.value)}>
-                  <option value="">Select</option>
-                  {subVariants.map(sv => <option key={sv.id} value={sv.id}>{sv.name}</option>)}
-                </select>
-              </td>
+            <select className="p-2 rounded bg-white" value={selectedVariant}
+              onChange={(e) => {
+                setSelectedVariant(e.target.value);
+                setSelectedSubVariant("");
+                fetchSubVariants(e.target.value);
+              }}>
+              <option value="">Select Variant</option>
+              {variants.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+            </select>
 
-              <td className="p-1">
-                <input className="border p-1 w-48"
-                  value={itemName}
-                  onChange={(e) => setItemName(e.target.value)}
-                />
-              </td>
+            <select className="p-2 rounded bg-white" value={selectedSubVariant}
+              onChange={(e) => setSelectedSubVariant(e.target.value)}>
+              <option value="">Select Sub Variant</option>
+              {subVariants.map(sv => <option key={sv.id} value={sv.id}>{sv.name}</option>)}
+            </select>
+          </div>
 
-              <td className="p-1 w-64">
-                <Select
-                  isMulti
-                  options={vendorList.map(v => ({
-                    value: v.vendor_id,
-                    label: v.vendor_name
-                  }))}
-                  value={selectedVendors.map(v => ({
-                    value: v.vendor_id,
-                    label: v.vendor_name
-                  }))}
-                  onChange={(s: any) =>
-                    setSelectedVendors((s || []).map((x: any) => ({
-                      vendor_id: x.value,
-                      vendor_name: x.label
-                    }))
-  )}
-                />
-              </td>
+          {/* VENDOR + ITEM */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <Select
+              isMulti
+              options={vendorList.map(v => ({ value: v.vendor_id, label: v.vendor_name }))}
+              value={selectedVendors.map(v => ({ value: v.vendor_id, label: v.vendor_name }))}
+              onChange={(s: any) =>
+                setSelectedVendors((s || []).map((x: any) => ({
+                  vendor_id: x.value,
+                  vendor_name: x.label,
+                })))
+              }
+              placeholder="Select Vendors"
+              menuPortalTarget={document.body}
+            />
 
-              <td className="p-1">
-                <button
-                  className="bg-indigo-600 text-white px-3 py-1 rounded"
-                  onClick={handleAddItem}
-                >
-                  Add
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            <input
+              className="p-2 rounded bg-white text-black"
+              placeholder="Enter Item Name"
+              value={itemName}
+              onChange={(e) => setItemName(e.target.value)}
+            />
+          </div>
+
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={handleAddItem}
+              className="px-6 py-2 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-lg text-white font-semibold"
+            >
+              Add Item
+            </button>
+          </div>
+        </div>
+
+        {/* SEARCH */}
+        <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20">
+          <h1 className="text-xl font-semibold text-white mb-6">Search Item</h1>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <input
+              className="p-2 rounded bg-white text-black"
+              placeholder="Search Item"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <button
+              onClick={handleSearch}
+              className="bg-gradient-to-r from-cyan-400 to-purple-500 rounded text-white"
+            >
+              Search
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-[600px] w-full bg-white rounded">
+              <thead>
+                <tr className="bg-gray-600">
+                  <th className="p-3 border">SI</th>
+                  <th className="p-3 border">Item Code</th>
+                  <th className="p-3 border">Item Name</th>
+                  <th className="p-3 border">Vendors</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, i) => (
+                  <tr key={item.id}>
+                    <td className="p-3 border">{i + 1}</td>
+                    <td className="p-3 border">{item.code}</td>
+                    <td className="p-3 border">{item.name}</td>
+                    <td className="p-3 border">
+                      {item.vendors?.map((v: number) => getVendorName(v)).join(", ") || "—"}
+                    </td>
+                  </tr>
+                ))}
+                {items.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-4 text-center text-gray-400">
+                      No records found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
       </div>
-
-      {/* ================= MOBILE VIEW ================= */}
-     {/* ================= MOBILE VIEW ================= */}
-<div className="block md:hidden bg-white p-4 rounded shadow space-y-4 text-sm">
-
-  {/* ROOT */}
-  <div>
-    <label className="block mb-1 font-medium">Root</label>
-    <select
-      className="border p-2 w-full rounded"
-      value={selectedRoot}
-      onChange={(e) => {
-        setSelectedRoot(e.target.value);
-        fetchCategories(e.target.value);
-      }}
-    >
-      <option value="">Select</option>
-      {roots.map(r => (
-        <option key={r.id} value={r.id}>{r.name}</option>
-      ))}
-    </select>
-  </div>
-
-  {/* CATEGORY */}
-  <div>
-    <label className="block mb-1 font-medium">Category</label>
-    <select
-      className="border p-2 w-full rounded"
-      value={selectedCategory}
-      onChange={(e) => {
-        setSelectedCategory(e.target.value);
-        fetchProducts(e.target.value);
-      }}
-    >
-      <option value="">Select</option>
-      {categories.map(c => (
-        <option key={c.id} value={c.id}>{c.name}</option>
-      ))}
-    </select>
-  </div>
-
-  {/* PRODUCT */}
-  <div>
-    <label className="block mb-1 font-medium">Product</label>
-    <select
-      className="border p-2 w-full rounded"
-      value={selectedProduct}
-      onChange={(e) => {
-        setSelectedProduct(e.target.value);
-        fetchVariants(e.target.value);
-      }}
-    >
-      <option value="">Select</option>
-      {products.map(p => (
-        <option key={p.id} value={p.id}>{p.name}</option>
-      ))}
-    </select>
-  </div>
-
-  {/* VARIANT */}
-  <div>
-    <label className="block mb-1 font-medium">Variant</label>
-    <select
-      className="border p-2 w-full rounded"
-      value={selectedVariant}
-      onChange={(e) => {
-        setSelectedVariant(e.target.value);
-        fetchSubVariants(e.target.value);
-      }}
-    >
-      <option value="">Select</option>
-      {variants.map(v => (
-        <option key={v.id} value={v.id}>{v.name}</option>
-      ))}
-    </select>
-  </div>
-
-  {/* SUB VARIANT */}
-  <div>
-    <label className="block mb-1 font-medium">Sub Variant</label>
-    <select
-      className="border p-2 w-full rounded"
-      value={selectedSubVariant}
-      onChange={(e) => setSelectedSubVariant(e.target.value)}
-    >
-      <option value="">Select</option>
-      {subVariants.map(sv => (
-        <option key={sv.id} value={sv.id}>{sv.name}</option>
-      ))}
-    </select>
-  </div>
-
-  {/* ITEM NAME */}
-  <div>
-    <label className="block mb-1 font-medium">Item Name</label>
-    <input
-      className="border p-2 w-full rounded"
-      value={itemName}
-      onChange={(e) => setItemName(e.target.value)}
-    />
-  </div>
-
-  {/* VENDORS */}
-  <div>
-    <label className="block mb-1 font-medium">Vendors</label>
-    <Select
-      isMulti
-      options={vendorList.map(v => ({
-        value: v.vendor_id,
-        label: v.vendor_name,
-      }))}
-      value={selectedVendors.map(v => ({
-        value: v.vendor_id,
-        label: v.vendor_name,
-      }))}
-      onChange={(s: any) =>
-        setSelectedVendors((s || []).map((x: any) => ({
-          vendor_id: x.value,
-          vendor_name: x.label,
-        }))
-      )}
-    />
-  </div>
-
-  {/* ACTION */}
-  <button
-    className="w-full bg-indigo-600 text-white py-2 rounded"
-    onClick={handleAddItem}
-  >
-    Add
-  </button>
-
-</div>
-</div>
-
+    </div>
   );
 }

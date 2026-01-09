@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState } from "react";
 import FeasibilityPage from "./FeasibilityPage";
 import OthersPage from "./others/others";
