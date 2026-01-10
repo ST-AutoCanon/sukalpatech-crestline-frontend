@@ -73,10 +73,6 @@ export default function AddItem() {
     setRoots(res.data.map((r: any) => ({ ...r, id: String(r.id) })));
   };
 
-  const fetchVendors = async () => {
-    const res = await axios.get(`${API_BASE}/vendor/vendors`);
-    setVendorList(res.data?.data || []);
-  };
 
   const fetchCategories = async (rootId: string) => {
     setSelectedCategory("");
@@ -444,4 +440,3 @@ export default function AddItem() {
     </div>
   );
 }
-
