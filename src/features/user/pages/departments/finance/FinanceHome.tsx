@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState } from "react";
 import FinancePage from "./FinancePage";
 import OthersPage from "./others/others"; // placeholder for other actions

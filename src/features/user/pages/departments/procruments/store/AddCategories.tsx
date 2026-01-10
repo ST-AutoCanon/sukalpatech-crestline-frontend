@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -65,40 +63,60 @@ export default function AddCategories() {
   }, []);
 
   const fetchRoots = async () => {
-    const res = await axios.get(`${API_BASE}/root-category`);
-    setRoots(res.data || []);
+    try {
+      const res = await axios.get(`${API_BASE}/root-category`);
+      setRoots(res.data || []);
+    } catch (err) {
+      console.error("Error fetching roots:", err);
+    }
   };
 
   const fetchCategories = async (rootId: number) => {
-    const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`);
-    setCategories(res.data || []);
-    setProducts([]);
-    setVariants([]);
-    setSubVariants([]);
+    try {
+      const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`);
+      setCategories(res.data || []);
+      setProducts([]);
+      setVariants([]);
+      setSubVariants([]);
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
   };
 
   const fetchProducts = async (categoryId: number) => {
-    const res = await axios.get(
-      `${API_BASE}/products?category_id=${categoryId}`
-    );
-    setProducts(res.data || []);
-    setVariants([]);
-    setSubVariants([]);
+    try {
+      const res = await axios.get(
+        `${API_BASE}/products?category_id=${categoryId}`
+      );
+      setProducts(res.data || []);
+      setVariants([]);
+      setSubVariants([]);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    }
   };
 
   const fetchVariants = async (productId: number) => {
-    const res = await axios.get(
-      `${API_BASE}/variants?product_id=${productId}`
-    );
-    setVariants(res.data || []);
-    setSubVariants([]);
+    try {
+      const res = await axios.get(
+        `${API_BASE}/variants?product_id=${productId}`
+      );
+      setVariants(res.data || []);
+      setSubVariants([]);
+    } catch (err) {
+      console.error("Error fetching variants:", err);
+    }
   };
 
   const fetchSubVariants = async (variantId: number) => {
-    const res = await axios.get(
-      `${API_BASE}/sub-variants?variant_id=${variantId}`
-    );
-    setSubVariants(res.data || []);
+    try {
+      const res = await axios.get(
+        `${API_BASE}/sub-variants?variant_id=${variantId}`
+      );
+      setSubVariants(res.data || []);
+    } catch (err) {
+      console.error("Error fetching subvariants:", err);
+    }
   };
 
   const addRootCategory = async () => {
@@ -154,176 +172,225 @@ export default function AddCategories() {
 
   const handleSearch = async () => {
     if (!searchQuery) return setSearchResults([]);
-    const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`);
 
-    const mappedResults = (res.data.data || res.data || []).map((item: any) => ({
-      rootName: item.root_category?.name || "",
-      categoryName: item.category?.name || "",
-      productName: item.product?.name || "",
-      variantName: item.variant?.name || "",
-      subVariantName: item.sub_variant?.name || "",
-    }));
-
-    setSearchResults(mappedResults);
+    try {
+      const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`);
+      const mapped = (res.data.data || res.data || []).map((item: any) => ({
+        root: item.root_category?.name || "",
+        category: item.category?.name || "",
+        product: item.product?.name || "",
+        variant: item.variant?.name || "",
+        subVariant: item.sub_variant?.name || "",
+      }));
+      setSearchResults(mapped);
+    } catch (err) {
+      console.error("Search error:", err);
+    }
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-100 min-h-full text-black">
-      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-6 text-gray-800">
-        Manage Categories, Products & Variants
-      </h1>
+    <div className="w-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] px-2 sm:px-6">
+      <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
 
-      <Section
-        title="Add Root Category"
-        inputValue={rootName}
-        onInputChange={setRootName}
-        buttonLabel="Add Root"
-        onSubmit={addRootCategory}
-      />
+          {/* ROOT */}
+          <div>
+            <p className="text-sm mb-1 text-white">Root Category</p>
+            <input
+              value={rootName}
+              onChange={(e) => setRootName(e.target.value)}
+              className="w-full p-2 rounded text-black bg-white"
+              placeholder="Enter Root Name"
+            />
+            <button
+              onClick={addRootCategory}
+              className="mt-2 w-full py-2 rounded bg-gradient-to-r from-cyan-500 to-purple-500 text-white"
+            >
+              Create Category
+            </button>
+          </div>
 
-      {/* CATEGORY */}
-      <FormSection title="Add Category">
-        <Select
-          placeholder="-- Select Root Category --"
-          value={selectedRoot}
-          options={roots}
-          onChange={(id: number) => {
-            setSelectedRoot(id);
-            fetchCategories(id);
-          }}
-        />
-        <Input value={categoryName} onChange={setCategoryName} placeholder="Category Name" />
-        <Button onClick={addCategory} color="green">Add Category</Button>
-      </FormSection>
+          {/* CATEGORY */}
+          <div>
+            <p className="text-sm mb-1 text-white">Category</p>
+            <select
+              className="w-full p-2 rounded text-black bg-white"
+              value={selectedRoot || ""}
+              onChange={(e) => {
+                const id = Number(e.target.value);
+                setSelectedRoot(id);
+                fetchCategories(id);
+              }}
+            >
+              <option value="">Select Root Category</option>
+              {roots.map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </select>
 
-      {/* PRODUCT */}
-      <FormSection title="Add Product">
-        <Select
-          placeholder="-- Select Category --"
-          value={selectedCategory}
-          options={categories}
-          onChange={(id: number) => {
-            setSelectedCategory(id);
-            fetchProducts(id);
-          }}
-        />
-        <Input value={productName} onChange={setProductName} placeholder="Product Name" />
-        <Button onClick={addProduct} color="blue">Add Product</Button>
-      </FormSection>
+            <div className="flex gap-2 mt-2">
+              <input
+                value={categoryName}
+                onChange={(e) => setCategoryName(e.target.value)}
+                className="w-full p-2 rounded text-black bg-white"
+                placeholder="Category"
+              />
+              <button
+                onClick={addCategory}
+                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500 text-white"
+              >
+                +
+              </button>
+            </div>
+          </div>
 
-      {/* VARIANT */}
-      <FormSection title="Add Variant">
-        <Select
-          placeholder="-- Select Product --"
-          value={selectedProduct}
-          options={products}
-          onChange={(id: number) => {
-            setSelectedProduct(id);
-            fetchVariants(id);
-          }}
-        />
-        <Input value={variantName} onChange={setVariantName} placeholder="Variant Name" />
-        <Button onClick={addVariant} color="yellow">Add Variant</Button>
-      </FormSection>
+          {/* PRODUCT */}
+          <div>
+            <p className="text-sm mb-1 text-white">Product</p>
+            <select
+              className="w-full p-2 rounded text-black bg-white"
+              value={selectedCategory || ""}
+              onChange={(e) => {
+                const id = Number(e.target.value);
+                setSelectedCategory(id);
+                fetchProducts(id);
+              }}
+            >
+              <option>Select Category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
 
-      {/* SUB VARIANT */}
-      <FormSection title="Add Sub Variant">
-        <Select
-          placeholder="-- Select Variant --"
-          value={selectedVariant}
-          options={variants}
-          onChange={(id: number) => {
-            setSelectedVariant(id);
-            fetchSubVariants(id);
-          }}
-        />
-        <Input value={subVariantName} onChange={setSubVariantName} placeholder="Sub Variant Name" />
-        <Button onClick={addSubVariant} color="purple">Add Sub Variant</Button>
-      </FormSection>
+            <div className="flex gap-2 mt-2">
+              <input
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                className="w-full p-2 rounded text-black bg-white"
+                placeholder="Product"
+              />
+              <button
+                onClick={addProduct}
+                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500 text-white"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* VARIANT */}
+          <div>
+            <p className="text-sm mb-1 text-white">Variant</p>
+            <select
+              className="w-full p-2 rounded text-black bg-white"
+              value={selectedProduct || ""}
+              onChange={(e) => {
+                const id = Number(e.target.value);
+                setSelectedProduct(id);
+                fetchVariants(id);
+              }}
+            >
+              <option>Select Product</option>
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+
+            <div className="flex gap-2 mt-2">
+              <input
+                value={variantName}
+                onChange={(e) => setVariantName(e.target.value)}
+                className="w-full p-2 rounded text-black bg-white"
+                placeholder="Variant"
+              />
+              <button
+                onClick={addVariant}
+                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500 text-white"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* SUB VARIANT */}
+          <div>
+            <p className="text-sm mb-1 text-white">Sub Variant</p>
+            <select
+              className="w-full p-2 rounded text-black bg-white"
+              value={selectedVariant || ""}
+              onChange={(e) => {
+                const id = Number(e.target.value);
+                setSelectedVariant(id);
+                fetchSubVariants(id);
+              }}
+            >
+              <option>Select Variant</option>
+              {variants.map((v) => (
+                <option key={v.id} value={v.id}>{v.name}</option>
+              ))}
+            </select>
+
+            <div className="flex gap-2 mt-2">
+              <input
+                value={subVariantName}
+                onChange={(e) => setSubVariantName(e.target.value)}
+                className="w-full p-2 rounded text-black bg-white"
+                placeholder="Sub Variant"
+              />
+              <button
+                onClick={addSubVariant}
+                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500 text-white"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* SEARCH */}
-      <div className="mb-6 p-4 bg-white rounded shadow">
-        <h2 className="font-semibold mb-2">Search</h2>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Input value={searchQuery} onChange={setSearchQuery} placeholder="Search..." />
-          <Button onClick={handleSearch} color="gray">Search</Button>
-        </div>
+      <div className="flex flex-col sm:flex-row sm:justify-end gap-2 mb-4">
+        <input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="p-2 rounded text-black w-full sm:w-1/3 bg-white"
+          placeholder="Search"
+        />
+        <button
+          onClick={handleSearch}
+          className="px-6 py-2 rounded bg-gradient-to-r from-sky-500 to-purple-500 text-white"
+        >
+          🔍 Search
+        </button>
+      </div>
 
-        <div className="mt-4">
-          {searchResults.map((r, i) => (
-            <div key={i} className="border p-3 rounded mb-2 bg-gray-50 text-sm sm:text-base">
-              <p><strong>Root:</strong> {r.rootName}</p>
-              <p><strong>Category:</strong> {r.categoryName}</p>
-              <p><strong>Product:</strong> {r.productName}</p>
-              <p><strong>Variant:</strong> {r.variantName}</p>
-              <p><strong>Sub Variant:</strong> {r.subVariantName}</p>
-            </div>
-          ))}
-        </div>
+      {/* TABLE */}
+      <div className="bg-white rounded text-black overflow-x-auto">
+        <table className="min-w-[800px] w-full">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-2 text-left">SI</th>
+              <th className="p-2 text-left">Root Category</th>
+              <th className="p-2 text-left">Category</th>
+              <th className="p-2 text-left">Product</th>
+              <th className="p-2 text-left">Variant</th>
+              <th className="p-2 text-left">Sub Variant</th>
+            </tr>
+          </thead>
+          <tbody>
+            {searchResults.map((r, i) => (
+              <tr key={i} className="border-t">
+                <td className="p-2">{i + 1}</td>
+                <td className="p-2">{r.root}</td>
+                <td className="p-2">{r.category}</td>
+                <td className="p-2">{r.product}</td>
+                <td className="p-2">{r.variant}</td>
+                <td className="p-2">{r.subVariant}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
-
-/* ---------- Reusable UI ---------- */
-
-const FormSection = ({ title, children }: any) => (
-  <div className="mb-6 p-4 bg-white rounded shadow">
-    <h2 className="font-semibold mb-2">{title}</h2>
-    <div className="flex flex-col sm:flex-row gap-2">{children}</div>
-  </div>
-);
-
-const Select = ({ placeholder, value, options, onChange }: any) => (
-  <select
-    className="border p-2 rounded w-full sm:w-auto"
-    value={value || ""}
-    onChange={(e) => onChange(Number(e.target.value))}
-  >
-    <option value="">{placeholder}</option>
-    {options.map((o: any) => (
-      <option key={o.id} value={o.id}>
-        {o.name}
-      </option>
-    ))}
-  </select>
-);
-
-const Input = ({ value, onChange, placeholder }: any) => (
-  <input
-    type="text"
-    className="border p-2 rounded w-full sm:flex-1"
-    placeholder={placeholder}
-    value={value}
-    onChange={(e) => onChange(e.target.value)}
-  />
-);
-
-const Button = ({ children, onClick, color }: any) => {
-  const colors: any = {
-    green: "bg-green-600 hover:bg-green-700",
-    blue: "bg-blue-600 hover:bg-blue-700",
-    yellow: "bg-yellow-600 hover:bg-yellow-700",
-    purple: "bg-purple-600 hover:bg-purple-700",
-    gray: "bg-gray-600 hover:bg-gray-700",
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      className={`${colors[color]} text-white px-4 py-2 rounded w-full sm:w-auto`}
-    >
-      {children}
-    </button>
-  );
-};
-
-const Section = ({ title, inputValue, onInputChange, buttonLabel, onSubmit }: any) => (
-  <div className="mb-6 p-4 bg-white rounded shadow">
-    <h2 className="font-semibold mb-2">{title}</h2>
-    <div className="flex flex-col sm:flex-row gap-2">
-      <Input value={inputValue} onChange={onInputChange} placeholder={title} />
-      <Button onClick={onSubmit} color="blue">{buttonLabel}</Button>
-    </div>
-  </div>
-);

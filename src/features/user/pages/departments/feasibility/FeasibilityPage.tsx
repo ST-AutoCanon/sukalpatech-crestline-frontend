@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import UpdateFeasibility from "./UpdateFeasibility";
 import ViewFeasibilityRequests from "./ViewFeasibilityReq";
@@ -15,8 +14,8 @@ const FeasibilityPage: React.FC = () => {
           <h2
             onClick={() => setActiveTab("view")}
             className={`cursor-pointer text-lg font-semibold inline-block pb-1 ${activeTab === "view"
-                ? "text-white border-b-2 border-white"
-                : "text-gray-500"
+              ? "text-white border-b-2 border-white"
+              : "text-gray-500"
               }`}
           >
             All Feasibility
