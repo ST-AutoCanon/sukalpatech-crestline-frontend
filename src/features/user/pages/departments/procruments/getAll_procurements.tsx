@@ -1,7 +1,3 @@
-
-
-
-
 import { useEffect, useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
 
@@ -28,8 +24,9 @@ type VendorAttachment = {
 };
 
 type Vendor = {
+  comment: any;
   id: number;
-  vendor_id: number;
+  vendor_id: string;
   status: string;
   unit_price: number;
   total_price: number;
@@ -67,13 +64,58 @@ export default function ViewPRPage() {
   const [showItems, setShowItems] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showStatuses, setShowStatuses] = useState(true);
+  const [vendorMap, setVendorMap] = useState<Record<number, string>>({});
+  const [departmentMap, setDepartmentMap] = useState<Record<string, string>>(
+    {}
+  );
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
+      .then((res) => res.json())
+      .then((data) => {
+        const vendors = data?.data || [];
+
+        const map: Record<string, string> = {};
+        vendors.forEach((v: any) => {
+          map[String(v.vendor_id)] = v.vendor_name; // ✅ CORRECT KEY
+        });
+
+        console.log("Vendor Map:", map); // should show { "1": "ABC Supplies" }
+
+        setVendorMap(map);
+      })
+      .catch((err) => console.error("Vendor fetch error", err));
+  }, []);
+
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`)
+      .then((res) => res.json())
+      .then((data) => {
+        const departments = data?.data || [];
+
+        const map: Record<string, string> = {};
+        departments.forEach((d: any) => {
+          map[String(d.department_id)] = d.name; // ✅ CORRECT KEY
+        });
+
+        console.log("Department Map:", map);
+        setDepartmentMap(map);
+      })
+      .catch((err) => console.error("Department fetch error", err));
+  }, []);
+
+
 
   const toggleItemsSection = () => {
     setShowItems((prev) => !prev);
   };
 
   useEffect(() => {
-fetch(`${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`)
+    fetch(
+      `${import.meta.env.VITE_BACKEND_URL
+      }/api/new-procurement/purchase-requests`
+    )
       .then((res) => res.json())
       .then((data) => {
         setPrs(data?.data || []);
@@ -89,12 +131,13 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests
     return <div className="text-center p-6 text-gray-600">Loading PRs...</div>;
   }
 
-return (
+  return (
     <>
       {/* PR Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {prs.map((pr) => {
-          const latestStatusObj = pr.department_statuses?.[pr.department_statuses.length - 1];
+          const latestStatusObj =
+            pr.department_statuses?.[pr.department_statuses.length - 1];
           const status = latestStatusObj?.department_status || "Draft";
 
           return (
@@ -108,13 +151,22 @@ return (
               </h3>
 
               <div className="space-y-1 text-sm flex-1">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Description</span>
-                  <span className="font-medium text-gray-700 truncate">{pr.description}</span>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-400 shrink-0">Description</span>
+
+                  <span
+                    title={pr.description}
+                    className="font-medium text-gray-700 max-w-[65%] overflow-hidden text-ellipsis whitespace-nowrap"
+                  >
+                    {pr.description || "-"}
+                  </span>
                 </div>
+
                 <div className="flex justify-between">
                   <span className="text-gray-400">Priority</span>
-                  <span className="font-medium text-gray-700">{pr.priority}</span>
+                  <span className="font-medium text-gray-700">
+                    {pr.priority}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Status</span>
@@ -122,7 +174,10 @@ return (
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Department</span>
-                  <span className="font-medium text-gray-700 truncate">{pr.department}</span>
+                  <span className="font-medium text-gray-700 truncate">
+                    {/* {pr.department} */}
+                    {departmentMap[String(pr.department)] ?? pr.department}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Delivery Date</span>
@@ -148,28 +203,84 @@ return (
               <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
                 View Procurement Page
               </h2>
-              <button onClick={() => setActivePR(null)} className="text-gray-500 hover:text-gray-700">
+              <button
+                onClick={() => setActivePR(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
                 <X size={24} />
               </button>
             </div>
 
             {/* PR Info */}
-            <div className="bg-gray-100 rounded-lg p-3 md:p-4 mb-4 overflow-x-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 md:gap-4 text-sm font-medium mb-2">
-                <span>Description</span>
-                <span>Priority</span>
-                <span>Required Delivery Date</span>
-                <span>Department</span>
-                <span>Remarks</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 md:gap-4">
-                <div className="bg-white border rounded px-2 py-1">{activePR.description || "-"}</div>
-                <div className="bg-white border rounded px-2 py-1">{activePR.priority || "-"}</div>
-                <div className="bg-white border rounded px-2 py-1">
-                  {activePR.required_date ? new Date(activePR.required_date).toLocaleDateString() : "-"}
+            <div className="bg-gray-100 rounded-lg p-3 md:p-4 mb-4">
+              {/* Mobile view */}
+              <div className="space-y-3 sm:hidden text-sm">
+                <div>
+                  <div className="text-gray-900">Description</div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.description || "-"}
+                  </div>
                 </div>
-                <div className="bg-white border rounded px-2 py-1">{activePR.department || "-"}</div>
-                <div className="bg-white border rounded px-2 py-1">{activePR.remarks || "-"}</div>
+
+                <div>
+                  <div className="text-gray-900">Priority</div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.priority || "-"}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-gray-900">Required Delivery Date</div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.required_date
+                      ? new Date(activePR.required_date).toLocaleDateString()
+                      : "-"}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-gray-900">Department</div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.department || "-"}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-gray-900">Remarks</div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.remarks || "-"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop view */}
+              <div className="hidden sm:block overflow-x-auto">
+                <div className="grid grid-cols-5 gap-4 text-sm font-medium mb-2">
+                  <span>Description</span>
+                  <span>Priority</span>
+                  <span>Required Delivery Date</span>
+                  <span>Department</span>
+                  <span>Remarks</span>
+                </div>
+                <div className="grid grid-cols-5 gap-4">
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.description || "-"}
+                  </div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.priority || "-"}
+                  </div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.required_date
+                      ? new Date(activePR.required_date).toLocaleDateString()
+                      : "-"}
+                  </div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.department || "-"}
+                  </div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.remarks || "-"}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -187,80 +298,174 @@ return (
             {showItems && (
               <div className="space-y-4">
                 {activePR.items?.map((item) => (
-                  <div key={item.id} className="bg-gray-100 rounded-lg p-3 md:p-4 w-full overflow-x-auto">
+                  <div
+                    key={item.id}
+                    className="bg-gray-100 rounded-lg p-3 md:p-4 w-full overflow-x-auto"
+                  >
                     {/* Item header */}
-                    <div className="flex flex-col md:flex-row md:items-center md:gap-6 gap-2 mb-3 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-3 text-sm">
+                      {/* Item Code */}
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">Item Code</span>
-                        <div className="bg-white border rounded px-2 py-1">{item.item_code || "-"}</div>
+                        <span className="font-medium w-24 shrink-0">
+                          Item Code
+                        </span>
+                        <div className="bg-white border rounded px-4 py-1 flex-1">
+                          {item.item_code || "-"}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-1">
-                        <span className="font-medium">Description</span>
-                        <div className="bg-white border rounded px-2 py-1 w-full">{item.item_name || "-"}</div>
-                      </div>
+
+                      {/* Description */}
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">Qty</span>
-                        <div className="bg-white border rounded px-2 py-1">{item.quantity_required ?? "-"}</div>
+                        <span className="font-medium w-24 shrink-0">
+                          Description
+                        </span>
+                        <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
+                          {item.item_name || "-"}
+                        </div>
+                      </div>
+
+                      {/* Qty */}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium w-24 shrink-0">Qty</span>
+                        <div className="bg-white border rounded px-4 py-1 flex-1">
+                          {item.quantity_required ?? "-"}
+                        </div>
                       </div>
                     </div>
 
                     {/* Vendors */}
                     <div className="overflow-x-auto">
-                       {item.vendors?.map((vendor, index) => (
-                        <div key={vendor.id} className="mb-4 overflow-x-auto min-w-[500px] sm:min-w-[700px]">
-                          {index === 0 && (
-                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 text-xs font-medium mb-1 text-gray-700">
-                              <span>Vendor</span>
-                              <span>Upload Quotation</span>
-                              <span>Unit Price</span>
-                              <span className="hidden sm:block">Total Price</span>
-                              <span className="hidden sm:block">Quotation Validity</span>
-                              <span className="hidden sm:block">Comments</span>
-                            </div>
-                          )}
-
-                          <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 text-sm">
-                            <select className="bg-white border rounded px-2 py-1 w-full">
-                              <option>{vendor.vendor_id || "-"}</option>
-                            </select>
-                            <input
-                              type="text"
-                              value={vendor.attachments?.[0]?.file_name || ""}
-                              readOnly
-                              className="bg-white border rounded px-2 py-1 w-full"
-                            />
-                            <input
-                              type="text"
-                              value={vendor.unit_price ?? ""}
-                              readOnly
-                              className="bg-white border rounded px-2 py-1 w-full"
-                            />
-                            <input
-                              type="text"
-                              value={vendor.total_price ?? ""}
-                              readOnly
-                              className="bg-white border rounded px-2 py-1 w-full hidden sm:block"
-                            />
-                            <input
-                              type="text"
-                              value={
-                                vendor.quotation_validity_date
-                                  ? new Date(vendor.quotation_validity_date).toLocaleDateString()
-                                  : ""
-                              }
-                              readOnly
-                              className="bg-white border rounded px-2 py-1 w-full hidden sm:block"
-                            />
-                            <input
-                              type="text"
-                              value={vendor.comments?.map((c) => c.comment).join(", ") || ""}
-                              readOnly
-                              className="bg-white border rounded px-2 py-1 w-full hidden sm:block"
-                            />
+                      {item.vendors?.length > 0 && (
+                        <>
+                          {/* ===== DESKTOP LABELS ===== */}
+                          <div className="hidden sm:grid sm:grid-cols-8 gap-4 text-xs font-medium mb-1 text-gray-700">
+                            <span>Vendor</span>
+                            <span>Upload Quotation</span>
+                            <span>Unit Price</span>
+                            <span>Total Price</span>
+                            <span>Quotation Validity</span>
+                            <span>Comments</span>
+                            <span>Feasibility Comment</span>
+                            <span>Status</span>
                           </div>
-                        </div>
-                      ))}
+
+                          {/* ===== DESKTOP VALUES ===== */}
+                          {item.vendors.map((vendor) => {
+                            const feasibilityComment =
+                              vendor.comments?.length > 0
+                                ? vendor.comments[vendor.comments.length - 1].comment
+                                : "";
+
+                            const existingComments =
+                              vendor.comments?.slice(0, -1).map((c) => c.comment).join(", ") || "";
+
+                            return (
+                              <div
+                                key={vendor.id}
+                                className="hidden sm:grid sm:grid-cols-8 gap-4 text-sm mb-2"
+                              >
+                                <input
+                                  readOnly
+                                  value={vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id}
+                                  className="bg-white border rounded px-2 py-1 w-full"
+                                />
+
+                                <input
+                                  readOnly
+                                  value={vendor.attachments?.[0]?.file_name || "-"}
+                                  className="bg-white border rounded px-2 py-1 w-full"
+                                />
+
+                                <input
+                                  readOnly
+                                  value={vendor.unit_price ?? "-"}
+                                  className="bg-white border rounded px-2 py-1 w-full"
+                                />
+
+                                <input
+                                  readOnly
+                                  value={vendor.total_price ?? "-"}
+                                  className="bg-white border rounded px-2 py-1 w-full"
+                                />
+
+                                <input
+                                  readOnly
+                                  value={
+                                    vendor.quotation_validity_date
+                                      ? new Date(vendor.quotation_validity_date).toLocaleDateString()
+                                      : "-"
+                                  }
+                                  className="bg-white border rounded px-2 py-1 w-full"
+                                />
+
+                                <input
+                                  readOnly
+                                  value={existingComments}
+                                  className="bg-white border rounded px-2 py-1 w-full"
+                                />
+
+                                <input
+                                  readOnly
+                                  value={feasibilityComment}
+                                  className="bg-white border rounded px-2 py-1 w-full"
+                                />
+
+                                <input
+                                  readOnly
+                                  value={vendor.status || "-"}
+                                  className="bg-white border rounded px-2 py-1 w-full"
+                                />
+                              </div>
+                            );
+                          })}
+
+                          {/* ===== MOBILE VIEW ===== */}
+                          {item.vendors.map((vendor) => {
+                            const feasibilityComment =
+                              vendor.comments?.length > 0
+                                ? vendor.comments[vendor.comments.length - 1].comment
+                                : "";
+
+                            const existingComments =
+                              vendor.comments?.slice(0, -1).map((c) => c.comment).join(", ") || "";
+
+                            return (
+                              <div
+                                key={vendor.id}
+                                className="sm:hidden flex gap-4 overflow-x-auto mb-4"
+                              >
+                                {[
+                                  ["Vendor", vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id],
+                                  ["Upload Quotation", vendor.attachments?.[0]?.file_name || "-"],
+                                  ["Unit Price", vendor.unit_price ?? "-"],
+                                  ["Total Price", vendor.total_price ?? "-"],
+                                  [
+                                    "Quotation Validity",
+                                    vendor.quotation_validity_date
+                                      ? new Date(vendor.quotation_validity_date).toLocaleDateString()
+                                      : "-",
+                                  ],
+                                  ["Comments", existingComments],
+                                  ["Feasibility Comment", feasibilityComment],
+                                  ["Status", vendor.status || "-"],
+                                ].map(([label, value], idx) => (
+                                  <div key={idx} className="flex flex-col min-w-[150px]">
+                                    <span className="text-gray-500 text-xs">{label}</span>
+                                    <input
+                                      readOnly
+                                      value={value}
+                                      className="bg-white border rounded px-2 py-1 w-full"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })}
+                        </>
+                      )}
                     </div>
+
+
                   </div>
                 ))}
               </div>
@@ -292,11 +497,13 @@ return (
                             Status: {ds.department_status}
                           </span>
                           <span className="font-medium text-gray-800">
-                            Arjun • {new Date(ds.updated_at).toLocaleDateString()}
+                            Arjun •{" "}
+                            {new Date(ds.updated_at).toLocaleDateString()}
                           </span>
                         </div>
                         <div className="text-xs text-gray-600">
-                          <span className="font-medium">Comment:</span> {ds.department_comment}
+                          <span className="font-medium">Comment:</span>{" "}
+                          {ds.department_comment}
                         </div>
                       </div>
                     ))}
@@ -307,7 +514,7 @@ return (
           </div>
         </div>
       )}
-
     </>
   );
 }
+

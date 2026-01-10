@@ -1,6 +1,3 @@
-
-
-
 import React, { useState } from "react";
 import AddVendor from "./AddVendor";
 import AllVendors from "./AllVendors";

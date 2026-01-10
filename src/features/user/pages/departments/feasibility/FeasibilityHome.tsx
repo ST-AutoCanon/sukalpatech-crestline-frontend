@@ -23,10 +23,9 @@ const FeasibilityHome: React.FC = () => {
           <button
             onClick={() => setActiveTab("feasibility")}
             className={`px-4 sm:px-5 py-2 rounded-full font-medium text-sm sm:text-base whitespace-nowrap transition
-              ${
-                activeTab === "feasibility"
-                  ? "bg-white text-purple-700 shadow"
-                  : "bg-white/10 text-white hover:bg-white/20"
+              ${activeTab === "feasibility"
+                ? "bg-white text-purple-700 shadow"
+                : "bg-white/10 text-white hover:bg-white/20"
               }
             `}
           >
@@ -36,10 +35,9 @@ const FeasibilityHome: React.FC = () => {
           <button
             onClick={() => setActiveTab("others")}
             className={`px-4 sm:px-5 py-2 rounded-full font-medium text-sm sm:text-base whitespace-nowrap transition
-              ${
-                activeTab === "others"
-                  ? "bg-white text-purple-700 shadow"
-                  : "bg-white/10 text-white hover:bg-white/20"
+              ${activeTab === "others"
+                ? "bg-white text-purple-700 shadow"
+                : "bg-white/10 text-white hover:bg-white/20"
               }
             `}
           >

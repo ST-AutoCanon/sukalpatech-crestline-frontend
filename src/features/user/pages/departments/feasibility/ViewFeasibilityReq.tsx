@@ -1,6 +1,3 @@
-
-
-
 import { Minus, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -27,8 +24,9 @@ type VendorAttachment = {
 };
 
 type Vendor = {
+  vendor_id: string;
   id: number;
-  vendor_id: number;
+  vendor_name: string;
   status: string;
   unit_price: number;
   total_price: number;
@@ -66,12 +64,27 @@ export default function ViewPRPage() {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [showStatus, setShowStatus] = useState(true);
 
+
   const toggleItem = (itemId: string) => {
     setExpandedItems((prev) => ({
       ...prev,
       [itemId]: !prev[itemId],
     }));
   };
+  useEffect(() => {
+    // Fetch vendor master
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
+      .then((res) => res.json())
+      .then((data) => {
+        const map: Record<string, string> = {};
+        (data?.data || []).forEach((v: any) => {
+          map[String(v.vendor_id)] = v.vendor_name;
+        });
+        setVendorMap(map);
+      })
+      .catch((err) => console.error("Vendor fetch error:", err));
+  }, []);
+
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_BACKEND_URL}/api/new-feasibility/submitted-requests`)
@@ -79,6 +92,24 @@ export default function ViewPRPage() {
       .then((data) => setPrs(data?.data || []))
       .catch((err) => console.error("Fetch PR Error:", err));
   }, []);
+
+  const [updateData, setUpdateData] = useState<{
+    department_statuses: DepartmentStatus[];
+    items: Item[];
+  }>({
+    department_statuses: [],
+    items: [],
+  });
+
+  const [vendorUpdates, setVendorUpdates] = useState<{
+    [key: string]: { status: string; comment: string };
+  }>({});
+
+  const [vendorMap, setVendorMap] = useState<Record<string, string>>({});
+  const [departmentMap, setDepartmentMap] = useState<Record<string, string>>(
+    {}
+  );
+
 
   return (
     <>
@@ -122,145 +153,239 @@ export default function ViewPRPage() {
 
       {/* ===== MODAL ===== */}
       {activePR && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto p-4 sm:p-6">
-          <div className="bg-white w-full max-w-5xl sm:max-w-7xl rounded-xl shadow-xl p-4 sm:p-6 text-black flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto p-4">
+          <div className="bg-white w-full max-w-5xl md:max-w-7xl rounded-xl shadow-xl p-4 md:p-6 text-black flex flex-col">
             {/* Header */}
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-violet-600">
-                View Feasibility
+            <div className="flex justify-between items-center mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
+                View Feasibility Page
               </h2>
-              <button
-                onClick={() => setActivePR(null)}
-                className="text-gray-500 hover:text-gray-700"
-              >
+              <button onClick={() => setActivePR(null)} className="text-gray-500 hover:text-gray-700">
                 <X size={24} />
               </button>
             </div>
 
-            {/* PR Info Section */}
-            <div className="bg-gray-100 rounded-lg p-4 mb-6 overflow-x-auto">
-              <div className="min-w-[600px] grid grid-cols-1 sm:grid-cols-5 gap-4 text-sm font-medium mb-2">
-                <span>Description</span>
-                <span>Priority</span>
-                <span>Required Delivery Date</span>
-                <span>Department</span>
-                <span>Remarks</span>
+            {/* PR Info */}
+            <div className="bg-gray-100 rounded-lg p-3 md:p-4 mb-4">
+              {/* Mobile view */}
+              <div className="space-y-3 sm:hidden text-sm">
+                <div>
+                  <div className="text-gray-900">Description</div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.description || "-"}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-gray-900">Priority</div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.priority || "-"}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-gray-900">Required Delivery Date</div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.required_date
+                      ? new Date(activePR.required_date).toLocaleDateString()
+                      : "-"}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-gray-900">Department</div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.department || "-"}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-gray-900">Remarks</div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.remarks || "-"}
+                  </div>
+                </div>
               </div>
 
-              <div className="min-w-[600px] grid grid-cols-1 sm:grid-cols-5 gap-4 text-sm">
-                <button className="bg-white border rounded px-3 py-2 text-left w-full">
-                  {activePR.description || "-"}
-                </button>
-                <button className="bg-white border rounded px-3 py-2 text-left w-full">
-                  {activePR.priority || "-"}
-                </button>
-                <button className="bg-white border rounded px-3 py-2 text-left w-full">
-                  {activePR.required_date
-                    ? new Date(activePR.required_date).toLocaleDateString()
-                    : "-"}
-                </button>
-                <button className="bg-white border rounded px-3 py-2 text-left w-full">
-                  {activePR.department || "-"}
-                </button>
-                <button className="bg-white border rounded px-3 py-2 text-left w-full">
-                  {activePR.remarks || "-"}
-                </button>
+              {/* Desktop view */}
+              <div className="hidden sm:block overflow-x-auto">
+                <div className="grid grid-cols-5 gap-4 text-sm font-medium mb-2">
+                  <span>Description</span>
+                  <span>Priority</span>
+                  <span>Required Delivery Date</span>
+                  <span>Department</span>
+                  <span>Remarks</span>
+                </div>
+                <div className="grid grid-cols-5 gap-4">
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.description || "-"}
+                  </div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.priority || "-"}
+                  </div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.required_date
+                      ? new Date(activePR.required_date).toLocaleDateString()
+                      : "-"}
+                  </div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.department || "-"}
+                  </div>
+                  <div className="bg-white border rounded px-2 py-1">
+                    {activePR.remarks || "-"}
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Items + Vendors Section */}
-            {activePR.items?.map((item) => (
-              <div key={item.id} className="mb-6 overflow-x-auto">
-                <div className="flex justify-end mb-1">
-                  <button
-                    onClick={() => toggleItem(item.id)}
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded shadow"
-                  >
-                    {expandedItems[item.id] ? <Minus size={16} /> : <Plus size={16} />}
-                  </button>
-                </div>
 
-                <div className="bg-gray-100 rounded-lg p-4 min-w-[500px] sm:min-w-[700px]">
-                  {expandedItems[item.id] && (
-                    <>
-                      {/* Item header */}
-                      <div className="bg-gray-200 rounded-lg p-3 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-sm">
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                          <span className="font-medium">Item Code</span>
-                          <div className="bg-white border rounded px-3 py-1 w-full sm:w-auto">{item.item_code || "-"}</div>
-                        </div>
-                        <div className="flex items-center gap-2 flex-1 w-full">
-                          <span className="font-medium">Description</span>
-                          <div className="bg-white border rounded px-3 py-1 w-full">{item.item_name || "-"}</div>
-                        </div>
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                          <span className="font-medium">Qty</span>
-                          <div className="bg-white border rounded px-3 py-1">{item.quantity_required ?? "-"} units</div>
+            {/* Items Section Toggle */}
+            <div className="flex justify-end mb-2">
+              <button
+                onClick={() => setShowStatus((prev) => !prev)}
+                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded flex items-center"
+              >
+                {showStatus ? <Minus size={16} /> : <Plus size={16} />}
+              </button>
+
+            </div>
+
+            {/* Items */}
+            {showStatus && (
+              <div className="space-y-4">
+                {activePR.items?.map((item) => (
+                  <div key={item.id} className="bg-gray-100 rounded-lg p-3 md:p-4 w-full overflow-x-auto">
+                    {/* Item header */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-3 text-sm">
+
+                      {/* Item Code */}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium w-24 shrink-0">Item Code</span>
+                        <div className="bg-white border rounded px-4 py-1 flex-1">
+                          {item.item_code || "-"}
                         </div>
                       </div>
 
-                      {/* Vendors */}
-                      {item.vendors?.map((vendor, index) => (
-                        <div key={vendor.id} className="mb-4 overflow-x-auto min-w-[500px] sm:min-w-[700px]">
-                          {index === 0 && (
-                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 text-xs font-medium mb-1 text-gray-700">
-                              <span>Vendor</span>
-                              <span>Upload Quotation</span>
-                              <span>Unit Price</span>
-                              <span className="hidden sm:block">Total Price</span>
-                              <span className="hidden sm:block">Quotation Validity</span>
-                              <span className="hidden sm:block">Comments</span>
-                            </div>
-                          )}
-
-                          <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 text-sm">
-                            <select className="bg-white border rounded px-2 py-1 w-full">
-                              <option>{vendor.vendor_id || "-"}</option>
-                            </select>
-                            <input
-                              type="text"
-                              value={vendor.attachments?.[0]?.file_name || ""}
-                              readOnly
-                              className="bg-white border rounded px-2 py-1 w-full"
-                            />
-                            <input
-                              type="text"
-                              value={vendor.unit_price ?? ""}
-                              readOnly
-                              className="bg-white border rounded px-2 py-1 w-full"
-                            />
-                            <input
-                              type="text"
-                              value={vendor.total_price ?? ""}
-                              readOnly
-                              className="bg-white border rounded px-2 py-1 w-full hidden sm:block"
-                            />
-                            <input
-                              type="text"
-                              value={
-                                vendor.quotation_validity_date
-                                  ? new Date(vendor.quotation_validity_date).toLocaleDateString()
-                                  : ""
-                              }
-                              readOnly
-                              className="bg-white border rounded px-2 py-1 w-full hidden sm:block"
-                            />
-                            <input
-                              type="text"
-                              value={vendor.comments?.map((c) => c.comment).join(", ") || ""}
-                              readOnly
-                              className="bg-white border rounded px-2 py-1 w-full hidden sm:block"
-                            />
-                          </div>
+                      {/* Description */}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium w-24 shrink-0">Description</span>
+                        <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
+                          {item.item_name || "-"}
                         </div>
-                      ))}
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
+                      </div>
 
-            {/* ===== Department Statuses ===== */}
+                      {/* Qty */}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium w-24 shrink-0">Qty</span>
+                        <div className="bg-white border rounded px-4 py-1 flex-1">
+                          {item.quantity_required ?? "-"}
+                        </div>
+                      </div>
+
+                    </div>
+
+
+                    {/* Vendors */}
+                    <div className="overflow-x-auto">
+                      {item.vendors?.length > 0 && (
+                        <>
+                          {/* Desktop labels (sm and above) */}
+                          <div className="hidden sm:grid sm:grid-cols-6 gap-4 text-xs font-medium mb-1 text-gray-700">
+                            <span>Vendor</span>
+                            <span>Upload Quotation</span>
+                            <span>Unit Price</span>
+                            <span>Total Price</span>
+                            <span>Quotation Validity</span>
+                            <span>Comments</span>
+                          </div>
+
+                          {/* Desktop values */}
+                          {item.vendors?.map((vendor) => (
+                            <div key={vendor.id} className="hidden sm:grid sm:grid-cols-6 gap-4 text-sm mb-4">
+                              <input
+                                type="text"
+                                value={vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id}
+                                readOnly
+                                className="bg-white border rounded px-2 py-1 w-full"
+                                placeholder="Vendor"
+                              />
+
+
+                              <input
+                                type="text"
+                                value={vendor.attachments?.[0]?.file_name || ""}
+                                readOnly
+                                className="bg-white border rounded px-2 py-1 w-full"
+                              />
+                              <input
+                                type="text"
+                                value={vendor.unit_price ?? ""}
+                                readOnly
+                                className="bg-white border rounded px-2 py-1 w-full"
+                              />
+                              <input
+                                type="text"
+                                value={vendor.total_price ?? ""}
+                                readOnly
+                                className="bg-white border rounded px-2 py-1 w-full"
+                              />
+                              <input
+                                type="text"
+                                value={
+                                  vendor.quotation_validity_date
+                                    ? new Date(vendor.quotation_validity_date).toLocaleDateString()
+                                    : ""
+                                }
+                                readOnly
+                                className="bg-white border rounded px-2 py-1 w-full"
+                              />
+                              <input
+                                type="text"
+                                value={vendor.comments?.map((c) => c.comment).join(", ") || ""}
+                                readOnly
+                                className="bg-white border rounded px-2 py-1 w-full"
+                              />
+                            </div>
+                          ))}
+
+                          {/* Mobile view */}
+                          {item.vendors?.map((vendor) => (
+                            <div key={vendor.id} className="mb-4 sm:hidden flex flex-row gap-4 overflow-x-auto">
+                              {[
+                                ["Vendor", vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id],
+                                ["Upload Quotation", vendor.attachments?.[0]?.file_name || "-"],
+                                ["Unit Price", vendor.unit_price ?? "-"],
+                                ["Total Price", vendor.total_price ?? "-"],
+                                ["Quotation Validity",
+                                  vendor.quotation_validity_date
+                                    ? new Date(vendor.quotation_validity_date).toLocaleDateString()
+                                    : "-"
+                                ],
+                                ["Comments", vendor.comments?.map(c => c.comment).join(", ") || "-"],
+                              ].map(([label, value], idx) => (
+                                <div key={idx} className="flex flex-col min-w-[120px]">
+                                  <span className="text-gray-500 text-xs">{label}</span>
+                                  <input
+                                    type="text"
+                                    value={value}
+                                    readOnly
+                                    className="bg-white px-2 py-1 w-full"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+
+                        </>
+                      )}
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Statuses Section */}
             <div className="mb-6">
               <div className="flex justify-end mt-2 mb-2">
                 <button
@@ -271,7 +396,7 @@ export default function ViewPRPage() {
                 </button>
               </div>
 
-              <div className="border-2 border-gray-300 rounded-lg p-4 overflow-x-auto">
+              <div className="border border-gray-300 rounded-lg p-4 overflow-x-auto">
                 <h3 className="font-semibold text-base mb-3">Statuses</h3>
 
                 {showStatus && (
@@ -301,6 +426,7 @@ export default function ViewPRPage() {
           </div>
         </div>
       )}
+
     </>
   );
 }

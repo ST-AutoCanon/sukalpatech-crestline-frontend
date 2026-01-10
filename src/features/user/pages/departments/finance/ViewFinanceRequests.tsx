@@ -80,6 +80,24 @@ export default function SubmittedFinanceRequestsPage() {
     [key: string]: { status: string; comment: string };
   }>({});
 
+  const [vendorMap, setVendorMap] = useState<Record<string, string>>({});
+  const [departmentMap, setDepartmentMap] = useState<Record<string, string>>(
+    {}
+  );
+  useEffect(() => {
+    // Fetch vendor master
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
+      .then((res) => res.json())
+      .then((data) => {
+        const map: Record<string, string> = {};
+        (data?.data || []).forEach((v: any) => {
+          map[String(v.vendor_id)] = v.vendor_name;
+        });
+        setVendorMap(map);
+      })
+      .catch((err) => console.error("Vendor fetch error:", err));
+  }, []);
+
   const updateVendorField = (
     itemIndex: number,
     vendorIndex: number,
@@ -151,9 +169,9 @@ export default function SubmittedFinanceRequestsPage() {
   /* ================= UI ================= */
   return (
     <div className="p-4 md:p-6 text-black">
-
       {/* ================= PR CARDS ================= */}
-      <div className="
+      <div
+        className="
   grid
   grid-cols-1
   sm:grid-cols-2
@@ -161,7 +179,8 @@ export default function SubmittedFinanceRequestsPage() {
   lg:grid-cols-4
   gap-x-4
   gap-y-8
-">
+"
+      >
         {requests.map((pr) => (
           <div
             key={pr.id}
@@ -175,7 +194,6 @@ export default function SubmittedFinanceRequestsPage() {
 
             {/* BODY */}
             <div className="flex-1 space-y-3 text-sm">
-
               <div className="flex gap-1">
                 <span className="text-gray-500">Department :</span>
                 <span className="font-medium text-gray-600 truncate">
@@ -203,22 +221,20 @@ export default function SubmittedFinanceRequestsPage() {
                   {pr.description || "-"}
                 </span>
               </div>
-
             </div>
 
-
             {/* FOOTER */}
-            <span className="text-blue-600 text-sm font-medium mt-4">More info</span>
+            <span className="text-blue-600 text-sm font-medium mt-4">
+              More info
+            </span>
           </div>
         ))}
       </div>
-
 
       {/* ================= MODAL ================= */}
       {modalOpen && selectedPR && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-start pt-10 z-50 overflow-auto">
           <div className="bg-white w-full max-w-[95%] md:max-w-6xl rounded shadow-lg p-4 md:p-6 relative max-h-[90vh] overflow-y-auto">
-
             {/* CLOSE BUTTON */}
             <button
               className="absolute -top-1 -right-1 text-2xl text-gray-600 hover:text-gray-800"
@@ -233,7 +249,10 @@ export default function SubmittedFinanceRequestsPage() {
                 {[
                   ["Description", selectedPR.description],
                   ["Priority", selectedPR.priority],
-                  ["Required Delivery Date", formatDate(selectedPR.required_date)],
+                  [
+                    "Required Delivery Date",
+                    formatDate(selectedPR.required_date),
+                  ],
                   ["Department", selectedPR.department],
                   ["Remarks", selectedPR.remarks],
                 ].map(([label, value], i) => (
@@ -264,79 +283,129 @@ export default function SubmittedFinanceRequestsPage() {
               <div className="bg-gray-100 p-4 rounded mb-4 space-y-6 overflow-x-auto">
                 {updateData.items.map((item, i) => (
                   <div key={i} className="rounded-lg p-2 md:p-4">
-
-                    {/* ITEM HEADER */}
-                    <div className="bg-gray-200 rounded-lg flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-6 mb-2 p-2 md:p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-3 text-sm">
+                      {/* Item Code */}
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold">Item Code</span>
-                        <div className="bg-white px-2 py-1 rounded border">{item.item_code}</div>
+                        <span className="font-medium w-24 shrink-0">
+                          Item Code
+                        </span>
+                        <div className="bg-white border rounded px-4 py-1 flex-1">
+                          {item.item_code || "-"}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2 flex-1">
-                        <span className="text-sm font-semibold">Description</span>
-                        <div className="bg-white px-2 py-1 rounded border w-full">{item.item_name}</div>
+                      {/* Description */}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium w-24 shrink-0">
+                          Description
+                        </span>
+                        <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
+                          {item.item_name || "-"}
+                        </div>
                       </div>
 
+                      {/* Qty */}
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold">Qty</span>
-                        <div className="bg-white px-2 py-1 rounded border">{item.quantity_required} units</div>
+                        <span className="font-medium w-24 shrink-0">Qty</span>
+                        <div className="bg-white border rounded px-4 py-1 flex-1">
+                          {item.quantity_required ?? "-"}
+                        </div>
                       </div>
                     </div>
 
                     {/* VENDOR TABLE */}
                     <div className="overflow-x-auto">
                       {/* HEADER */}
-                      <div className="grid grid-cols-6 min-w-[500px] gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <div className="grid grid-cols-8 gap-2 min-w-[700px] text-sm font-medium text-gray-700 mb-2">
                         <div>Vendor</div>
                         <div>Upload Quotation</div>
                         <div>Unit Price</div>
                         <div>Total Price</div>
                         <div>Quotation Validity</div>
-                        <div>Comments by Feasibility</div>
+                        <div>PR Comments</div>
+                        <div>Feasibility comment</div>
+                        <div>status</div>
                       </div>
 
                       {/* VENDOR ROWS */}
-                      {item.vendors?.map((vendor, index) => (
-                        <div key={vendor.id} className="grid grid-cols-6 min-w-[500px] gap-2 mb-2">
-                          <select className="bg-white border rounded px-2 py-1 text-sm">
-                            <option>{vendor.vendor_id || "-"}</option>
-                          </select>
-                          <input
-                            type="text"
-                            value={vendor.attachments?.[0]?.file_name || ""}
-                            readOnly
-                            className="bg-white border rounded px-2 py-1 text-sm"
-                          />
-                          <input
-                            type="text"
-                            value={vendor.unit_price ?? ""}
-                            readOnly
-                            className="bg-white border rounded px-2 py-1 text-sm"
-                          />
-                          <input
-                            type="text"
-                            value={vendor.total_price ?? ""}
-                            readOnly
-                            className="bg-white border rounded px-2 py-1 text-sm"
-                          />
-                          <input
-                            type="text"
-                            value={
-                              vendor.quotation_validity_date
-                                ? new Date(vendor.quotation_validity_date).toLocaleDateString()
-                                : ""
-                            }
-                            readOnly
-                            className="bg-white border rounded px-2 py-1 text-sm"
-                          />
-                          <input
-                            type="text"
-                            value={vendor.comments?.map((c) => c.comment).join(", ") || ""}
-                            readOnly
-                            className="bg-white border rounded px-2 py-1 text-sm"
-                          />
-                        </div>
-                      ))}
+             
+
+                      {item.vendors.map((vendor, vi) => {
+                        // Find the latest feasibility comment (commented_by = 2)
+                        const feasibilityComment =
+                          vendor.comments?.find((c) => c.commented_by === 2)
+                            ?.comment || "";
+
+                        return (
+                          <div
+                            key={vi}
+                            className="grid grid-cols-8 gap-2 min-w-[700px] mb-2 text-sm"
+                          >
+                            {/* Vendor Name */}
+                            <input
+                              readOnly
+                              value={vendorMap[String(vendor.vendor_id)] || "-"}
+                              className="bg-white border rounded px-2 py-1 w-full text-xs sm:text-sm"
+                            />
+
+                            {/* Unit Price */}
+                            <input
+                              readOnly
+                              value={vendor.unit_price ?? ""}
+                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                            />
+
+                            {/* Total Price */}
+                            <input
+                              readOnly
+                              value={vendor.total_price ?? ""}
+                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                            />
+
+                            {/* Quotation Validity */}
+                            <input
+                              readOnly
+                              value={
+                                vendor.quotation_validity_date
+                                  ? new Date(
+                                      vendor.quotation_validity_date
+                                    ).toLocaleDateString()
+                                  : ""
+                              }
+                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                            />
+
+                            {/* Attachments */}
+                            <input
+                              type="text"
+                              value={vendor.attachments?.[0]?.file_name || ""}
+                              readOnly
+                              className="bg-white border rounded px-2 py-1 text-sm"
+                            />
+
+                            {/* PR comment */}
+                            <input
+                              readOnly
+                              value={vendor.comments?.[0]?.comment || ""}
+                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                            />
+
+                            {/* Feasibility Comment (latest by commented_by = 2) */}
+                            <input
+                              readOnly
+                              value={feasibilityComment}
+                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                            />
+
+                            {/* Status */}
+                            <input
+                              readOnly
+                              value={vendor.status || ""}
+                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
@@ -358,23 +427,33 @@ export default function SubmittedFinanceRequestsPage() {
                 <h3 className="font-semibold mb-2">Statuses</h3>
 
                 {updateData.department_statuses.map((s, i) => (
-                  <div key={i} className="bg-gray-200 p-3 rounded mb-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                  <div
+                    key={i}
+                    className="bg-gray-200 p-3 rounded mb-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-2"
+                  >
                     <div className="flex flex-col gap-1">
-                      <p><strong>Status:</strong> {s.department_status}</p>
-                      <p><strong>Comment:</strong> {s.department_comment}</p>
+                      <p>
+                        <strong>Status:</strong> {s.department_status}
+                      </p>
+                      <p>
+                        <strong>Comment:</strong> {s.department_comment}
+                      </p>
                     </div>
                     <div className="flex gap-2 text-sm text-gray-600">
                       <span>Arjun</span>
-                      <span>{s.updated_at ? new Date(s.updated_at).toLocaleDateString() : ""}</span>
+                      <span>
+                        {s.updated_at
+                          ? new Date(s.updated_at).toLocaleDateString()
+                          : ""}
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

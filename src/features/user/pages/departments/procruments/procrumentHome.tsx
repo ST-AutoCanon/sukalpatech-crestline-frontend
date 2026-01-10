@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState } from "react";
 import { Package, Users, Store, ShoppingCart } from "lucide-react";
 

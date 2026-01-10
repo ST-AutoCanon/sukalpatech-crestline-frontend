@@ -1,33 +1,44 @@
-
-
-
-///////////////
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Upload } from "lucide-react";
 
 export default function NewProcurementPage({ onClose }) {
+  const [departments, setDepartments] = useState([]);
+  const [vendorList, setVendorList] = useState([]);
+  
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement`;
+  const API_BASE1 = `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`;
+  const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
+  
 
-  const departments = [
-    { id: 1, name: "Production" },
-    { id: 2, name: "Purchase" },
-    { id: 3, name: "Quality" },
-    { id: 4, name: "IT" },
-  ];
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await axios.get(`${API_BASE2}`);
+        console.log(res.data.data);
+        setDepartments(res.data.data);
+      } catch (err) {
+        console.error("Department fetch error", err);
+      }
+    };
 
-  const vendorList = [
-    { id: 1, name: "Vendor One Pvt Ltd" },
-    { id: 2, name: "Alpha Suppliers" },
-    { id: 3, name: "TechnoTrade" },
-    { id: 4, name: "Metro Traders" },
-    { id: 5, name: "Elite Industrial" },
-    { id: 6, name: "Prime Components" },
-    { id: 7, name: "Galaxy Suppliers" },
-    { id: 8, name: "ProTech Vendors" },
-    { id: 9, name: "Universal Traders" },
-    { id: 10, name: "Crestline Partners" },
-  ];
+    fetchDepartments(); 
+  }, []);
+
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const res = await axios.get(`${API_BASE1}`);
+        console.log(res.data.data);
+        setVendorList(res.data.data);
+      } catch (err) {
+        console.error("Vendor fetch error", err);
+      }
+    };
+
+    fetchVendors();
+  }, []);
 
   const [vendorFiles, setVendorFiles] = useState({});
   const [prData, setPrData] = useState({
@@ -62,16 +73,51 @@ export default function NewProcurementPage({ onClose }) {
     setPrData({ ...prData, [e.target.name]: e.target.value });
   };
 
-  const handleItemChange = (i, field, value) => {
-    const updated = [...prData.items];
-    updated[i][field] = value;
-    setPrData({ ...prData, items: updated });
+  const handleItemChange = (itemIndex: number, field: string, value: any) => {
+    setPrData((prev) => {
+      const items = [...prev.items];
+      items[itemIndex] = {
+        ...items[itemIndex],
+        [field]: value,
+      };
+
+      // Recalculate total price for all vendors
+      if (field === "quantity_required") {
+        items[itemIndex].vendors = items[itemIndex].vendors.map((v) => ({
+          ...v,
+          total_price:
+            Number(value || 0) * Number(v.unit_price || 0),
+        }));
+      }
+
+      return { ...prev, items };
+    });
   };
 
-  const handleVendorChange = (i, vi, field, value) => {
-    const updated = [...prData.items];
-    updated[i].vendors[vi][field] = value;
-    setPrData({ ...prData, items: updated });
+
+  const handleVendorChange = (
+    itemIndex: number,
+    vendorIndex: number,
+    field: string,
+    value: any
+  ) => {
+    setPrData((prev) => {
+      const items = [...prev.items];
+      const item = items[itemIndex];
+
+      item.vendors[vendorIndex] = {
+        ...item.vendors[vendorIndex],
+        [field]: value,
+      };
+
+      // Auto-calculate total price
+      if (field === "unit_price") {
+        const qty = Number(item.quantity_required || 0);
+        item.vendors[vendorIndex].total_price = qty * Number(value || 0);
+      }
+
+      return { ...prev, items };
+    });
   };
 
   const addItem = () => {
@@ -134,7 +180,7 @@ export default function NewProcurementPage({ onClose }) {
     }
   };
 
- return (
+  return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
       <div className="w-full max-w-7xl bg-white text-gray-900 rounded-xl flex flex-col max-h-[95vh]">
 
@@ -169,9 +215,21 @@ export default function NewProcurementPage({ onClose }) {
               </div>
               <div>
                 <label className="text-sm text-gray-600">Department</label>
-                <select name="department" className="w-full border rounded-lg p-2 mt-1 bg-white" onChange={handlePRChange}>
+                {/* <select name="department" className="w-full border rounded-lg p-2 mt-1 bg-white" onChange={handlePRChange}>
                   <option value="">Select</option>
                   {departments.map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
+                </select> */}
+                <select
+                  name="department"
+                  className="w-full border rounded-lg p-2 mt-1 bg-white"
+                  onChange={handlePRChange}
+                >
+                  <option value="">Select</option>
+                  {departments.map((d) => (
+                    <option key={d.department_name} value={d.department_name}>
+                      {d.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -214,9 +272,22 @@ export default function NewProcurementPage({ onClose }) {
                   <div key={vi} className="grid grid-cols-1 sm:grid-cols-7 gap-2 sm:gap-3 items-end">
                     <div>
                       <label className="text-xs text-gray-600">Vendor</label>
-                      <select className="w-full p-2 border rounded mt-1" onChange={(e) => handleVendorChange(i, vi, "vendor_id", e.target.value)}>
+                      {/* <select className="w-full p-2 border rounded mt-1" onChange={(e) => handleVendorChange(i, vi, "vendor_id", e.target.value)}>
                         <option>Select</option>
                         {vendorList.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+                      </select> */}
+                      <select
+                        className="w-full p-2 border rounded mt-1"
+                        onChange={(e) =>
+                          handleVendorChange(i, vi, "vendor_id", e.target.value)
+                        }
+                      >
+                        <option value="">Select</option>
+                        {vendorList.map((v) => (
+                          <option key={v.vendor_id} value={v.vendor_id}>
+                            {v.vendor_name}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div>
@@ -229,7 +300,11 @@ export default function NewProcurementPage({ onClose }) {
                     </div>
                     <div>
                       <label className="text-xs text-gray-600">Total Price</label>
-                      <input className="w-full p-2 border rounded mt-1" onChange={(e) => handleVendorChange(i, vi, "total_price", e.target.value)} />
+                      <input
+                        className="w-full p-2 border rounded mt-1 bg-gray-100"
+                        value={vendor.total_price || ""}
+                        readOnly
+                      />
                     </div>
                     <div>
                       <label className="text-xs text-gray-600">Quotation Validity</label>

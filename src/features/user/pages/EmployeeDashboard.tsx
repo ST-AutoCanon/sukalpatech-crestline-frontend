@@ -1,4 +1,3 @@
-
 // src/features/user/pages/EmployeeDashboard.tsx
 import React, { useEffect, useContext, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
