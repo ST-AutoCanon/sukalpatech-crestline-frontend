@@ -133,6 +133,8 @@ export default function SubmittedRequestsPage() {
       });
   }, []);
 
+  /* ================= HANDLERS ================= */
+
   const openPR = (pr: FeasibilityPR) => {
     setSelectedPR(pr);
     setUpdateData({
