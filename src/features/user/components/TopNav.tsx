@@ -79,11 +79,9 @@ export default function TopNav({ departmentNames }: TopNavProps) {
   };
 
   return (
-    <header className="w-full bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 px-6 py-4 flex justify-between items-center">
+    <header className="w-full bg-gradient-to-r bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] px-6 py-4 flex justify-between items-center">
       {/* LEFT - PAGE / DEPARTMENT NAME */}
-      <h1 className="text-white text-2xl font-semibold">
-        {getPageName()}
-      </h1>
+      <h1 className="text-white text-2xl font-semibold">{getPageName()}</h1>
 
       {/* RIGHT - USER BOX */}
       <div className="flex items-center gap-4">
@@ -95,7 +93,7 @@ export default function TopNav({ departmentNames }: TopNavProps) {
             className="h-9 w-9 rounded-full border border-white/50"
           />
           <span className="text-sm font-medium">
-             {user?.first_name ?? "User"}
+            {user?.first_name ?? "User"}
           </span>
         </div>
 
