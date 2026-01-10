@@ -73,7 +73,13 @@ export default function AddItem() {
     setRoots(res.data.map((r: any) => ({ ...r, id: String(r.id) })));
   };
 
+
   const fetchCategories = async (rootId: string) => {
+    setSelectedCategory("");
+    setProducts([]);
+    setVariants([]);
+    setSubVariants([]);
+
     const res = await axios.get(
       `${API_BASE}/categories/list?root_id=${rootId}`
     );
@@ -81,6 +87,10 @@ export default function AddItem() {
   };
 
   const fetchProducts = async (categoryId: string) => {
+    setSelectedProduct("");
+    setVariants([]);
+    setSubVariants([]);
+
     const res = await axios.get(
       `${API_BASE}/categories/products?category_id=${categoryId}`
     );
@@ -88,6 +98,9 @@ export default function AddItem() {
   };
 
   const fetchVariants = async (productId: string) => {
+    setSelectedVariant("");
+    setSubVariants([]);
+
     const res = await axios.get(
       `${API_BASE}/categories/variants?product_id=${productId}`
     );
@@ -95,6 +108,8 @@ export default function AddItem() {
   };
 
   const fetchSubVariants = async (variantId: string) => {
+    setSelectedSubVariant("");
+
     const res = await axios.get(
       `${API_BASE}/categories/sub-variants?variant_id=${variantId}`
     );
@@ -102,8 +117,10 @@ export default function AddItem() {
   };
 
   const handleAddItem = async () => {
-    if (!selectedRoot || !itemName)
-      return alert("Root category and item name required");
+    if (!selectedRoot || !itemName) {
+      alert("Root category and item name required");
+      return;
+    }
 
     await axios.post(`${API_BASE}/items/items`, {
       item_name: itemName,
@@ -117,6 +134,7 @@ export default function AddItem() {
     });
 
     alert("Item added successfully");
+
     setItemName("");
     setSelectedVendors([]);
     setSelectedRoot("");
@@ -422,4 +440,3 @@ export default function AddItem() {
     </div>
   );
 }
-
