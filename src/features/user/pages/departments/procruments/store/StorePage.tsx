@@ -27,7 +27,7 @@ const StorePage: React.FC = () => {
               : "text-white/70 hover:text-white"
           }`}
         >
-          All Stores
+          All PR's
         </p>
         <p
           onClick={() => setSelectedTab("AddCategories")}

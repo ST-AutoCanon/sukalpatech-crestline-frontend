@@ -1,5 +1,7 @@
 import { useState, useEffect, type ReactNode } from "react";
 import axios from "axios";
+import Aleart from "../../../../components/Aleartmessage"; // Make sure this is the same Aleart component
+
 
 /* ================= TYPES ================= */
 
@@ -82,6 +84,13 @@ export default function SubmittedFinanceRequestsPage() {
     department_statuses: [],
     items: [],
   });
+   const [alert, setAlert] = useState<{
+      type: "success" | "error";
+      message: string;
+    } | null>(null);
+  
+  
+  
 
   const [vendorUpdates, setVendorUpdates] = useState<{
     [key: string]: { status: string; comment: string };
@@ -146,12 +155,16 @@ export default function SubmittedFinanceRequestsPage() {
     setNewComment("");
   };
 
-  const submitUpdate = async () => {
-    if (!selectedPR || !newStatus) {
-      alert("Please select store status");
-      return;
-    }
+ const submitUpdate = async () => {
+  if (!selectedPR || !newStatus) {
+    setAlert({
+      type: "error",
+      message: "Please select procurement PR status",
+    });
+    return;
+  }
 
+  try {
     const payload = {
       department_statuses: [
         {
@@ -165,10 +178,30 @@ export default function SubmittedFinanceRequestsPage() {
     };
 
     await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload);
-    alert("Store PR Updated");
-    setModalOpen(false);
+
+    // Show success alert
+    setAlert({
+      type: "success",
+      message: "Procurement PR Updated",
+    });
+
+    // Close modal after a short delay (optional)
+    setTimeout(() => {
+      setModalOpen(false);
+      setAlert(null);
+    }, 2000);
+
+    // Refresh the PR list
     fetchApprovedRequests();
-  };
+  } catch (err) {
+    console.error(err);
+    setAlert({
+      type: "error",
+      message: "Failed to update PR",
+    });
+  }
+};
+
 
   return (
     <div className="p-4 sm:p-6 text-black">
@@ -218,6 +251,16 @@ export default function SubmittedFinanceRequestsPage() {
             >
               ×
             </button>
+             {alert && (
+                          <Aleart
+                            type={alert.type}
+                            message={alert.message}
+                            onClose={() => setAlert(null)}
+                          />
+                        )}
+            <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
+                Update PR-{selectedPR.id} info
+              </h2>
 
             {/* PR DETAILS */}
             <div className="bg-gray-100 p-3 sm:p-4 rounded mb-4 overflow-x-auto">

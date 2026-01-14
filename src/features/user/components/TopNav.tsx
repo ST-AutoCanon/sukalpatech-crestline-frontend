@@ -88,10 +88,11 @@ export default function TopNav({ departmentNames }: TopNavProps) {
         {/* USER INFO BADGE */}
         <div className="flex items-center gap-3 border border-white/40 rounded-full px-4 py-2 text-white">
           <img
-            src="https://i.pravatar.cc/40"
+            src="https://randomuser.me/api/portraits/men/32.jpg"
             alt="avatar"
             className="h-9 w-9 rounded-full border border-white/50"
           />
+
           <span className="text-sm font-medium">
             {user?.first_name ?? "User"}
           </span>

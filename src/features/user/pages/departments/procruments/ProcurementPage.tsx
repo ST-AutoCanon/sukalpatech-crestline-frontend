@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import AllPRs from "./getAll_procurements";
 import Procurement from "./Procurement";
 import FinanceApprovedPR from "./ProcurementFinanceApprovedPRs";
@@ -13,24 +13,26 @@ const ProcurementPage: React.FC = () => {
   const [openCreatePR, setOpenCreatePR] = useState(false);
   const [showUpdatePage, setShowUpdatePage] = useState(false);
   const [search, setSearch] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0); // 🔥 IMPORTANT
 
   return (
     <>
       {/* ================= FILTER BAR ================= */}
       <div className="mt-6 px-6 py-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          {/* LEFT FILTERS */}
-          <div className="flex gap-8 text-sm font-medium text-white">
+        <div className="flex flex-wrap sm:flex-nowrap sm:justify-between sm:items-center gap-2 sm:gap-0">
+
+          {/* FILTER TABS */}
+          <div className="flex flex-wrap gap-3 sm:gap-7 text-sm font-medium text-white">
             {filters.map((filter) => (
               <button
                 key={filter}
                 onClick={() => {
                   setActiveFilter(filter);
-                  setShowUpdatePage(false); // <<< IMPORTANT FIX
+                  setShowUpdatePage(false);
                 }}
-                className={`relative pb-1 transition-all ${activeFilter === filter
-                    ? "font-semibold text-white after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-white"
-                    : "text-white/70 hover:text-white"
+                className={`pb-1 ${activeFilter === filter
+                    ? "border-b-2 border-white text-white"
+                    : "text-white/70"
                   }`}
               >
                 {filter}
@@ -38,40 +40,18 @@ const ProcurementPage: React.FC = () => {
             ))}
           </div>
 
-          {/* RIGHT BUTTONS */}
-          <div className="flex gap-4 justify-start sm:justify-end">
-
-
-            {/* UPDATE PR PAGE BUTTON */}
+          {/* BUTTONS */}
+          <div className="flex gap-2 sm:gap-4 flex-shrink-0">
             <button
               onClick={() => setShowUpdatePage(true)}
-              className="
-                 flex items-center gap-2
-                rounded-lg
-                bg-gradient-to-r from-blue-500 to-purple-600
-                px-5 py-2.5
-                text-sm font-medium text-white
-                shadow-md
-                hover:from-blue-600 hover:to-purple-700
-                transition
-              "
+              className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 rounded text-white whitespace-nowrap"
             >
               Update PR
             </button>
 
-            {/* CREATE NEW PR */}
             <button
               onClick={() => setOpenCreatePR(true)}
-              className="
-                flex items-center gap-2
-                rounded-lg
-                bg-gradient-to-r from-blue-500 to-purple-600
-                px-5 py-2.5
-                text-sm font-medium text-white
-                shadow-md
-                hover:from-blue-600 hover:to-purple-700
-                transition
-              "
+              className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 rounded text-white flex items-center gap-2 whitespace-nowrap"
             >
               <Plus size={16} />
               Create New PR
@@ -80,24 +60,32 @@ const ProcurementPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ================= MAIN CONTENT ================= */}
 
-      {/* VIEW ALL PRs */}
+
+      {/* ================= PR LIST ================= */}
       {!showUpdatePage && (
-        <div className="mt-6">
-          <AllPRs filter={activeFilter} search={search} />
-        </div>
+        <AllPRs
+          filter={activeFilter}
+          search={search}
+          refreshKey={refreshKey} // 🔥 PASS REFRESH KEY
+        />
       )}
 
-      {/* UPDATE PAGE */}
+      {/* ================= UPDATE PAGE ================= */}
       {showUpdatePage && (
         <FinanceApprovedPR onClose={() => setShowUpdatePage(false)} />
       )}
 
       {/* ================= CREATE MODAL ================= */}
       {openCreatePR && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <Procurement onClose={() => setOpenCreatePR(false)} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Procurement
+            onClose={() => setOpenCreatePR(false)}
+            onCreated={() => {
+              setRefreshKey((prev) => prev + 1); // 🔥 FORCE RELOAD
+              setOpenCreatePR(false);
+            }}
+          />
         </div>
       )}
     </>

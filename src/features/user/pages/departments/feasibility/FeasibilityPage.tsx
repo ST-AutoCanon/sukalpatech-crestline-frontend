@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import UpdateFeasibility from "./UpdateFeasibility";
 import ViewFeasibilityRequests from "./ViewFeasibilityReq";
 
@@ -18,7 +19,7 @@ const FeasibilityPage: React.FC = () => {
               : "text-gray-500"
               }`}
           >
-            All Feasibility
+            All PR's
           </h2>
         </div>
 
@@ -30,7 +31,7 @@ const FeasibilityPage: React.FC = () => {
             onClick={() => setActiveTab("update")}
             className="h-9 rounded-md bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 px-4 text-sm font-medium text-white hover:opacity-90 transition"
           >
-            + Update Feasibility
+            + Update PR
           </button>
         </div>
       </div>

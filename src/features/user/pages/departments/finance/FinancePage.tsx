@@ -18,7 +18,7 @@ const FinancePage: React.FC = () => {
               : "text-gray-500"
             }`}
         >
-          All Finance
+          All PR's
         </h2>
 
         {/* RIGHT: Button */}
@@ -26,7 +26,7 @@ const FinancePage: React.FC = () => {
           onClick={() => setActiveTab("update")}
           className="h-8 sm:h-9 rounded-md bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 px-3 sm:px-4 text-xs sm:text-sm font-medium text-white hover:opacity-90 transition whitespace-nowrap"
         >
-          + Update Finance
+          + Update PR
         </button>
       </div>
 
