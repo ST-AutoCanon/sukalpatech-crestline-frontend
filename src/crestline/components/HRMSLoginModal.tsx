@@ -11,6 +11,7 @@ interface HRMSLoginModalProps {
   iframeId?: string;
   childOrigin?: string;
   iframeLoaded?: boolean;
+  defaultOrgId?: number;
 }
 
 const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
@@ -19,9 +20,12 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
   onSwitchToNormalLogin,
   onLoginSuccess,
   iframeId = "pulse-iframe",
-  childOrigin = "https://www.pulsework.in",
+  childOrigin,
   iframeLoaded = false,
+  defaultOrgId = 28,
 }) => {
+  const effectiveChildOrigin = childOrigin || import.meta.env.VITE_CHILD_ORIGIN;
+
   const [empId, setEmpId] = useState("");
   const [password, setPassword] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -29,7 +33,7 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
 
   useEffect(() => {
     function onMessage(ev: MessageEvent) {
-      if (ev.origin !== childOrigin) return;
+      if (effectiveChildOrigin && ev.origin !== effectiveChildOrigin) return;
       const msg = ev.data || {};
 
       if (msg.type === "login-success") {
@@ -51,9 +55,24 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
 
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [childOrigin, onClose, onLoginSuccess]);
+  }, [effectiveChildOrigin, onClose, onLoginSuccess]);
 
   if (!isOpen) return null;
+
+  const persistEmbedLogin = (
+    username: string,
+    password: string,
+    orgId: number
+  ) => {
+    try {
+      sessionStorage.setItem(
+        "EMBED_LOGIN",
+        JSON.stringify({ username, password, orgId })
+      );
+    } catch (err) {
+      console.warn("sessionStorage write failed", err);
+    }
+  };
 
   const handleSubmitHRMSLogin = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -79,6 +98,8 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
       return;
     }
 
+    persistEmbedLogin(empId, password, defaultOrgId);
+
     setIsLoggingIn(true);
     setStatusMessage("Sent credentials — authenticating...");
 
@@ -88,8 +109,9 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
           type: "parent-login",
           username: empId,
           password,
+          orgId: defaultOrgId,
         },
-        childOrigin
+        effectiveChildOrigin || "*"
       );
     } catch (err) {
       console.warn("postMessage failed", err);
@@ -102,7 +124,7 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center ">
-   <div className="relative w-full max-w-md sm:max-w-lg md:max-w-4xl flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-2xl border border-white/20 bg-white/10 backdrop-blur-xl">
+      <div className="relative w-full max-w-md sm:max-w-lg md:max-w-4xl flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-2xl border border-white/20 bg-white/10 backdrop-blur-xl">
         <div className="relative w-full md:w-1/2 h-48 md:h-auto">
           <img
             src={loginBg}

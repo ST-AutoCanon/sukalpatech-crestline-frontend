@@ -1,70 +1,149 @@
-"use client";
+("use client");
 
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import HRMSLoginModal from "../components/HRMSLoginModal";
 
 const HRMSPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const skipModal = !!(location.state && (location.state as any).skipModal);
+
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   const [iframeLoaded, setIframeLoaded] = useState(false);
-  const [showModal, setShowModal] = useState(true);
+  const [showModal, setShowModal] = useState<boolean>(() => !skipModal);
   const [showIframe, setShowIframe] = useState(false);
 
   const [iframeHeight, setIframeHeight] = useState<number | null>(null);
+  const [childReady, setChildReady] = useState(false);
+  const [status, setStatus] = useState<
+    "idle" | "sent" | "success" | "failed" | "error"
+  >("idle");
+  const [error, setError] = useState<string | null>(null);
 
   const [navHeight, setNavHeight] = useState<number>(0);
 
   const iframeId = "pulse-iframe";
-  const childOrigin = "https://www.pulsework.in";
+  const childOrigin = import.meta.env.VITE_CHILD_ORIGIN || "";
+
+  const allowedOriginsRaw =
+    import.meta.env.VITE_ALLOWED_IFRAME_ORIGINS || childOrigin;
+  const allowedOrigins = allowedOriginsRaw
+    .split(",")
+    .map((s: string) => s.trim())
+    .filter(Boolean);
 
   useEffect(() => {
-    function onParentMessage(ev: MessageEvent) {
-      if (ev.origin !== childOrigin) return;
+    function onMessage(ev: MessageEvent) {
+      const isFromIframeWindow =
+        iframeRef.current && ev?.source === iframeRef.current.contentWindow;
+
+      const originAllowed =
+        allowedOrigins.length === 0 ||
+        (ev?.origin && allowedOrigins.includes(ev.origin));
+
+      if (!originAllowed && !isFromIframeWindow) return;
+
       const msg = ev.data || {};
 
+      if (msg.type === "child-ready") {
+        setChildReady(true);
+        return;
+      }
+
       if (msg.type === "login-success") {
-        setShowModal(false);
+        try {
+          sessionStorage.removeItem("EMBED_LOGIN");
+        } catch {}
+        setStatus("success");
+        setShowParentUI(false);
         setShowIframe(true);
-      } else if (msg.type === "login-failed") {
+        return;
+      }
+
+      if (msg.type === "login-failed") {
         console.warn("HRMSPage login failed:", msg.error);
-      } else if (
-        msg.type === "content-height" &&
-        typeof msg.height === "number"
-      ) {
+      }
+
+      if (msg.type === "child-logged-out") {
+        try {
+          sessionStorage.removeItem("EMBED_LOGIN");
+        } catch (e) {}
+
+        try {
+          navigate("/", { replace: true });
+        } catch (navErr) {
+          try {
+            window.location.replace("/");
+          } catch {}
+        }
+
+        setShowIframe(false);
+        setShowModal(false);
+        return;
+      }
+
+      if (msg.type === "content-height" && typeof msg.height === "number") {
         setIframeHeight(Math.max(0, Math.floor(msg.height)));
       }
     }
 
-    window.addEventListener("message", onParentMessage);
-    return () => window.removeEventListener("message", onParentMessage);
-  }, [childOrigin]);
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [allowedOrigins, navigate]);
+
+  const [showParentUI, setShowParentUI] = useState(true);
 
   useEffect(() => {
-    function onChildMessage(ev: MessageEvent) {
-      if (ev.origin !== childOrigin) return;
+    if (!iframeLoaded) return;
 
-      const msg = ev.data || {};
-
-      if (msg.type === "child-logged-out") {
-        setShowIframe(false);
-        setShowModal(false);
-
-        navigate("/", { replace: true });
-      }
+    try {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: "parent-handshake" },
+        childOrigin || "*"
+      );
+    } catch (err) {
+      console.warn("Failed to post parent-handshake", err);
     }
 
-    window.addEventListener("message", onChildMessage);
-    return () => window.removeEventListener("message", onChildMessage);
-  }, [childOrigin, navigate]);
+    const fallback = window.setTimeout(() => {
+      const storedRaw = sessionStorage.getItem("EMBED_LOGIN");
+      let stored = null;
+      try {
+        stored = storedRaw ? JSON.parse(storedRaw) : null;
+      } catch (e) {
+        stored = null;
+      }
+
+      if (!childReady && stored && stored.username && stored.password) {
+        try {
+          iframeRef.current?.contentWindow?.postMessage(
+            {
+              type: "parent-login",
+              username: stored.username,
+              password: stored.password,
+              orgId: stored.orgId || 28,
+            },
+            childOrigin || "*"
+          );
+          setStatus("sent");
+        } catch (err) {
+          setStatus("error");
+          setError("postMessage failed (fallback)");
+        }
+      }
+    }, 250);
+
+    return () => clearTimeout(fallback);
+  }, [iframeLoaded, childReady, childOrigin]);
 
   const onIframeLoad = () => {
     setIframeLoaded(true);
     try {
       iframeRef.current?.contentWindow?.postMessage(
         { type: "request-height" },
-        childOrigin
+        childOrigin || "*"
       );
     } catch (e) {
       console.warn("Failed to postMessage to iframe on load", e);
@@ -133,9 +212,11 @@ const HRMSPage: React.FC = () => {
           try {
             iframeRef.current?.contentWindow?.postMessage(
               { type: "request-navigate", path: "/dashboard" },
-              childOrigin
+              childOrigin || "*"
             );
-          } catch (e) {}
+          } catch (e) {
+            console.warn("request-navigate postMessage failed", e);
+          }
         }}
         onSwitchToNormalLogin={() => {
           setShowModal(false);
