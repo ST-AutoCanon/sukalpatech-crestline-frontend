@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Alert from "../../../components/AleartMessage";
+import Alert from "../../../components/Aleartmessage";
 /* ================= TYPES ================= */
 
 interface DepartmentStatus {

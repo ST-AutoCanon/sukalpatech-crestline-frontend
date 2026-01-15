@@ -1,31 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import AlertMessage from "../../../../components/Aleartmessage"; // Updated import
 
 /* ================= TYPES ================= */
-interface RootCategory {
-  id: number;
-  name: string;
-}
-interface Category {
-  id: number;
-  name: string;
-  root_category_id: number;
-}
-interface Product {
-  id: number;
-  name: string;
-  category_id: number;
-}
-interface Variant {
-  id: number;
-  name: string;
-  product_id: number;
-}
-interface SubVariant {
-  id: number;
-  name: string;
-  variant_id: number;
-}
+interface RootCategory { id: number; name: string; }
+interface Category { id: number; name: string; root_category_id: number; }
+interface Product { id: number; name: string; category_id: number; }
+interface Variant { id: number; name: string; product_id: number; }
+interface SubVariant { id: number; name: string; variant_id: number; }
 
 type TabType = "root" | "category" | "product" | "variant" | "subvariant";
 
@@ -55,6 +37,9 @@ export default function AddCategories() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
+  // Alert state
+  const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
   /* ================= TAB LABEL MAPPING ================= */
   const tabMapping: Record<string, TabType> = {
     "Create Root Category": "root",
@@ -65,9 +50,7 @@ export default function AddCategories() {
   };
 
   /* ================= LOAD ROOTS ================= */
-  useEffect(() => {
-    fetchRoots();
-  }, []);
+  useEffect(() => { fetchRoots(); }, []);
 
   const fetchRoots = async () => {
     const res = await axios.get(`${API_BASE}/root-category`);
@@ -77,18 +60,13 @@ export default function AddCategories() {
   const fetchCategories = async (rootId: number) => {
     const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`);
     setCategories(res.data || []);
-    setProducts([]);
-    setVariants([]);
-    setSubVariants([]);
+    setProducts([]); setVariants([]); setSubVariants([]);
   };
 
   const fetchProducts = async (categoryId: number) => {
-    const res = await axios.get(
-      `${API_BASE}/products?category_id=${categoryId}`
-    );
+    const res = await axios.get(`${API_BASE}/products?category_id=${categoryId}`);
     setProducts(res.data || []);
-    setVariants([]);
-    setSubVariants([]);
+    setVariants([]); setSubVariants([]);
   };
 
   const fetchVariants = async (productId: number) => {
@@ -98,68 +76,56 @@ export default function AddCategories() {
   };
 
   const fetchSubVariants = async (variantId: number) => {
-    const res = await axios.get(
-      `${API_BASE}/sub-variants?variant_id=${variantId}`
-    );
+    const res = await axios.get(`${API_BASE}/sub-variants?variant_id=${variantId}`);
     setSubVariants(res.data || []);
   };
 
   /* ================= CREATE ================= */
   const addRootCategory = async () => {
-    if (!rootName) return alert("Enter Root Category");
-    await axios.post(`${API_BASE}/root-category`, { name: rootName });
-    setRootName("");
-    fetchRoots();
+    if (!rootName) return setAlert({ type: "error", message: "Enter Root Category" });
+    try {
+      await axios.post(`${API_BASE}/root-category`, { name: rootName });
+      setRootName(""); fetchRoots();
+      setAlert({ type: "success", message: "Root Category created successfully!" });
+    } catch { setAlert({ type: "error", message: "Failed to create Root Category" }); }
   };
 
   const addCategory = async () => {
-    if (!selectedRoot || !categoryName)
-      return alert("Select Root & Enter Category");
-    await axios.post(`${API_BASE}/category`, {
-      name: categoryName,
-      root_category_id: selectedRoot,
-    });
-    setCategoryName("");
-    fetchCategories(selectedRoot);
+    if (!selectedRoot || !categoryName) return setAlert({ type: "error", message: "Select Root & Enter Category" });
+    try {
+      await axios.post(`${API_BASE}/category`, { name: categoryName, root_category_id: selectedRoot });
+      setCategoryName(""); fetchCategories(selectedRoot);
+      setAlert({ type: "success", message: "Category created successfully!" });
+    } catch { setAlert({ type: "error", message: "Failed to create Category" }); }
   };
 
   const addProduct = async () => {
-    if (!selectedRoot || !selectedCategory || !productName)
-      return alert("Select Root & Category");
-    await axios.post(`${API_BASE}/product`, {
-      name: productName,
-      category_id: selectedCategory,
-    });
-    setProductName("");
-    fetchProducts(selectedCategory);
+    if (!selectedRoot || !selectedCategory || !productName) return setAlert({ type: "error", message: "Select Root & Category" });
+    try {
+      await axios.post(`${API_BASE}/product`, { name: productName, category_id: selectedCategory });
+      setProductName(""); fetchProducts(selectedCategory);
+      setAlert({ type: "success", message: "Product created successfully!" });
+    } catch { setAlert({ type: "error", message: "Failed to create Product" }); }
   };
 
   const addVariant = async () => {
     if (!selectedRoot || !selectedCategory || !selectedProduct || !variantName)
-      return alert("Select Root, Category & Product");
-    await axios.post(`${API_BASE}/variant`, {
-      name: variantName,
-      product_id: selectedProduct,
-    });
-    setVariantName("");
-    fetchVariants(selectedProduct);
+      return setAlert({ type: "error", message: "Select Root, Category & Product" });
+    try {
+      await axios.post(`${API_BASE}/variant`, { name: variantName, product_id: selectedProduct });
+      setVariantName(""); fetchVariants(selectedProduct);
+      setAlert({ type: "success", message: "Variant created successfully!" });
+    } catch { setAlert({ type: "error", message: "Failed to create Variant" }); }
   };
 
   const addSubVariant = async () => {
-    if (
-      !selectedRoot ||
-      !selectedCategory ||
-      !selectedProduct ||
-      !selectedVariant ||
-      !subVariantName
-    )
-      return alert("Complete Full Hierarchy");
-    await axios.post(`${API_BASE}/sub-variant`, {
-      name: subVariantName,
-      variant_id: selectedVariant,
-    });
-    setSubVariantName("");
-    fetchSubVariants(selectedVariant);
+    if (!selectedRoot || !selectedCategory || !selectedProduct || !selectedVariant || !subVariantName)
+      return setAlert({ type: "error", message: "Complete Full Hierarchy" });
+    try {
+      await axios.post(`${API_BASE}/sub-variant`, { name: subVariantName, variant_id: selectedVariant });
+      setSubVariantName(""); fetchSubVariants(selectedVariant);
+      setAlert({ type: "success", message: "Sub Variant created successfully!" });
+    } catch { setAlert({ type: "error", message: "Failed to create Sub Variant" }); }
   };
 
   /* ================= SEARCH ================= */
@@ -176,9 +142,19 @@ export default function AddCategories() {
     setSearchResults(mapped);
   };
 
+
   /* ================= UI ================= */
   return (
     <div className="w-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-6 text-black">
+      {/* Alert */}
+      {alert && (
+        <AlertMessage
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
+
 
       {/* Tabs */}
       <div className="flex gap-6 text-white mb-6 border-b border-white/20">
