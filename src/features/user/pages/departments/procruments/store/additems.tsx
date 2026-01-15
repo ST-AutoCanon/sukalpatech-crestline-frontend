@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Select from "react-select";
+import Aleart from "../../../../components/Aleartmessage";
 
 interface RootCategory {
   id: string;
@@ -53,6 +54,9 @@ export default function AddItem() {
   // ✅ ONLY NEW (vendor popup)
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [activeVendors, setActiveVendors] = useState<number[]>([]);
+
+  const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
 
   useEffect(() => {
     fetchRoots();
@@ -118,8 +122,8 @@ export default function AddItem() {
 
   const handleAddItem = async () => {
     if (!selectedRoot || !itemName) {
-      alert("Root category and item name required");
-      return;
+     setAlert({ type: "error", message: "Root category and item name required" });      
+     return;
     }
 
     await axios.post(`${API_BASE}/items/items`, {
@@ -133,8 +137,8 @@ export default function AddItem() {
       sub_variant_id: selectedSubVariant || null,
     });
 
-    alert("Item added successfully");
-
+    setAlert({ type: "success", message: "Item added successfully" });
+    
     setItemName("");
     setSelectedVendors([]);
     setSelectedRoot("");
@@ -162,6 +166,9 @@ export default function AddItem() {
 
   return (
     <div className="w-full h-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-8">
+        {alert && <Aleart type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
+
+      <div className="max-w-7xl mx-auto"></div>
       <div className="max-w-7xl mx-auto">
         {/* ===== Add Item Card ===== */}
         <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 sm:p-6 shadow-lg border border-white/20">

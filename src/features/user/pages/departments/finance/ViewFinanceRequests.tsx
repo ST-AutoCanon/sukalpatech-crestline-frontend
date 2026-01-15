@@ -236,6 +236,9 @@ export default function SubmittedFinanceRequestsPage() {
         <div className="fixed inset-0 bg-black/40 flex justify-center items-start pt-10 z-50 overflow-auto">
           <div className="bg-white w-full max-w-[95%] md:max-w-6xl rounded shadow-lg p-4 md:p-6 relative max-h-[90vh] overflow-y-auto">
             {/* CLOSE BUTTON */}
+            <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
+               View PR-{selectedPR.id} info
+              </h2>
             <button
               className="absolute -top-1 -right-1 text-2xl text-gray-600 hover:text-gray-800"
               onClick={() => setModalOpen(false)}

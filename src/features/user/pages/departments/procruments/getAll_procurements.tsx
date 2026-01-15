@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
 
+interface Props {
+  filter: string;
+  search: string;
+  refreshKey: number;
+}
+
+
 type DepartmentStatus = {
   department_status: string;
   department_comment: string;
@@ -58,7 +65,7 @@ type PR = {
   items: Item[];
 };
 
-export default function ViewPRPage() {
+export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   const [prs, setPrs] = useState<PR[]>([]);
   const [activePR, setActivePR] = useState<PR | null>(null);
   const [showItems, setShowItems] = useState(false);
@@ -127,9 +134,26 @@ export default function ViewPRPage() {
       });
   }, []);
 
-  if (loading) {
-    return <div className="text-center p-6 text-gray-600">Loading PRs...</div>;
-  }
+  const fetchPRs = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`
+      );
+      const data = await res.json();
+      setPrs(data?.data || []);
+    } catch (err) {
+      console.error("Fetch PR error", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPRs();
+  }, [filter, search, refreshKey]); // 🔥 IMPORTANT
+
+  if (loading) return <div className="p-6">Loading PRs...</div>;
 
   return (
     <>
@@ -147,7 +171,7 @@ export default function ViewPRPage() {
               onClick={() => setActivePR(pr)}
             >
               <h3 className="text-purple-600 font-semibold text-lg mb-2 truncate">
-                PR-{pr.id}
+                PR ID:{pr.id}
               </h3>
 
               <div className="space-y-1 text-sm flex-1">
@@ -201,7 +225,7 @@ export default function ViewPRPage() {
             {/* Header */}
             <div className="flex justify-between items-center mb-4 md:mb-6">
               <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-                View Procurement Page
+                View PR-{activePR.id} info
               </h2>
               <button
                 onClick={() => setActivePR(null)}
@@ -351,13 +375,11 @@ export default function ViewPRPage() {
 
                           {/* ===== DESKTOP VALUES ===== */}
                           {item.vendors.map((vendor) => {
-                            const feasibilityComment =
-                              vendor.comments?.length > 0
-                                ? vendor.comments[vendor.comments.length - 1].comment
-                                : "";
+                            const prComment =
+                              vendor.comments?.[0]?.comment || "";
 
-                            const existingComments =
-                              vendor.comments?.slice(0, -1).map((c) => c.comment).join(", ") || "";
+                            const feasibilityComment =
+                              vendor.comments?.find((c) => c.commented_by === 2)?.comment || "";
 
                             return (
                               <div
@@ -400,7 +422,7 @@ export default function ViewPRPage() {
 
                                 <input
                                   readOnly
-                                  value={existingComments}
+                                  value={prComment}
                                   className="bg-white border rounded px-2 py-1 w-full"
                                 />
 
@@ -421,13 +443,11 @@ export default function ViewPRPage() {
 
                           {/* ===== MOBILE VIEW ===== */}
                           {item.vendors.map((vendor) => {
-                            const feasibilityComment =
-                              vendor.comments?.length > 0
-                                ? vendor.comments[vendor.comments.length - 1].comment
-                                : "";
+                            const prComment =
+                              vendor.comments?.[0]?.comment || "";
 
-                            const existingComments =
-                              vendor.comments?.slice(0, -1).map((c) => c.comment).join(", ") || "";
+                            const feasibilityComment =
+                              vendor.comments?.find((c) => c.commented_by === 2)?.comment || "";
 
                             return (
                               <div
@@ -445,7 +465,7 @@ export default function ViewPRPage() {
                                       ? new Date(vendor.quotation_validity_date).toLocaleDateString()
                                       : "-",
                                   ],
-                                  ["Comments", existingComments],
+                                  ["Comments", prComment],
                                   ["Feasibility Comment", feasibilityComment],
                                   ["Status", vendor.status || "-"],
                                 ].map(([label, value], idx) => (

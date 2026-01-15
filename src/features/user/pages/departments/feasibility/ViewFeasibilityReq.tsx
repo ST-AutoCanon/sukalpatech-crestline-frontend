@@ -122,27 +122,41 @@ export default function ViewPRPage() {
             onClick={() => setActivePR(pr)}
           >
             <h2 className="text-lg font-semibold text-purple-600 truncate">
-              FEAS-{pr.id}
+              PR ID:{pr.id}
             </h2>
 
-            <div className="mt-3 space-y-1 text-sm flex-1">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Department</span>
-                <span className="truncate">{pr.department}</span>
+            <div className="mt-3 space-y-2 text-sm">
+              <div className="flex gap-2">
+                <span className="text-gray-400 w-32 shrink-0">Department:</span>
+                <span className="text-gray-900 truncate">
+                  {pr.department || "-"}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Priority</span>
-                <span>{pr.priority}</span>
+
+              <div className="flex gap-2">
+                <span className="text-gray-400 w-32 shrink-0">Priority:</span>
+                <span className="text-gray-900">
+                  {pr.priority || "-"}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Status</span>
-                <span>{pr.department_statuses?.[0]?.department_status || "Draft"}</span>
+
+              <div className="flex gap-2">
+                <span className="text-gray-400 w-32 shrink-0">Status:</span>
+                <span className="text-gray-900">
+                  {pr.department_statuses?.[0]?.department_status || "Draft"}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Required Date</span>
-                <span>{new Date(pr.required_date).toLocaleDateString()}</span>
+
+              <div className="flex gap-2">
+                <span className="text-gray-400 w-32 shrink-0">Required Date:</span>
+                <span className="text-gray-900">
+                  {pr.required_date
+                    ? new Date(pr.required_date).toLocaleDateString()
+                    : "-"}
+                </span>
               </div>
             </div>
+
 
             <button className="mt-3 text-sm font-medium text-blue-600 text-left">
               More Info
@@ -158,7 +172,7 @@ export default function ViewPRPage() {
             {/* Header */}
             <div className="flex justify-between items-center mb-4 md:mb-6">
               <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-                View Feasibility Page
+                View PR-{activePR.id} info
               </h2>
               <button onClick={() => setActivePR(null)} className="text-gray-500 hover:text-gray-700">
                 <X size={24} />
@@ -166,7 +180,7 @@ export default function ViewPRPage() {
             </div>
 
             {/* PR Info */}
-            <div className="bg-gray-100 rounded-lg p-3 md:p-4 mb-4">
+            <div className="bg-gray-100 rounded-lg p-3 md:p-4 mb-4 mt-2">
               {/* Mobile view */}
               <div className="space-y-3 sm:hidden text-sm">
                 <div>

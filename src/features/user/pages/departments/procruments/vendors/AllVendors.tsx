@@ -5,6 +5,7 @@ import { AuthContext } from "../../../../../../context/AuthContext";
 const AllVendors: React.FC = () => {
   const { token } = useContext(AuthContext);
   const [vendors, setVendors] = useState<any[]>([]);
+  const [activeVendor, setActiveVendor] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchVendors = async () => {
@@ -23,19 +24,38 @@ const AllVendors: React.FC = () => {
     fetchVendors();
   }, [token]);
 
+  const Rating = ({ value = 0 }: { value: number }) => (
+    <div>
+      <div className="text-xs text-gray-500 mb-1">Rating</div>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span
+            key={star}
+            className={`text-lg ${star <= value ? "text-orange-400" : "text-gray-300"}`}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+
+  const bank =
+    Array.isArray(activeVendor?.bank_details) && activeVendor.bank_details.length > 0
+      ? activeVendor.bank_details[0]
+      : {};
+
   return (
-    <div className="px-8 py-6">
+    <div className="px-4 sm:px-8 py-6">
       {/* VENDOR GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {vendors.map((v) => (
           <div
             key={v.vendor_id}
-            className="relative bg-white rounded-2xl shadow-md p-5"
+            className="relative bg-white rounded-2xl shadow-md p-5 flex flex-col justify-between"
           >
-
-
             {/* VENDOR NAME */}
-            <h3 className="text-purple-600 font-semibold text-lg mb-4">
+            <h3 className="text-purple-600 font-semibold text-lg mb-4 truncate">
               {v.vendor_name}
             </h3>
 
@@ -47,16 +67,73 @@ const AllVendors: React.FC = () => {
               <Row label="GST" value={v.gst_number} />
               <Row label="PAN" value={v.pan_number} />
               <Row label="Rating" value={v.rating} />
-              <Row label="Status" value={v.status} />
             </div>
 
             {/* MORE INFO */}
-            <button className="mt-4 text-blue-600 text-sm font-medium hover:underline">
+            <button
+              onClick={() => setActiveVendor(v)}
+              className="mt-4 text-blue-600 text-sm font-medium hover:underline self-start"
+            >
               More Info
             </button>
           </div>
         ))}
       </div>
+
+      {/* VENDOR MODAL */}
+      {activeVendor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
+          <div className="bg-white w-full max-w-4xl rounded-xl shadow-xl relative
+                    max-h-[90vh] overflow-y-auto">
+            {/* HEADER (CLOSE BUTTON) */}
+            <div className="flex justify-end items-center px-6 pt-5 sticky top-0 bg-white z-10">
+              <button
+                onClick={() => setActiveVendor(null)}
+                className="text-gray-500 hover:text-gray-700 text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* STEP INDICATOR */}
+            <div className="flex gap-6 px-6 mt-2 text-lg flex-wrap sticky top-12 bg-white z-10">
+              <span className="text-purple-600 font-medium flex items-center gap-2">
+                ● Vendor Details
+              </span>
+            </div>
+
+            {/* BODY */}
+            <div className="px-6 py-5 space-y-6">
+              {/* VENDOR DETAILS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input label="Vendor Name" value={activeVendor.vendor_name} />
+                <Input label="Contact Person" value={activeVendor.contact_person} />
+                <Input label="Phone Number" value={activeVendor.phone} />
+                <Input label="Email" value={activeVendor.email} />
+                <Input label="GST Number" value={activeVendor.gst_number} />
+                <Input label="PAN Number" value={activeVendor.pan_number} />
+                <Input label="Address" value={activeVendor.address} />
+                <Rating value={activeVendor.rating} />
+              </div>
+
+              {/* BANK DETAILS */}
+              <div>
+                <h3 className="text-purple-600 font-medium flex items-center gap-2 text-lg">
+                  ● Bank Details
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input label="Bank Name" value={bank.bank_name} />
+                  <Input label="Account Number" value={bank.account_number} />
+                  <Input label="IFSC Code" value={bank.ifsc_code} />
+                  <Input label="Branch Name" value={bank.branch_name} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
@@ -64,16 +141,21 @@ const AllVendors: React.FC = () => {
 export default AllVendors;
 
 /* ---------- Helper Row ---------- */
-const Row = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) => (
+const Row = ({ label, value }: { label: string; value: string | number }) => (
   <div className="flex text-gray-700">
     <span className="w-20 text-gray-400">{label}</span>
     <span className="font-medium truncate">{value || "-"}</span>
   </div>
 );
 
+const Input = ({ label, value }: { label: string; value: any }) => (
+  <div>
+    <div className="text-xs text-gray-500 mb-1">{label}</div>
+    <input
+      readOnly
+      value={value || ""}
+      placeholder="-"
+      className="w-full bg-blue-50 text-black border border-gray-300 rounded-md px-3 py-2 focus:outline-none"
+    />
+  </div>
+);

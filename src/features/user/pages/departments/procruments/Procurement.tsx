@@ -1,15 +1,22 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Upload } from "lucide-react";
+import Aleart from "../../../components/AleartMessage";
 
 export default function NewProcurementPage({ onClose }) {
   const [departments, setDepartments] = useState([]);
   const [vendorList, setVendorList] = useState([]);
-  
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+
+
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement`;
   const API_BASE1 = `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`;
   const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
-  
+
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -22,7 +29,7 @@ export default function NewProcurementPage({ onClose }) {
       }
     };
 
-    fetchDepartments(); 
+    fetchDepartments();
   }, []);
 
 
@@ -129,6 +136,14 @@ export default function NewProcurementPage({ onClose }) {
       ],
     });
   };
+  const removeItem = (itemIndex: number) => {
+    if (prData.items.length === 1) return;
+    setPrData((prev) => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== itemIndex),
+    }));
+  };
+
 
   const addVendor = (i) => {
     const updated = [...prData.items];
@@ -144,6 +159,19 @@ export default function NewProcurementPage({ onClose }) {
     });
     setPrData({ ...prData, items: updated });
   };
+  const removeVendor = (itemIndex: number, vendorIndex: number) => {
+    setPrData((prev) => {
+      const items = [...prev.items];
+
+      // Remove the vendor at vendorIndex
+      items[itemIndex].vendors = items[itemIndex].vendors.filter(
+        (_, i) => i !== vendorIndex
+      );
+
+      return { ...prev, items };
+    });
+  };
+
 
   const handleFileUpload = (i, vi, files) => {
     const key = `${i}-${vi}`;
@@ -164,21 +192,35 @@ export default function NewProcurementPage({ onClose }) {
       const formData = new FormData();
       formData.append("data", JSON.stringify(prData));
 
-      Object.values(vendorFiles).forEach((files) => {
-        files.forEach((file) => formData.append("attachments", file));
+      Object.values(vendorFiles).forEach((files: any) => {
+        files.forEach((file: File) => formData.append("attachments", file));
       });
 
       await axios.post(`${API_BASE}/purchase-requests`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      alert("PR Created Successfully");
-      onClose();
+      // ✅ SUCCESS ALERT
+      setAlert({
+        type: "success",
+        message: "PR created successfully",
+      });
+
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+
     } catch (err) {
       console.error(err);
-      alert("Error creating PR");
+
+      // ❌ ERROR ALERT
+      setAlert({
+        type: "error",
+        message: "Something went wrong while creating PR",
+      });
     }
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
@@ -189,6 +231,14 @@ export default function NewProcurementPage({ onClose }) {
           <h2 className="text-xl font-semibold text-purple-600">New Procurement Request</h2>
           <button onClick={onClose} className="text-xl font-bold hover:text-red-600">×</button>
         </div>
+        {alert && (
+          <Aleart
+            type={alert.type}
+            message={alert.message}
+            onClose={() => setAlert(null)}
+          />
+        )}
+
 
         {/* FORM AREA */}
         <div className="p-6 flex-1 overflow-y-auto space-y-6">
@@ -239,10 +289,25 @@ export default function NewProcurementPage({ onClose }) {
             </div>
           </div>
 
-          {/* ADD ITEM BUTTON - previous place */}
-          <div className="flex justify-end">
-            <button onClick={addItem} className="px-4 py-2 rounded-lg bg-blue-600 text-white">+ Add Item</button>
+          {/* ADD ITEM BUTTON */}
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={addItem}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+            >
+              + Add Item
+            </button>
+
+            {prData.items.length > 1 && (
+              <button
+                onClick={() => removeItem(prData.items.length - 1)}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white"
+              >
+                Remove Item
+              </button>
+            )}
           </div>
+
 
           {/* ITEMS */}
           {prData.items.map((item, i) => (
@@ -269,18 +334,16 @@ export default function NewProcurementPage({ onClose }) {
               {/* VENDORS */}
               <div className="overflow-x-auto space-y-2">
                 {item.vendors.map((vendor, vi) => (
-                  <div key={vi} className="grid grid-cols-1 sm:grid-cols-7 gap-2 sm:gap-3 items-end">
+                  <div
+                    key={vi}
+                    className="grid grid-cols-1 sm:grid-cols-8 gap-2 sm:gap-3 items-end"
+                  >
+                    {/* Vendor */}
                     <div>
                       <label className="text-xs text-gray-600">Vendor</label>
-                      {/* <select className="w-full p-2 border rounded mt-1" onChange={(e) => handleVendorChange(i, vi, "vendor_id", e.target.value)}>
-                        <option>Select</option>
-                        {vendorList.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
-                      </select> */}
                       <select
                         className="w-full p-2 border rounded mt-1"
-                        onChange={(e) =>
-                          handleVendorChange(i, vi, "vendor_id", e.target.value)
-                        }
+                        onChange={(e) => handleVendorChange(i, vi, "vendor_id", e.target.value)}
                       >
                         <option value="">Select</option>
                         {vendorList.map((v) => (
@@ -290,14 +353,27 @@ export default function NewProcurementPage({ onClose }) {
                         ))}
                       </select>
                     </div>
+
+                    {/* Upload */}
                     <div>
                       <label className="text-xs text-gray-600">Upload Quotation</label>
-                      <input type="file" className="w-full p-2 border rounded mt-1" onChange={(e) => handleFileUpload(i, vi, e.target.files)} />
+                      <input
+                        type="file"
+                        className="w-full p-2 border rounded mt-1"
+                        onChange={(e) => handleFileUpload(i, vi, e.target.files)}
+                      />
                     </div>
+
+                    {/* Unit Price */}
                     <div>
                       <label className="text-xs text-gray-600">Unit Price</label>
-                      <input className="w-full p-2 border rounded mt-1" onChange={(e) => handleVendorChange(i, vi, "unit_price", e.target.value)} />
+                      <input
+                        className="w-full p-2 border rounded mt-1"
+                        onChange={(e) => handleVendorChange(i, vi, "unit_price", e.target.value)}
+                      />
                     </div>
+
+                    {/* Total Price */}
                     <div>
                       <label className="text-xs text-gray-600">Total Price</label>
                       <input
@@ -306,22 +382,58 @@ export default function NewProcurementPage({ onClose }) {
                         readOnly
                       />
                     </div>
+
+                    {/* Validity */}
                     <div>
                       <label className="text-xs text-gray-600">Quotation Validity</label>
-                      <input type="date" className="w-full p-2 border rounded mt-1" onChange={(e) => handleVendorChange(i, vi, "quotation_validity_date", e.target.value)} />
+                      <input
+                        type="date"
+                        className="w-full p-2 border rounded mt-1"
+                        onChange={(e) => handleVendorChange(i, vi, "quotation_validity_date", e.target.value)}
+                      />
                     </div>
-                    <div className="col-span-1 sm:col-span-2">
+
+                    {/* Comments */}
+                    <div>
                       <label className="text-xs text-gray-600">Comments</label>
-                      <input className="w-full p-2 border rounded mt-1" onChange={(e) => handleComment(i, vi, e.target.value)} />
+                      <input
+                        className="w-full p-2 border rounded mt-1"
+                        onChange={(e) => handleComment(i, vi, e.target.value)}
+                      />
+                    </div>
+
+                    {/* 🗑 REMOVE VENDOR */}
+                    <div className="flex items-end justify-end">
+                      <button
+                        onClick={() => removeVendor(i, vi)}
+                        className="px-3 py-2 rounded-lg bg-red-600 text-white"
+                        title="Remove Vendor"
+                      >
+                        🗑
+                      </button>
                     </div>
                   </div>
                 ))}
-                <div className="flex w-full">
-                  <button onClick={() => addVendor(i)} className="ml-auto px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white">+</button>
+
+                {/* ADD VENDOR BUTTON - RIGHT */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => addVendor(i)}
+                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                  >
+                    + Add Vendor
+                  </button>
                 </div>
               </div>
 
+
+
+
+
+
             </div>
+
+
           ))}
 
         </div>

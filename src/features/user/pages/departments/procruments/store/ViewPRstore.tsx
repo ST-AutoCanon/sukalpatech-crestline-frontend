@@ -219,6 +219,9 @@ export default function SubmittedStoreeRequestsPage() {
             >
               ×
             </button>
+            <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
+                View PR-{selectedPR.id} info
+              </h2>
 
             {/* PR DETAILS */}
             <div className="bg-gray-100 p-4 rounded mb-4 overflow-x-auto">

@@ -10,16 +10,13 @@ const FeasibilityHome: React.FC = () => {
   return (
     <div
       className="
-        min-h-[calc(100vh-64px)]
-        bg-gradient-to-br from-purple-900 to-blue-900
-        px-4 sm:px-6 lg:px-8
-        py-4 sm:py-6
+        w-full h-full bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] text-white
       "
     >
 
       {/* TABS */}
-      <div className="mt-4 overflow-x-auto mt-8">
-        <div className="flex gap-3 w-max">
+      <div className="w-full px-4 sm:px-6 md:px-10 pt-5 md:pt-8">
+        <div className="mt-4 md:mt-6 flex flex-wrap gap-4 sm:gap-4">
           <button
             onClick={() => setActiveTab("feasibility")}
             className={`px-4 sm:px-5 py-2 rounded-full font-medium text-sm sm:text-base whitespace-nowrap transition
@@ -29,7 +26,7 @@ const FeasibilityHome: React.FC = () => {
               }
             `}
           >
-            Feasibility
+          Procrument Request
           </button>
 
           <button

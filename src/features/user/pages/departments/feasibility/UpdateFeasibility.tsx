@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-
+import Alert from "../../../components/AleartMessage";
 /* ================= TYPES ================= */
 
 interface DepartmentStatus {
@@ -65,12 +65,18 @@ export default function SubmittedRequestsPage() {
   const [newStatus, setNewStatus] = useState("");
   const [newComment, setNewComment] = useState("");
 
-  const department_statuses = ["APPROVED", "REJECTED", "PENDING"];
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+
+  const department_statuses = ["Feasibility APPROVED", "Feasibility REJECTED", "Feasibility PENDING"];
   const VENDOR_STATUS_OPTIONS = [
-    "Approved",
-    "Rejected",
-    "Pending",
-    "Submitted",
+    "feasibility Approved",
+    "feasibility Rejected",
+    "feasibility Pending",
+
   ];
 
   const [updateData, setUpdateData] = useState<{
@@ -133,8 +139,6 @@ export default function SubmittedRequestsPage() {
       });
   }, []);
 
-  /* ================= HANDLERS ================= */
-
   const openPR = (pr: FeasibilityPR) => {
     setSelectedPR(pr);
     setUpdateData({
@@ -149,7 +153,10 @@ export default function SubmittedRequestsPage() {
 
   const submitUpdate = async () => {
     if (!selectedPR || !newStatus) {
-      alert("Please select status");
+      setAlert({
+        type: "error",
+        message: "Please select procurement PR status",
+      });
       return;
     }
 
@@ -183,7 +190,15 @@ export default function SubmittedRequestsPage() {
       `${API_BASE}/feasibility-requests/${selectedPR.id}`,
       payload
     );
-    alert("Feasibility PR Updated");
+    setAlert({
+      type: "success",
+      message: "Feasibility PR updated successfully",
+    });
+
+    setTimeout(() => {
+      setAlert(null);
+    }, 2000);
+
     setModalOpen(false);
   };
 
@@ -229,12 +244,23 @@ export default function SubmittedRequestsPage() {
       {modalOpen && selectedPR && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-start pt-10 z-50 px-2 sm:px-4">
           <div className="bg-white w-full max-w-[95vw] sm:max-w-6xl rounded shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto relative">
+            <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
+              Update PR-{selectedPR.id} info
+            </h2>
             <button
               className="absolute top-2 right-2 text-2xl text-gray-600 hover:text-gray-800"
               onClick={() => setModalOpen(false)}
             >
               ×
             </button>
+            {alert && (
+              <Alert
+                type={alert.type}
+                message={alert.message}
+                onClose={() => setAlert(null)}
+              />
+            )}
+
 
             {/* PR DETAILS */}
             <div className="bg-gray-100 p-4 rounded mb-4">
@@ -264,6 +290,16 @@ export default function SubmittedRequestsPage() {
                 ))}
               </div>
             </div>
+            {/* ITEM SECTION TOGGLE */}
+            <div className="flex justify-end mb-2">
+              <button
+                onClick={() => setExpandItems(!expandItems)}
+                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded"
+              >
+                {expandItems ? "−" : "+"}
+              </button>
+            </div>
+
 
             {/* ITEMS */}
             {expandItems &&
@@ -604,7 +640,7 @@ export default function SubmittedRequestsPage() {
                         onChange={(e) => setNewStatus(e.target.value)}
                         className="bg-white border p-2 rounded w-full"
                       >
-                        <option value="">Select Status</option>
+                        <option value="">Select Feasibility Status</option>
                         {department_statuses.map((s) => (
                           <option key={s} value={s}>
                             {s}

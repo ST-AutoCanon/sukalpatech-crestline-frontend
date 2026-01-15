@@ -8,14 +8,11 @@ const FinanceHome: React.FC = () => {
   );
 
   return (
-    <div className="h-full w-full bg-gradient-to-br from-purple-900 to-blue-900 px-4 sm:px-8 py-6">
-      {/* TITLE */}
-      <h1 className="text-2xl sm:text-3xl font-semibold text-white mb-6 sm:mb-10">
-        Finance
-      </h1>
+    <div className=" w-full h-full bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] text-white">
+      
 
       {/* TABS */}
-      <div className="flex gap-3 flex-wrap mt-8">
+      <div className="w-full px-4 sm:px-6 md:px-10 pt-5 md:pt-8 flex flex-wrap gap-4 sm:gap-4">
         <button
           onClick={() => setActiveTab("Finance")}
           className={`px-4 sm:px-5 py-2 rounded-full font-medium transition-colors ${
@@ -24,7 +21,7 @@ const FinanceHome: React.FC = () => {
               : "bg-white/20 text-white hover:bg-white/30"
           }`}
         >
-          Finance
+          Procrument Requests
         </button>
 
         <button
