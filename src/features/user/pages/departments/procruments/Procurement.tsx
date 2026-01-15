@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Upload } from "lucide-react";
-import Aleart from "../../../components/AleartMessage";
+import Aleart from "../../../components/Aleartmessage";
 
 export default function NewProcurementPage({ onClose }) {
   const [departments, setDepartments] = useState([]);

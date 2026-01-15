@@ -1,6 +1,6 @@
 import { useState, useEffect, type ReactNode } from "react";
 import axios from "axios";
-import Aleart from "../../../components/AleartMessage";
+import Aleart from "../../../components/Aleartmessage";
 
 /* ================= TYPES ================= */
 
