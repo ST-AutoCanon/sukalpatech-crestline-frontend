@@ -214,6 +214,7 @@ export default function NewProcurementPage({ onClose }) {
     }
   };
 
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
       <div className="w-full max-w-7xl bg-white text-gray-900 rounded-xl flex flex-col max-h-[95vh]">
@@ -485,6 +486,8 @@ export default function NewProcurementPage({ onClose }) {
                 </div>
               </div>
             </div>
+
+
           ))}
         </div>
 
@@ -497,6 +500,14 @@ export default function NewProcurementPage({ onClose }) {
             <Upload size={16} /> Submit PR
           </button>
         </div>
+
+        {/* SUBMIT BUTTON - sticky bottom right */}
+        <div className="flex justify-end p-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
+          <button onClick={submitPR} className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white flex items-center gap-2">
+            <Upload size={16} /> Submit PR
+          </button>
+        </div>
+
       </div>
     </div>
   );
