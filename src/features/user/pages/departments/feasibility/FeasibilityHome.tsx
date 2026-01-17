@@ -1,52 +1,6 @@
-// import React, { useState } from "react";
-// import FeasibilityPage from "./FeasibilityPage";
-// import OthersPage from "./others/others"; // placeholder for other actions
-
-// const FeasibilityHome: React.FC = () => {
-//   const [currentPage, setCurrentPage] = useState<
-//     "home" | "feasibility" | "others"
-//   >("home");
-
-//   if (currentPage === "feasibility") return <FeasibilityPage />;
-//   if (currentPage === "others") return <OthersPage />;
-
-//   return (
-//     <div className="p-10 max-w-6xl mx-auto">
-//       <h1 className="text-2xl font-bold mb-6 text-gray-800">Dashboard</h1>
-//       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//         {/* Feasibility Card */}
-//         <div
-//           className="p-6 border rounded shadow hover:bg-gray-50 cursor-pointer flex flex-col items-center justify-center"
-//           onClick={() => setCurrentPage("feasibility")}
-//         >
-//           <h2 className="text-xl font-semibold mb-2">Feasibility</h2>
-//           <p className="text-gray-600 text-center">
-//             Manage PR Feasibility Requests
-//           </p>
-//         </div>
-
-//         {/* Others Card */}
-//         <div
-//           className="p-6 border rounded shadow hover:bg-gray-50 cursor-pointer flex flex-col items-center justify-center"
-//           onClick={() => setCurrentPage("others")}
-//         >
-//           <h2 className="text-xl font-semibold mb-2">Others</h2>
-//           <p className="text-gray-600 text-center">Other Actions / Requests</p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default FeasibilityHome;
-
-
-
-
 import React, { useState } from "react";
 import FeasibilityPage from "./FeasibilityPage";
-import OthersPage from "./others/others"; // placeholder for other actions
-import { Check } from "lucide-react";
+import OthersPage from "./others/others";
 
 const FeasibilityHome: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"feasibility" | "others">(
@@ -54,35 +8,45 @@ const FeasibilityHome: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 to-blue-900 px-8 py-6">
-   
+    <div
+      className="
+        w-full h-full bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] text-white
+      "
+    >
       {/* TABS */}
-      <div className="flex gap-3 mt-5">
-        <button
-          onClick={() => setActiveTab("feasibility")}
-          className={`px-5 py-2 rounded-full font-medium ${
-            activeTab === "feasibility"
-              ? "bg-white text-purple-700"
-              : "bg-white/10 text-white"
-          }`}
-        >
-          Feasibility
-        </button>
+      <div className="w-full px-4 sm:px-6 md:px-10 pt-5 md:pt-8">
+        <div className="mt-4 md:mt-6 flex flex-wrap gap-4 sm:gap-4">
+          <button
+            onClick={() => setActiveTab("feasibility")}
+            className={`px-4 sm:px-5 py-2 rounded-full font-medium text-sm sm:text-base whitespace-nowrap transition
+              ${
+                activeTab === "feasibility"
+                  ? "bg-white text-purple-700 shadow"
+                  : "bg-white/10 text-white hover:bg-white/20"
+              }
+            `}
+          >
+            Procrument Request
+          </button>
 
-        <button
-          onClick={() => setActiveTab("others")}
-          className={`px-5 py-2 rounded-full font-medium ${
-            activeTab === "others"
-              ? "bg-white text-purple-700"
-              : "bg-white/10 text-white"
-          }`}
-        >
-          Others
-        </button>
+          <button
+            onClick={() => setActiveTab("others")}
+            className={`px-4 sm:px-5 py-2 rounded-full font-medium text-sm sm:text-base whitespace-nowrap transition
+              ${
+                activeTab === "others"
+                  ? "bg-white text-purple-700 shadow"
+                  : "bg-white/10 text-white hover:bg-white/20"
+              }
+            `}
+          >
+            Others
+          </button>
+        </div>
       </div>
 
-      {/* DYNAMIC TAB CONTENT */}
-      <div className="pt-10">
+      {/* TAB CONTENT */}
+      {/* <div className="pt-6 sm:pt-8"> */}
+      <div className="px-3 sm:px-5 md:px-10 pt-4 md:pt-6 pb- md:pb-10">
         {activeTab === "feasibility" && <FeasibilityPage />}
         {activeTab === "others" && <OthersPage />}
       </div>
@@ -91,3 +55,4 @@ const FeasibilityHome: React.FC = () => {
 };
 
 export default FeasibilityHome;
+

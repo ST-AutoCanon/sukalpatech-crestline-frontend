@@ -1,483 +1,21 @@
-// import { useEffect, useState } from "react";
-// import axios from "axios";
-
-// interface RootCategory {
-//   id: number;
-//   code: string;
-//   name: string;
-// }
-
-// interface Category {
-//   id: number;
-//   code: string;
-//   name: string;
-//   root_category_id: number;
-// }
-
-// interface Product {
-//   id: number;
-//   code: string;
-//   name: string;
-//   category_id: number;
-// }
-
-// interface Variant {
-//   id: number;
-//   code: string;
-//   name: string;
-//   product_id: number;
-// }
-
-// interface SubVariant {
-//   id: number;
-//   code: string;
-//   name: string;
-//   variant_id: number;
-// }
-
-// export default function AddCategories() {
-//   const API_BASE = "http://localhost:5001/api/categories";
-
-//   // Form states
-//   const [rootName, setRootName] = useState("");
-//   const [categoryName, setCategoryName] = useState("");
-//   const [productName, setProductName] = useState("");
-//   const [variantName, setVariantName] = useState("");
-//   const [subVariantName, setSubVariantName] = useState("");
-
-//   const [selectedRoot, setSelectedRoot] = useState<number | null>(null);
-//   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-//   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
-//   const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
-
-//   // Data lists
-//   const [roots, setRoots] = useState<RootCategory[]>([]);
-//   const [categories, setCategories] = useState<Category[]>([]);
-//   const [products, setProducts] = useState<Product[]>([]);
-//   const [variants, setVariants] = useState<Variant[]>([]);
-//   const [subVariants, setSubVariants] = useState<SubVariant[]>([]);
-
-//   // Search
-//   const [searchQuery, setSearchQuery] = useState("");
-//   const [searchResults, setSearchResults] = useState<
-//     {
-//       rootName: string;
-//       categoryName: string;
-//       productName: string;
-//       variantName: string;
-//       subVariantName: string;
-//     }[]
-//   >([]);
-
-//   useEffect(() => {
-//     fetchRoots();
-//   }, []);
-
-//   const fetchRoots = async () => {
-//     try {
-//       const res = await axios.get(`${API_BASE}/root-category`);
-//       setRoots(res.data || []);
-//     } catch (err) {
-//       console.error("Error fetching roots:", err);
-//     }
-//   };
-
-//   const fetchCategories = async (rootId: number) => {
-//     try {
-//       const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`);
-//       setCategories(res.data || []);
-//       setProducts([]);
-//       setVariants([]);
-//       setSubVariants([]);
-//     } catch (err) {
-//       console.error("Error fetching categories:", err);
-//     }
-//   };
-
-//   const fetchProducts = async (categoryId: number) => {
-//     try {
-//       const res = await axios.get(
-//         `${API_BASE}/products?category_id=${categoryId}`
-//       );
-//       setProducts(res.data || []);
-//       setVariants([]);
-//       setSubVariants([]);
-//     } catch (err) {
-//       console.error("Error fetching products:", err);
-//     }
-//   };
-
-//   const fetchVariants = async (productId: number) => {
-//     try {
-//       const res = await axios.get(
-//         `${API_BASE}/variants?product_id=${productId}`
-//       );
-//       setVariants(res.data || []);
-//       setSubVariants([]);
-//     } catch (err) {
-//       console.error("Error fetching variants:", err);
-//     }
-//   };
-
-//   const fetchSubVariants = async (variantId: number) => {
-//     try {
-//       const res = await axios.get(
-//         `${API_BASE}/sub-variants?variant_id=${variantId}`
-//       );
-//       setSubVariants(res.data || []);
-//     } catch (err) {
-//       console.error("Error fetching sub-variants:", err);
-//     }
-//   };
-
-//   // Add handlers
-//   const addRootCategory = async () => {
-//     if (!rootName) return alert("Enter root category name");
-//     await axios.post(`${API_BASE}/root-category`, { name: rootName });
-//     setRootName("");
-//     fetchRoots();
-//   };
-
-//   const addCategory = async () => {
-//     if (!selectedRoot || !categoryName)
-//       return alert("Select root and enter category name");
-
-//     await axios.post(`${API_BASE}/category`, {
-//       name: categoryName,
-//       root_category_id: selectedRoot,
-//     });
-
-//     setCategoryName("");
-//     fetchCategories(selectedRoot);
-//   };
-
-//   const addProduct = async () => {
-//     if (!selectedCategory || !productName)
-//       return alert("Select category and enter product name");
-
-//     await axios.post(`${API_BASE}/product`, {
-//       name: productName,
-//       category_id: selectedCategory,
-//     });
-
-//     setProductName("");
-//     fetchProducts(selectedCategory);
-//   };
-
-//   const addVariant = async () => {
-//     if (!selectedProduct || !variantName)
-//       return alert("Select product and enter variant name");
-
-//     await axios.post(`${API_BASE}/variant`, {
-//       name: variantName,
-//       product_id: selectedProduct,
-//     });
-
-//     setVariantName("");
-//     fetchVariants(selectedProduct);
-//   };
-
-//   const addSubVariant = async () => {
-//     if (!selectedVariant || !subVariantName)
-//       return alert("Select variant and enter sub-variant name");
-
-//     await axios.post(`${API_BASE}/sub-variant`, {
-//       name: subVariantName,
-//       variant_id: selectedVariant,
-//     });
-
-//     setSubVariantName("");
-//     fetchSubVariants(selectedVariant);
-//   };
-
-//   // Search handler
-//   const handleSearch = async () => {
-//     if (!searchQuery) return setSearchResults([]);
-
-//     try {
-//       const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`);
-//       const mappedResults = (res.data.data || res.data || []).map(
-//         (item: any) => ({
-//           rootName: item.root_category?.name || "",
-//           categoryName: item.category?.name || "",
-//           productName: item.product?.name || "",
-//           variantName: item.variant?.name || "",
-//           subVariantName: item.sub_variant?.name || "",
-//         })
-//       );
-
-//       setSearchResults(mappedResults);
-//     } catch (err) {
-//       console.error("Search error:", err);
-//     }
-//   };
-
-//   return (
-//     <div className="p-8 bg-gray-100 min-h-scree text-black">
-//       <h1 className="text-3xl font-bold mb-6 text-g-800">
-//         Manage Categories, Products & Variants
-//       </h1>
-
-//       {/* ROOT */}
-//       <Section
-//         title="Add Root Category"
-//         inputValue={rootName}
-//         onInputChange={setRootName}
-//         buttonLabel="Add Root"
-//         onSubmit={addRootCategory}
-//       />
-
-//       {/* CATEGORY */}
-//       <div className="mb-6 p-4 bg-white rounded shadow">
-//         <h2 className="font-semibold mb-2">Add Category</h2>
-//         <div className="flex gap-2 mb-2">
-//           <Select
-//             placeholder="-- Select Root Category --"
-//             value={selectedRoot}
-//             options={roots}
-//             onChange={(id) => {
-//               setSelectedRoot(id);
-//               fetchCategories(id);
-//             }}
-//           />
-
-//           <Input
-//             value={categoryName}
-//             onChange={setCategoryName}
-//             placeholder="Category Name"
-//           />
-
-//           <Button onClick={addCategory} color="green">
-//             Add Category
-//           </Button>
-//         </div>
-//       </div>
-
-//       {/* PRODUCT */}
-//       <div className="mb-6 p-4 bg-white rounded shadow">
-//         <h2 className="font-semibold mb-2">Add Product</h2>
-//         <div className="flex gap-2 mb-2">
-//           <Select
-//             placeholder="-- Select Category --"
-//             value={selectedCategory}
-//             options={categories}
-//             onChange={(id) => {
-//               setSelectedCategory(id);
-//               fetchProducts(id);
-//             }}
-//           />
-
-//           <Input
-//             value={productName}
-//             onChange={setProductName}
-//             placeholder="Product Name"
-//           />
-
-//           <Button onClick={addProduct} color="blue">
-//             Add Product
-//           </Button>
-//         </div>
-//       </div>
-
-//       {/* VARIANT */}
-//       <div className="mb-6 p-4 bg-white rounded shadow">
-//         <h2 className="font-semibold mb-2">Add Variant</h2>
-//         <div className="flex gap-2 mb-2">
-//           <Select
-//             placeholder="-- Select Product --"
-//             value={selectedProduct}
-//             options={products}
-//             onChange={(id) => {
-//               setSelectedProduct(id);
-//               fetchVariants(id);
-//             }}
-//           />
-
-//           <Input
-//             value={variantName}
-//             onChange={setVariantName}
-//             placeholder="Variant Name"
-//           />
-
-//           <Button onClick={addVariant} color="yellow">
-//             Add Variant
-//           </Button>
-//         </div>
-//       </div>
-
-//       {/* SUB VARIANT */}
-//       <div className="mb-6 p-4 bg-white rounded shadow">
-//         <h2 className="font-semibold mb-2">Add Sub Variant</h2>
-//         <div className="flex gap-2 mb-2">
-//           <Select
-//             placeholder="-- Select Variant --"
-//             value={selectedVariant}
-//             options={variants}
-//             onChange={(id) => {
-//               setSelectedVariant(id);
-//               fetchSubVariants(id);
-//             }}
-//           />
-
-//           <Input
-//             value={subVariantName}
-//             onChange={setSubVariantName}
-//             placeholder="Sub Variant Name"
-//           />
-
-//           <Button onClick={addSubVariant} color="purple">
-//             Add Sub Variant
-//           </Button>
-//         </div>
-//       </div>
-
-//       {/* SEARCH */}
-//       <div className="mb-6 p-4 bg-white rounded shadow">
-//         <h2 className="font-semibold mb-2">Search</h2>
-//         <div className="flex gap-2">
-//           <Input
-//             value={searchQuery}
-//             onChange={setSearchQuery}
-//             placeholder="Search..."
-//           />
-//           <Button onClick={handleSearch} color="gray">
-//             Search
-//           </Button>
-//         </div>
-
-//         <div className="mt-4">
-//           {searchResults.length === 0 ? (
-//             <p>No results found</p>
-//           ) : (
-//             searchResults.map((r, i) => (
-//               <div key={i} className="border p-2 rounded mb-2 bg-gray-50">
-//                 <p>
-//                   <strong>Root:</strong> {r.rootName}
-//                 </p>
-//                 <p>
-//                   <strong>Category:</strong> {r.categoryName}
-//                 </p>
-//                 <p>
-//                   <strong>Product:</strong> {r.productName}
-//                 </p>
-//                 <p>
-//                   <strong>Variant:</strong> {r.variantName}
-//                 </p>
-//                 <p>
-//                   <strong>Sub Variant:</strong> {r.subVariantName}
-//                 </p>
-//               </div>
-//             ))
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// // ---- Small UI Helper Components ----
-// const Select = ({ placeholder, value, options, onChange }: any) => (
-//   <select
-//     className="border p-2 rounded"
-//     value={value || ""}
-//     onChange={(e) => onChange(Number(e.target.value))}
-//   >
-//     <option value="">{placeholder}</option>
-//     {options.map((o: any) => (
-//       <option key={o.id} value={o.id}>
-//         {o.name}
-//       </option>
-//     ))}
-//   </select>
-// );
-
-// const Input = ({ value, onChange, placeholder }: any) => (
-//   <input
-//     type="text"
-//     className="border p-2 rounded flex-1"
-//     placeholder={placeholder}
-//     value={value}
-//     onChange={(e) => onChange(e.target.value)}
-//   />
-// );
-
-// const Button = ({ children, onClick, color }: any) => {
-//   const colors: any = {
-//     green: "bg-green-600 hover:bg-green-700",
-//     blue: "bg-blue-600 hover:bg-blue-700",
-//     yellow: "bg-yellow-600 hover:bg-yellow-700",
-//     purple: "bg-purple-600 hover:bg-purple-700",
-//     gray: "bg-gray-600 hover:bg-gray-700",
-//   };
-
-//   return (
-//     <button
-//       onClick={onClick}
-//       className={`${colors[color]} text-white px-4 py-2 rounded`}
-//     >
-//       {children}
-//     </button>
-//   );
-// };
-
-// const Section = ({
-//   title,
-//   inputValue,
-//   onInputChange,
-//   buttonLabel,
-//   onSubmit,
-// }: any) => (
-//   <div className="mb-6 p-4 bg-white rounded shadow">
-//     <h2 className="font-semibold mb-2">{title}</h2>
-//     <div className="flex gap-2">
-//       <Input value={inputValue} onChange={onInputChange} placeholder={title} />
-//       <Button onClick={onSubmit} color="blue">
-//         {buttonLabel}
-//       </Button>
-//     </div>
-//   </div>
-// );
-
-
 import { useEffect, useState } from "react";
 import axios from "axios";
+import AlertMessage from "../../../../components/Aleartmessage"; // Updated import
 
-interface RootCategory {
-  id: number;
-  code: string;
-  name: string;
-}
+/* ================= TYPES ================= */
+interface RootCategory { id: number; name: string; }
+interface Category { id: number; name: string; root_category_id: number; }
+interface Product { id: number; name: string; category_id: number; }
+interface Variant { id: number; name: string; product_id: number; }
+interface SubVariant { id: number; name: string; variant_id: number; }
 
-interface Category {
-  id: number;
-  code: string;
-  name: string;
-  root_category_id: number;
-}
-
-interface Product {
-  id: number;
-  code: string;
-  name: string;
-  category_id: number;
-}
-
-interface Variant {
-  id: number;
-  code: string;
-  name: string;
-  product_id: number;
-}
-
-interface SubVariant {
-  id: number;
-  code: string;
-  name: string;
-  variant_id: number;
-}
+type TabType = "root" | "category" | "product" | "variant" | "subvariant";
 
 export default function AddCategories() {
-  const API_BASE = "http://localhost:5001/api/categories";
+  const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/categories`;
+
+  /* ================= STATES ================= */
+  const [activeTab, setActiveTab] = useState<TabType>("root");
 
   const [rootName, setRootName] = useState("");
   const [categoryName, setCategoryName] = useState("");
@@ -499,369 +37,480 @@ export default function AddCategories() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
-  useEffect(() => {
-    fetchRoots();
-  }, []);
+  // Alert state
+  const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  /* ================= TAB LABEL MAPPING ================= */
+  const tabMapping: Record<string, TabType> = {
+    "Create Root Category": "root",
+    "Create Category": "category",
+    "Create Product": "product",
+    "Create Variant": "variant",
+    "Create sub-variant": "subvariant",
+  };
+
+  /* ================= LOAD ROOTS ================= */
+  useEffect(() => { fetchRoots(); }, []);
 
   const fetchRoots = async () => {
-    try {
-      const res = await axios.get(`${API_BASE}/root-category`);
-      setRoots(res.data || []);
-    } catch (err) {
-      console.error("Error fetching roots:", err);
-    }
+    const res = await axios.get(`${API_BASE}/root-category`);
+    setRoots(res.data || []);
   };
 
   const fetchCategories = async (rootId: number) => {
-    try {
-      const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`);
-      setCategories(res.data || []);
-      setProducts([]);
-      setVariants([]);
-      setSubVariants([]);
-    } catch (err) {
-      console.error("Error fetching categories:", err);
-    }
+    const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`);
+    setCategories(res.data || []);
+    setProducts([]); setVariants([]); setSubVariants([]);
   };
 
   const fetchProducts = async (categoryId: number) => {
-    try {
-      const res = await axios.get(
-        `${API_BASE}/products?category_id=${categoryId}`
-      );
-      setProducts(res.data || []);
-      setVariants([]);
-      setSubVariants([]);
-    } catch (err) {
-      console.error("Error fetching products:", err);
-    }
+    const res = await axios.get(`${API_BASE}/products?category_id=${categoryId}`);
+    setProducts(res.data || []);
+    setVariants([]); setSubVariants([]);
   };
 
   const fetchVariants = async (productId: number) => {
-    try {
-      const res = await axios.get(
-        `${API_BASE}/variants?product_id=${productId}`
-      );
-      setVariants(res.data || []);
-      setSubVariants([]);
-    } catch (err) {
-      console.error("Error fetching variants:", err);
-    }
+    const res = await axios.get(`${API_BASE}/variants?product_id=${productId}`);
+    setVariants(res.data || []);
+    setSubVariants([]);
   };
 
   const fetchSubVariants = async (variantId: number) => {
-    try {
-      const res = await axios.get(
-        `${API_BASE}/sub-variants?variant_id=${variantId}`
-      );
-      setSubVariants(res.data || []);
-    } catch (err) {
-      console.error("Error fetching subvariants:", err);
-    }
+    const res = await axios.get(`${API_BASE}/sub-variants?variant_id=${variantId}`);
+    setSubVariants(res.data || []);
   };
 
+  /* ================= CREATE ================= */
   const addRootCategory = async () => {
-    if (!rootName) return alert("Enter root category name");
-    await axios.post(`${API_BASE}/root-category`, { name: rootName });
-    setRootName("");
-    fetchRoots();
+    if (!rootName) return setAlert({ type: "error", message: "Enter Root Category" });
+    try {
+      await axios.post(`${API_BASE}/root-category`, { name: rootName });
+      setRootName(""); fetchRoots();
+      setAlert({ type: "success", message: "Root Category created successfully!" });
+    } catch { setAlert({ type: "error", message: "Failed to create Root Category" }); }
   };
 
   const addCategory = async () => {
-    if (!selectedRoot || !categoryName)
-      return alert("Select root and enter category name");
-    await axios.post(`${API_BASE}/category`, {
-      name: categoryName,
-      root_category_id: selectedRoot,
-    });
-    setCategoryName("");
-    fetchCategories(selectedRoot);
+    if (!selectedRoot || !categoryName) return setAlert({ type: "error", message: "Select Root & Enter Category" });
+    try {
+      await axios.post(`${API_BASE}/category`, { name: categoryName, root_category_id: selectedRoot });
+      setCategoryName(""); fetchCategories(selectedRoot);
+      setAlert({ type: "success", message: "Category created successfully!" });
+    } catch { setAlert({ type: "error", message: "Failed to create Category" }); }
   };
 
   const addProduct = async () => {
-    if (!selectedCategory || !productName)
-      return alert("Select category and enter product name");
-    await axios.post(`${API_BASE}/product`, {
-      name: productName,
-      category_id: selectedCategory,
-    });
-    setProductName("");
-    fetchProducts(selectedCategory);
+    if (!selectedRoot || !selectedCategory || !productName) return setAlert({ type: "error", message: "Select Root & Category" });
+    try {
+      await axios.post(`${API_BASE}/product`, { name: productName, category_id: selectedCategory });
+      setProductName(""); fetchProducts(selectedCategory);
+      setAlert({ type: "success", message: "Product created successfully!" });
+    } catch { setAlert({ type: "error", message: "Failed to create Product" }); }
   };
 
   const addVariant = async () => {
-    if (!selectedProduct || !variantName)
-      return alert("Select product and enter variant name");
-    await axios.post(`${API_BASE}/variant`, {
-      name: variantName,
-      product_id: selectedProduct,
-    });
-    setVariantName("");
-    fetchVariants(selectedProduct);
+    if (!selectedRoot || !selectedCategory || !selectedProduct || !variantName)
+      return setAlert({ type: "error", message: "Select Root, Category & Product" });
+    try {
+      await axios.post(`${API_BASE}/variant`, { name: variantName, product_id: selectedProduct });
+      setVariantName(""); fetchVariants(selectedProduct);
+      setAlert({ type: "success", message: "Variant created successfully!" });
+    } catch { setAlert({ type: "error", message: "Failed to create Variant" }); }
   };
 
   const addSubVariant = async () => {
-    if (!selectedVariant || !subVariantName)
-      return alert("Select variant and enter subvariant name");
-    await axios.post(`${API_BASE}/sub-variant`, {
-      name: subVariantName,
-      variant_id: selectedVariant,
-    });
-    setSubVariantName("");
-    fetchSubVariants(selectedVariant);
+    if (!selectedRoot || !selectedCategory || !selectedProduct || !selectedVariant || !subVariantName)
+      return setAlert({ type: "error", message: "Complete Full Hierarchy" });
+    try {
+      await axios.post(`${API_BASE}/sub-variant`, { name: subVariantName, variant_id: selectedVariant });
+      setSubVariantName(""); fetchSubVariants(selectedVariant);
+      setAlert({ type: "success", message: "Sub Variant created successfully!" });
+    } catch { setAlert({ type: "error", message: "Failed to create Sub Variant" }); }
   };
 
+  /* ================= SEARCH ================= */
   const handleSearch = async () => {
     if (!searchQuery) return setSearchResults([]);
-
-    try {
-      const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`);
-      const mapped = (res.data.data || res.data || []).map((item: any) => ({
-        root: item.root_category?.name || "",
-        category: item.category?.name || "",
-        product: item.product?.name || "",
-        variant: item.variant?.name || "",
-        subVariant: item.sub_variant?.name || "",
-      }));
-      setSearchResults(mapped);
-    } catch (err) {
-      console.error("Search error:", err);
-    }
+    const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`);
+    const mapped = (res.data.data || res.data || []).map((item: any) => ({
+      root: item.root_category?.name || "",
+      category: item.category?.name || "",
+      product: item.product?.name || "",
+      variant: item.variant?.name || "",
+      subVariant: item.sub_variant?.name || "",
+    }));
+    setSearchResults(mapped);
   };
 
+
+  /* ================= UI ================= */
   return (
-    // <div
-    //   className="min-h-screen p-6 text-white"
-    //   style={{
-    //     background: "linear-gradient(135deg, #0f2c6b, #1b71c4, #1d87db)",
-    //   }}
-    // >
-    // <div className="min-h-screen p-6 text-white bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c]">
-    <div className="w-full h-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c]">
-      <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 mb-6">
-        <div className="grid grid-cols-5 gap-4">
-          {/* ROOT */}
-          <div>
-            <p className="text-sm mb-1">Root Category</p>
+    <div className="w-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-6 text-black">
+      {/* Alert */}
+      {alert && (
+        <AlertMessage
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
+
+
+      {/* Tabs */}
+      <div className="flex gap-6 text-white mb-6 border-b border-white/20">
+        {Object.keys(tabMapping).map((label) => (
+          <button
+            key={label}
+            onClick={() => setActiveTab(tabMapping[label])}
+            className={`pb-2 ${activeTab === tabMapping[label] ? "border-b-2 border-cyan-400" : ""
+              }`}
+          >
+            {label.charAt(0).toUpperCase() + label.slice(1)}
+
+          </button>
+        ))}
+      </div>
+
+      {/* Form Container */}
+      <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 max-w">
+
+        {/* Root */}
+        {activeTab === "root" && (
+          <div className="w-full">
             <input
               value={rootName}
               onChange={(e) => setRootName(e.target.value)}
-              className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+              className="w-full p-2 bg-white text-black placeholder-black rounded"
               placeholder="Enter Root Name"
             />
-            <button
-              onClick={addRootCategory}
-              className="mt-2 w-full py-2 rounded bg-gradient-to-r from-cyan-500 to-purple-500"
-            >
-              Create Category
-            </button>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={addRootCategory}
+                className="bg-cyan-500 text-white px-4 py-2 rounded"
+              >
+                + Create
+              </button>
+            </div>
           </div>
+        )}
 
-          {/* CATEGORY */}
-          <div>
-            <p className="text-sm mb-1">Category</p>
-            <select
-              className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
-              value={selectedRoot || ""}
-              onChange={(e) => {
-                const id = Number(e.target.value);
-                setSelectedRoot(id);
-                fetchCategories(id);
-              }}
-            >
-              <option value="">Select Root Category</option>
-              {roots.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
+        {/* Category */}
+        {activeTab === "category" && (
+          <div className="w-full">
+            <div className="flex gap-4">
+              <select
+                className="flex-1 p-2 bg-white text-black rounded"
+                value={selectedRoot || ""}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setSelectedRoot(id);
+                  fetchCategories(id);
+                  setSelectedCategory(null);
+                }}
+              >
+                <option value="">Select Root</option>
+                {roots.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
 
-            <div className="flex gap-2 mt-2">
               <input
                 value={categoryName}
                 onChange={(e) => setCategoryName(e.target.value)}
-                className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+                className="flex-1 p-2 bg-white text-black placeholder-black rounded"
                 placeholder="Category"
               />
+            </div>
+            <div className="flex justify-end mt-4">
               <button
                 onClick={addCategory}
-                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500"
+                className="bg-cyan-500 text-white px-4 py-2 rounded"
               >
-                +
+                + Create Category
               </button>
             </div>
           </div>
+        )}
 
-          {/* PRODUCT */}
-          <div>
-            <p className="text-sm mb-1">Product</p>
-            <select
-              className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
-              value={selectedCategory || ""}
-              onChange={(e) => {
-                const id = Number(e.target.value);
-                setSelectedCategory(id);
-                fetchProducts(id);
-              }}
-            >
-              <option>Select Category</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+        {/* Product */}
+        {activeTab === "product" && (
+          <div className="w-full">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <select
+                className="w-full p-2 bg-white text-black rounded"
+                value={selectedRoot || ""}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setSelectedRoot(id);
+                  fetchCategories(id);
+                  setSelectedCategory(null);
+                }}
+              >
+                <option value="">Select Root</option>
+                {roots.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
 
-            <div className="flex gap-2 mt-2">
+              <select
+                className="w-full p-2 bg-white text-black rounded"
+                value={selectedCategory || ""}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setSelectedCategory(id);
+                  fetchProducts(id);
+                }}
+                disabled={!selectedRoot}
+              >
+                <option value="">Select Category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+
               <input
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
-                className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+                className="w-full p-2 bg-white text-black rounded"
                 placeholder="Product"
               />
+            </div>
+            <div className="flex justify-end mt-4">
               <button
                 onClick={addProduct}
-                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500"
+                className="bg-cyan-500 text-white px-4 py-2 rounded"
               >
-                +
+                + Create Product
               </button>
             </div>
           </div>
+        )}
 
-          {/* VARIANT */}
-          <div>
-            <p className="text-sm mb-1">Variant</p>
-            <select
-              className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
-              value={selectedProduct || ""}
-              onChange={(e) => {
-                const id = Number(e.target.value);
-                setSelectedProduct(id);
-                fetchVariants(id);
-              }}
-            >
-              <option>Select Product</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+        {/* Variant */}
+        {activeTab === "variant" && (
+          <div className="w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <select
+                className="w-full p-2 bg-white text-black rounded"
+                value={selectedRoot || ""}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setSelectedRoot(id);
+                  fetchCategories(id);
+                  setSelectedCategory(null);
+                  setSelectedProduct(null);
+                }}
+              >
+                <option value="">Select Root</option>
+                {roots.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
 
-            <div className="flex gap-2 mt-2">
+              <select
+                className="w-full p-2 bg-white text-black rounded"
+                value={selectedCategory || ""}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setSelectedCategory(id);
+                  fetchProducts(id);
+                  setSelectedProduct(null);
+                }}
+                disabled={!selectedRoot}
+              >
+                <option value="">Select Category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="w-full p-2 bg-white text-black rounded"
+                value={selectedProduct || ""}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setSelectedProduct(id);
+                  fetchVariants(id);
+                }}
+                disabled={!selectedCategory}
+              >
+                <option value="">Select Product</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+
               <input
                 value={variantName}
                 onChange={(e) => setVariantName(e.target.value)}
-                className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+                className="w-full min-w-0 p-2 bg-white text-black rounded"
                 placeholder="Variant"
               />
+            </div>
+            <div className="flex justify-end mt-4">
               <button
                 onClick={addVariant}
-                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500"
+                className="bg-cyan-500 text-white px-4 py-2 rounded"
               >
-                +
+                + Create Variant
               </button>
             </div>
           </div>
+        )}
 
-          {/* SUB VARIANT */}
-          <div>
-            <p className="text-sm mb-1">Sub Variant</p>
-            <select
-              className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
-              value={selectedVariant || ""}
-              onChange={(e) => {
-                const id = Number(e.target.value);
-                setSelectedVariant(id);
-                fetchSubVariants(id);
-              }}
-            >
-              <option>Select Variant</option>
-              {variants.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name}
-                </option>
-              ))}
-            </select>
+        {/* SubVariant */}
+        {activeTab === "subvariant" && (
+          <div className="w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+              <select
+                className="w-full p-2 bg-white text-black rounded"
+                value={selectedRoot || ""}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setSelectedRoot(id);
+                  fetchCategories(id);
+                  setSelectedCategory(null);
+                  setSelectedProduct(null);
+                  setSelectedVariant(null);
+                }}
+              >
+                <option value="">Select Root</option>
+                {roots.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
 
-            <div className="flex gap-2 mt-2">
+              <select
+                className="w-full p-2 bg-white text-black rounded"
+                value={selectedCategory || ""}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setSelectedCategory(id);
+                  fetchProducts(id);
+                  setSelectedProduct(null);
+                  setSelectedVariant(null);
+                }}
+                disabled={!selectedRoot}
+              >
+                <option value="">Select Category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="w-full p-2 bg-white text-black rounded"
+                value={selectedProduct || ""}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setSelectedProduct(id);
+                  fetchVariants(id);
+                  setSelectedVariant(null);
+                }}
+                disabled={!selectedCategory}
+              >
+                <option value="">Select Product</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="w-full p-2 bg-white text-black rounded"
+                value={selectedVariant || ""}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setSelectedVariant(id);
+                  fetchSubVariants(id);
+                }}
+                disabled={!selectedProduct}
+              >
+                <option value="">Select Variant</option>
+                {variants.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
+
               <input
                 value={subVariantName}
                 onChange={(e) => setSubVariantName(e.target.value)}
-                className="w-full p-2 rounded text-black bg-white placeholder-gray-400"
+                className="w-full min-w-0 p-2 bg-white text-black rounded"
                 placeholder="Sub Variant"
               />
+            </div>
+            <div className="flex justify-end mt-4">
               <button
                 onClick={addSubVariant}
-                className="px-4 rounded bg-gradient-to-r from-cyan-500 to-purple-500"
+                className="bg-cyan-500 text-white px-4 py-2 rounded"
               >
-                +
+                + Create Sub Variant
               </button>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="flex justify-end mt-10 mb-6">
+        <div className="flex items-center gap-3">
+          <input
+            type="text"
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-96 px-4 py-2 rounded-lg bg-white text-black placeholder-gray-500 shadow"
+          />
+          <button
+            onClick={handleSearch}
+            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-medium shadow hover:opacity-90"
+          >
+            🔍 Search
+          </button>
         </div>
       </div>
 
-      {/* SEARCH */}
-      <div className="flex justify-end mb-4">
-        <input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="p-2 rounded text-black w-1/3 bg-white placeholder-gray-400"
-          placeholder="Search"
-        />
-        {/* <button
-          onClick={handleSearch}
-          className="ml-2 px-6 rounded bg-gradient-to-r from-sky-500 to-purple-500"
-        >
-          Search
-        </button> */}
-        <button
-          onClick={handleSearch}
-          className="ml-2 px-6 py-2 rounded flex items-center gap-2 bg-gradient-to-r from-sky-500 to-purple-500"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
-            />
-          </svg>
-          Search
-        </button>
-      </div>
-
-      {/* TABLE */}
-      <div className="bg-white rounded text-black overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-100">
+      {/* Table */}
+      <div className="bg-white mt-4 rounded overflow-x-auto">
+        <table className="w-full text-black">
+          <thead>
             <tr>
-              <th className="p-2 text-left">SI</th>
-              <th className="p-2 text-left">Root Category</th>
-              <th className="p-2 text-left">Category</th>
-              <th className="p-2 text-left">Product</th>
-              <th className="p-2 text-left">Variant</th>
-              <th className="p-2 text-left">Sub Variant</th>
+              <th className="p-2 border">SI</th>
+              <th className="p-2 border">Root</th>
+              <th className="p-2 border">Category</th>
+              <th className="p-2 border">Product</th>
+              <th className="p-2 border">Variant</th>
+              <th className="p-2 border">Sub Variant</th>
             </tr>
           </thead>
-
           <tbody>
             {searchResults.map((r, i) => (
-              <tr key={i} className="border-t">
-                <td className="p-2">{i + 1}</td>
-                <td className="p-2">{r.root}</td>
-                <td className="p-2">{r.category}</td>
-                <td className="p-2">{r.product}</td>
-                <td className="p-2">{r.variant}</td>
-                <td className="p-2">{r.subVariant}</td>
+              <tr key={i} className="hover:bg-gray-100">
+                <td className="p-2 border">{i + 1}</td>
+                <td className="p-2 border">{r.root}</td>
+                <td className="p-2 border">{r.category}</td>
+                <td className="p-2 border">{r.product}</td>
+                <td className="p-2 border">{r.variant}</td>
+                <td className="p-2 border">{r.subVariant}</td>
               </tr>
             ))}
           </tbody>

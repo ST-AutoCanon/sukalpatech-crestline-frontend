@@ -1,97 +1,9 @@
-// import React, { useState } from "react";
-// import AddItem from "./UpdatePRstore";
-// import ViewItems from "./ViewPRstore";
-// import EmployeeDashboard from "../procrumentHome"; // import the component
-// import AddCategories from "./AddCategories";
-// import AddItems from "./additems";
-// const StorePage: React.FC = () => {
-//   const [selectedTab, setSelectedTab] = useState<
-//     "UpdatePR" | "viewPR" | "categories" | "additems"
-//   >("UpdatePR");
-//   const [showDashboard, setShowDashboard] = useState(false);
-
-//   if (showDashboard) {
-//     return <EmployeeDashboard />; // render dashboard directly
-//   }
-//   return (
-//     <div className="p-2  max-w-7xl mx-auto">
-//       {/* // <div className="p-10 w-full mx-auto"> */}
-//       <button
-//         className="mt-6 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-//         onClick={() => setShowDashboard(true)} // show dashboard
-//       >
-//         Back to Dashboard
-//       </button>
-//       <h1 className="text-2xl font-bold mb-6 text-gray-800 mt-10">
-//         Store Management
-//       </h1>
-
-//       {/* Top Buttons */}
-//       <div className="flex gap-4 mb-6">
-//         <button
-//           className={`px-4 py-2 rounded transition-all duration-200 ${
-//             selectedTab === "UpdatePR"
-//               ? "bg-blue-600 text-white shadow"
-//               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-//           }`}
-//           onClick={() => setSelectedTab("UpdatePR")}
-//         >
-//           Update PR
-//         </button>
-
-//         <button
-//           className={`px-4 py-2 rounded transition-all duration-200 ${
-//             selectedTab === "viewPR"
-//               ? "bg-blue-600 text-white shadow"
-//               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-//           }`}
-//           onClick={() => setSelectedTab("viewPR")}
-//         >
-//           View PR
-//         </button>
-//         <button
-//           className={`px-4 py-2 rounded transition-all duration-200 ${
-//             selectedTab === "categories"
-//               ? "bg-blue-600 text-white shadow"
-//               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-//           }`}
-//           onClick={() => setSelectedTab("categories")}
-//         >
-//           Add Categories
-//         </button>
-//         <button
-//           className={`px-4 py-2 rounded transition-all duration-200 ${
-//             selectedTab === "additems"
-//               ? "bg-blue-600 text-white shadow"
-//               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-//           }`}
-//           onClick={() => setSelectedTab("additems")}
-//         >
-//           Add Items
-//         </button>
-//       </div>
-
-//       {/* Page Content Below */}
-//       <div className="border p-2 rounded-xl shadow-md bg-white mt-4">
-//         {selectedTab === "UpdatePR" && <AddItem />}
-//         {selectedTab === "viewPR" && <ViewItems />}
-//         {selectedTab === "categories" && <AddCategories />}
-//         {selectedTab === "additems" && <AddItems />}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default StorePage;
-
-
 import React, { useState } from "react";
-import AddItem from "../store/UpdatePRstore";
+import UpdatePRStore from "../store/UpdatePRstore";
 import ViewItems from "../store/ViewPRstore";
 import EmployeeDashboard from "../procrumentHome"; // import the component
 import AddCategories from "./AddCategories";
 import AddItems from "./additems";
-import { Check, Search } from "lucide-react";
 
 const StorePage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState<
@@ -115,7 +27,7 @@ const StorePage: React.FC = () => {
               : "text-white/70 hover:text-white"
           }`}
         >
-          All Stores
+          All PR's
         </p>
         <p
           onClick={() => setSelectedTab("AddCategories")}
@@ -138,8 +50,8 @@ const StorePage: React.FC = () => {
           Add Items
         </p>
 
-        {/* RIGHT : SEARCH + ADD */}
         <div className="flex items-center gap-4">
+
 
           {/* ADD STORE BUTTON */}
           <button
@@ -152,7 +64,7 @@ const StorePage: React.FC = () => {
       </div>
 
       {/* Page Content Below */}
-      {selectedTab === "add" && <AddItem />}
+      {selectedTab === "add" && <UpdatePRStore />}
       {selectedTab === "view" && <ViewItems />}
       {selectedTab === "AddCategories" && <AddCategories />}
       {selectedTab === "AddItems" && <AddItems />}
