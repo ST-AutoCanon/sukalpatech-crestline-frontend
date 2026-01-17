@@ -2,6 +2,42 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../../../../../context/AuthContext";
 
+  const Rating = ({ value = 0 }: { value: number }) => (
+    <div>
+      <div className="text-xs text-gray-500 mb-1">Rating</div>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span
+            key={star}
+            className={`text-lg ${
+              star <= value ? "text-orange-400" : "text-gray-300"
+            }`}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+
+   const Ratings = ({ value = 0 }: { value: number }) => (
+     <div>
+       <div className="flex gap-1">
+         {[1, 2, 3, 4, 5].map((star) => (
+           <span
+             key={star}
+             className={`text-lg ${
+               star <= value ? "text-orange-400" : "text-gray-300"
+             }`}
+           >
+             ★
+           </span>
+         ))}
+       </div>
+     </div>
+   );
+
+
 const AllVendors: React.FC = () => {
   const { token } = useContext(AuthContext);
   const [vendors, setVendors] = useState<any[]>([]);
@@ -24,21 +60,8 @@ const AllVendors: React.FC = () => {
     fetchVendors();
   }, [token]);
 
-  const Rating = ({ value = 0 }: { value: number }) => (
-    <div>
-      <div className="text-xs text-gray-500 mb-1">Rating</div>
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <span
-            key={star}
-            className={`text-lg ${star <= value ? "text-orange-400" : "text-gray-300"}`}
-          >
-            ★
-          </span>
-        ))}
-      </div>
-    </div>
-  );
+
+ 
 
   const bank =
     Array.isArray(activeVendor?.bank_details) && activeVendor.bank_details.length > 0
@@ -66,7 +89,7 @@ const AllVendors: React.FC = () => {
               <Row label="Email" value={v.email} />
               <Row label="GST" value={v.gst_number} />
               <Row label="PAN" value={v.pan_number} />
-              <Row label="Rating" value={v.rating} />
+              <Row label="Rating" value={<Ratings value={v.rating} />} />             
             </div>
 
             {/* MORE INFO */}
@@ -83,8 +106,10 @@ const AllVendors: React.FC = () => {
       {/* VENDOR MODAL */}
       {activeVendor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
-          <div className="bg-white w-full max-w-4xl rounded-xl shadow-xl relative
-                    max-h-[90vh] overflow-y-auto">
+          <div
+            className="bg-white w-full max-w-4xl rounded-xl shadow-xl relative
+                    max-h-[90vh] overflow-y-auto"
+          >
             {/* HEADER (CLOSE BUTTON) */}
             <div className="flex justify-end items-center px-6 pt-5 sticky top-0 bg-white z-10">
               <button
@@ -107,7 +132,10 @@ const AllVendors: React.FC = () => {
               {/* VENDOR DETAILS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input label="Vendor Name" value={activeVendor.vendor_name} />
-                <Input label="Contact Person" value={activeVendor.contact_person} />
+                <Input
+                  label="Contact Person"
+                  value={activeVendor.contact_person}
+                />
                 <Input label="Phone Number" value={activeVendor.phone} />
                 <Input label="Email" value={activeVendor.email} />
                 <Input label="GST Number" value={activeVendor.gst_number} />
@@ -121,19 +149,20 @@ const AllVendors: React.FC = () => {
                 <h3 className="text-purple-600 font-medium flex items-center gap-2 text-lg">
                   ● Bank Details
                 </h3>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input label="Bank Name" value={bank.bank_name} />
-                  <Input label="Account Number" value={bank.account_number} />
-                  <Input label="IFSC Code" value={bank.ifsc_code} />
-                  <Input label="Branch Name" value={bank.branch_name} />
+                  <Input label="Bank Name" value={activeVendor.bank_name} />
+                  <Input
+                    label="Account Number"
+                    value={activeVendor.account_number}
+                  />
+                  <Input label="IFSC Code" value={activeVendor.ifsc_code} />
+                  <Input label="Branch Name" value={activeVendor.bank_branch} />
                 </div>
               </div>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };
@@ -141,7 +170,7 @@ const AllVendors: React.FC = () => {
 export default AllVendors;
 
 /* ---------- Helper Row ---------- */
-const Row = ({ label, value }: { label: string; value: string | number }) => (
+const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div className="flex text-gray-700">
     <span className="w-20 text-gray-400">{label}</span>
     <span className="font-medium truncate">{value || "-"}</span>

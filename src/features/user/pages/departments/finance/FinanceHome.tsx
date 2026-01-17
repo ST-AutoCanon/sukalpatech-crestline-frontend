@@ -9,8 +9,6 @@ const FinanceHome: React.FC = () => {
 
   return (
     <div className=" w-full h-full bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] text-white">
-      
-
       {/* TABS */}
       <div className="w-full px-4 sm:px-6 md:px-10 pt-5 md:pt-8 flex flex-wrap gap-4 sm:gap-4">
         <button
@@ -37,7 +35,8 @@ const FinanceHome: React.FC = () => {
       </div>
 
       {/* DYNAMIC TAB CONTENT */}
-      <div className="pt-6 sm:pt-10 w-full">
+      {/* <div className="pt-6 sm:pt-10 w-full"> */}
+      <div className="px-3 sm:px-5 md:px-10 pt-4 md:pt-6 pb- md:pb-10">
         {activeTab === "Finance" && <FinancePage />}
         {activeTab === "others" && <OthersPage />}
       </div>

@@ -379,7 +379,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                               vendor.comments?.[0]?.comment || "";
 
                             const feasibilityComment =
-                              vendor.comments?.find((c) => c.commented_by === 2)?.comment || "";
+                              vendor.comments?.find((c) => c.commented_by === 2)
+                                ?.comment || "";
 
                             return (
                               <div
@@ -388,13 +389,18 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                               >
                                 <input
                                   readOnly
-                                  value={vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id}
+                                  value={
+                                    vendorMap[String(vendor.vendor_id)] ??
+                                    vendor.vendor_id
+                                  }
                                   className="bg-white border rounded px-2 py-1 w-full"
                                 />
 
                                 <input
                                   readOnly
-                                  value={vendor.attachments?.[0]?.file_name || "-"}
+                                  value={
+                                    vendor.attachments?.[0]?.file_name || "-"
+                                  }
                                   className="bg-white border rounded px-2 py-1 w-full"
                                 />
 
@@ -414,7 +420,9 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                   readOnly
                                   value={
                                     vendor.quotation_validity_date
-                                      ? new Date(vendor.quotation_validity_date).toLocaleDateString()
+                                      ? new Date(
+                                          vendor.quotation_validity_date
+                                        ).toLocaleDateString()
                                       : "-"
                                   }
                                   className="bg-white border rounded px-2 py-1 w-full"
@@ -447,7 +455,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                               vendor.comments?.[0]?.comment || "";
 
                             const feasibilityComment =
-                              vendor.comments?.find((c) => c.commented_by === 2)?.comment || "";
+                              vendor.comments?.find((c) => c.commented_by === 2)
+                                ?.comment || "";
 
                             return (
                               <div
@@ -455,22 +464,36 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                 className="sm:hidden flex gap-4 overflow-x-auto mb-4"
                               >
                                 {[
-                                  ["Vendor", vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id],
-                                  ["Upload Quotation", vendor.attachments?.[0]?.file_name || "-"],
+                                  [
+                                    "Vendor",
+                                    vendorMap[String(vendor.vendor_id)] ??
+                                      vendor.vendor_id,
+                                  ],
+                                  [
+                                    "Upload Quotation",
+                                    vendor.attachments?.[0]?.file_name || "-",
+                                  ],
                                   ["Unit Price", vendor.unit_price ?? "-"],
                                   ["Total Price", vendor.total_price ?? "-"],
                                   [
                                     "Quotation Validity",
                                     vendor.quotation_validity_date
-                                      ? new Date(vendor.quotation_validity_date).toLocaleDateString()
+                                      ? new Date(
+                                          vendor.quotation_validity_date
+                                        ).toLocaleDateString()
                                       : "-",
                                   ],
                                   ["Comments", prComment],
                                   ["Feasibility Comment", feasibilityComment],
                                   ["Status", vendor.status || "-"],
                                 ].map(([label, value], idx) => (
-                                  <div key={idx} className="flex flex-col min-w-[150px]">
-                                    <span className="text-gray-500 text-xs">{label}</span>
+                                  <div
+                                    key={idx}
+                                    className="flex flex-col min-w-[150px]"
+                                  >
+                                    <span className="text-gray-500 text-xs">
+                                      {label}
+                                    </span>
                                     <input
                                       readOnly
                                       value={value}
@@ -484,8 +507,6 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                         </>
                       )}
                     </div>
-
-
                   </div>
                 ))}
               </div>
@@ -517,7 +538,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                             Status: {ds.department_status}
                           </span>
                           <span className="font-medium text-gray-800">
-                            Arjun •{" "}
+                            {ds.status_updated_by ?? "—"} •{" "}
                             {new Date(ds.updated_at).toLocaleDateString()}
                           </span>
                         </div>

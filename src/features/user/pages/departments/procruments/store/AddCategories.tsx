@@ -172,7 +172,7 @@ export default function AddCategories() {
       </div>
 
       {/* Form Container */}
-      <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 max-w-xl">
+      <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 max-w">
 
         {/* Root */}
         {activeTab === "root" && (
