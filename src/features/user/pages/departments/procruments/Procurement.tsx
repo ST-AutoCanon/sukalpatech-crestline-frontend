@@ -48,11 +48,19 @@ export default function NewProcurementPage({ onClose }) {
   const [vendorFiles, setVendorFiles] = useState({});
   const [prData, setPrData] = useState({
     department: "",
-    requested_by: user.first_name,
+    requested_by: user.id,        // ✅ FIXED
     description: "",
     priority: "",
     required_date: "",
     remarks: "",
+    department_statuses: [        // ✅ FIXED
+      {
+        department_status: "CREATED",
+        department_comment: "PR Created",
+        updated_by: user.id,
+        updated_at: new Date().toISOString(),
+      },
+    ],
     items: [
       {
         item_code: "",
@@ -65,7 +73,7 @@ export default function NewProcurementPage({ onClose }) {
             total_price: "",
             quotation_validity_date: "",
             status: "Submitted",
-            vendor_status_updated_by: user.id,
+            vendor_status_updated_by: user.id, // ✅ FIXED
             comments: [],
             attachments: [],
           },
@@ -73,6 +81,7 @@ export default function NewProcurementPage({ onClose }) {
       },
     ],
   });
+
 
   const handlePRChange = (e) => {
     setPrData({ ...prData, [e.target.name]: e.target.value });
@@ -320,7 +329,7 @@ export default function NewProcurementPage({ onClose }) {
             {prData.items.length > 1 && (
               <button
                 onClick={() => removeItem(prData.items.length - 1)}
-                className="px-4 py-2 rounded-lg  bg-gradient-to-r from-blue-500 to-purple-600  text-white"
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white"
               >
                 Remove Item
               </button>
@@ -470,8 +479,8 @@ export default function NewProcurementPage({ onClose }) {
                         🗑
                       </button>
                     </div>
-                    
-                    
+
+
                   </div>
                 ))}
 
@@ -491,7 +500,7 @@ export default function NewProcurementPage({ onClose }) {
           ))}
         </div>
 
-       
+
 
         {/* SUBMIT BUTTON - sticky bottom right */}
         <div className="flex justify-end p-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
