@@ -320,7 +320,7 @@ export default function NewProcurementPage({ onClose }) {
             {prData.items.length > 1 && (
               <button
                 onClick={() => removeItem(prData.items.length - 1)}
-                className="px-4 py-2 rounded-lg bg-red-600 text-white"
+                className="px-4 py-2 rounded-lg  bg-gradient-to-r from-blue-500 to-purple-600  text-white"
               >
                 Remove Item
               </button>
@@ -464,7 +464,7 @@ export default function NewProcurementPage({ onClose }) {
                     <div className="flex items-end justify-end">
                       <button
                         onClick={() => removeVendor(i, vi)}
-                        className="px-3 py-2 rounded-lg bg-red-600 text-white"
+                        className="px-3 py-2 rounded-lg  bg-gradient-to-r from-blue-500 to-purple-600  text-white"
                         title="Remove Vendor"
                       >
                         🗑
@@ -491,15 +491,7 @@ export default function NewProcurementPage({ onClose }) {
           ))}
         </div>
 
-        {/* SUBMIT BUTTON - sticky bottom right */}
-        <div className="flex justify-end p-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
-          <button
-            onClick={submitPR}
-            className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white flex items-center gap-2"
-          >
-            <Upload size={16} /> Submit PR
-          </button>
-        </div>
+       
 
         {/* SUBMIT BUTTON - sticky bottom right */}
         <div className="flex justify-end p-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
