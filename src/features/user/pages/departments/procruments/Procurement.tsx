@@ -53,14 +53,7 @@ export default function NewProcurementPage({ onClose }) {
     priority: "",
     required_date: "",
     remarks: "",
-    department_statuses: [        // ✅ FIXED
-      {
-        department_status: "CREATED",
-        department_comment: "PR Created",
-        updated_by: user.id,
-        updated_at: new Date().toISOString(),
-      },
-    ],
+    
     items: [
       {
         item_code: "",
