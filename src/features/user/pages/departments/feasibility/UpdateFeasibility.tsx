@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import Alert from "../../../components/Aleartmessage";
+import { AuthContext } from "../../../../../context/AuthContext";
+
 /* ================= TYPES ================= */
 
 interface DepartmentStatus {
   department_status: string;
   department_comment: string;
-  status_updated_by?: number;
+  status_updated_by?: string;
   updated_at?: string;
 }
 
@@ -53,6 +55,7 @@ interface FeasibilityPR {
 /* ================= COMPONENT ================= */
 
 export default function SubmittedRequestsPage() {
+  const { user, token } = useContext(AuthContext);
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/new-feasibility`;
 
   const [requests, setRequests] = useState<FeasibilityPR[]>([]);
@@ -165,7 +168,7 @@ export default function SubmittedRequestsPage() {
         {
           department_status: newStatus,
           department_comment: newComment,
-          status_updated_by: 2,
+          status_updated_by: user.first_name,
           updated_at: new Date().toISOString(),
         },
       ],
@@ -261,7 +264,6 @@ export default function SubmittedRequestsPage() {
               />
             )}
 
-
             {/* PR DETAILS */}
             <div className="bg-gray-100 p-4 rounded mb-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
@@ -275,7 +277,7 @@ export default function SubmittedRequestsPage() {
                   [
                     "Department",
                     departmentMap[String(selectedPR.department)] ??
-                    selectedPR.department,
+                      selectedPR.department,
                   ],
                   ["Remarks", selectedPR.remarks],
                 ].map(([label, value], i) => (
@@ -299,7 +301,6 @@ export default function SubmittedRequestsPage() {
                 {expandItems ? "−" : "+"}
               </button>
             </div>
-
 
             {/* ITEMS */}
             {expandItems &&
@@ -367,7 +368,10 @@ export default function SubmittedRequestsPage() {
 
                   {item.vendors?.map((vendor, vi) => {
                     const key = `${i}-${vi}`;
-                    const vendorData = vendorUpdates[key] || { status: "", comment: "" };
+                    const vendorData = vendorUpdates[key] || {
+                      status: "",
+                      comment: "",
+                    };
                     return (
                       <div key={vendor.id} className="mb-4">
                         {/* MOBILE VIEW */}
@@ -376,10 +380,14 @@ export default function SubmittedRequestsPage() {
                           <div className="flex gap-3 min-w-[900px]">
                             {/* Vendor */}
                             <div className="flex flex-col min-w-[140px]">
-                              <span className="text-xs font-medium text-gray-600 mb-1">Vendor</span>
+                              <span className="text-xs font-medium text-gray-600 mb-1">
+                                Vendor
+                              </span>
                               <input
                                 readOnly
-                                value={vendorMap[String(vendor.vendor_id)] || "-"}
+                                value={
+                                  vendorMap[String(vendor.vendor_id)] || "-"
+                                }
                                 placeholder="Select Vendor"
                                 className="border rounded px-2 py-1 bg-white"
                               />
@@ -433,7 +441,9 @@ export default function SubmittedRequestsPage() {
                                 readOnly
                                 value={
                                   vendor.quotation_validity_date
-                                    ? new Date(vendor.quotation_validity_date).toLocaleDateString()
+                                    ? new Date(
+                                        vendor.quotation_validity_date
+                                      ).toLocaleDateString()
                                     : ""
                                 }
                                 placeholder="Validity Date"
@@ -448,7 +458,11 @@ export default function SubmittedRequestsPage() {
                               </span>
                               <input
                                 readOnly
-                                value={vendor.comments?.map((c) => c.comment).join(", ") || ""}
+                                value={
+                                  vendor.comments
+                                    ?.map((c) => c.comment)
+                                    .join(", ") || ""
+                                }
                                 placeholder="Comment"
                                 className="border rounded px-2 py-1 bg-gray-50"
                               />
@@ -461,7 +475,14 @@ export default function SubmittedRequestsPage() {
                               </span>
                               <input
                                 value={vendorData.comment}
-                                onChange={(e) => updateVendorField(i, vi, "comment", e.target.value)}
+                                onChange={(e) =>
+                                  updateVendorField(
+                                    i,
+                                    vi,
+                                    "comment",
+                                    e.target.value
+                                  )
+                                }
                                 placeholder="Enter feasibility comment"
                                 className="border rounded px-2 py-1 bg-white"
                               />
@@ -474,7 +495,14 @@ export default function SubmittedRequestsPage() {
                               </span>
                               <select
                                 value={vendorData.status}
-                                onChange={(e) => updateVendorField(i, vi, "status", e.target.value)}
+                                onChange={(e) =>
+                                  updateVendorField(
+                                    i,
+                                    vi,
+                                    "status",
+                                    e.target.value
+                                  )
+                                }
                                 className="border rounded px-2 py-1 bg-white"
                               >
                                 <option value="">Select Status</option>
@@ -492,7 +520,9 @@ export default function SubmittedRequestsPage() {
                         <div className="hidden sm:grid sm:grid-cols-8 gap-4 text-sm">
                           {/* Vendor */}
                           <div className="flex flex-col">
-                            <span className="text-xs font-medium text-gray-600 mb-1">Vendor</span>
+                            <span className="text-xs font-medium text-gray-600 mb-1">
+                              Vendor
+                            </span>
                             <input
                               readOnly
                               value={vendorMap[String(vendor.vendor_id)] || ""}
@@ -503,7 +533,9 @@ export default function SubmittedRequestsPage() {
 
                           {/* Upload Quotation */}
                           <div className="flex flex-col">
-                            <span className="text-xs font-medium text-gray-600 mb-1">Upload Quotation</span>
+                            <span className="text-xs font-medium text-gray-600 mb-1">
+                              Upload Quotation
+                            </span>
                             <input
                               readOnly
                               value={vendor.attachments?.[0]?.file_name || ""}
@@ -514,7 +546,9 @@ export default function SubmittedRequestsPage() {
 
                           {/* Unit Price */}
                           <div className="flex flex-col">
-                            <span className="text-xs font-medium text-gray-600 mb-1">Unit Price</span>
+                            <span className="text-xs font-medium text-gray-600 mb-1">
+                              Unit Price
+                            </span>
                             <input
                               readOnly
                               value={vendor.unit_price ?? ""}
@@ -525,7 +559,9 @@ export default function SubmittedRequestsPage() {
 
                           {/* Total Price */}
                           <div className="flex flex-col">
-                            <span className="text-xs font-medium text-gray-600 mb-1">Total Price</span>
+                            <span className="text-xs font-medium text-gray-600 mb-1">
+                              Total Price
+                            </span>
                             <input
                               readOnly
                               value={vendor.total_price ?? ""}
@@ -536,12 +572,16 @@ export default function SubmittedRequestsPage() {
 
                           {/* Quotation Validity */}
                           <div className="flex flex-col">
-                            <span className="text-xs font-medium text-gray-600 mb-1">Validity</span>
+                            <span className="text-xs font-medium text-gray-600 mb-1">
+                              Validity
+                            </span>
                             <input
                               readOnly
                               value={
                                 vendor.quotation_validity_date
-                                  ? new Date(vendor.quotation_validity_date).toLocaleDateString()
+                                  ? new Date(
+                                      vendor.quotation_validity_date
+                                    ).toLocaleDateString()
                                   : ""
                               }
                               placeholder="Validity Date"
@@ -551,10 +591,16 @@ export default function SubmittedRequestsPage() {
 
                           {/* Existing Comments */}
                           <div className="flex flex-col">
-                            <span className="text-xs font-medium text-gray-600 mb-1">PR Comments</span>
+                            <span className="text-xs font-medium text-gray-600 mb-1">
+                              PR Comments
+                            </span>
                             <input
                               readOnly
-                              value={vendor.comments?.map((c) => c.comment).join(", ") || ""}
+                              value={
+                                vendor.comments
+                                  ?.map((c) => c.comment)
+                                  .join(", ") || ""
+                              }
                               placeholder="Comment"
                               className="border rounded px-2 py-1 w-full bg-gray-50"
                             />
@@ -562,10 +608,19 @@ export default function SubmittedRequestsPage() {
 
                           {/* New Comment */}
                           <div className="flex flex-col">
-                            <span className="text-xs font-medium text-gray-600 mb-1">Feasibility Comment</span>
+                            <span className="text-xs font-medium text-gray-600 mb-1">
+                              Feasibility Comment
+                            </span>
                             <input
                               value={vendorData.comment}
-                              onChange={(e) => updateVendorField(i, vi, "comment", e.target.value)}
+                              onChange={(e) =>
+                                updateVendorField(
+                                  i,
+                                  vi,
+                                  "comment",
+                                  e.target.value
+                                )
+                              }
                               placeholder="Enter feasibility comment"
                               className="border rounded px-2 py-1 w-full"
                             />
@@ -573,10 +628,19 @@ export default function SubmittedRequestsPage() {
 
                           {/* Status */}
                           <div className="flex flex-col">
-                            <span className="text-xs font-medium text-gray-600 mb-1">Status</span>
+                            <span className="text-xs font-medium text-gray-600 mb-1">
+                              Status
+                            </span>
                             <select
                               value={vendorData.status}
-                              onChange={(e) => updateVendorField(i, vi, "status", e.target.value)}
+                              onChange={(e) =>
+                                updateVendorField(
+                                  i,
+                                  vi,
+                                  "status",
+                                  e.target.value
+                                )
+                              }
                               className="border rounded px-2 py-1 w-full"
                             >
                               <option value="">Select Status</option>
@@ -591,7 +655,6 @@ export default function SubmittedRequestsPage() {
                       </div>
                     );
                   })}
-
                 </div>
               ))}
 
@@ -623,7 +686,7 @@ export default function SubmittedRequestsPage() {
                         </p>
                       </div>
                       <div className="flex gap-4 text-sm text-gray-600">
-                        <span>Arjun</span>
+                        {s.status_updated_by ?? "—"} •{" "}
                         <span>
                           {s.updated_at
                             ? new Date(s.updated_at).toLocaleDateString()

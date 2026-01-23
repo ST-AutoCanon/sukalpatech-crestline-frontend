@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
-
+import { AuthContext } from "../../../../../context/AuthContext";
 /* ================= TYPES ================= */
 interface DepartmentStatus {
   department_status: string;
@@ -47,9 +47,14 @@ interface FinancePR {
   department_statuses: DepartmentStatus[];
   items: Item[];
 }
+interface Props {
+  status: "all" | "pending" | "rejected";
+}
 
 /* ================= COMPONENT ================= */
-export default function SubmittedFinanceRequestsPage() {
+// export default function SubmittedFinanceRequestsPage() {
+export default function SubmittedFinanceRequestsPage({ status }: Props) {
+  const { user, token } = useContext(AuthContext);
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/new-finance`;
 
   const [requests, setRequests] = useState<FinancePR[]>([]);
@@ -120,8 +125,26 @@ export default function SubmittedFinanceRequestsPage() {
   };
 
   /* ================= API ================= */
+  // const fetchApprovedRequests = async () => {
+  //   const res = await axios.get(`${API_BASE}/approved-finance-requests`);
+  //   setRequests(res.data.data || []);
+  // };
+
   const fetchApprovedRequests = async () => {
-    const res = await axios.get(`${API_BASE}/approved-finance-requests`);
+    let url = "";
+
+    switch (status) {
+      case "pending":
+        url = `${API_BASE}/pending-finance-requests`;
+        break;
+      case "rejected":
+        url = `${API_BASE}/rejected-finance-requests`;
+        break;
+      default:
+        url = `${API_BASE}/approved-finance-requests`;
+    }
+
+    const res = await axios.get(url);
     setRequests(res.data.data || []);
   };
 
@@ -139,31 +162,6 @@ export default function SubmittedFinanceRequestsPage() {
     setModalOpen(true);
     setNewStatus("");
     setNewComment("");
-  };
-
-  const submitUpdate = async () => {
-    if (!selectedPR || !newStatus) {
-      alert("Please select finance status");
-      return;
-    }
-
-    const payload = {
-      department_statuses: [
-        {
-          department_status: newStatus,
-          department_comment: newComment,
-          status_updated_by: 2,
-          updated_at: new Date().toISOString(),
-        },
-      ],
-      items: updateData.items,
-    };
-
-    await axios.put(`${API_BASE}/finance-requests/${selectedPR.id}`, payload);
-
-    alert("Finance PR Updated");
-    setModalOpen(false);
-    fetchApprovedRequests();
   };
 
   /* ================= UI ================= */
@@ -237,8 +235,8 @@ export default function SubmittedFinanceRequestsPage() {
           <div className="bg-white w-full max-w-[95%] md:max-w-6xl rounded shadow-lg p-4 md:p-6 relative max-h-[90vh] overflow-y-auto">
             {/* CLOSE BUTTON */}
             <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-               View PR-{selectedPR.id} info
-              </h2>
+              View PR-{selectedPR.id} info
+            </h2>
             <button
               className="absolute -top-1 -right-1 text-2xl text-gray-600 hover:text-gray-800"
               onClick={() => setModalOpen(false)}
@@ -331,7 +329,6 @@ export default function SubmittedFinanceRequestsPage() {
                       </div>
 
                       {/* VENDOR ROWS */}
-             
 
                       {item.vendors.map((vendor, vi) => {
                         // Find the latest feasibility comment (commented_by = 2)
@@ -443,7 +440,7 @@ export default function SubmittedFinanceRequestsPage() {
                       </p>
                     </div>
                     <div className="flex gap-2 text-sm text-gray-600">
-                      <span>Arjun</span>
+                      {s.status_updated_by ?? "—"} •{" "}
                       <span>
                         {s.updated_at
                           ? new Date(s.updated_at).toLocaleDateString()

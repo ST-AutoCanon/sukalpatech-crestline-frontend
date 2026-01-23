@@ -7,7 +7,6 @@ interface Props {
   refreshKey: number;
 }
 
-
 type DepartmentStatus = {
   department_status: string;
   department_comment: string;
@@ -87,13 +86,10 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
           map[String(v.vendor_id)] = v.vendor_name; // ✅ CORRECT KEY
         });
 
-        console.log("Vendor Map:", map); // should show { "1": "ABC Supplies" }
-
         setVendorMap(map);
       })
       .catch((err) => console.error("Vendor fetch error", err));
   }, []);
-
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`)
@@ -112,28 +108,11 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       .catch((err) => console.error("Department fetch error", err));
   }, []);
 
-
-
   const toggleItemsSection = () => {
     setShowItems((prev) => !prev);
   };
 
-  useEffect(() => {
-    fetch(
-      `${import.meta.env.VITE_BACKEND_URL
-      }/api/new-procurement/purchase-requests`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setPrs(data?.data || []);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Fetch PR Error:", err);
-        setLoading(false);
-      });
-  }, []);
-
+  
   const fetchPRs = async () => {
     setLoading(true);
     try {

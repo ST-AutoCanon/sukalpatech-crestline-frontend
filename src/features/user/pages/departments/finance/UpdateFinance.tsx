@@ -1,6 +1,7 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useContext,type ReactNode } from "react";
 import axios from "axios";
 import Alert from "../../../components/Aleartmessage";
+import { AuthContext } from "../../../../../context/AuthContext";
 
 /* ================= TYPES ================= */
 
@@ -8,7 +9,7 @@ interface DepartmentStatus {
   status: ReactNode;
   department_status: string;
   department_comment: string;
-  status_updated_by?: number;
+  status_updated_by?: string;
   updated_at?: string;
 }
 
@@ -58,6 +59,7 @@ interface FinancePR {
 /* ================= COMPONENT ================= */
 
 export default function SubmittedFinanceRequestsPage() {
+  const { user, token } = useContext(AuthContext);
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/new-finance`;
 
   const [requests, setRequests] = useState<FinancePR[]>([]);
@@ -170,7 +172,7 @@ export default function SubmittedFinanceRequestsPage() {
         {
           department_status: newStatus,
           department_comment: newComment,
-          status_updated_by: 2,
+          status_updated_by: user.first_name,
           updated_at: new Date().toISOString(),
         },
       ],
@@ -237,8 +239,8 @@ export default function SubmittedFinanceRequestsPage() {
           <div className="bg-white w-full max-w-[95vw] sm:max-w-6xl rounded shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto relative">
             {/* CLOSE */}
             <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-               Update PR-{selectedPR.id} info
-              </h2>
+              Update PR-{selectedPR.id} info
+            </h2>
             <button
               className="absolute top-2 right-2 text-2xl text-gray-600 hover:text-gray-800"
               onClick={() => setModalOpen(false)}
@@ -246,12 +248,12 @@ export default function SubmittedFinanceRequestsPage() {
               ×
             </button>
             {alert && (
-                          <Alert
-                            type={alert.type}
-                            message={alert.message}
-                            onClose={() => setAlert(null)}
-                          />
-                        )}
+              <Alert
+                type={alert.type}
+                message={alert.message}
+                onClose={() => setAlert(null)}
+              />
+            )}
 
             {/* PR DETAILS */}
             <div className="bg-gray-100 p-3 sm:p-4 rounded mb-4 overflow-x-auto">
@@ -336,7 +338,6 @@ export default function SubmittedFinanceRequestsPage() {
                         <div>status</div>
                       </div>
 
-                
                       {item.vendors.map((vendor, vi) => {
                         // Find the latest feasibility comment (commented_by = 2)
                         const feasibilityComment =
@@ -446,8 +447,8 @@ export default function SubmittedFinanceRequestsPage() {
                           <strong>Comment:</strong> {s.department_comment}
                         </p>
                       </div>
-                      <div className="flex gap-4 text-sm text-gray-600 mt-1 sm:mt-0">
-                        <span>Arjun</span>
+                      <div className="flex gap-4 text-sm text-gray-600 mt-1 sm:mt-0">                        
+                        {s.status_updated_by ?? "—"} •{" "}
                         <span>
                           {s.updated_at
                             ? new Date(s.updated_at).toLocaleDateString()
