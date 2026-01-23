@@ -4,7 +4,7 @@ import { AuthContext } from "../../../../../context/AuthContext";
 import { Upload } from "lucide-react";
 import Aleart from "../../../components/Aleartmessage";
 
-export default function NewProcurementPage({ onClose }) {
+export default function NewProcurementPage({ onClose, onCreated }) {
   const { user, token } = useContext(AuthContext);
   const [departments, setDepartments] = useState([]);
   const [vendorList, setVendorList] = useState([]);
@@ -199,6 +199,8 @@ export default function NewProcurementPage({ onClose }) {
         type: "success",
         message: "PR created successfully",
       });
+      // 🔥 THIS IS THE KEY LINE
+      onCreated();
 
       setTimeout(() => {
         onClose();
@@ -470,8 +472,6 @@ export default function NewProcurementPage({ onClose }) {
                         🗑
                       </button>
                     </div>
-                    
-                    
                   </div>
                 ))}
 

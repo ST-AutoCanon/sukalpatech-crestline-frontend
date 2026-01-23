@@ -1,5 +1,6 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect,useContext, type ReactNode } from "react";
 import axios from "axios";
+import { AuthContext } from "../../../../../context/AuthContext";
 import Aleart from "../../../components/Aleartmessage";
 
 /* ================= TYPES ================= */
@@ -8,7 +9,7 @@ interface DepartmentStatus {
   status: ReactNode;
   department_status: string;
   department_comment: string;
-  status_updated_by?: number;
+  status_updated_by?: string;
   updated_at?: string;
 }
 
@@ -58,6 +59,7 @@ interface ProcurementPR {
 /* ================= COMPONENT ================= */
 
 export default function SubmittedFinanceRequestsPage() {
+    const { user, token } = useContext(AuthContext);
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement`;
 
   const [requests, setRequests] = useState<ProcurementPR[]>([]);
@@ -168,7 +170,7 @@ export default function SubmittedFinanceRequestsPage() {
         {
           department_status: newStatus,
           department_comment: newComment,
-          status_updated_by: 2,
+          status_updated_by: user.first_name,
           updated_at: new Date().toISOString(),
         },
       ],
@@ -248,7 +250,6 @@ export default function SubmittedFinanceRequestsPage() {
                 onClose={() => setAlert(null)}
               />
             )}
-
 
             {/* PR DETAILS */}
             <div className="bg-gray-100 p-3 sm:p-4 rounded mb-4 overflow-x-auto">
@@ -371,8 +372,8 @@ export default function SubmittedFinanceRequestsPage() {
                               value={
                                 vendor.quotation_validity_date
                                   ? new Date(
-                                    vendor.quotation_validity_date
-                                  ).toLocaleDateString()
+                                      vendor.quotation_validity_date
+                                    ).toLocaleDateString()
                                   : ""
                               }
                               className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
@@ -443,7 +444,8 @@ export default function SubmittedFinanceRequestsPage() {
                         </p>
                       </div>
                       <div className="flex gap-4 text-sm text-gray-600 mt-1 sm:mt-0">
-                        <span>Arjun</span>
+                       
+                        {s.status_updated_by ?? "—"} •{" "}
                         <span>
                           {s.updated_at
                             ? new Date(s.updated_at).toLocaleDateString()

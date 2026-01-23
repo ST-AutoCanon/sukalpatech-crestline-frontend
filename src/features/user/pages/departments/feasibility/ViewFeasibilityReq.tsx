@@ -1,10 +1,11 @@
 import { Minus, Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { AuthContext } from "../../../../../context/AuthContext";
 
 type DepartmentStatus = {
   department_status: string;
   department_comment: string;
-  status_updated_by: number;
+  status_updated_by: string;
   updated_at: string;
 };
 
@@ -59,6 +60,7 @@ type PR = {
 };
 
 export default function ViewPRPage() {
+  const { user, token } = useContext(AuthContext);
   const [prs, setPrs] = useState<PR[]>([]);
   const [activePR, setActivePR] = useState<PR | null>(null);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
@@ -135,9 +137,7 @@ export default function ViewPRPage() {
 
               <div className="flex gap-2">
                 <span className="text-gray-400 w-32 shrink-0">Priority:</span>
-                <span className="text-gray-900">
-                  {pr.priority || "-"}
-                </span>
+                <span className="text-gray-900">{pr.priority || "-"}</span>
               </div>
 
               <div className="flex gap-2">
@@ -148,7 +148,9 @@ export default function ViewPRPage() {
               </div>
 
               <div className="flex gap-2">
-                <span className="text-gray-400 w-32 shrink-0">Required Date:</span>
+                <span className="text-gray-400 w-32 shrink-0">
+                  Required Date:
+                </span>
                 <span className="text-gray-900">
                   {pr.required_date
                     ? new Date(pr.required_date).toLocaleDateString()
@@ -156,7 +158,6 @@ export default function ViewPRPage() {
                 </span>
               </div>
             </div>
-
 
             <button className="mt-3 text-sm font-medium text-blue-600 text-left">
               More Info
@@ -174,7 +175,10 @@ export default function ViewPRPage() {
               <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
                 View PR-{activePR.id} info
               </h2>
-              <button onClick={() => setActivePR(null)} className="text-gray-500 hover:text-gray-700">
+              <button
+                onClick={() => setActivePR(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
                 <X size={24} />
               </button>
             </div>
@@ -252,7 +256,6 @@ export default function ViewPRPage() {
               </div>
             </div>
 
-
             {/* Items Section Toggle */}
             <div className="flex justify-end mb-2">
               <button
@@ -261,20 +264,23 @@ export default function ViewPRPage() {
               >
                 {showStatus ? <Minus size={16} /> : <Plus size={16} />}
               </button>
-
             </div>
 
             {/* Items */}
             {showStatus && (
               <div className="space-y-4">
                 {activePR.items?.map((item) => (
-                  <div key={item.id} className="bg-gray-100 rounded-lg p-3 md:p-4 w-full overflow-x-auto">
+                  <div
+                    key={item.id}
+                    className="bg-gray-100 rounded-lg p-3 md:p-4 w-full overflow-x-auto"
+                  >
                     {/* Item header */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-3 text-sm">
-
                       {/* Item Code */}
                       <div className="flex items-center gap-2">
-                        <span className="font-medium w-24 shrink-0">Item Code</span>
+                        <span className="font-medium w-24 shrink-0">
+                          Item Code
+                        </span>
                         <div className="bg-white border rounded px-4 py-1 flex-1">
                           {item.item_code || "-"}
                         </div>
@@ -282,7 +288,9 @@ export default function ViewPRPage() {
 
                       {/* Description */}
                       <div className="flex items-center gap-2">
-                        <span className="font-medium w-24 shrink-0">Description</span>
+                        <span className="font-medium w-24 shrink-0">
+                          Description
+                        </span>
                         <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
                           {item.item_name || "-"}
                         </div>
@@ -295,9 +303,7 @@ export default function ViewPRPage() {
                           {item.quantity_required ?? "-"}
                         </div>
                       </div>
-
                     </div>
-
 
                     {/* Vendors */}
                     <div className="overflow-x-auto">
@@ -315,15 +321,20 @@ export default function ViewPRPage() {
 
                           {/* Desktop values */}
                           {item.vendors?.map((vendor) => (
-                            <div key={vendor.id} className="hidden sm:grid sm:grid-cols-6 gap-4 text-sm mb-4">
+                            <div
+                              key={vendor.id}
+                              className="hidden sm:grid sm:grid-cols-6 gap-4 text-sm mb-4"
+                            >
                               <input
                                 type="text"
-                                value={vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id}
+                                value={
+                                  vendorMap[String(vendor.vendor_id)] ??
+                                  vendor.vendor_id
+                                }
                                 readOnly
                                 className="bg-white border rounded px-2 py-1 w-full"
                                 placeholder="Vendor"
                               />
-
 
                               <input
                                 type="text"
@@ -347,7 +358,9 @@ export default function ViewPRPage() {
                                 type="text"
                                 value={
                                   vendor.quotation_validity_date
-                                    ? new Date(vendor.quotation_validity_date).toLocaleDateString()
+                                    ? new Date(
+                                        vendor.quotation_validity_date
+                                      ).toLocaleDateString()
                                     : ""
                                 }
                                 readOnly
@@ -355,7 +368,11 @@ export default function ViewPRPage() {
                               />
                               <input
                                 type="text"
-                                value={vendor.comments?.map((c) => c.comment).join(", ") || ""}
+                                value={
+                                  vendor.comments
+                                    ?.map((c) => c.comment)
+                                    .join(", ") || ""
+                                }
                                 readOnly
                                 className="bg-white border rounded px-2 py-1 w-full"
                               />
@@ -364,21 +381,44 @@ export default function ViewPRPage() {
 
                           {/* Mobile view */}
                           {item.vendors?.map((vendor) => (
-                            <div key={vendor.id} className="mb-4 sm:hidden flex flex-row gap-4 overflow-x-auto">
+                            <div
+                              key={vendor.id}
+                              className="mb-4 sm:hidden flex flex-row gap-4 overflow-x-auto"
+                            >
                               {[
-                                ["Vendor", vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id],
-                                ["Upload Quotation", vendor.attachments?.[0]?.file_name || "-"],
+                                [
+                                  "Vendor",
+                                  vendorMap[String(vendor.vendor_id)] ??
+                                    vendor.vendor_id,
+                                ],
+                                [
+                                  "Upload Quotation",
+                                  vendor.attachments?.[0]?.file_name || "-",
+                                ],
                                 ["Unit Price", vendor.unit_price ?? "-"],
                                 ["Total Price", vendor.total_price ?? "-"],
-                                ["Quotation Validity",
+                                [
+                                  "Quotation Validity",
                                   vendor.quotation_validity_date
-                                    ? new Date(vendor.quotation_validity_date).toLocaleDateString()
-                                    : "-"
+                                    ? new Date(
+                                        vendor.quotation_validity_date
+                                      ).toLocaleDateString()
+                                    : "-",
                                 ],
-                                ["Comments", vendor.comments?.map(c => c.comment).join(", ") || "-"],
+                                [
+                                  "Comments",
+                                  vendor.comments
+                                    ?.map((c) => c.comment)
+                                    .join(", ") || "-",
+                                ],
                               ].map(([label, value], idx) => (
-                                <div key={idx} className="flex flex-col min-w-[120px]">
-                                  <span className="text-gray-500 text-xs">{label}</span>
+                                <div
+                                  key={idx}
+                                  className="flex flex-col min-w-[120px]"
+                                >
+                                  <span className="text-gray-500 text-xs">
+                                    {label}
+                                  </span>
                                   <input
                                     type="text"
                                     value={value}
@@ -389,11 +429,9 @@ export default function ViewPRPage() {
                               ))}
                             </div>
                           ))}
-
                         </>
                       )}
                     </div>
-
                   </div>
                 ))}
               </div>
@@ -424,12 +462,14 @@ export default function ViewPRPage() {
                           <span className="font-medium">
                             Status: {ds.department_status}
                           </span>
+                          {ds.status_updated_by ?? "—"} •{" "}
                           <span className="font-medium text-gray-800">
-                            Arjun • {new Date(ds.updated_at).toLocaleDateString()}
+                            {new Date(ds.updated_at).toLocaleDateString()}
                           </span>
                         </div>
                         <div className="text-xs text-gray-600">
-                          <span className="font-medium">Comment:</span> {ds.department_comment}
+                          <span className="font-medium">Comment:</span>{" "}
+                          {ds.department_comment}
                         </div>
                       </div>
                     ))}
@@ -440,7 +480,6 @@ export default function ViewPRPage() {
           </div>
         </div>
       )}
-
     </>
   );
 }
