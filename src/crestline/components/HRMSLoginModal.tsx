@@ -47,7 +47,7 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
         }
       } else if (msg.type === "login-failed") {
         setStatusMessage(
-          `Login failed${msg.error ? ` : ${String(msg.error)} ` : ""}`
+          `Login failed${msg.error ? ` : ${String(msg.error)} ` : ""}`,
         );
         setIsLoggingIn(false);
       }
@@ -62,12 +62,12 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
   const persistEmbedLogin = (
     username: string,
     password: string,
-    orgId: number
+    orgId: number,
   ) => {
     try {
       sessionStorage.setItem(
         "EMBED_LOGIN",
-        JSON.stringify({ username, password, orgId })
+        JSON.stringify({ username, password, orgId }),
       );
     } catch (err) {
       console.warn("sessionStorage write failed", err);
@@ -88,12 +88,12 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
     }
 
     const iframe = document.getElementById(
-      iframeId
+      iframeId,
     ) as HTMLIFrameElement | null;
 
     if (!iframe || !iframe.contentWindow) {
       setStatusMessage(
-        `Embedded app not available (expected iframe id="${iframeId}").`
+        `Embedded app not available (expected iframe id="${iframeId}").`,
       );
       return;
     }
@@ -111,7 +111,7 @@ const HRMSLoginModal: React.FC<HRMSLoginModalProps> = ({
           password,
           orgId: defaultOrgId,
         },
-        effectiveChildOrigin || "*"
+        effectiveChildOrigin || "*",
       );
     } catch (err) {
       console.warn("postMessage failed", err);
