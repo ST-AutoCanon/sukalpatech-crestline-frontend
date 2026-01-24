@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { Phone, Mail, MapPin } from "lucide-react";
 import {
   SiLinkedin,
@@ -8,6 +9,40 @@ import {
 } from "react-icons/si";
 
 export default function Footer() {
+  const [hiddenByEmbed, setHiddenByEmbed] = useState<boolean>(() =>
+    typeof document !== "undefined"
+      ? document.body.classList.contains("hide-shell-on-mobile")
+      : false,
+  );
+
+  useEffect(() => {
+    const check = () =>
+      setHiddenByEmbed(
+        typeof document !== "undefined" &&
+          document.body.classList.contains("hide-shell-on-mobile"),
+      );
+
+    check();
+    window.addEventListener("resize", check);
+
+    const mo =
+      typeof MutationObserver !== "undefined"
+        ? new MutationObserver(() => check())
+        : null;
+    if (mo && typeof document !== "undefined") {
+      mo.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+    }
+
+    return () => {
+      window.removeEventListener("resize", check);
+      if (mo) mo.disconnect();
+    };
+  }, []);
+
+  if (hiddenByEmbed) return null;
 
   const handleEmailClick = () => {
     const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -19,7 +54,7 @@ export default function Footer() {
       window.open(
         `https://mail.google.com/mail/?view=cm&fs=1&to=${email}`,
         "_blank",
-        "noopener,noreferrer"
+        "noopener,noreferrer",
       );
     }
   };
@@ -29,7 +64,6 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto space-y-8 md:space-y-10">
         {/* --- Top Section --- */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-6 md:gap-8">
-          {/* --- Left Column --- */}
           <div className="md:col-span-2">
             <img
               src="/crestline/public/crestlinetech_logo.png"
@@ -40,7 +74,6 @@ export default function Footer() {
               Committed to quality, innovation, and sustainable mobility.
             </p>
 
-            {/* Social Icons */}
             <div className="flex gap-2 mt-3">
               {[SiFacebook, SiX, SiLinkedin, SiInstagram].map((Icon, i) => (
                 <a
@@ -54,7 +87,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* --- Quick Links (Desktop Only) --- */}
           <div className="hidden md:block">
             <h3 className="text-white text-sm font-semibold mb-2">Company</h3>
             <ul className="space-y-1 text-sm text-gray-400">
@@ -160,10 +192,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* --- Contact Section --- */}
-
         <div className="border-t border-gray-700 pt-5 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-          {/* PHONE */}
           <a
             href="tel:+9108162006322"
             className="flex items-center gap-2 cursor-pointer group"
@@ -179,7 +208,6 @@ export default function Footer() {
             </div>
           </a>
 
-          {/* WHATSAPP */}
           <a
             href="https://wa.me/918050070457"
             target="_blank"
@@ -197,7 +225,6 @@ export default function Footer() {
             </div>
           </a>
 
-          {/* EMAIL (custom handler ONLY here) */}
           <div
             onClick={handleEmailClick}
             className="flex items-center gap-2 cursor-pointer group"
@@ -213,7 +240,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* LOCATION */}
           <a
             href="https://www.google.com/maps/search/?api=1&query=Vasanthanarasapura+Industrial+Park+KIADB"
             target="_blank"
@@ -232,7 +258,6 @@ export default function Footer() {
           </a>
         </div>
 
-        {/* --- Bottom Section --- */}
         <div className="flex flex-col md:flex-row justify-between items-center pt-5 text-[11px] text-gray-400 border-t border-gray-700">
           <p>© 2025 Crestlinetech. All rights reserved.</p>
           <div className="flex gap-4 mt-2 md:mt-0">

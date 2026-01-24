@@ -11,6 +11,7 @@ import Capabilities from "../../crestline/pages/Capabilities";
 import Contact from "../../crestline/pages/ContactSection";
 import AboutUs from "../../crestline/pages/About";
 import About from "../../crestline/pages/AboutUs";
+import Media from "../../crestline/pages/Media";
 import PremiumCoachModels from "../../crestline/pages/PremiumCoachModels";
 import RequestQuote from "../../crestline/pages/RequestQuote";
 import AdvancedTechnologies from "../../crestline/pages/AdvancedTechnologies";
@@ -116,6 +117,7 @@ const WebsiteLayout = () => {
             path="/crestline/technology"
             element={<AdvancedTechnologies />}
           />
+          <Route path="/crestline/media" element={<Media />} />
           <Route path="/crestline/vehicles" element={<PremiumCoachModels />} />
           <Route path="/crestline/requestquote" element={<RequestQuote />} />
           <Route path="/crestline/appointment" element={<AppointmentPage />} />

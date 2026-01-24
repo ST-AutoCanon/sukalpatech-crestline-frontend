@@ -188,3 +188,4 @@ const Input = ({ label, value }: { label: string; value: any }) => (
     />
   </div>
 );
+
