@@ -100,6 +100,12 @@ const Navbar: React.FC<NavbarProps> = ({ onLoginClick, onRegisterClick }) => {
             Technology
           </a>
           <a
+            href="/crestline/media"
+            className="hover:text-gray-600 transition-colors"
+          >
+            Media
+          </a>
+          <a
             href="/crestline/contact"
             className="hover:text-gray-600 transition-colors"
           >
