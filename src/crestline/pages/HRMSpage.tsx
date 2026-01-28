@@ -1,4 +1,4 @@
-"use client";
+("use client");
 
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -34,75 +34,6 @@ const HRMSPage: React.FC = () => {
     .map((s: string) => s.trim())
     .filter(Boolean);
 
-  // queue a pending navigation (or other action) that must be sent to the iframe
-  const [pendingNavigate, setPendingNavigate] = useState<string | null>(null);
-
-  // ensure body class for mobile hiding remains working
-  useEffect(() => {
-    const updateBodyClass = () => {
-      const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-      if (showIframe && isMobile) {
-        document.body.classList.add("hide-shell-on-mobile");
-      } else {
-        document.body.classList.remove("hide-shell-on-mobile");
-      }
-
-      const bodyHidden = document.body.classList.contains(
-        "hide-shell-on-mobile",
-      );
-      if (bodyHidden) setNavHeight(0);
-      else {
-        // measure nav height if present
-        try {
-          const nav =
-            document.getElementById("site-navbar") ||
-            (document.querySelector("nav") as HTMLElement | null);
-          setNavHeight(nav?.offsetHeight ?? 0);
-        } catch {
-          setNavHeight(0);
-        }
-      }
-    };
-
-    updateBodyClass();
-    window.addEventListener("resize", updateBodyClass);
-    window.addEventListener("orientationchange", updateBodyClass);
-
-    const mo =
-      typeof MutationObserver !== "undefined"
-        ? new MutationObserver(() => updateBodyClass())
-        : null;
-    if (mo)
-      mo.observe(document.body, {
-        attributes: true,
-        attributeFilter: ["class"],
-      });
-
-    return () => {
-      window.removeEventListener("resize", updateBodyClass);
-      window.removeEventListener("orientationchange", updateBodyClass);
-      if (mo) mo.disconnect();
-      document.body.classList.remove("hide-shell-on-mobile");
-    };
-  }, [showIframe]);
-
-  // helper: safely post message to iframe if contentWindow exists
-  const safePostMessage = (msg: any) => {
-    try {
-      const win = iframeRef.current?.contentWindow;
-      if (!win) {
-        // console.warn("iframe contentWindow not ready for postMessage");
-        return false;
-      }
-      win.postMessage(msg, childOrigin || "*");
-      return true;
-    } catch (err) {
-      console.warn("postMessage failed", err);
-      return false;
-    }
-  };
-
-  // Listen for messages from child iframe
   useEffect(() => {
     function onMessage(ev: MessageEvent) {
       const isFromIframeWindow =
@@ -118,17 +49,6 @@ const HRMSPage: React.FC = () => {
 
       if (msg.type === "child-ready") {
         setChildReady(true);
-        // if there is pending navigation, send it now
-        if (pendingNavigate) {
-          const ok = safePostMessage({
-            type: "request-navigate",
-            path: pendingNavigate,
-          });
-          if (ok) {
-            // clear pending only after successful post
-            setPendingNavigate(null);
-          }
-        }
         return;
       }
 
@@ -137,24 +57,13 @@ const HRMSPage: React.FC = () => {
           sessionStorage.removeItem("EMBED_LOGIN");
         } catch {}
         setStatus("success");
-        setShowModal(false);
+        setShowParentUI(false);
         setShowIframe(true);
-        // do not directly post navigate here; instead queue and let child-ready trigger actual navigation
-        // this avoids sending request-navigate before the iframe is ready
-        // but keep a fallback: if childReady is already true we can navigate immediately
-        if (childReady) {
-          safePostMessage({ type: "request-navigate", path: "/dashboard" });
-        } else {
-          setPendingNavigate("/dashboard");
-        }
         return;
       }
 
       if (msg.type === "login-failed") {
         console.warn("HRMSPage login failed:", msg.error);
-        // keep modal open and display message inside modal via passing error down or through state
-        setStatus("failed");
-        setError(msg.error || "Login failed");
       }
 
       if (msg.type === "child-logged-out") {
@@ -182,100 +91,97 @@ const HRMSPage: React.FC = () => {
 
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [allowedOrigins, navigate, childReady, pendingNavigate]);
+  }, [allowedOrigins, navigate]);
 
-  // handshake & fallback login: send parent-handshake, then fallback to stored EMBED_LOGIN if child doesn't become ready
+  const [showParentUI, setShowParentUI] = useState(true);
+
   useEffect(() => {
     if (!iframeLoaded) return;
 
-    // request handshake right away
-    safePostMessage({ type: "parent-handshake" });
+    try {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: "parent-handshake" },
+        childOrigin || "*",
+      );
+    } catch (err) {
+      console.warn("Failed to post parent-handshake", err);
+    }
 
     const fallback = window.setTimeout(() => {
       const storedRaw = sessionStorage.getItem("EMBED_LOGIN");
       let stored = null;
       try {
         stored = storedRaw ? JSON.parse(storedRaw) : null;
-      } catch {
+      } catch (e) {
         stored = null;
       }
 
-      // if child not ready but we have stored creds, attempt parent-login
       if (!childReady && stored && stored.username && stored.password) {
-        const ok = safePostMessage({
-          type: "parent-login",
-          username: stored.username,
-          password: stored.password,
-          orgId: stored.orgId || 28,
-        });
-        if (ok) setStatus("sent");
-        else {
+        try {
+          iframeRef.current?.contentWindow?.postMessage(
+            {
+              type: "parent-login",
+              username: stored.username,
+              password: stored.password,
+              orgId: stored.orgId || 28,
+            },
+            childOrigin || "*",
+          );
+          setStatus("sent");
+        } catch (err) {
           setStatus("error");
           setError("postMessage failed (fallback)");
         }
       }
-
-      // also if there is a pendingNavigate and child still not ready, leave it queued
     }, 250);
 
     return () => clearTimeout(fallback);
-  }, [iframeLoaded, childReady]); // eslint-disable-line
-
-  // whenever childReady or iframeLoaded changes, if there's a pendingNavigate try to send it
-  useEffect(() => {
-    if (!pendingNavigate) return;
-    // only send when contentWindow is present and either childReady or iframeLoaded
-    const win = iframeRef.current?.contentWindow;
-    if (!win) return;
-
-    if (childReady || iframeLoaded) {
-      const ok = safePostMessage({
-        type: "request-navigate",
-        path: pendingNavigate,
-      });
-      if (ok) setPendingNavigate(null);
-    }
-  }, [pendingNavigate, childReady, iframeLoaded]);
-
-  // timeout to detect no-response (optional): if status = 'sent' and no childReady, mark failed
-  useEffect(() => {
-    if (status !== "sent") return;
-    const t = setTimeout(() => {
-      if (!childReady) {
-        setStatus("failed");
-        setError((prev) => prev || "No response from embedded app");
-      }
-    }, 10000);
-    return () => clearTimeout(t);
-  }, [status, childReady]);
+  }, [iframeLoaded, childReady, childOrigin]);
 
   const onIframeLoad = () => {
     setIframeLoaded(true);
-    // request height; child will respond with content-height
-    safePostMessage({ type: "request-height" });
-  };
-
-  // When parent login modal tells us login succeeded, queue navigation and show iframe
-  const handleLoginSuccessFromModal = (payload?: any) => {
-    // keep the modal closed and show iframe; queue navigate. The real navigation will be sent when childReady arrives
-    setShowModal(false);
-    setShowIframe(true);
-    setPendingNavigate("/dashboard");
-    // We also attempt immediate send if iframe already ready
-    const win = iframeRef.current?.contentWindow;
-    if (win && (childReady || iframeLoaded)) {
-      const ok = safePostMessage({
-        type: "request-navigate",
-        path: "/dashboard",
-      });
-      if (ok) setPendingNavigate(null);
+    try {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: "request-height" },
+        childOrigin || "*",
+      );
+    } catch (e) {
+      console.warn("Failed to postMessage to iframe on load", e);
     }
   };
+
+  useEffect(() => {
+    const measureNav = () => {
+      try {
+        const nav =
+          document.getElementById("site-navbar") ||
+          (document.querySelector("nav") as HTMLElement | null);
+        const height = nav?.offsetHeight ?? 0;
+        setNavHeight(height);
+      } catch (err) {
+        console.warn("Failed to measure navbar height", err);
+        setNavHeight(0);
+      }
+    };
+
+    measureNav();
+    window.addEventListener("resize", measureNav);
+    window.addEventListener("orientationchange", measureNav);
+
+    const t = window.setTimeout(measureNav, 250);
+    return () => {
+      window.removeEventListener("resize", measureNav);
+      window.removeEventListener("orientationchange", measureNav);
+      window.clearTimeout(t);
+    };
+  }, []);
 
   const fallbackHeight = "100vh";
 
   return (
     <div className="min-h-screen bg-gray-50 text-black">
+      {!showIframe && <div className="bg-white shadow py-3 px-6"></div>}
+
       <div className="w-full">
         <iframe
           id={iframeId}
@@ -298,7 +204,20 @@ const HRMSPage: React.FC = () => {
           setShowModal(false);
           navigate("/", { replace: true });
         }}
-        onLoginSuccess={handleLoginSuccessFromModal}
+        onLoginSuccess={(payload) => {
+          console.info("Parent: login-success payload:", payload);
+          setShowModal(false);
+          setShowIframe(true);
+
+          try {
+            iframeRef.current?.contentWindow?.postMessage(
+              { type: "request-navigate", path: "/dashboard" },
+              childOrigin || "*",
+            );
+          } catch (e) {
+            console.warn("request-navigate postMessage failed", e);
+          }
+        }}
         onSwitchToNormalLogin={() => {
           setShowModal(false);
           navigate("/?openLogin=1", { replace: true });
