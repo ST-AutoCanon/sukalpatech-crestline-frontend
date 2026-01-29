@@ -36,6 +36,7 @@ export default function Sidebar({
     feasibility: <Lightbulb size={22} />,
     procurement: <ShoppingCart size={22} />,
     finance: <Wallet size={22} />,
+    bd:<Building2 size={22}/>,
   };
 
   return (
