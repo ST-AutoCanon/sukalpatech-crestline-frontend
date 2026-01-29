@@ -92,22 +92,21 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   };
 
   // Handle BD team update
-  const handleBdUpdate = async () => {
-    try {
-      const res = await api.patch(
-        `/business-development/bd/${data.id}/update`,
-        {
-          bd_status: bdStatus,
-          bd_comments: bdComments,
-        }
-      );
-      onUpdate(res.data);
-      setShowModal(false);
-    } catch (err) {
-      console.error("Failed to update BD info", err);
-      alert("Failed to update BD info");
-    }
-  };
+const handleBdUpdate = async () => {
+  try {
+    const res = await api.patch(`/business-development/${data.id}/submit`, {
+      bd_status: bdStatus,
+      bd_comments: bdComments,
+    });
+    onUpdate(res.data);
+    setShowModal(false);
+    alert("BD info updated successfully!");
+  } catch (err) {
+    console.error("Failed to update BD info", err);
+    alert("Failed to update BD info");
+  }
+};
+
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-xs">
