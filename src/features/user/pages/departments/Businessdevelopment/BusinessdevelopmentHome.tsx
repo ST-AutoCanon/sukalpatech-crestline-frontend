@@ -10,10 +10,7 @@ const BusinessDevelopmentHome = () => {
 
   return (
     <div className="p-4 sm:p-6 font-sans">
-      {/* PAGE TITLE */}
-      <h1 className="text-xl sm:text-2xl font-bold mb-6">
-        Business Development
-      </h1>
+      
 
       {/* HEADER BAR */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 mt-3">

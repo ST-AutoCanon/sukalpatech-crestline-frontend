@@ -101,6 +101,8 @@ const TestBusinessDev = () => {
   //   alert("Request Created Successfully");
   //   fetchRequests();
   // };
+
+
 const handleSubmit = async (e: any, bdId?: number) => {
   e.preventDefault();
 
@@ -121,8 +123,8 @@ const handleSubmit = async (e: any, bdId?: number) => {
     let res;
 
     if (bdId) {
-      // BD Update
-      res = await api.patch(`/business-development/bd/${bdId}/update`, formData, {
+      // BD Update → use /:id/submit route
+      res = await api.patch(`/business-development/${bdId}/submit`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       alert("BD info updated successfully!");

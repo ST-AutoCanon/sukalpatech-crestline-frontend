@@ -3,9 +3,10 @@ import { api } from "../../../api/businessApi";
 
 interface FeasibilityCardProps {
   data: any;
-  mode: "all" | "update";
+  mode: "all" | "update" | "bd-update";
   onUpdate: (updated: any) => void;
 }
+
 
 const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   data,
@@ -23,19 +24,17 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   const [feasibility_comments, setFeasibilityComments] = useState(
     data.feasibility_comments ?? ""
   );
-
-  // BD Team states
-  const [bdStatus, setBdStatus] = useState(data.bd_status ?? "");
-  const [bdComments, setBdComments] = useState(data.bd_comments ?? "");
+  const [finalStatus, setfinalStatus] = useState("");
+  const [finalComments, setfinalComments] = useState("");
 
   const renderValue = (value: any) =>
     value === null || value === undefined || value === ""
       ? "-"
       : typeof value === "boolean"
-      ? value
-        ? "Yes"
-        : "No"
-      : value;
+        ? value
+          ? "Yes"
+          : "No"
+        : value;
 
   const mainFields = [
     { label: "BD Status", key: "bd_status" },
@@ -95,10 +94,10 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   const handleBdUpdate = async () => {
     try {
       const res = await api.patch(
-        `/business-development/bd/${data.id}/update`,
+        `/business-development/${data.id}/bd-update`,
         {
-          bd_status: bdStatus,
-          bd_comments: bdComments,
+          bd_status: finalStatus,
+          bd_comments: finalComments,
         }
       );
       onUpdate(res.data);
@@ -108,6 +107,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
       alert("Failed to update BD info");
     }
   };
+
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-xs">
@@ -326,45 +326,49 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                 </div>
               </div>
             ))}
+            {mode === "bd-update" && (
+              <div className="bg-white rounded-xl p-4 sm:p-6 shadow flex flex-col gap-3 mt-4">
+                <h3 className="text-black text-sm font-bold border-b-2 border-purple-500 pb-1 w-full sm:w-64">
+                  BD Team Update
+                </h3>
 
-            {/* --- BD Team Update Section --- */}
-            <div className="bg-white rounded-xl p-4 sm:p-6 shadow flex flex-col gap-3 mt-4">
-              <h3 className="text-black text-sm font-bold border-b-2 border-purple-500 pb-1 w-full sm:w-64">
-                BD Team Update
-              </h3>
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                  <span className="w-32 text-gray-600">BD Status:</span>
-                  <select
-                    value={bdStatus}
-                    onChange={(e) => setBdStatus(e.target.value)}
-                    className="w-full sm:w-auto p-2 border rounded text-xs"
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="w-32 text-gray-600">BD Status</span>
+                    <select
+                      value={finalStatus} // Use the state, not the setter
+                      onChange={(e) => setfinalStatus(e.target.value)} // Update status, not comments
+                      className="w-full sm:w-auto p-2 border rounded text-xs"
+                    >
+                      <option value="">Select</option>
+                      <option value="APPROVED">APPROVED</option>
+                      <option value="PENDING">PENDING</option>
+                      <option value="REJECTED">REJECTED</option>
+                    </select>
+
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <span className="text-gray-600">BD Comments</span>
+                    <textarea
+                      rows={3}
+                      value={finalComments}
+                      onChange={(e) => setfinalComments(e.target.value)}
+                      className="w-full p-2 border rounded text-xs resize-none"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleBdUpdate}
+                    className="w-full sm:w-auto bg-purple-700 text-white px-4 py-2 rounded text-sm sm:text-lg"
                   >
-                    <option value="">Select</option>
-                    <option value="APPROVED">APPROVED</option>
-                    <option value="PENDING">PENDING</option>
-                    <option value="REJECTED">REJECTED</option>
-                  </select>
+                    Update BD
+                  </button>
                 </div>
-
-                <div className="flex flex-col gap-1">
-                  <span className="text-gray-600">BD Comments:</span>
-                  <textarea
-                    rows={3}
-                    value={bdComments}
-                    onChange={(e) => setBdComments(e.target.value)}
-                    className="w-full p-2 border rounded text-xs resize-none"
-                  />
-                </div>
-
-                <button
-                  onClick={handleBdUpdate}
-                  className="w-full sm:w-auto bg-purple-700 text-white px-4 py-2 rounded text-sm sm:text-lg"
-                >
-                  Update BD Info
-                </button>
               </div>
-            </div>
+            )}
+
+
 
             {/* Close Button */}
             <button
