@@ -32,6 +32,7 @@ import EmployeeDashboard from "../../features/user/pages/EmployeeDashboard";
 import DashboardHome from "../../features/admin/pages/DashboardHome";
 import EmployeeDashboardHome from "../../features/user/pages/EmployeeDashboardHome";
 import DepartmentPage from "../../features/admin/pages/Department";
+import UpdatedFeasibilityPage from "../../features/user/pages/departments/Businessdevelopment/UpdatedFeasibilitypage";
 const componentMap: Record<string, React.LazyExoticComponent<any>> = {
   procurement: React.lazy(
     () =>
@@ -46,6 +47,10 @@ const componentMap: Record<string, React.LazyExoticComponent<any>> = {
   ),
   finance: React.lazy(
     () => import("../../features/user/pages/departments/finance/FinanceHome")
+  ),
+  bd: React.lazy(
+    () => import( "../../features/user/pages/departments/Businessdevelopment/BusinessdevelopmentHome"
+      )
   ),
 };
 
@@ -178,8 +183,17 @@ export default function AppRoutes() {
               </Suspense>
             }
           />
+          
         ))}
-      </Route>
+        <Route
+          path="bd/updated"
+          element={
+            <Suspense fallback={<div>Loading Updated PRs...</div>}>
+              <UpdatedFeasibilityPage />
+            </Suspense>
+          }
+        />
+\      </Route>
 
       <Route
         path="/admin"
