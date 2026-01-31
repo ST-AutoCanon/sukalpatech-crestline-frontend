@@ -33,6 +33,7 @@ import DashboardHome from "../../features/admin/pages/DashboardHome";
 import EmployeeDashboardHome from "../../features/user/pages/EmployeeDashboardHome";
 import DepartmentPage from "../../features/admin/pages/Department";
 import UpdatedFeasibilityPage from "../../features/user/pages/departments/Businessdevelopment/UpdatedFeasibilitypage";
+
 const componentMap: Record<string, React.LazyExoticComponent<any>> = {
   procurement: React.lazy(
     () =>
@@ -48,7 +49,7 @@ const componentMap: Record<string, React.LazyExoticComponent<any>> = {
   finance: React.lazy(
     () => import("../../features/user/pages/departments/finance/FinanceHome")
   ),
-  bd: React.lazy(
+   bd: React.lazy(
     () => import( "../../features/user/pages/departments/Businessdevelopment/BusinessdevelopmentHome"
       )
   ),
@@ -193,7 +194,7 @@ export default function AppRoutes() {
             </Suspense>
           }
         />
-\      </Route>
+      </Route>
 
       <Route
         path="/admin"

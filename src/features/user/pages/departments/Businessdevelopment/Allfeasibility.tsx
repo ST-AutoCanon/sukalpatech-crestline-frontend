@@ -112,7 +112,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-xs">
       <h2 className="text-purple-700 font-bold text-sm sm:text-base mb-2">
-        PR-{data.id}
+      BR-{data.id}
       </h2>
 
       <div className="flex flex-col gap-1">
@@ -137,12 +137,21 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-2 sm:p-4">
           <div
-            className="bg-purple-700 relative rounded-2xl p-4 sm:p-8 
-                       w-full sm:max-w-[60%] max-h-[95vh] overflow-y-auto 
-                       flex flex-col gap-6 overscroll-contain"
+            className="bg-white  w-full
+        h-full
+        sm:h-auto
+        sm:max-h-[95vh]
+        sm:max-w-6xl
+        rounded-none
+        sm:rounded-2xl
+        overflow-y-auto
+        p-4 sm:p-8
+        relative
+        flex flex-col gap-6
+      "
           >
-            <h2 className="text-white text-lg sm:text-2xl font-medium mb-4">
-              PR-{data.id} Full Info
+            <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium mb-4">
+              BR-{data.id} Full Info
             </h2>
 
             {/* Existing sections */}
@@ -255,25 +264,30 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                     label: "",
                     value: (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* BD Status */}
                         <div>
-                          <span className="text-gray-600">BD Status</span>
+                          <span className="text-gray-600 text-xs">BD Status</span>
                           <div className="font-semibold text-black">
                             {renderValue(data.bd_status)}
                           </div>
                         </div>
+
+                        {/* BD Comments */}
                         <div>
-                          <span className="text-gray-600">BD Comments</span>
+                          <span className="text-gray-600 text-xs">BD Comments</span>
                           <div className="font-semibold text-black">
                             {renderValue(data.bd_comments)}
                           </div>
                         </div>
-                        <div>
-                          <span className="text-gray-600">Feasibility Status</span>
+
+                        {/* Feasibility Status */}
+                        <div className="flex flex-col gap-1">
+                          <span className="text-gray-600 text-xs">Feasibility Status</span>
                           {mode === "update" ? (
                             <select
                               value={feasibility_status}
                               onChange={(e) => setFeasibilityStatus(e.target.value)}
-                              className="w-full p-2 border rounded text-xs"
+                              className="w-full h-[38px] p-2 border rounded text-xs"
                             >
                               <option value="">Select</option>
                               <option value="APPROVED">FEASIBILITY APPROVED</option>
@@ -281,22 +295,23 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                               <option value="REJECTED">FEASIBILITY REJECTED</option>
                             </select>
                           ) : (
-                            <div className="font-semibold text-black">
+                            <div className="h-[38px] flex items-center font-semibold text-black">
                               {renderValue(data.feasibility_status)}
                             </div>
                           )}
                         </div>
-                        <div>
-                          <span className="text-gray-600">Feasibility Comments</span>
+
+                        {/* Feasibility Comments */}
+                        <div className="flex flex-col gap-1">
+                          <span className="text-gray-600 text-xs">Feasibility Comments</span>
                           {mode === "update" ? (
                             <textarea
-                              rows={3}
                               value={feasibility_comments}
                               onChange={(e) => setFeasibilityComments(e.target.value)}
-                              className="w-full p-2 border rounded text-xs resize-none"
+                              className="w-full h-[38px] p-2 border rounded text-xs resize-none"
                             />
                           ) : (
-                            <div className="font-semibold text-black whitespace-pre-wrap">
+                            <div className="h-[38px] flex items-center font-semibold text-black truncate">
                               {renderValue(data.feasibility_comments)}
                             </div>
                           )}
@@ -309,16 +324,22 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
             ].map((section) => (
               <div
                 key={section.title}
-                className="bg-white rounded-xl p-4 sm:p-6 shadow flex flex-col gap-3"
+                className="bg-gray-100
+    rounded-xl
+    p-4 sm:p-5
+    shadow
+    flex flex-col
+    gap-3
+  "
               >
-                <h3 className="text-black text-xs sm:text-sm font-bold border-b-2 border-orange-500 pb-1 w-full sm:w-64">
+                <h3 className="text-gray-900 text-sm font-semibold  pb-1">
                   {section.title}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
                   {section.fields.map((f) => (
                     <div key={f.label} className="flex flex-col">
-                      <span className="text-gray-800 text-xs">{f.label}</span>
-                      <span className="text-black font-semibold text-xs whitespace-pre-wrap">
+                      <span className="text-gray-600 text-xs font-medium">{f.label}</span>
+                      <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">
                         {React.isValidElement(f.value) ? f.value : renderValue(f.value)}
                       </span>
                     </div>
@@ -327,45 +348,52 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
               </div>
             ))}
             {mode === "bd-update" && (
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow flex flex-col gap-3 mt-4">
-                <h3 className="text-black text-sm font-bold border-b-2 border-purple-500 pb-1 w-full sm:w-64">
-                  BD Team Update
-                </h3>
+              <>
+                {/* GRAY BOX: ONLY STATUS & COMMENTS */}
+                <div className="bg-gray-100 rounded-xl p-4 sm:p-6 shadow mt-4">
+                  <h3 className="text-black text-sm font-bold mb-3">
+                    BD Team Update
+                  </h3>
 
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="w-32 text-gray-600">BD Status</span>
-                    <select
-                      value={finalStatus} // Use the state, not the setter
-                      onChange={(e) => setfinalStatus(e.target.value)} // Update status, not comments
-                      className="w-full sm:w-auto p-2 border rounded text-xs"
-                    >
-                      <option value="">Select</option>
-                      <option value="APPROVED">APPROVED</option>
-                      <option value="PENDING">PENDING</option>
-                      <option value="REJECTED">REJECTED</option>
-                    </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* BD Status */}
+                    <div className="flex flex-col gap-1">
+                      <span className="text-gray-600 text-xs">BD Status</span>
+                      <select
+                        value={finalStatus}
+                        onChange={(e) => setfinalStatus(e.target.value)}
+                        className="w-full h-[38px] p-2 border rounded text-xs"
+                      >
+                        <option value="">Select</option>
+                        <option value="APPROVED">APPROVED</option>
+                        <option value="PENDING">PENDING</option>
+                        <option value="REJECTED">REJECTED</option>
+                      </select>
+                    </div>
 
+                    {/* BD Comments */}
+                    <div className="flex flex-col gap-1">
+                      <span className="text-gray-600 text-xs">BD Comments</span>
+                      <textarea
+                        value={finalComments}
+                        onChange={(e) => setfinalComments(e.target.value)}
+                        placeholder="Enter comments"
+                        className="w-full h-[38px] p-2 border rounded text-xs resize-none"
+                      />
+                    </div>
                   </div>
+                </div>
 
-                  <div className="flex flex-col gap-1">
-                    <span className="text-gray-600">BD Comments</span>
-                    <textarea
-                      rows={3}
-                      value={finalComments}
-                      onChange={(e) => setfinalComments(e.target.value)}
-                      className="w-full p-2 border rounded text-xs resize-none"
-                    />
-                  </div>
-
+                {/* BUTTON: OUTSIDE GRAY BOX, RIGHT END */}
+                <div className="flex justify-end mt-4">
                   <button
-                    onClick={handleBdUpdate}
-                    className="w-full sm:w-auto bg-purple-700 text-white px-4 py-2 rounded text-sm sm:text-lg"
+                    onClick={handleFeasibilityUpdate}
+                    className="bg-purple-700 text-white px-5 py-2 rounded text-sm sm:text-base"
                   >
-                    Update BD
+                    Update Business Development
                   </button>
                 </div>
-              </div>
+              </>
             )}
 
 
@@ -373,19 +401,22 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
             {/* Close Button */}
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white text-xl sm:text-2xl"
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-700  text-xl sm:text-2xl"
             >
               ×
             </button>
 
             {/* Feasibility Update Button */}
             {mode === "update" && (
-              <button
-                onClick={handleFeasibilityUpdate}
-                className="w-full sm:w-auto bg-purple-700 text-white px-4 py-2 rounded text-sm sm:text-lg mt-2"
-              >
-                Update Feasibility
-              </button>
+              <div className="flex justify-end mt-2">
+                <button
+                  onClick={handleFeasibilityUpdate}
+                  className="bg-purple-700 text-white px-4 py-2 rounded text-sm sm:text-base"
+                >
+                  Update Feasibility
+                </button>
+              </div>
+
             )}
           </div>
         </div>

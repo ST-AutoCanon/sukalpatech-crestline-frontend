@@ -9,8 +9,8 @@ const BusinessDevelopmentHome = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="p-4 sm:p-6 font-sans">
-      
+    <div className="bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c]  p-4 sm:p-6 font-sans">
+
 
       {/* HEADER BAR */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 mt-3">
@@ -18,17 +18,19 @@ const BusinessDevelopmentHome = () => {
         {/* LEFT BUTTON */}
         <button
           className="
-      w-full sm:w-auto
-      px-4 py-2.5
-      rounded-lg
-      bg-purple-700
-      text-white
-      font-semibold
-      text-sm
-    "
+    px-4 sm:px-5
+    py-2
+    rounded-full
+    font-medium
+    text-sm sm:text-base
+    whitespace-nowrap
+    transition
+    bg-white text-purple-700 shadow
+  "
         >
-          All Business Requests
+          Business Requests
         </button>
+
 
         {/* RIGHT BUTTONS */}
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -36,15 +38,8 @@ const BusinessDevelopmentHome = () => {
           {/* CREATE */}
           <button
             onClick={() => setShowModal(true)}
-            className="
-        w-full sm:w-auto
-        px-4 py-2.5
-        rounded-lg
-        bg-gradient-to-r from-purple-500 to-purple-700
-        text-white
-        font-bold
-        text-sm
-      "
+            className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 rounded text-white whitespace-nowrap"
+
           >
             + Create Request
           </button>
@@ -52,7 +47,7 @@ const BusinessDevelopmentHome = () => {
           {/* UPDATE */}
           <button
             onClick={() => navigate("/employee/bd/updated")} // absolute path
-            className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-purple-500 text-white font-semibold text-sm"
+            className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 rounded text-white whitespace-nowrap"
           >
             Update Request
           </button>
@@ -63,9 +58,7 @@ const BusinessDevelopmentHome = () => {
 
 
       {/* BUSINESS LIST */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <BusinessList />
-      </div>
+      <BusinessList />
 
       {/* MODAL */}
       {showModal && (

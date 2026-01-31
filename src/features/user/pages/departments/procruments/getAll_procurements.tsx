@@ -261,7 +261,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 <div className="grid grid-cols-5 gap-4 text-sm font-medium mb-2">
                   <span>Description</span>
                   <span>Priority</span>
-                  <span>Delivery Date</span>
+                  <span> Delivery Date</span>
                   <span>Department</span>
                   <span>Remarks</span>
                 </div>

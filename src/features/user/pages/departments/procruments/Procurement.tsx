@@ -357,21 +357,27 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <span className="text-sm font-semibold">Quantity</span>
+
                     <input
                       type="number"
-                      min={1} // prevents 0 or negative in UI
+                      min={1}
                       className="w-full sm:w-28 border rounded-lg px-2 py-1"
+                      onKeyDown={(e) => {
+                        // Block invalid keys
+                        if (["e", "E", "+", "-", ".", "0"].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                       onChange={(e) => {
                         const value = e.target.value;
 
-                        // Only allow positive integers
+                        // Allow only numbers ≥ 1
                         if (/^[1-9]\d*$/.test(value)) {
                           handleItemChange(i, "quantity_required", Number(value));
                         } else if (value === "") {
-                          // allow clearing input
+                          // Allow clearing input
                           handleItemChange(i, "quantity_required", "");
                         }
-                        // Otherwise ignore invalid input
                       }}
                     />
                   </div>
@@ -419,34 +425,21 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     </div>
 
                     {/* Unit Price */}
-                    <div>
+                   <div>
                       <label className="text-xs text-gray-600">Unit Price</label>
                       <input
+                        type="number"
+                        min="0"
+                        step="1"
                         className="w-full p-2 border rounded mt-1"
-                        placeholder="Enter positive number"
-                        onChange={(e) => {
-                          let value = e.target.value;
-
-                          // Remove all non-digit and non-dot characters
-                          value = value.replace(/[^0-9.]/g, "");
-
-                          // Prevent multiple dots
-                          const parts = value.split(".");
-                          if (parts.length > 2) {
-                            value = parts[0] + "." + parts[1];
-                          }
-
-                          // Convert to number
-                          const num = Number(value);
-
-                          // Only allow positive numbers greater than 0
-                          if (!isNaN(num) && num > 0) {
-                            handleVendorChange(i, vi, "unit_price", num);
-                          } else if (value === "") {
-                            handleVendorChange(i, vi, "unit_price", "");
-                          }
-                          // Otherwise ignore invalid input (0, negative, letters, symbols)
-                        }}
+                        onChange={(e) =>
+                          handleVendorChange(
+                            i,
+                            vi,
+                            "unit_price",
+                            e.target.value
+                          )
+                        }
                       />
                     </div>
 

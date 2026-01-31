@@ -112,7 +112,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-xs relative">
-      <h2 className="text-indigo-700 font-bold text-sm mb-2">PR-{data.id}</h2>
+      <h2 className="text-indigo-700 font-bold text-sm mb-2">BR-{data.id}</h2>
 
       <div className="flex flex-col gap-1">
         {mainFields.map((item) => (
@@ -137,7 +137,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
           <div
             className="
-        bg-purple-700
+        bg-white
         w-full
         h-full
         sm:h-auto
@@ -153,7 +153,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
           >
 
 
-            <h2 className="text-white text-2xl font-medium mb-4">PR-{data.id} Full Info</h2>
+            <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium mb-4">BR-{data.id} Full Info</h2>
 
             {/* Map all sections */}
             {[
@@ -324,13 +324,19 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                 ],
               },
             ].map(section => (
-              <div key={section.title} className="bg-white rounded-xl p-5 shadow-sm flex flex-col gap-3">
-                <h3 className="text-black text-sm font-bold border-b-2 border-orange-500 pb-1 w-64">{section.title}</h3>
+              <div key={section.title} className="bg-gray-100
+    rounded-xl
+    p-4 sm:p-5
+    shadow
+    flex flex-col
+    gap-3
+  ">
+                <h3 className="text-gray-900 text-sm font-semibold  pb-1">{section.title}</h3>
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2">
                   {section.fields.map(f => (
                     <div key={f.label} className="flex flex-col">
                       <span className="text-gray-600 text-xs font-medium">{f.label}</span>
-                      <span className="font-semibold text-xs text-black">{React.isValidElement(f.value) ? f.value : renderValue(f.value)}</span>
+                      <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">{React.isValidElement(f.value) ? f.value : renderValue(f.value)}</span>
                     </div>
                   ))}
                 </div>
@@ -340,7 +346,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
             {/* Close button */}
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3 text-white font-bold text-xl cursor-pointer"
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 font-bold text-xl cursor-pointer"
             >
               ×
             </button>

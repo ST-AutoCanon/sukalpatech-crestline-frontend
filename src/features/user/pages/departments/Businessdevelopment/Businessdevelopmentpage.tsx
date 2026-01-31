@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../../../api/businessApi";
-import BusinessCard from "../Businessdevelopment/Viewbusiness";
+import BusinessCard from "./Viewbusiness";
 
 const BusinessList = () => {
   const [requests, setRequests] = useState<any[]>([]);
@@ -16,17 +16,12 @@ const BusinessList = () => {
   }, []);
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
-        gap: "16px",
-      }}
-    >
-      {requests.map((req) => (
-        <BusinessCard key={req.id} data={req} />
-      ))}
-    </div>
+   <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+  {requests.map((req) => (
+    <BusinessCard key={req.id} data={req} />
+  ))}
+</div>
+
   );
 };
 

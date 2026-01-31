@@ -27,16 +27,16 @@ const FeasibilityPage = () => {
           className={`px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer text-white ${activeTab === "all" ? "bg-purple-700" : "bg-purple-300"
             }`}
         >
-          All PRs
+          All BR
         </div>
 
         {/* RIGHT — ACTION */}
         <button
           onClick={() => setActiveTab("update")}
-          className={`px-4 py-2.5 rounded-xl font-semibold text-sm text-white border-none cursor-pointer ${activeTab === "update" ? "bg-purple-700" : "bg-purple-500"
+          className={`px-4 py-2.5 rounded-xl font-semibold text-sm text-white border-none cursor-pointer ${activeTab === "update" ? "bg-purple-700" : "bg-purple-300"
             }`}
         >
-          Update PRs
+          Update BR
         </button>
       </div>
 

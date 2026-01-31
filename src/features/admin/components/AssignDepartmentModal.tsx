@@ -8,11 +8,25 @@ export default function AssignDepartmentModal({
 }: any) {
   const [selectedEmpId, setSelectedEmpId] = useState<number | null>(null);
   const [permission, setPermission] = useState("");
+  const [Category, setCategory] = useState("");
 
+
+  // const handleSave = () => {
+  //   if (!selectedEmpId) return alert("Please select an employee!");
+  //   onSave(selectedEmpId, selectedDept.department_id, permission);
+  // };
   const handleSave = () => {
-    if (!selectedEmpId) return alert("Please select an employee!");
-    onSave(selectedEmpId, selectedDept.department_id, permission);
-  };
+  if (!selectedEmpId) return alert("Please select an employee!");
+  if (!Category) return alert("Please select approval category!");
+
+  onSave(
+    selectedEmpId,
+    selectedDept.department_id,
+    permission,
+    Category
+  );
+};
+
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
@@ -42,6 +56,16 @@ export default function AssignDepartmentModal({
           value={permission}
           onChange={(e) => setPermission(e.target.value)}
         />
+        <select
+  className="w-full border p-2 rounded"
+  value={Category}
+  onChange={(e) => setCategory(e.target.value)}
+>
+  <option value="">-- Select Approval Category --</option>
+  <option value="LOW">LOW (Employee – up to ₹50,000)</option>
+  <option value="MEDIUM">MEDIUM (Manager – up to ₹2,00,000)</option>
+  <option value="HIGH">HIGH (Admin – No Limit)</option>
+</select>
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">
