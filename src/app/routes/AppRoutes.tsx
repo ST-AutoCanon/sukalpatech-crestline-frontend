@@ -184,6 +184,7 @@ export default function AppRoutes() {
               </Suspense>
             }
           />
+          
         ))}
         <Route
           path="bd/updated"
