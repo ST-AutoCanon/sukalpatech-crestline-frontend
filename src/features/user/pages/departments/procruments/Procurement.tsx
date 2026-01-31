@@ -271,11 +271,12 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                 </select>
               </div>
               <div>
-                <label className="text-sm text-gray-600">Required Date</label>
+                <label className="text-sm text-gray-600">Delivery Date</label>
                 <input
                   type="date"
                   name="required_date"
                   className="w-full border rounded-lg p-2 mt-1"
+                  min={new Date().toISOString().split("T")[0]} // disables past dates
                   onChange={handlePRChange}
                 />
               </div>
@@ -355,13 +356,31 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <span className="text-sm font-semibold">Quantity</span>
+
                     <input
+                      type="number"
+                      min={1}
                       className="w-full sm:w-28 border rounded-lg px-2 py-1"
-                      onChange={(e) =>
-                        handleItemChange(i, "quantity_required", e.target.value)
-                      }
+                      onKeyDown={(e) => {
+                        // Block invalid keys
+                        if (["e", "E", "+", "-", ".", "0"].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        // Allow only numbers ≥ 1
+                        if (/^[1-9]\d*$/.test(value)) {
+                          handleItemChange(i, "quantity_required", Number(value));
+                        } else if (value === "") {
+                          // Allow clearing input
+                          handleItemChange(i, "quantity_required", "");
+                        }
+                      }}
                     />
                   </div>
+
                 </div>
               </div>
 
@@ -406,10 +425,11 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
                     {/* Unit Price */}
                     <div>
-                      <label className="text-xs text-gray-600">
-                        Unit Price
-                      </label>
+                      <label className="text-xs text-gray-600">Unit Price</label>
                       <input
+                        type="number"
+                        min="0"
+                        step="1"
                         className="w-full p-2 border rounded mt-1"
                         onChange={(e) =>
                           handleVendorChange(
@@ -421,6 +441,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                         }
                       />
                     </div>
+
 
                     {/* Total Price */}
                     <div>
@@ -442,13 +463,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                       <input
                         type="date"
                         className="w-full p-2 border rounded mt-1"
+                        min={new Date().toISOString().split("T")[0]} // prevent past dates
                         onChange={(e) =>
-                          handleVendorChange(
-                            i,
-                            vi,
-                            "quotation_validity_date",
-                            e.target.value
-                          )
+                          handleVendorChange(i, vi, "quotation_validity_date", e.target.value)
                         }
                       />
                     </div>
@@ -491,15 +508,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
           ))}
         </div>
 
-        {/* SUBMIT BUTTON - sticky bottom right */}
-        <div className="flex justify-end p-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
-          <button
-            onClick={submitPR}
-            className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white flex items-center gap-2"
-          >
-            <Upload size={16} /> Submit PR
-          </button>
-        </div>
+
 
         {/* SUBMIT BUTTON - sticky bottom right */}
         <div className="flex justify-end p-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">

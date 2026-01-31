@@ -16,18 +16,21 @@ export default function EmployeeDashboard() {
     fessibility: "feasibility",
     feasibility: "feasibility",
     finance: "finance",
+    bd: "bd",
   };
 
   const deptRoutes: Record<string, string> = {
     procurement: "/employee/procurement",
     feasibility: "/employee/feasibility",
     finance: "/employee/finance",
+    bd: "/employee/bd",
   };
 
   const departmentNames: Record<string, string> = {
     "/employee/procurement": "Procurement",
     "/employee/feasibility": "Feasibility",
     "/employee/finance": "Finance",
+     "/employee/bd": "bd",
   };
 
   if (!user) return <h3 className="p-6 text-lg">Loading user...</h3>;

@@ -233,7 +233,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 </div>
 
                 <div>
-                  <div className="text-gray-900">Required Delivery Date</div>
+                  <div className="text-gray-900"> Delivery Date</div>
                   <div className="bg-white border rounded px-2 py-1">
                     {activePR.required_date
                       ? new Date(activePR.required_date).toLocaleDateString()
@@ -261,7 +261,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 <div className="grid grid-cols-5 gap-4 text-sm font-medium mb-2">
                   <span>Description</span>
                   <span>Priority</span>
-                  <span>Required Delivery Date</span>
+                  <span> Delivery Date</span>
                   <span>Department</span>
                   <span>Remarks</span>
                 </div>
@@ -320,7 +320,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       {/* Description */}
                       <div className="flex items-center gap-2">
                         <span className="font-medium w-24 shrink-0">
-                          Description
+                          Item Name
                         </span>
                         <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
                           {item.item_name || "-"}
