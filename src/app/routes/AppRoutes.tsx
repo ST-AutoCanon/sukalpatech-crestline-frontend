@@ -49,7 +49,7 @@ const componentMap: Record<string, React.LazyExoticComponent<any>> = {
   finance: React.lazy(
     () => import("../../features/user/pages/departments/finance/FinanceHome")
   ),
-   bd: React.lazy(
+   BD: React.lazy(
     () => import( "../../features/user/pages/departments/Businessdevelopment/BusinessdevelopmentHome"
       )
   ),

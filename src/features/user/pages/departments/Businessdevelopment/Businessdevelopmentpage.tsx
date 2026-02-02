@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { api } from "../../../api/businessApi";
 import BusinessCard from "./Viewbusiness";
 
-const BusinessList = () => {
+interface BusinessListProps {
+  refresh?: boolean; // optional prop to trigger refresh
+}
+
+const BusinessList = ({refresh}:BusinessListProps) => {
   const [requests, setRequests] = useState<any[]>([]);
 
   const fetchRequests = async () => {
@@ -13,7 +17,7 @@ const BusinessList = () => {
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [refresh]);
 
   return (
    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

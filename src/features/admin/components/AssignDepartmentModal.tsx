@@ -16,16 +16,30 @@ export default function AssignDepartmentModal({
   //   onSave(selectedEmpId, selectedDept.department_id, permission);
   // };
   const handleSave = () => {
-  if (!selectedEmpId) return alert("Please select an employee!");
-  if (!Category) return alert("Please select approval category!");
+    if (!selectedEmpId) return alert("Please select an employee!");
 
-  onSave(
-    selectedEmpId,
-    selectedDept.department_id,
-    permission,
-    Category
+    if (showApprovalCategory && !Category) {
+      return alert("Please select approval category!");
+    }
+
+    onSave(
+      selectedEmpId,
+      selectedDept.department_id,
+      permission,
+      showApprovalCategory ? Category : null
+    );
+  };
+
+
+  const approvalDepartments = [
+    "BD",
+    "Finance",
+    "Fessibility",
+  ];
+
+  const showApprovalCategory = approvalDepartments.includes(
+    selectedDept?.name
   );
-};
 
 
   return (
@@ -50,22 +64,39 @@ export default function AssignDepartmentModal({
         </select>
 
         {/* Permission Input */}
-        <input
-          className="w-full border p-2 rounded"
-          placeholder="Permission (optional: view/edit/manage)"
-          value={permission}
-          onChange={(e) => setPermission(e.target.value)}
-        />
-        <select
-  className="w-full border p-2 rounded"
-  value={Category}
-  onChange={(e) => setCategory(e.target.value)}
->
-  <option value="">-- Select Approval Category --</option>
-  <option value="LOW">LOW (Employee – up to ₹50,000)</option>
-  <option value="MEDIUM">MEDIUM (Manager – up to ₹2,00,000)</option>
-  <option value="HIGH">HIGH (Admin – No Limit)</option>
-</select>
+        <div className="space-y-2">
+          <label className="block font-semibold text-gray-700">Permission</label>
+          <div className="flex gap-4">
+            {["View", "Update", "Manage"].map((p) => (
+              <label key={p} className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="permission"
+                  value={p}
+                  checked={permission === p}
+                  onChange={(e) => setPermission(e.target.value)}
+                  className="form-radio"
+                />
+                <span className="capitalize">{p}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+
+        {showApprovalCategory && (
+          <select
+            className="w-full border p-2 rounded"
+            value={Category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">-- Select Approval Category --</option>
+            <option value="LOW">LOW (Employee – up to ₹50,000)</option>
+            <option value="MEDIUM">MEDIUM (Manager – up to ₹2,00,000)</option>
+            <option value="HIGH">HIGH (Admin – No Limit)</option>
+          </select>
+        )}
+
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">

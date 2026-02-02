@@ -33,7 +33,7 @@ export default function EmployeeDashboard() {
     "/employee/procurement": "Procurement",
     "/employee/feasibility": "Feasibility",
     "/employee/finance": "Finance",
-     "/employee/bd": "bd",
+     "/employee/bd": "Business development",
   };
 
   if (!user) return <h3 className="p-6 text-lg">Loading user...</h3>;
