@@ -75,8 +75,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
         : value;
 
   const mainFields = [
-    { label: "BD Status", key: "bd_status" },
-    { label: "BD Comments", key: "bd_comments" },
+    { label: "description", key: "description" },
+    { label: "priority", key: "priority" },
     { label: "Applicant", key: "applicant_name" },
     { label: "Contact Person", key: "contact_person" },
     { label: "Mobile Number", key: "mobile_number" },
@@ -163,7 +163,6 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                   { label: "Description", value: data.description || data.description_request || "-" },
                   { label: "Priority", value: data.priority || data.priority_level || "-" },
                   { label: "Required Date", value: formatDate(data.required_date || data.required_by) },
-                  { label: "Requested By – Department", value: data.requested_by_department || data.requested_department || "-" },
                 ],
               },
               {

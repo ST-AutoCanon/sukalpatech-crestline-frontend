@@ -6,7 +6,13 @@ import { useNavigate } from "react-router-dom";
 
 const BusinessDevelopmentHome = () => {
   const [showModal, setShowModal] = useState(false);
+   const [refreshList, setRefreshList] = useState(false);
   const navigate = useNavigate();
+
+  const handleModalSuccess = () => {
+    setRefreshList((prev) => !prev); // toggle to refresh BusinessList
+  };
+
 
   return (
     <div className="bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c]  p-4 sm:p-6 font-sans">
@@ -58,36 +64,32 @@ const BusinessDevelopmentHome = () => {
 
 
       {/* BUSINESS LIST */}
-      <BusinessList />
+      <BusinessList refresh={refreshList}/>
 
       {/* MODAL */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-start sm:items-center p-2 sm:p-4 overflow-y-auto">
-          <div
-            className="
-              bg-white
-              rounded-xl
-              w-full
-              max-w-5xl
-              p-4 sm:p-6
-              relative
-              shadow-xl
-            "
-          >
-            {/* CLOSE BUTTON */}
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3 text-2xl font-bold text-gray-600 hover:text-black"
-            >
-              ×
-            </button>
+     <div
+  className={`fixed inset-0 z-50 bg-black/50 flex justify-center items-start sm:items-center p-2 sm:p-4 overflow-y-auto ${
+    showModal ? "block" : "hidden"
+  }`}
+>
+  <div className="bg-white rounded-xl w-full max-w-5xl p-4 sm:p-6 relative shadow-xl">
+    <button
+      onClick={() => setShowModal(false)}
+      className="absolute top-3 right-3 text-2xl font-bold text-gray-600 hover:text-black"
+    >
+      ×
+    </button>
 
-            <CreateBusinessModal onClose={() => setShowModal(false)} />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+ <CreateBusinessModal
+            onClose={() => setShowModal(false)}
+            onSuccess={() => {
+              handleModalSuccess();
+              setShowModal(false);
+            }}
+          />  </div>
+</div>
+</div>
+
+      )};
 
 export default BusinessDevelopmentHome;
