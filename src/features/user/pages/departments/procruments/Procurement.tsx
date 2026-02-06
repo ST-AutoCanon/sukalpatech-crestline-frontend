@@ -428,17 +428,24 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                       <label className="text-xs text-gray-600">Unit Price</label>
                       <input
                         type="number"
-                        min="0"
-                        step="1"
+                        min={0}
+                        step={1}
+                        inputMode="numeric"
                         className="w-full p-2 border rounded mt-1"
-                        onChange={(e) =>
-                          handleVendorChange(
-                            i,
-                            vi,
-                            "unit_price",
-                            e.target.value
-                          )
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          // block negative numbers
+                          if (value === "" || Number(value) < 0) return;
+
+                          handleVendorChange(i, vi, "unit_price", value);
+                        }}
+                        onKeyDown={(e) => {
+                          // block '-', '+', 'e', 'E'
+                          if (["-", "+", "e", "E"].includes(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
                       />
                     </div>
 

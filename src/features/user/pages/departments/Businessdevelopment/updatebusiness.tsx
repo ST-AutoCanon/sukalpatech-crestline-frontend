@@ -11,11 +11,102 @@ interface Request {
   requested_by_person: string;
 }
 
+
+export const Section = memo(
+  ({
+    title,
+    sectionKey,
+    expanded,
+    toggle,
+    children,
+  }: {
+    title: string;
+    sectionKey: string;
+    expanded: boolean;
+    toggle: (key: string) => void;
+    children: React.ReactNode;
+  }) => (
+    <section className="bg-gray-100 rounded-xl shadow-md mb-6">
+      <div
+        className="flex justify-between items-center px-4 py-3 cursor-pointer"
+        onClick={() => toggle(sectionKey)}
+      >
+        <h3 className="text-sm sm:text-base font-bold text-gray-800">
+          {title}
+        </h3>
+        <span className="text-xl font-bold">
+          {expanded ? "−" : "+"}
+        </span>
+      </div>
+
+      {expanded && (
+        <div className="px-4 pb-5 pt-2 sm:px-6 space-y-4">
+          {children}
+        </div>
+      )}
+    </section>
+  )
+);
+const initialForm = {
+  bd_status: "CREATED",
+  bd_comments: "",
+  description: "",
+  priority: "",
+  required_date: "",
+  requested_by_department: "",
+  requested_by_person: "",
+  applicant_name: "",
+  contact_person: "",
+  mobile_number: "",
+  email: "",
+  address: "",
+  chassis_manufacturer: "",
+  chassis_model: "",
+  chassis_number: "",
+  engine_number: "",
+  wheelbase: "",
+  fuel_type: "",
+  body_type: "",
+  seating_capacity: "",
+  seat_type: "",
+  flooring_type: "",
+  interior_color: "",
+  body_material: "",
+  paint_color: "",
+  window_type: "",
+  door_type: "",
+  ac: false,
+  cctv: false,
+  gps: false,
+  fire_extinguisher: false,
+  emergency_exit: false,
+  led_board: false,
+  usb: false,
+  luggage_carrier: false,
+  wheelchair_access: false,
+  ais_compliant: false,
+  cmvr_compliant: false,
+  school_bus_safety: false,
+  state_transport_norms: false,
+  expected_delivery: "",
+  approximate_budget: "",
+  remarks: "",
+  attachments: [],
+  declaration_date: "",
+  place: "",
+  applicant_signature: "",
+};
+
+
+
+
 const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void; }) => {
   const [requests, setRequests] = useState<Request[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [departments, setDepartments] = useState<any[]>([]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [form, setForm] = useState<any>({ ...initialForm });
+
 
   const [expandedSections, setExpandedSections] = useState<{
     [key: string]: boolean;
@@ -27,56 +118,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
       [section]: !prev[section],
     }));
   };
-  const [form, setForm] = useState<any>({
 
-    bd_status: "CREATED",
-    bd_comments: "",
-    description: "",
-    priority: "",
-    required_date: "",
-    requested_by_department: "",
-    requested_by_person: "",
-    applicant_name: "",
-    contact_person: "",
-    mobile_number: "",
-    email: "",
-    address: "",
-    chassis_manufacturer: "",
-    chassis_model: "",
-    chassis_number: "",
-    engine_number: "",
-    wheelbase: "",
-    fuel_type: "",
-    body_type: "",
-    seating_capacity: "",
-    seat_type: "",
-    flooring_type: "",
-    interior_color: "",
-    body_material: "",
-    paint_color: "",
-    window_type: "",
-    door_type: "",
-    ac: false,
-    cctv: false,
-    gps: false,
-    fire_extinguisher: false,
-    emergency_exit: false,
-    led_board: false,
-    usb: false,
-    luggage_carrier: false,
-    wheelchair_access: false,
-    ais_compliant: false,
-    cmvr_compliant: false,
-    school_bus_safety: false,
-    state_transport_norms: false,
-    expected_delivery: "",
-    approximate_budget: "",
-    remarks: "",
-    attachments: [],
-    declaration_date: "",
-    place: "",
-    applicant_signature: "",
-  });
 
   const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
 
@@ -179,6 +221,8 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
         );
         alert("Request created successfully!");
       }
+      setForm({ ...initialForm });
+
 
 
 
@@ -194,43 +238,6 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
       alert("Failed to submit BD info");
     }
   };
-
-
-  const Section = memo(
-    ({
-      title,
-      sectionKey,
-      expanded,
-      toggle,
-      children,
-    }: {
-      title: string;
-      sectionKey: string;
-      expanded: boolean;
-      toggle: (key: string) => void;
-      children: React.ReactNode;
-    }) => (
-      <section className="bg-gray-100 rounded-xl shadow-md mb-6">
-        <div
-          className="flex justify-between items-center px-4 py-3 cursor-pointer"
-          onClick={() => toggle(sectionKey)}
-        >
-          <h3 className="text-sm sm:text-base font-bold text-gray-800">
-            {title}
-          </h3>
-          <span className="text-xl font-bold">
-            {expanded ? "−" : "+"}
-          </span>
-        </div>
-
-        {expanded && (
-          <div className="px-4 pb-5 pt-2 sm:px-6 space-y-4">
-            {children}
-          </div>
-        )}
-      </section>
-    )
-  );
 
   useEffect(() => {
     setExpandedSections({

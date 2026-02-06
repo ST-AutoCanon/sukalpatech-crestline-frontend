@@ -458,12 +458,12 @@ export default function ViewPRPage() {
                         key={idx}
                         className="bg-gray-100 border border-blue-200 rounded-xl p-4 text-sm"
                       >
-                        <div className="flex flex-col sm:flex-row justify-between mb-1 text-xs text-gray-600">
+                       <div className="flex flex-col sm:flex-row justify-between mb-1 text-xs text-gray-600">
                           <span className="font-medium">
                             Status: {ds.department_status}
                           </span>
-                          {ds.status_updated_by ?? "—"} •{" "}
                           <span className="font-medium text-gray-800">
+                            {ds.status_updated_by ?? "—"} •{" "}
                             {new Date(ds.updated_at).toLocaleDateString()}
                           </span>
                         </div>

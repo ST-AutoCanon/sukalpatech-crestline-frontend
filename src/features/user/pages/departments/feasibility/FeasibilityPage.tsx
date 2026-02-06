@@ -31,10 +31,10 @@ const FeasibilityPage: React.FC = () => {
         <div className="flex gap-3">
           <button
             onClick={() => setActiveTab("updatePR")}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold text-white ${
+            className={`px-4 py-2 rounded-xl text-sm font-semibold text-white border-none cursor-pointer ${
               activeTab === "updatePR"
-                ? "bg-indigo-700"
-                : "bg-indigo-500"
+                ? "bg-purple-700"
+                : "bg-purple-300"
             }`}
           >
             + Update PR

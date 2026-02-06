@@ -70,6 +70,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   const [showItems, setShowItems] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showStatuses, setShowStatuses] = useState(true);
+  const [editMode, setEditMode] = useState(false);
+
   const [vendorMap, setVendorMap] = useState<Record<number, string>>({});
   const [departmentMap, setDepartmentMap] = useState<Record<string, string>>(
     {}
@@ -112,7 +114,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
     setShowItems((prev) => !prev);
   };
 
-  
+
   const fetchPRs = async () => {
     setLoading(true);
     try {
@@ -134,11 +136,38 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
   if (loading) return <div className="p-6">Loading PRs...</div>;
 
+  const getFilteredPRs = () => {
+    return prs.filter((pr) => {
+      const latestStatus =
+        pr.department_statuses?.[pr.department_statuses.length - 1]
+          ?.department_status;
+
+      switch (filter) {
+        case "PR Raised":
+          return true;
+
+
+        case "Pending":
+          return latestStatus === "STORE PENDING";
+
+        case "Rejected":
+          return latestStatus === "STORE REJECTED";
+
+        case "Completed":
+          return latestStatus === "STORE APPROVED";
+
+        default:
+          return true;
+      }
+    });
+  };
+
+
   return (
     <>
       {/* PR Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {prs.map((pr) => {
+        {getFilteredPRs().map((pr) => {
           const latestStatusObj =
             pr.department_statuses?.[pr.department_statuses.length - 1];
           const status = latestStatusObj?.department_status || "Draft";
@@ -190,9 +219,30 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 </div>
               </div>
 
-              <button className="mt-3 text-sm text-blue-600 hover:underline self-start">
-                More Info
-              </button>
+              <div className="mt-3 flex gap-4">
+                <button
+                  className="text-sm text-blue-600 hover:underline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditMode(false);
+                    setActivePR(pr);
+                  }}
+                >
+                  More Info
+                </button>
+
+                <button
+                  className="text-sm text-blue-600 hover:underline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditMode(true);
+                    setActivePR(pr);
+                  }}
+                >
+                  Edit
+                </button>
+              </div>
+
             </div>
           );
         })}
@@ -220,39 +270,72 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
               <div className="space-y-3 sm:hidden text-sm">
                 <div>
                   <div className="text-gray-900">Description</div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.description || "-"}
-                  </div>
+                  <input
+                    value={activePR.description || ""}
+                    readOnly={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, description: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                      }`}
+                  />
+
                 </div>
 
                 <div>
                   <div className="text-gray-900">Priority</div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.priority || "-"}
-                  </div>
+                  <input
+                    value={activePR.priority || ""}
+                    readOnly={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, priority: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                      }`}
+                  />
+
                 </div>
 
                 <div>
                   <div className="text-gray-900"> Delivery Date</div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.required_date
-                      ? new Date(activePR.required_date).toLocaleDateString()
-                      : "-"}
-                  </div>
+                  <input
+                    value={activePR.required_date || ""}
+                    readOnly={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, required_date: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                      }`}
+                  />
+
                 </div>
 
                 <div>
                   <div className="text-gray-900">Department</div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.department || "-"}
-                  </div>
+                  <input
+                    value={activePR.department || ""}
+                    readOnly={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, department: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                      }`}
+                  />
+
                 </div>
 
                 <div>
                   <div className="text-gray-900">Remarks</div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.remarks || "-"}
-                  </div>
+                  <input
+                    value={activePR.remarks || ""}
+                    readOnly={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, remarks: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                      }`}
+                  />
+
                 </div>
               </div>
 
@@ -266,23 +349,56 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   <span>Remarks</span>
                 </div>
                 <div className="grid grid-cols-5 gap-4">
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.description || "-"}
-                  </div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.priority || "-"}
-                  </div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.required_date
-                      ? new Date(activePR.required_date).toLocaleDateString()
-                      : "-"}
-                  </div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.department || "-"}
-                  </div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.remarks || "-"}
-                  </div>
+                  <input
+                    value={activePR.description || ""}
+                    readOnly={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, description: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                      }`}
+                  />
+
+                  <input
+                    value={activePR.priority || ""}
+                    readOnly={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, priority: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                      }`}
+                  />
+
+                  <input
+                    value={activePR.required_date || ""}
+                    readOnly={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, required_date: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                      }`}
+                  />
+
+                  <input
+                    value={activePR.department || ""}
+                    readOnly={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, department: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                      }`}
+                  />
+
+                  <input
+                    value={activePR.remarks || ""}
+                    readOnly={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, remarks: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                      }`}
+                  />
+
                 </div>
               </div>
             </div>
@@ -300,7 +416,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
             {/* Items */}
             {showItems && (
               <div className="space-y-4">
-                {activePR.items?.map((item) => (
+                {activePR.items?.map((item, itemIndex) => (
                   <div
                     key={item.id}
                     className="bg-gray-100 rounded-lg p-3 md:p-4 w-full overflow-x-auto"
@@ -312,9 +428,23 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                         <span className="font-medium w-24 shrink-0">
                           Item Code
                         </span>
-                        <div className="bg-white border rounded px-4 py-1 flex-1">
-                          {item.item_code || "-"}
-                        </div>
+                        <input
+                          value={item.item_code || ""}
+                          readOnly={!editMode}
+                          onChange={(e) => {
+                            const updatedItems = [...activePR.items];
+                            updatedItems[itemIndex] = {
+                              ...updatedItems[itemIndex],
+                              item_code: e.target.value,
+                            };
+
+                            setActivePR({ ...activePR, items: updatedItems });
+                          }}
+
+                          className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                            }`}
+                        />
+
                       </div>
 
                       {/* Description */}
@@ -322,17 +452,47 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                         <span className="font-medium w-24 shrink-0">
                           Item Name
                         </span>
-                        <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
-                          {item.item_name || "-"}
-                        </div>
+                        <input
+                          value={item.item_name || ""}
+                          readOnly={!editMode}
+                          onChange={(e) => {
+                            const updatedItems = [...activePR.items];
+                            updatedItems[itemIndex] = {
+                              ...updatedItems[itemIndex],
+                              item_name: e.target.value,
+                            };
+
+                            setActivePR({ ...activePR, items: updatedItems });
+                          }}
+
+                          className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                            }`}
+                        />
+
                       </div>
 
                       {/* Qty */}
                       <div className="flex items-center gap-2">
                         <span className="font-medium w-24 shrink-0">Qty</span>
-                        <div className="bg-white border rounded px-4 py-1 flex-1">
-                          {item.quantity_required ?? "-"}
-                        </div>
+                        <input
+                          type="number"
+                          min={0}
+                          value={item.quantity_required ?? ""}
+                          readOnly={!editMode}
+                          onChange={(e) => {
+                            const updatedItems = [...activePR.items];
+                            updatedItems[itemIndex] = {
+                              ...updatedItems[itemIndex],
+                              quantity_required: Math.max(0, Number(e.target.value)),
+                            };
+
+                            setActivePR({ ...activePR, items: updatedItems });
+                          }}
+                          className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                            }`}
+                        />
+
+
                       </div>
                     </div>
 
@@ -353,9 +513,10 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                           </div>
 
                           {/* ===== DESKTOP VALUES ===== */}
-                          {item.vendors.map((vendor) => {
+                          {item.vendors.map((vendor, vendorIndex) => {
                             const prComment =
                               vendor.comments?.[0]?.comment || "";
+
 
                             const feasibilityComment =
                               vendor.comments?.find((c) => c.commented_by === 2)
@@ -367,51 +528,120 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                 className="hidden sm:grid sm:grid-cols-8 gap-4 text-sm mb-2"
                               >
                                 <input
-                                  readOnly
-                                  value={
-                                    vendorMap[String(vendor.vendor_id)] ??
-                                    vendor.vendor_id
+                                  value={vendor.vendor_id || ""}
+                                  readOnly={!editMode}
+                                  onChange={(e) => {
+                                    const updatedItems = [...activePR.items];
+
+                                    updatedItems[itemIndex].vendors[vendorIndex] = {
+                                      ...updatedItems[itemIndex].vendors[vendorIndex],
+                                      vendor_id: e.target.value,
+                                    };
+
+                                    setActivePR({
+                                      ...activePR,
+                                      items: updatedItems,
+                                    });
+                                  }}
+                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                                    }`}
+                                />
+                                <label
+                                  className={`border rounded px-2 py-1 w-full text-sm flex items-center ${editMode
+                                    ? "cursor-pointer border-blue-400 bg-white"
+                                    : "bg-gray-100 text-gray-600"
+                                    }`}
+                                >
+                                  {vendor.attachments?.[0]?.file_name || "No file uploaded"}
+
+                                  {editMode && (
+                                    <input
+                                      type="file"
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+
+                                        const updatedItems = [...activePR.items];
+                                        updatedItems[itemIndex].vendors[vendorIndex] = {
+                                          ...updatedItems[itemIndex].vendors[vendorIndex],
+                                          attachments: [
+                                            {
+                                              file_name: file.name,
+                                              file_path: "",
+                                            },
+                                          ],
+                                        };
+
+                                        setActivePR({ ...activePR, items: updatedItems });
+                                      }}
+                                    />
+                                  )}
+                                </label>
+
+
+
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={vendor.unit_price ?? ""}
+                                  readOnly={!editMode}
+                                  onChange={(e) => {
+                                    const updatedItems = [...activePR.items];
+
+                                    const price = Math.max(0, Number(e.target.value));
+                                    const qty = updatedItems[itemIndex].quantity_required || 0;
+
+                                    updatedItems[itemIndex].vendors[vendorIndex] = {
+                                      ...updatedItems[itemIndex].vendors[vendorIndex],
+                                      unit_price: price,
+                                      total_price: qty * price,
+                                    };
+
+                                    setActivePR({ ...activePR, items: updatedItems });
+                                  }}
+                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                                    }`}
+                                />
+
+
+
+                                <input
+                                  value={vendor.total_price ?? ""}
+                                  readOnly={!editMode}
+                                  onChange={(e) =>
+                                    updateVendorField(itemIndex, vendorIndex, "total_price", Number(e.target.value))
                                   }
-                                  className="bg-white border rounded px-2 py-1 w-full"
+                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                                    }`}
                                 />
 
-                                <input
-                                  readOnly
-                                  value={
-                                    vendor.attachments?.[0]?.file_name || "-"
-                                  }
-                                  className="bg-white border rounded px-2 py-1 w-full"
-                                />
+
 
                                 <input
-                                  readOnly
-                                  value={vendor.unit_price ?? "-"}
-                                  className="bg-white border rounded px-2 py-1 w-full"
+                                  type="date"
+                                  value={vendor.quotation_validity_date ?? ""}
+                                  disabled={!editMode}
+                                  onChange={(e) => {
+                                    const updatedItems = [...activePR.items];
+                                    updatedItems[itemIndex].vendors[vendorIndex] = {
+                                      ...updatedItems[itemIndex].vendors[vendorIndex],
+                                      quotation_validity_date: e.target.value,
+                                    };
+                                    setActivePR({ ...activePR, items: updatedItems });
+                                  }}
+                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
+                                    }`}
                                 />
 
-                                <input
-                                  readOnly
-                                  value={vendor.total_price ?? "-"}
-                                  className="bg-white border rounded px-2 py-1 w-full"
-                                />
 
-                                <input
-                                  readOnly
-                                  value={
-                                    vendor.quotation_validity_date
-                                      ? new Date(
-                                          vendor.quotation_validity_date
-                                        ).toLocaleDateString()
-                                      : "-"
-                                  }
-                                  className="bg-white border rounded px-2 py-1 w-full"
-                                />
 
                                 <input
                                   readOnly
                                   value={prComment}
                                   className="bg-white border rounded px-2 py-1 w-full"
                                 />
+
 
                                 <input
                                   readOnly
@@ -420,10 +650,24 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                 />
 
                                 <input
-                                  readOnly
-                                  value={vendor.status || "-"}
-                                  className="bg-white border rounded px-2 py-1 w-full"
+                                  value={vendor.status ?? ""}
+                                  readOnly={!editMode}
+                                  onChange={(e) => {
+                                    const updatedItems = [...activePR.items];
+
+                                    updatedItems[itemIndex].vendors[vendorIndex] = {
+                                      ...updatedItems[itemIndex].vendors[vendorIndex],
+                                      status: e.target.value,
+                                    };
+
+                                    setActivePR({ ...activePR, items: updatedItems });
+                                  }}
+                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                                    }`}
                                 />
+
+
+
                               </div>
                             );
                           })}
@@ -432,6 +676,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                           {item.vendors.map((vendor) => {
                             const prComment =
                               vendor.comments?.[0]?.comment || "";
+
 
                             const feasibilityComment =
                               vendor.comments?.find((c) => c.commented_by === 2)
@@ -446,7 +691,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                   [
                                     "Vendor",
                                     vendorMap[String(vendor.vendor_id)] ??
-                                      vendor.vendor_id,
+                                    vendor.vendor_id,
                                   ],
                                   [
                                     "Upload Quotation",
@@ -458,8 +703,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                     "Quotation Validity",
                                     vendor.quotation_validity_date
                                       ? new Date(
-                                          vendor.quotation_validity_date
-                                        ).toLocaleDateString()
+                                        vendor.quotation_validity_date
+                                      ).toLocaleDateString()
                                       : "-",
                                   ],
                                   ["Comments", prComment],
@@ -531,8 +776,48 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 )}
               </div>
             </div>
+            {editMode && (
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  className="px-4 py-2 rounded border border-gray-300"
+                  onClick={() => {
+                    setEditMode(false);
+                    setActivePR(null);
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="px-4 py-2 rounded bg-blue-600 text-white"
+                  onClick={async () => {
+                    try {
+                      await fetch(
+                        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${activePR.id}`, // <-- NEW route
+                        {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify(activePR),
+                        }
+                      );
+
+
+                      setEditMode(false);
+                      setActivePR(null);
+                      fetchPRs(); // refresh list
+                    } catch (err) {
+                      console.error("Save failed", err);
+                    }
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            )}
+
           </div>
         </div>
+
       )}
     </>
   );

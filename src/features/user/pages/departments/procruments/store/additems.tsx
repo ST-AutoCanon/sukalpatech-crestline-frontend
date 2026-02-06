@@ -122,13 +122,13 @@ export default function AddItem() {
 
   const handleAddItem = async () => {
     if (!selectedRoot || !itemName) {
-     setAlert({ type: "error", message: "Root category and item name required" });      
-     return;
+      setAlert({ type: "error", message: "Root category and item name required" });
+      return;
     }
 
-    await axios.post(`${API_BASE}/items/items`, {
+    const res = await axios.post(`${API_BASE}/items/items`, {
       item_name: itemName,
-      qty: qty,
+      qty,
       vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
       root_category_id: selectedRoot,
       category_id: selectedCategory || null,
@@ -137,8 +137,21 @@ export default function AddItem() {
       sub_variant_id: selectedSubVariant || null,
     });
 
-    setAlert({ type: "success", message: "Item added successfully" });
-    
+
+
+
+    if (res.data?.data) {
+      const addedItem = {
+        id: res.data.data.id,
+        code: res.data.data.item_code || res.data.data.id, // fallback
+        name: res.data.data.item_name,
+        qty: res.data.data.qty,
+        vendors: res.data.data.vendors || [],
+      };
+
+      setItems((prev) => [addedItem, ...prev]);
+    }
+
     setItemName("");
     setSelectedVendors([]);
     setSelectedRoot("");
@@ -166,7 +179,7 @@ export default function AddItem() {
 
   return (
     <div className="w-full h-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-8">
-        {alert && <Aleart type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
+      {alert && <Aleart type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
 
       <div className="max-w-7xl mx-auto"></div>
       <div className="max-w-7xl mx-auto">

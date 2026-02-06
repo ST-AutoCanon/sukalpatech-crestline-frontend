@@ -75,13 +75,11 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
         : value;
 
   const mainFields = [
-    { label: "description", key: "description" },
-    { label: "priority", key: "priority" },
+    { label: "Description", key: "description" },
+    { label: "Priority", key: "priority" },
     { label: "Applicant", key: "applicant_name" },
     { label: "Contact Person", key: "contact_person" },
     { label: "Mobile Number", key: "mobile_number" },
-    { label: "Email", key: "email" },
-    { label: "Address", key: "address" },
   ];
 
   const ADDITIONAL_FEATURES = [
@@ -111,14 +109,14 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-4 text-xs relative">
-      <h2 className="text-indigo-700 font-bold text-sm mb-2">BR-{data.id}</h2>
+    <div className="bg-white rounded-xl shadow-md p-4 text-sm relative">
+      <h2 className="text-purple-600 font-semibold text-lg mb-2 truncate">BR ID:{data.id}</h2>
 
       <div className="flex flex-col gap-1">
         {mainFields.map((item) => (
           <div key={item.key} className="flex">
-            <span className="w-32 text-gray-400">{item.label}:</span>
-            <span className="font-medium">
+            <span className="w-33 text-gray-400">{item.label}:</span>
+            <span className="font-medium text-gray-700 max-w-[65%] overflow-hidden text-ellipsis whitespace-nowrap">
               {renderValue(data[item.key as keyof typeof data])}
             </span>
           </div>

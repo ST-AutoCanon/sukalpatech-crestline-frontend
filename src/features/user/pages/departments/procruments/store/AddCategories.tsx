@@ -16,6 +16,8 @@ export default function AddCategories() {
 
   /* ================= STATES ================= */
   const [activeTab, setActiveTab] = useState<TabType>("root");
+  const [tableData, setTableData] = useState<any[]>([]);
+
 
   const [rootName, setRootName] = useState("");
   const [categoryName, setCategoryName] = useState("");
@@ -57,6 +59,9 @@ export default function AddCategories() {
     setRoots(res.data || []);
   };
 
+  
+
+
   const fetchCategories = async (rootId: number) => {
     const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`);
     setCategories(res.data || []);
@@ -86,7 +91,8 @@ export default function AddCategories() {
     try {
       await axios.post(`${API_BASE}/root-category`, { name: rootName });
       setRootName(""); fetchRoots();
-      setAlert({ type: "success", message: "Root Category created successfully!" });
+      appendTableRow({ root: rootName });
+       setAlert({ type: "success", message: "Root Category created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Root Category" }); }
   };
 
@@ -95,6 +101,10 @@ export default function AddCategories() {
     try {
       await axios.post(`${API_BASE}/category`, { name: categoryName, root_category_id: selectedRoot });
       setCategoryName(""); fetchCategories(selectedRoot);
+     appendTableRow({
+    root: roots.find(r => r.id === selectedRoot)?.name,
+    category: categoryName
+  });
       setAlert({ type: "success", message: "Category created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Category" }); }
   };
@@ -104,7 +114,11 @@ export default function AddCategories() {
     try {
       await axios.post(`${API_BASE}/product`, { name: productName, category_id: selectedCategory });
       setProductName(""); fetchProducts(selectedCategory);
-      setAlert({ type: "success", message: "Product created successfully!" });
+appendTableRow({
+    root: roots.find(r => r.id === selectedRoot)?.name,
+    category: categories.find(c => c.id === selectedCategory)?.name,
+    product: productName
+  });      setAlert({ type: "success", message: "Product created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Product" }); }
   };
 
@@ -114,7 +128,12 @@ export default function AddCategories() {
     try {
       await axios.post(`${API_BASE}/variant`, { name: variantName, product_id: selectedProduct });
       setVariantName(""); fetchVariants(selectedProduct);
-      setAlert({ type: "success", message: "Variant created successfully!" });
+appendTableRow({
+    root: roots.find(r => r.id === selectedRoot)?.name,
+    category: categories.find(c => c.id === selectedCategory)?.name,
+    product: products.find(p => p.id === selectedProduct)?.name,
+    variant: variantName
+  });      setAlert({ type: "success", message: "Variant created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Variant" }); }
   };
 
@@ -124,23 +143,58 @@ export default function AddCategories() {
     try {
       await axios.post(`${API_BASE}/sub-variant`, { name: subVariantName, variant_id: selectedVariant });
       setSubVariantName(""); fetchSubVariants(selectedVariant);
-      setAlert({ type: "success", message: "Sub Variant created successfully!" });
+appendTableRow({
+    root: roots.find(r => r.id === selectedRoot)?.name,
+    category: categories.find(c => c.id === selectedCategory)?.name,
+    product: products.find(p => p.id === selectedProduct)?.name,
+    variant: variants.find(v => v.id === selectedVariant)?.name,
+    subVariant: subVariantName
+  });      setAlert({ type: "success", message: "Sub Variant created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Sub Variant" }); }
   };
 
   /* ================= SEARCH ================= */
+
+  
   const handleSearch = async () => {
-    if (!searchQuery) return setSearchResults([]);
-    const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`);
-    const mapped = (res.data.data || res.data || []).map((item: any) => ({
-      root: item.root_category?.name || "",
-      category: item.category?.name || "",
-      product: item.product?.name || "",
-      variant: item.variant?.name || "",
-      subVariant: item.sub_variant?.name || "",
-    }));
-    setSearchResults(mapped);
-  };
+  if (!searchQuery) {
+    return;
+  }
+
+  const res = await axios.get(
+    `${API_BASE}/search?query=${searchQuery}`
+  );
+
+  const mapped = (res.data.data || res.data || []).map((item: any) => ({
+    root: item.root_category?.name || "",
+    category: item.category?.name || "",
+    product: item.product?.name || "",
+    variant: item.variant?.name || "",
+    subVariant: item.sub_variant?.name || "",
+  }));
+
+  setTableData(mapped);
+};
+
+const appendTableRow = (row: {
+  root?: string;
+  category?: string;
+  product?: string;
+  variant?: string;
+  subVariant?: string;
+}) => {
+  setTableData(prev => [
+    ...prev,
+    {
+      root: row.root || "",
+      category: row.category || "",
+      product: row.product || "",
+      variant: row.variant || "",
+      subVariant: row.subVariant || "",
+    }
+  ]);
+};
+
 
 
   /* ================= UI ================= */
@@ -503,7 +557,7 @@ export default function AddCategories() {
             </tr>
           </thead>
           <tbody>
-            {searchResults.map((r, i) => (
+            {tableData.map((r, i) => (
               <tr key={i} className="hover:bg-gray-100">
                 <td className="p-2 border">{i + 1}</td>
                 <td className="p-2 border">{r.root}</td>

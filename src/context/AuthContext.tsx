@@ -8,6 +8,7 @@ interface User {
   role: string;
   permissions: string[];
   department_id: number | null;
+  category:string;
 }
 
 interface AuthContextType {
@@ -30,6 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  
 
   // 🔹 Restore auth state from localStorage on refresh
   useEffect(() => {

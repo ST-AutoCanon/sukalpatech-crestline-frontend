@@ -1,5 +1,19 @@
 import React, { useState } from "react";
 
+const CATEGORY_RULES: Record<string, string[]> = {
+  LOW: ["view"],
+  MEDIUM: ["view", "create"],
+  HIGH: ["view", "create", "manage"],
+};
+
+const CATEGORY_LIMITS: Record<string, number | null> = {
+  LOW: 50000,
+  MEDIUM: 200000,
+  HIGH: null, // no limit
+};
+
+
+
 export default function AssignDepartmentModal({
   allEmployees, // List of all employees
   selectedDept, // Current department
@@ -15,20 +29,82 @@ export default function AssignDepartmentModal({
   //   if (!selectedEmpId) return alert("Please select an employee!");
   //   onSave(selectedEmpId, selectedDept.department_id, permission);
   // };
-  const handleSave = () => {
-    if (!selectedEmpId) return alert("Please select an employee!");
 
-    if (showApprovalCategory && !Category) {
-      return alert("Please select approval category!");
-    }
+const determineCategory = (permissions: string[]) => {
+  if (
+    permissions.includes("view") &&
+    permissions.includes("create") &&
+    permissions.includes("manage")
+  ) {
+    return "HIGH";
+  }
 
-    onSave(
-      selectedEmpId,
-      selectedDept.department_id,
-      permission,
-      showApprovalCategory ? Category : null
+  if (
+    permissions.includes("view") &&
+    permissions.includes("create")
+  ) {
+    return "MEDIUM";
+  }
+
+  if (permissions.includes("view")) {
+    return "LOW";
+  }
+
+  return "";
+};
+
+
+ const handleSave = () => {
+  if (!selectedEmpId) {
+    alert("Please select an employee!");
+    return;
+  }
+
+  if (!permission) {
+    alert("Please enter permission!");
+    return;
+  }
+
+  // Split permissions typed by user
+  const selectedPermissions = permission
+    .split(",")
+    .map((p) => p.trim().toLowerCase());
+
+  // Auto-detect category
+  const autoCategory = determineCategory(selectedPermissions);
+
+  if (!autoCategory) {
+    alert("Invalid permissions entered!");
+    return;
+  }
+
+  // Validate permissions against category rules
+  const allowedPermissions = CATEGORY_RULES[autoCategory];
+  const invalid = selectedPermissions.some((p) => !allowedPermissions.includes(p));
+  if (invalid) {
+    alert(
+      `Selected permission(s) [${selectedPermissions.join(
+        ", "
+      )}] are not allowed for ${autoCategory} category`
     );
-  };
+    return;
+  }
+
+  // Validate amount limit
+  const totalPrice = Number(String(selectedDept.totalPrice || 0).replace(/,/g, ""));
+  const maxAmount = CATEGORY_LIMITS[autoCategory];
+
+  if (maxAmount !== null && totalPrice > maxAmount) {
+    alert(
+      `Denied! Total price ₹${totalPrice} exceeds the limit of ₹${maxAmount} for ${autoCategory}`
+    );
+    return;
+  }
+
+  // ✅ All validations passed
+  onSave(selectedEmpId, selectedDept.department_id, permission, autoCategory);
+};
+
 
 
   const approvalDepartments = [
@@ -63,39 +139,20 @@ export default function AssignDepartmentModal({
           ))}
         </select>
 
-        {/* Permission Input */}
-        <div className="space-y-2">
-          <label className="block font-semibold text-gray-700">Permission</label>
-          <div className="flex gap-4">
-            {["View", "Update", "Manage"].map((p) => (
-              <label key={p} className="flex items-center gap-1">
-                <input
-                  type="radio"
-                  name="permission"
-                  value={p}
-                  checked={permission === p}
-                  onChange={(e) => setPermission(e.target.value)}
-                  className="form-radio"
-                />
-                <span className="capitalize">{p}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-
-        {showApprovalCategory && (
-          <select
-            className="w-full border p-2 rounded"
-            value={Category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">-- Select Approval Category --</option>
-            <option value="LOW">LOW (Employee – up to ₹50,000)</option>
-            <option value="MEDIUM">MEDIUM (Manager – up to ₹2,00,000)</option>
-            <option value="HIGH">HIGH (Admin – No Limit)</option>
-          </select>
-        )}
+      {/* Permission Input */}
+<div className="space-y-2">
+  <label className="block font-semibold text-gray-700">Permission</label>
+  <input
+    type="text"
+    placeholder="Enter permissions separated by comma (e.g., view,create)"
+    className="w-full border p-2 rounded"
+    value={permission}
+    onChange={(e) => setPermission(e.target.value)}
+  />
+  <p className="text-sm text-gray-500">
+    Separate multiple permissions with commas. Allowed: view, create, manage
+  </p>
+</div>
 
 
         {/* Action Buttons */}
@@ -113,4 +170,4 @@ export default function AssignDepartmentModal({
       </div>
     </div>
   );
-}
+}   
