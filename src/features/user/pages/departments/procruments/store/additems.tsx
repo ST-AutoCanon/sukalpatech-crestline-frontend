@@ -146,8 +146,8 @@ export default function AddItem() {
         code: res.data.data.item_code || res.data.data.id, // fallback
         name: res.data.data.item_name,
         qty: res.data.data.qty,
-        vendors: res.data.data.vendors || [],
-      };
+        vendors: selectedVendors.map(v => v.vendor_id),     
+       };
 
       setItems((prev) => [addedItem, ...prev]);
     }

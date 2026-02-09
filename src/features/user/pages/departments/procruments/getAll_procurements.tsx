@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
 
-interface Props {
+type Props = {
   filter: string;
   search: string;
   refreshKey: number;
-}
+};
 
 type DepartmentStatus = {
   department_status: string;
@@ -72,59 +72,54 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   const [showStatuses, setShowStatuses] = useState(true);
   const [editMode, setEditMode] = useState(false);
 
-  const [vendorMap, setVendorMap] = useState<Record<number, string>>({});
-  const [departmentMap, setDepartmentMap] = useState<Record<string, string>>(
-    {}
-  );
+  const [vendorMap, setVendorMap] = useState<Record<string, string>>({});
+  const [departmentMap, setDepartmentMap] = useState<Record<string, string>>({});
 
+  // Fetch vendors
   useEffect(() => {
     fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
       .then((res) => res.json())
       .then((data) => {
         const vendors = data?.data || [];
-
         const map: Record<string, string> = {};
-        vendors.forEach((v: any) => {
-          map[String(v.vendor_id)] = v.vendor_name; // ✅ CORRECT KEY
-        });
-
+        vendors.forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
         setVendorMap(map);
       })
       .catch((err) => console.error("Vendor fetch error", err));
   }, []);
 
+  // Fetch departments
   useEffect(() => {
     fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`)
       .then((res) => res.json())
       .then((data) => {
         const departments = data?.data || [];
-
         const map: Record<string, string> = {};
-        departments.forEach((d: any) => {
-          map[String(d.department_id)] = d.name; // ✅ CORRECT KEY
-        });
-
-        console.log("Department Map:", map);
+        departments.forEach((d: any) => (map[String(d.department_id)] = d.name));
         setDepartmentMap(map);
       })
       .catch((err) => console.error("Department fetch error", err));
   }, []);
 
-  const toggleItemsSection = () => {
-    setShowItems((prev) => !prev);
-  };
-
-
   const fetchPRs = async () => {
     setLoading(true);
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`
-      );
+      let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
+      if (filter === "Pending" || filter === "Rejected" || filter === "Completed") {
+        const status = filter === "Completed" ? "APPROVED" : filter.toUpperCase();
+        url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
+      }
+      const res = await fetch(url);
       const data = await res.json();
-      setPrs(data?.data || []);
+      const prsData = (data?.data || []).map((pr: PR) => ({
+        ...pr,
+        items: pr.items || [],
+        department_statuses: pr.department_statuses || [],
+      }));
+      setPrs(prsData);
     } catch (err) {
       console.error("Fetch PR error", err);
+      setPrs([]);
     } finally {
       setLoading(false);
     }
@@ -132,44 +127,24 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
   useEffect(() => {
     fetchPRs();
-  }, [filter, search, refreshKey]); // 🔥 IMPORTANT
+  }, [filter, search, refreshKey]);
 
-  if (loading) return <div className="p-6">Loading PRs...</div>;
-
-  const getFilteredPRs = () => {
-    return prs.filter((pr) => {
-      const latestStatus =
-        pr.department_statuses?.[pr.department_statuses.length - 1]
-          ?.department_status;
-
-      switch (filter) {
-        case "PR Raised":
-          return true;
-
-
-        case "Pending":
-          return latestStatus === "STORE PENDING";
-
-        case "Rejected":
-          return latestStatus === "STORE REJECTED";
-
-        case "Completed":
-          return latestStatus === "STORE APPROVED";
-
-        default:
-          return true;
-      }
-    });
+  const isEditable = (pr: PR) => {
+    if (filter !== "PR Raised") return false;
+    const latestStatus = pr.department_statuses?.[pr.department_statuses.length - 1]?.department_status;
+    return latestStatus === "CREATED";
   };
 
+  const toggleItemsSection = () => setShowItems((prev) => !prev);
+
+  if (loading) return <div className="p-6">Loading PRs...</div>;
 
   return (
     <>
       {/* PR Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {getFilteredPRs().map((pr) => {
-          const latestStatusObj =
-            pr.department_statuses?.[pr.department_statuses.length - 1];
+        {prs.map((pr) => {
+          const latestStatusObj = pr.department_statuses?.[pr.department_statuses.length - 1];
           const status = latestStatusObj?.department_status || "Draft";
 
           return (
@@ -178,50 +153,23 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
               className="relative bg-white rounded-xl p-5 shadow-md flex flex-col justify-between hover:shadow-lg transition cursor-pointer"
               onClick={() => setActivePR(pr)}
             >
-              <h3 className="text-purple-600 font-semibold text-lg mb-2 truncate">
-                PR ID:{pr.id}
-              </h3>
-
+              <h3 className="text-purple-600 font-semibold text-lg mb-2 truncate">PR ID:{pr.id}</h3>
               <div className="space-y-1 text-sm flex-1">
                 <div className="flex justify-between gap-3">
                   <span className="text-gray-400 shrink-0">Description</span>
-
-                  <span
-                    title={pr.description}
-                    className="font-medium text-gray-700 max-w-[65%] overflow-hidden text-ellipsis whitespace-nowrap"
-                  >
+                  <span className="font-medium text-gray-700 max-w-[65%] overflow-hidden text-ellipsis whitespace-nowrap">
                     {pr.description || "-"}
                   </span>
                 </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Priority</span>
-                  <span className="font-medium text-gray-700">
-                    {pr.priority}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Status</span>
-                  <span className="font-medium text-gray-700">{status}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Department</span>
-                  <span className="font-medium text-gray-700 truncate">
-                    {/* {pr.department} */}
-                    {departmentMap[String(pr.department)] ?? pr.department}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Delivery Date</span>
-                  <span className="font-medium text-gray-700">
-                    {new Date(pr.required_date).toLocaleDateString()}
-                  </span>
-                </div>
+                <div className="flex justify-between"><span className="text-gray-400">Priority</span><span className="font-medium text-gray-700">{pr.priority}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Status</span><span className="font-medium text-gray-700">{status}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Department</span><span className="font-medium text-gray-700 truncate">{departmentMap[String(pr.department)] ?? pr.department}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Delivery Date</span><span className="font-medium text-gray-700">{new Date(pr.required_date).toLocaleDateString()}</span></div>
               </div>
 
               <div className="mt-3 flex gap-4">
                 <button
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm font-semibold text-blue-600 hover:underline"
                   onClick={(e) => {
                     e.stopPropagation();
                     setEditMode(false);
@@ -231,37 +179,33 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   More Info
                 </button>
 
-                <button
-                  className="text-sm text-blue-600 hover:underline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditMode(true);
-                    setActivePR(pr);
-                  }}
-                >
-                  Edit
-                </button>
+                {filter === "PR Raised" && isEditable(pr) && (
+                  <button
+                    className="text-sm font-semibold text-blue-600 hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditMode(true);
+                      setActivePR(pr);
+                    }}
+                  >
+                    Edit
+                  </button>
+                )}
               </div>
-
             </div>
           );
         })}
       </div>
-      {/* Modal */}
+
+      {/* Modal (only one, outside the map) */}
       {activePR && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto p-4">
           <div className="bg-white w-full max-w-5xl md:max-w-7xl rounded-xl shadow-xl p-4 md:p-6 text-black flex flex-col">
-            {/* Header */}
             <div className="flex justify-between items-center mb-4 md:mb-6">
               <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
                 View PR-{activePR.id} info
               </h2>
-              <button
-                onClick={() => setActivePR(null)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={24} />
-              </button>
+              <button onClick={() => setActivePR(null)} className="text-gray-500 hover:text-gray-700"><X size={24} /></button>
             </div>
 
             {/* PR Info */}
@@ -527,25 +471,33 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                 key={vendor.id}
                                 className="hidden sm:grid sm:grid-cols-8 gap-4 text-sm mb-2"
                               >
-                                <input
-                                  value={vendor.vendor_id || ""}
-                                  readOnly={!editMode}
-                                  onChange={(e) => {
-                                    const updatedItems = [...activePR.items];
+                                {editMode ? (
+                                  <select
+                                    value={vendor.vendor_id}
+                                    onChange={(e) => {
+                                      const updatedItems = [...activePR.items];
+                                      updatedItems[itemIndex].vendors[vendorIndex] = {
+                                        ...updatedItems[itemIndex].vendors[vendorIndex],
+                                        vendor_id: e.target.value, // still store the ID
+                                      };
+                                      setActivePR({ ...activePR, items: updatedItems });
+                                    }}
+                                    className="bg-white border rounded px-2 py-1 w-full border-blue-400"
+                                  >
+                                    {Object.entries(vendorMap).map(([id, name]) => (
+                                      <option key={id} value={id}>
+                                        {name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                ) : (
+                                  <input
+                                    value={vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id} // <-- show name
+                                    readOnly
+                                    className="bg-gray-100 border rounded px-2 py-1 w-full"
+                                  />
+                                )}
 
-                                    updatedItems[itemIndex].vendors[vendorIndex] = {
-                                      ...updatedItems[itemIndex].vendors[vendorIndex],
-                                      vendor_id: e.target.value,
-                                    };
-
-                                    setActivePR({
-                                      ...activePR,
-                                      items: updatedItems,
-                                    });
-                                  }}
-                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
-                                    }`}
-                                />
                                 <label
                                   className={`border rounded px-2 py-1 w-full text-sm flex items-center ${editMode
                                     ? "cursor-pointer border-blue-400 bg-white"
@@ -813,13 +765,12 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   Save
                 </button>
               </div>
-            )}
 
+
+            )}
           </div>
         </div>
-
       )}
     </>
   );
 }
-

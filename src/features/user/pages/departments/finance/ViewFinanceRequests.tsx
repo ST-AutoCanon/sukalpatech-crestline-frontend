@@ -222,7 +222,7 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
             </div>
 
             {/* FOOTER */}
-            <span className="text-blue-600 text-sm font-medium mt-4">
+            <span className="text-blue-600 text-sm font-semibold mt-4">
               More info
             </span>
           </div>

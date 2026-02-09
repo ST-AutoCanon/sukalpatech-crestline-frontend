@@ -66,6 +66,9 @@ export default function ViewPRPage() {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [showStatus, setShowStatus] = useState(true);
 
+  const [mode, setMode] = useState<"view" | "edit">("view");
+
+
 
   const toggleItem = (itemId: string) => {
     setExpandedItems((prev) => ({
@@ -111,6 +114,47 @@ export default function ViewPRPage() {
   const [departmentMap, setDepartmentMap] = useState<Record<string, string>>(
     {}
   );
+
+  const updateItemField = (
+    itemId: number,
+    field: keyof Item,
+    value: any
+  ) => {
+    if (!activePR) return;
+
+    setActivePR({
+      ...activePR,
+      items: activePR.items.map((item) =>
+        item.id === itemId ? { ...item, [field]: value } : item
+      ),
+    });
+  };
+
+  const updateVendorField = (
+    itemId: number,
+    vendorId: number,
+    field: keyof Vendor,
+    value: any
+  ) => {
+    if (!activePR) return;
+
+    setActivePR({
+      ...activePR,
+      items: activePR.items.map((item) =>
+        item.id === itemId
+          ? {
+            ...item,
+            vendors: item.vendors.map((vendor) =>
+              vendor.id === vendorId
+                ? { ...vendor, [field]: value }
+                : vendor
+            ),
+          }
+          : item
+      ),
+    });
+  };
+
 
 
   return (
@@ -159,9 +203,30 @@ export default function ViewPRPage() {
               </div>
             </div>
 
-            <button className="mt-3 text-sm font-medium text-blue-600 text-left">
-              More Info
-            </button>
+            <div className="mt-3 flex gap-3 items-center text-sm ">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMode("view");
+                  setActivePR(pr);
+                }}
+                className="font-semibold text-blue-600 hover:underline"
+              >
+                More Info
+              </button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMode("edit");
+                  setActivePR(pr);
+                }}
+                className="font-semibold text-blue-600 hover:underline"
+              >
+                Edit
+              </button>
+            </div>
+
           </div>
         ))}
       </div>
@@ -173,7 +238,7 @@ export default function ViewPRPage() {
             {/* Header */}
             <div className="flex justify-between items-center mb-4 md:mb-6">
               <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-                View PR-{activePR.id} info
+                {mode === "edit" ? "Edit" : "View"} PR-{activePR.id} info
               </h2>
               <button
                 onClick={() => setActivePR(null)}
@@ -189,39 +254,77 @@ export default function ViewPRPage() {
               <div className="space-y-3 sm:hidden text-sm">
                 <div>
                   <div className="text-gray-900">Description</div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.description || "-"}
-                  </div>
+                  <input
+                    type="text"
+                    value={activePR.description || ""}
+                    readOnly={mode === "view"}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, description: e.target.value })
+                    }
+                    className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                      }`}
+                  />
+
                 </div>
 
                 <div>
                   <div className="text-gray-900">Priority</div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.priority || "-"}
-                  </div>
+                  <input
+                    type="text"
+                    value={activePR.priority || ""}
+                    readOnly={mode === "view"}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, priority: e.target.value })
+                    }
+                    className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                      }`}
+                  />
+
                 </div>
 
                 <div>
                   <div className="text-gray-900">Required Delivery Date</div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.required_date
-                      ? new Date(activePR.required_date).toLocaleDateString()
-                      : "-"}
-                  </div>
+                  <input
+                    type="text"
+                    value={activePR.required_date || ""}
+                    readOnly={mode === "view"}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, required_date: e.target.value })
+                    }
+                    className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                      }`}
+                  />
+
                 </div>
 
                 <div>
                   <div className="text-gray-900">Department</div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.department || "-"}
-                  </div>
+                  <input
+                    type="text"
+                    value={activePR.department || ""}
+                    readOnly={mode === "view"}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, department: e.target.value })
+                    }
+                    className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                      }`}
+                  />
+
                 </div>
 
                 <div>
                   <div className="text-gray-900">Remarks</div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.remarks || "-"}
-                  </div>
+                  <input
+                    type="text"
+                    value={activePR.remarks || ""}
+                    readOnly={mode === "view"}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, remarks: e.target.value })
+                    }
+                    className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                      }`}
+                  />
+
                 </div>
               </div>
 
@@ -235,23 +338,61 @@ export default function ViewPRPage() {
                   <span>Remarks</span>
                 </div>
                 <div className="grid grid-cols-5 gap-4">
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.description || "-"}
-                  </div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.priority || "-"}
-                  </div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.required_date
-                      ? new Date(activePR.required_date).toLocaleDateString()
-                      : "-"}
-                  </div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.department || "-"}
-                  </div>
-                  <div className="bg-white border rounded px-2 py-1">
-                    {activePR.remarks || "-"}
-                  </div>
+                  <input
+                    type="text"
+                    value={activePR.description || ""}
+                    readOnly={mode === "view"}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, description: e.target.value })
+                    }
+                    className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                      }`}
+                  />
+
+                  <input
+                    type="text"
+                    value={activePR.priority || ""}
+                    readOnly={mode === "view"}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, priority: e.target.value })
+                    }
+                    className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                      }`}
+                  />
+
+                  <input
+                    type="text"
+                    value={activePR.required_date || ""}
+                    readOnly={mode === "view"}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, required_date: e.target.value })
+                    }
+                    className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                      }`}
+                  />
+
+                  <input
+                    type="text"
+                    value={activePR.department || ""}
+                    readOnly={mode === "view"}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, department: e.target.value })
+                    }
+                    className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                      }`}
+                  />
+
+                  <input
+                    type="text"
+                    value={activePR.remarks || ""}
+                    readOnly={mode === "view"}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, remarks: e.target.value })
+                    }
+                    className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                      }`}
+                  />
+
                 </div>
               </div>
             </div>
@@ -281,9 +422,19 @@ export default function ViewPRPage() {
                         <span className="font-medium w-24 shrink-0">
                           Item Code
                         </span>
-                        <div className="bg-white border rounded px-4 py-1 flex-1">
-                          {item.item_code || "-"}
-                        </div>
+                        <input
+                          type="text"
+                          value={item.item_code || ""}
+                          readOnly={mode === "view"}
+                          onChange={(e) =>
+                            updateItemField(item.id, "item_code", e.target.value)
+                          }
+                          className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                            }`}
+                        />
+
+
+
                       </div>
 
                       {/* Description */}
@@ -291,17 +442,35 @@ export default function ViewPRPage() {
                         <span className="font-medium w-24 shrink-0">
                           Description
                         </span>
-                        <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
-                          {item.item_name || "-"}
-                        </div>
+                        <input
+                          type="text"
+                          value={item.item_name || ""}
+                          readOnly={mode === "view"}
+                          onChange={(e) =>
+                            updateItemField(item.id, "item_name", e.target.value)
+                          }
+                          className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                            }`}
+                        />
+
+
                       </div>
 
                       {/* Qty */}
                       <div className="flex items-center gap-2">
                         <span className="font-medium w-24 shrink-0">Qty</span>
-                        <div className="bg-white border rounded px-4 py-1 flex-1">
-                          {item.quantity_required ?? "-"}
-                        </div>
+                        <input
+                          type="number"
+                          value={item.quantity_required || ""}
+                          readOnly={mode === "view"}
+                          onChange={(e) =>
+                            updateItemField(item.id, "quantity_required", Number(e.target.value))
+                          }
+                          className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"
+                            }`}
+                        />
+
+
                       </div>
                     </div>
 
@@ -325,56 +494,121 @@ export default function ViewPRPage() {
                               key={vendor.id}
                               className="hidden sm:grid sm:grid-cols-6 gap-4 text-sm mb-4"
                             >
+                              {/* Vendor Selection */}
+                              {mode === "edit" ? (
+                                <select
+                                  value={vendor.vendor_id}
+                                  onChange={(e) =>
+                                    updateVendorField(item.id, vendor.id, "vendor_id", e.target.value)
+                                  }
+                                  className="border rounded px-2 py-1 w-full bg-white"
+                                >
+                                  {Object.entries(vendorMap).map(([id, name]) => (
+                                    <option key={id} value={id}>
+                                      {name}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <input
+                                  type="text"
+                                  value={vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id}
+                                  readOnly
+                                  className="bg-white border rounded px-2 py-1 w-full"
+                                  placeholder="Vendor"
+                                />
+                              )}
+
+                              {/* Attachment Upload */}
+                              {mode === "edit" ? (
+                                <div className="flex flex-col">
+                                  {/* Hidden file input */}
+                                  <input
+                                    type="file"
+                                    id={`vendor-file-${vendor.id}`}
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        updateVendorField(item.id, vendor.id, "attachments", [
+                                          {
+                                            id: vendor.attachments?.[0]?.id ?? 0,
+                                            file_name: file.name,
+                                            file_path: URL.createObjectURL(file), // temporary preview
+                                            uploaded_by: user?.id || 0,
+                                            uploaded_at: new Date().toISOString(),
+                                          },
+                                        ]);
+                                      }
+                                    }}
+                                  />
+
+                                  {/* Visible input showing file name and opening file picker */}
+                                  <input
+                                    type="text"
+                                    readOnly
+                                    placeholder="No file selected"
+                                    value={vendor.attachments?.[0]?.file_name || ""}
+                                    onClick={() => document.getElementById(`vendor-file-${vendor.id}`)?.click()}
+                                    className="border rounded px-2 py-1 w-full cursor-pointer bg-white"
+                                  />
+                                </div>
+                              ) : (
+                                <input
+                                  type="text"
+                                  value={vendor.attachments?.[0]?.file_name || ""}
+                                  readOnly
+                                  className="bg-white border rounded px-2 py-1 w-full"
+                                />
+                              )}
+
                               <input
-                                type="text"
-                                value={
-                                  vendorMap[String(vendor.vendor_id)] ??
-                                  vendor.vendor_id
+                                type="number"
+                                value={vendor.unit_price ?? ""}
+                                readOnly={mode === "view"} // editable only in edit mode
+                                onChange={(e) =>
+                                  updateVendorField(item.id, vendor.id, "unit_price", Number(e.target.value))
                                 }
+                                className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"}`}
+                              />
+
+                              <input
+                                type="number"
+                                value={(vendor.unit_price || 0) * (item.quantity_required || 0)}
                                 readOnly
-                                className="bg-white border rounded px-2 py-1 w-full"
-                                placeholder="Vendor"
+                                className="bg-gray-100 border rounded px-2 py-1 w-full"
+                              />
+
+
+                              <input
+                                type="date"
+                                value={
+                                  vendor.quotation_validity_date
+                                    ? new Date(vendor.quotation_validity_date).toISOString().split("T")[0]
+                                    : ""
+                                }
+                                readOnly={mode === "view"} // editable only in edit mode
+                                onChange={(e) =>
+                                  updateVendorField(item.id, vendor.id, "quotation_validity_date", e.target.value)
+                                }
+                                className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"}`}
                               />
 
                               <input
                                 type="text"
-                                value={vendor.attachments?.[0]?.file_name || ""}
-                                readOnly
-                                className="bg-white border rounded px-2 py-1 w-full"
-                              />
-                              <input
-                                type="text"
-                                value={vendor.unit_price ?? ""}
-                                readOnly
-                                className="bg-white border rounded px-2 py-1 w-full"
-                              />
-                              <input
-                                type="text"
-                                value={vendor.total_price ?? ""}
-                                readOnly
-                                className="bg-white border rounded px-2 py-1 w-full"
-                              />
-                              <input
-                                type="text"
-                                value={
-                                  vendor.quotation_validity_date
-                                    ? new Date(
-                                        vendor.quotation_validity_date
-                                      ).toLocaleDateString()
-                                    : ""
-                                }
-                                readOnly
-                                className="bg-white border rounded px-2 py-1 w-full"
-                              />
-                              <input
-                                type="text"
-                                value={
-                                  vendor.comments
-                                    ?.map((c) => c.comment)
-                                    .join(", ") || ""
-                                }
-                                readOnly
-                                className="bg-white border rounded px-2 py-1 w-full"
+                                value={vendor.comments?.[0]?.comment || ""}
+                                readOnly={mode === "view"}
+                                onChange={(e) => {
+                                  updateVendorField(item.id, vendor.id, "comments", [
+                                    {
+                                      id: vendor.comments?.[0]?.id ?? 0,
+                                      comment: e.target.value, // allow spaces normally
+                                      commented_at: new Date().toISOString(),
+                                      commented_by: user?.id || 0,
+                                    },
+                                  ]);
+                                }}
+                                className={`border rounded px-2 py-1 w-full ${mode === "view" ? "bg-gray-100" : "bg-white"}`}
                               />
                             </div>
                           ))}
@@ -389,7 +623,7 @@ export default function ViewPRPage() {
                                 [
                                   "Vendor",
                                   vendorMap[String(vendor.vendor_id)] ??
-                                    vendor.vendor_id,
+                                  vendor.vendor_id,
                                 ],
                                 [
                                   "Upload Quotation",
@@ -401,8 +635,8 @@ export default function ViewPRPage() {
                                   "Quotation Validity",
                                   vendor.quotation_validity_date
                                     ? new Date(
-                                        vendor.quotation_validity_date
-                                      ).toLocaleDateString()
+                                      vendor.quotation_validity_date
+                                    ).toLocaleDateString()
                                     : "-",
                                 ],
                                 [
@@ -458,7 +692,7 @@ export default function ViewPRPage() {
                         key={idx}
                         className="bg-gray-100 border border-blue-200 rounded-xl p-4 text-sm"
                       >
-                       <div className="flex flex-col sm:flex-row justify-between mb-1 text-xs text-gray-600">
+                        <div className="flex flex-col sm:flex-row justify-between mb-1 text-xs text-gray-600">
                           <span className="font-medium">
                             Status: {ds.department_status}
                           </span>
@@ -477,6 +711,70 @@ export default function ViewPRPage() {
                 )}
               </div>
             </div>
+            {/* Save / Cancel Buttons */}
+            {mode === "edit" && (
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  onClick={() => {
+                    // Cancel: discard changes and go back to view mode
+                    // Ideally reload PR data from prs array to reset
+                    const originalPR = prs.find((p) => p.id === activePR?.id);
+                    if (originalPR) setActivePR(originalPR);
+                    setMode("view");
+                  }}
+                  className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!activePR) return;
+
+                    try {
+                      const res = await fetch(
+                        `${import.meta.env.VITE_BACKEND_URL}/api/new-feasibility/feasibility-requests/${activePR.id}`,
+                        {
+                          method: "PUT",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                          },
+                          body: JSON.stringify(activePR),
+                        }
+                      );
+
+                      const data = await res.json();
+
+                      if (data.success === false) {
+                        console.error("Save failed:", data.message);
+                        alert("Failed to save PR: " + data.message);
+                        return;
+                      }
+
+                      // Update PR list
+                      setPrs((prev) =>
+                        prev.map((p) => (p.id === activePR.id ? data.data || activePR : p))
+                      );
+
+                      // ✅ Close the modal after successful save
+                      setActivePR(null);
+
+                      alert("Changes saved successfully!");
+                    } catch (err) {
+                      console.error("Save failed", err);
+                      alert("Failed to save PR. Check console for details.");
+                    }
+                  }}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                >
+                  Save
+                </button>
+
+
+
+              </div>
+            )}
+
           </div>
         </div>
       )}

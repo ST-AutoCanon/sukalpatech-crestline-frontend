@@ -6,8 +6,6 @@ import FinanceApprovedPR from "./ProcurementFinanceApprovedPRs";
 
 const filters = ["PR Raised", "Pending", "Rejected", "Completed"] as const;
 
-
-
 const ProcurementPage: React.FC = () => {
   const [activeFilter, setActiveFilter] =
     useState<(typeof filters)[number]>("PR Raised");
@@ -65,13 +63,10 @@ const ProcurementPage: React.FC = () => {
 
 
       {/* ================= PR LIST ================= */}
-      {!showUpdatePage && (
-        <AllPRs
-          filter={activeFilter}
-          search={search}
-          refreshKey={refreshKey} // 🔥 PASS REFRESH KEY
-        />
-      )}
+{!showUpdatePage && (
+  <AllPRs filter={activeFilter} search={search} refreshKey={refreshKey} />
+)}
+
 
       {/* ================= UPDATE PAGE ================= */}
       {showUpdatePage && (

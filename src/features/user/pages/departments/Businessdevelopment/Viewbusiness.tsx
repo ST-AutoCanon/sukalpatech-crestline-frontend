@@ -64,6 +64,14 @@ interface BusinessCardProps {
 const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
   const attachments = Array.isArray(data.attachments) ? data.attachments : [];
   const [showModal, setShowModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState(data);
+
+  const handleChange = (key: keyof typeof data, value: any) => {
+    setFormData({ ...formData, [key]: value });
+  };
+
+
 
   const renderValue = (value: any) =>
     value === null || value === undefined || value === ""
@@ -115,19 +123,27 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
       <div className="flex flex-col gap-1">
         {mainFields.map((item) => (
           <div key={item.key} className="flex">
-            <span className="w-33 text-gray-400">{item.label}:</span>
+            <span className="w-50 font-normal text-gray-400">{item.label}:</span>
             <span className="font-medium text-gray-700 max-w-[65%] overflow-hidden text-ellipsis whitespace-nowrap">
               {renderValue(data[item.key as keyof typeof data])}
             </span>
           </div>
         ))}
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="mt-2 text-blue-600 text-xs font-medium underline self-start"
-        >
-          More Info
-        </button>
+        <div className="flex gap-3 mt-2">
+          <button
+            onClick={() => {
+              setShowModal(true);
+              setEditMode(false); // read-only
+            }}
+            className="text-sm font-semibold text-blue-600 hover:underline"
+          >
+            More Info
+          </button>
+
+
+        </div>
+
       </div>
 
       {/* Modal */}
