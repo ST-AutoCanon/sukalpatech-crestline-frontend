@@ -57,10 +57,28 @@ export default function AddItem() {
 
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
+  const fetchAllItems = async () => {
+  try {
+    const res = await axios.get(`${API_BASE}/items/items`);
+
+    const normalized = (res.data?.data || []).map((item: any) => ({
+      id: item.id,
+      code: item.item_code,        // ✅ map correctly
+      name: item.item_name,        // ✅ map correctly
+      qty: item.qty,
+      vendors: item.vendors || [],
+    }));
+
+    setItems(normalized);
+  } catch {
+    setItems([]);
+  }
+};
 
   useEffect(() => {
     fetchRoots();
     fetchVendors();
+    fetchAllItems();
   }, []);
 
   const fetchVendors = async () => {
@@ -123,6 +141,7 @@ export default function AddItem() {
   const handleAddItem = async () => {
     if (!selectedRoot || !itemName) {
       setAlert({ type: "error", message: "Root category and item name required" });
+      
       return;
     }
 
@@ -136,9 +155,6 @@ export default function AddItem() {
       variant_id: selectedVariant || null,
       sub_variant_id: selectedSubVariant || null,
     });
-
-
-
 
     if (res.data?.data) {
       const addedItem = {

@@ -1,56 +1,71 @@
-import React, { useState } from "react";
-import ViewFinanceRequests from "./ViewFinanceRequests";
-import UpdateFinance from "./UpdateFinance";
+import { useState } from "react";
+import AllPRs from "../req_pages/requestpages";
+import FinanceApprovedPR from "../finance/UpdateFinance";
 
-type TabType = "all" | "pending" | "rejected" | "update";
+const filters = ["All PR", "Pending", "Rejected", "Completed"] as const;
+type FilterType = (typeof filters)[number];
 
 const FinancePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>("all");
-
-  const tabClass = (tab: TabType) =>
-    `cursor-pointer text-lg font-semibold pb-1 ${
-      activeTab === tab ? "text-white border-b-2 border-white" : "text-gray-500"
-    }`;
+  const [activeFilter, setActiveFilter] = useState<FilterType>("All PR");
+  const [showUpdatePage, setShowUpdatePage] = useState(false);
+  const [search, setSearch] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   return (
-    <div className="px-4 sm:px-6 pb-6 w-full">
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
-        {/* LEFT: Tabs */}
-        <div className="flex gap-6">
-          <h2 onClick={() => setActiveTab("all")} className={tabClass("all")}>
-            All PRs
-          </h2>
+    <div className="px-4 sm:px-6 w-full">
+      {/* ================= FILTER BAR ================= */}
+      <div className="mt-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+          {/* FILTER TABS */}
+          <div className="flex overflow-x-auto gap-3 sm:gap-1 text-sm font-medium text-white w-full sm:w-auto">
+            {filters.map((filter) => (
+              <button
+                key={filter}
+                onClick={() => {
+                  setActiveFilter(filter);
+                  setShowUpdatePage(false);
+                }}
+                className={` pb-1 px-2 sm:px-4  ${activeFilter === filter
+                    ? "border-b-2 border-white text-white"
+                    : "text-white/70 "
+                  }`}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
 
-          <h2
-            onClick={() => setActiveTab("pending")}
-            className={tabClass("pending")}
-          >
-            Pending PRs
-          </h2>
-
-          <h2
-            onClick={() => setActiveTab("rejected")}
-            className={tabClass("rejected")}
-          >
-            Rejected PRs
-          </h2>
+          {/* UPDATE PR BUTTON */}
+          <div className="flex gap-2 sm:gap-4 w-full sm:w-auto justify-start sm:justify-end mt-2 sm:mt-0">
+            <button
+              onClick={() => setShowUpdatePage(true)}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 rounded text-white w-full sm:w-auto whitespace-nowrap"
+            >
+              Update PR
+            </button>
+          </div>
         </div>
-
-        {/* RIGHT */}
-        <button
-          onClick={() => setActiveTab("update")}
-          className="h-8 sm:h-9 rounded-md bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 px-3 sm:px-4 text-xs sm:text-sm font-medium text-white"
-        >
-          + Update PR
-        </button>
       </div>
 
-      {/* CONTENT */}
-      {activeTab === "all" && <ViewFinanceRequests status="all" />}
-      {activeTab === "pending" && <ViewFinanceRequests status="pending" />}
-      {activeTab === "rejected" && <ViewFinanceRequests status="rejected" />}
-      {activeTab === "update" && <UpdateFinance />}
+      {/* ================= PR LIST ================= */}
+      {!showUpdatePage && (
+        <div className="overflow-x-hidden">
+          <AllPRs
+            filter={
+              activeFilter === "All PR"
+                ? "ALL"
+                : activeFilter.toUpperCase() as "PENDING" | "REJECTED" | "APPROVED"
+            }
+            search={search}
+            refreshKey={refreshKey}
+          />
+        </div>
+      )}
+
+      {/* ================= UPDATE PAGE ================= */}
+      {showUpdatePage && (
+        <FinanceApprovedPR onClose={() => setShowUpdatePage(false)} />
+      )}
     </div>
   );
 };

@@ -16,14 +16,14 @@ export default function AddCategories() {
 
   /* ================= STATES ================= */
   const [activeTab, setActiveTab] = useState<TabType>("root");
-  const [tableData, setTableData] = useState<any[]>([]);
-
 
   const [rootName, setRootName] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [productName, setProductName] = useState("");
   const [variantName, setVariantName] = useState("");
   const [subVariantName, setSubVariantName] = useState("");
+  const [tableData, setTableData] = useState<any[]>([]);
+
 
   const [selectedRoot, setSelectedRoot] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -52,15 +52,25 @@ export default function AddCategories() {
   };
 
   /* ================= LOAD ROOTS ================= */
-  useEffect(() => { fetchRoots(); }, []);
+useEffect(() => {
+  fetchRoots();
+  fetchHierarchy();
+}, []);
+
+const fetchHierarchy = async () => {
+  try {
+    const res = await axios.get(`${API_BASE}/hierarchy`);
+    setTableData(res.data.data || res.data || []);
+  } catch (error) {
+    console.error("Failed to fetch hierarchy", error);
+  }
+};
+
 
   const fetchRoots = async () => {
     const res = await axios.get(`${API_BASE}/root-category`);
-    setRoots(res.data || []);
+    setRoots(res.data || []); 
   };
-
-  
-
 
   const fetchCategories = async (rootId: number) => {
     const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`);
@@ -90,9 +100,8 @@ export default function AddCategories() {
     if (!rootName) return setAlert({ type: "error", message: "Enter Root Category" });
     try {
       await axios.post(`${API_BASE}/root-category`, { name: rootName });
-      setRootName(""); fetchRoots();
-      appendTableRow({ root: rootName });
-       setAlert({ type: "success", message: "Root Category created successfully!" });
+      setRootName(""); fetchRoots(); fetchHierarchy(); 
+      setAlert({ type: "success", message: "Root Category created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Root Category" }); }
   };
 
@@ -100,11 +109,7 @@ export default function AddCategories() {
     if (!selectedRoot || !categoryName) return setAlert({ type: "error", message: "Select Root & Enter Category" });
     try {
       await axios.post(`${API_BASE}/category`, { name: categoryName, root_category_id: selectedRoot });
-      setCategoryName(""); fetchCategories(selectedRoot);
-     appendTableRow({
-    root: roots.find(r => r.id === selectedRoot)?.name,
-    category: categoryName
-  });
+      setCategoryName(""); fetchCategories(selectedRoot); fetchHierarchy(); 
       setAlert({ type: "success", message: "Category created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Category" }); }
   };
@@ -113,12 +118,8 @@ export default function AddCategories() {
     if (!selectedRoot || !selectedCategory || !productName) return setAlert({ type: "error", message: "Select Root & Category" });
     try {
       await axios.post(`${API_BASE}/product`, { name: productName, category_id: selectedCategory });
-      setProductName(""); fetchProducts(selectedCategory);
-appendTableRow({
-    root: roots.find(r => r.id === selectedRoot)?.name,
-    category: categories.find(c => c.id === selectedCategory)?.name,
-    product: productName
-  });      setAlert({ type: "success", message: "Product created successfully!" });
+      setProductName(""); fetchProducts(selectedCategory); fetchHierarchy(); 
+      setAlert({ type: "success", message: "Product created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Product" }); }
   };
 
@@ -127,13 +128,8 @@ appendTableRow({
       return setAlert({ type: "error", message: "Select Root, Category & Product" });
     try {
       await axios.post(`${API_BASE}/variant`, { name: variantName, product_id: selectedProduct });
-      setVariantName(""); fetchVariants(selectedProduct);
-appendTableRow({
-    root: roots.find(r => r.id === selectedRoot)?.name,
-    category: categories.find(c => c.id === selectedCategory)?.name,
-    product: products.find(p => p.id === selectedProduct)?.name,
-    variant: variantName
-  });      setAlert({ type: "success", message: "Variant created successfully!" });
+      setVariantName(""); fetchVariants(selectedProduct); fetchHierarchy(); 
+      setAlert({ type: "success", message: "Variant created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Variant" }); }
   };
 
@@ -142,58 +138,38 @@ appendTableRow({
       return setAlert({ type: "error", message: "Complete Full Hierarchy" });
     try {
       await axios.post(`${API_BASE}/sub-variant`, { name: subVariantName, variant_id: selectedVariant });
-      setSubVariantName(""); fetchSubVariants(selectedVariant);
-appendTableRow({
-    root: roots.find(r => r.id === selectedRoot)?.name,
-    category: categories.find(c => c.id === selectedCategory)?.name,
-    product: products.find(p => p.id === selectedProduct)?.name,
-    variant: variants.find(v => v.id === selectedVariant)?.name,
-    subVariant: subVariantName
-  });      setAlert({ type: "success", message: "Sub Variant created successfully!" });
+      setSubVariantName(""); fetchSubVariants(selectedVariant); fetchHierarchy(); 
+      setAlert({ type: "success", message: "Sub Variant created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Sub Variant" }); }
   };
 
   /* ================= SEARCH ================= */
-
-  
   const handleSearch = async () => {
-  if (!searchQuery) {
-    return;
-  }
+    if (!searchQuery) return setSearchResults([]);
+    const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`);
+    const mapped = (res.data.data || res.data || []).map((item: any) => ({
+      root: item.root_category?.name || "",
+      category: item.category?.name || "",
+      product: item.product?.name || "",
+      variant: item.variant?.name || "",
+      subVariant: item.sub_variant?.name || "",
+    }));
+    setSearchResults(mapped);
+  };
 
-  const res = await axios.get(
-    `${API_BASE}/search?query=${searchQuery}`
+  const filteredData = tableData.filter((item) => {
+  if (!searchQuery) return true;
+
+  const q = searchQuery.toLowerCase();
+
+  return (
+    item.root_name?.toLowerCase().includes(q) ||
+    item.category_name?.toLowerCase().includes(q) ||
+    item.product_name?.toLowerCase().includes(q) ||
+    item.variant_name?.toLowerCase().includes(q) ||
+    item.sub_variant_name?.toLowerCase().includes(q)
   );
-
-  const mapped = (res.data.data || res.data || []).map((item: any) => ({
-    root: item.root_category?.name || "",
-    category: item.category?.name || "",
-    product: item.product?.name || "",
-    variant: item.variant?.name || "",
-    subVariant: item.sub_variant?.name || "",
-  }));
-
-  setTableData(mapped);
-};
-
-const appendTableRow = (row: {
-  root?: string;
-  category?: string;
-  product?: string;
-  variant?: string;
-  subVariant?: string;
-}) => {
-  setTableData(prev => [
-    ...prev,
-    {
-      root: row.root || "",
-      category: row.category || "",
-      product: row.product || "",
-      variant: row.variant || "",
-      subVariant: row.subVariant || "",
-    }
-  ]);
-};
+});
 
 
 
@@ -535,7 +511,7 @@ const appendTableRow = (row: {
             className="w-96 px-4 py-2 rounded-lg bg-white text-black placeholder-gray-500 shadow"
           />
           <button
-            onClick={handleSearch}
+            onClick={() =>{}}
             className="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-medium shadow hover:opacity-90"
           >
             🔍 Search
@@ -556,18 +532,19 @@ const appendTableRow = (row: {
               <th className="p-2 border">Sub Variant</th>
             </tr>
           </thead>
-          <tbody>
-            {tableData.map((r, i) => (
-              <tr key={i} className="hover:bg-gray-100">
-                <td className="p-2 border">{i + 1}</td>
-                <td className="p-2 border">{r.root}</td>
-                <td className="p-2 border">{r.category}</td>
-                <td className="p-2 border">{r.product}</td>
-                <td className="p-2 border">{r.variant}</td>
-                <td className="p-2 border">{r.subVariant}</td>
-              </tr>
-            ))}
-          </tbody>
+         <tbody>
+  {filteredData.map((r, i) => (
+    <tr key={i} className="hover:bg-gray-100">
+      <td className="p-2 border">{i + 1}</td>
+      <td className="p-2 border">{r.root_name || "-"}</td>
+      <td className="p-2 border">{r.category_name || "-"}</td>
+      <td className="p-2 border">{r.product_name || "-"}</td>
+      <td className="p-2 border">{r.variant_name || "-"}</td>
+      <td className="p-2 border">{r.sub_variant_name || "-"}</td>
+    </tr>
+  ))}
+</tbody>
+
         </table>
       </div>
     </div>

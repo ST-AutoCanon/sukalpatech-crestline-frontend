@@ -64,7 +64,7 @@ type PR = {
   items: Item[];
 };
 
-export default function ViewPRPage({ filter, search, refreshKey }: Props) {
+export default function ViewPRPage({ filter, search, refreshKey}: Props) {
   const [prs, setPrs] = useState<PR[]>([]);
   const [activePR, setActivePR] = useState<PR | null>(null);
   const [showItems, setShowItems] = useState(false);
@@ -74,6 +74,9 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
   const [vendorMap, setVendorMap] = useState<Record<string, string>>({});
   const [departmentMap, setDepartmentMap] = useState<Record<string, string>>({});
+
+  
+  
 
   // Fetch vendors
   useEffect(() => {
@@ -589,10 +592,30 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
 
                                 <input
-                                  readOnly
                                   value={prComment}
-                                  className="bg-white border rounded px-2 py-1 w-full"
+                                  readOnly={!editMode} // editable only in edit mode
+                                  onChange={(e) => {
+                                    const updatedItems = [...activePR.items];
+                                    // Update this vendor's first comment
+                                    if (!updatedItems[itemIndex].vendors[vendorIndex].comments) {
+                                      updatedItems[itemIndex].vendors[vendorIndex].comments = [];
+                                    }
+                                    if (updatedItems[itemIndex].vendors[vendorIndex].comments.length === 0) {
+                                      updatedItems[itemIndex].vendors[vendorIndex].comments.push({
+                                        id: Date.now(), // temporary ID
+                                        comment: e.target.value,
+                                        commented_at: new Date().toISOString(),
+                                        commented_by: user?.id || 0, // current user
+                                      });
+                                    } else {
+                                      updatedItems[itemIndex].vendors[vendorIndex].comments[0].comment = e.target.value;
+                                    }
+
+                                    setActivePR({ ...activePR, items: updatedItems });
+                                  }}
+                                  className={`border px-2 py-1 rounded w-full ${editMode ? "border-blue-400 bg-white" : "bg-gray-100 border-gray-300"}`}
                                 />
+
 
 
                                 <input
@@ -699,7 +722,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 </button>
               </div>
 
-              <div className="border border-gray-300 rounded-lg p-4 overflow-x-auto">
+               <div className="border border-gray-300 rounded-lg p-4 overflow-x-auto">
                 <h3 className="font-semibold text-base mb-3">Statuses</h3>
 
                 {showStatuses && (
@@ -709,23 +732,41 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                         key={idx}
                         className="bg-gray-100 border border-blue-200 rounded-xl p-4 text-sm"
                       >
-                        <div className="flex flex-col sm:flex-row justify-between mb-1 text-xs text-gray-600">
-                          <span className="font-medium">
-                            Status: {ds.department_status}
-                          </span>
+                        <div className="flex flex-col sm:flex-row justify-between mb-1 text-xs text-gray-600 gap-2">
+                          <input
+                            value={ds.department_status}
+                            readOnly={!editMode} // editable
+                            onChange={(e) => {
+                              const updatedStatuses = [...activePR.department_statuses];
+                              updatedStatuses[idx].department_status = e.target.value;
+                              setActivePR({ ...activePR, department_statuses: updatedStatuses });
+                            }}
+                            className="px-1 py-0.5  text-xs w-full sm:w-auto"
+                          />
+
                           <span className="font-medium text-gray-800">
                             {ds.status_updated_by ?? "—"} •{" "}
                             {new Date(ds.updated_at).toLocaleDateString()}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-600">
-                          <span className="font-medium">Comment:</span>{" "}
-                          {ds.department_comment}
+
+                        <div className="text-xs text-gray-600 mt-1">
+                          <input
+                            value={ds.department_comment}
+                            readOnly={!editMode} // editable
+                            onChange={(e) => {
+                              const updatedStatuses = [...activePR.department_statuses];
+                              updatedStatuses[idx].department_comment = e.target.value;
+                              setActivePR({ ...activePR, department_statuses: updatedStatuses });
+                            }}
+                            className=" px-1 py-0.5 rounded  w-full text-xs"
+                          />
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
+
               </div>
             </div>
             {editMode && (

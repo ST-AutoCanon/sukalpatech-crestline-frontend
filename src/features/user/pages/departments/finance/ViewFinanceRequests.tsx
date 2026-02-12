@@ -192,34 +192,27 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
 
             {/* BODY */}
             <div className="flex-1 space-y-3 text-sm">
-              <div className="flex gap-1">
-                <span className="text-gray-500">Department :</span>
-                <span className="font-medium text-gray-600 truncate">
-                  {pr.department || "-"}
-                </span>
+              <div className="flex gap-8">
+                <span className="w-24 text-gray-500">Department :</span>
+                <span className="font-medium text-gray-600 truncate">{pr.department || "-"}</span>
               </div>
 
-              <div className="flex gap-1">
-                <span className="text-gray-500">Priority :</span>
-                <span className="font-medium text-gray-600 truncate">
-                  {pr.priority || "-"}
-                </span>
+              <div className="flex gap-8">
+                <span className="w-24 text-gray-500">Priority :</span>
+                <span className="font-medium text-gray-600 truncate">{pr.priority || "-"}</span>
               </div>
 
-              <div className="flex gap-1">
-                <span className="text-gray-500">Required :</span>
-                <span className="font-medium text-gray-600">
-                  {formatDate(pr.required_date)}
-                </span>
+              <div className="flex gap-8">
+                <span className="w-24 text-gray-500">Required :</span>
+                <span className="font-medium text-gray-600">{formatDate(pr.required_date)}</span>
               </div>
 
-              <div className="flex gap-1">
-                <span className="text-gray-500">Description :</span>
-                <span className="font-medium text-gray-600 line-clamp-2">
-                  {pr.description || "-"}
-                </span>
+              <div className="flex gap-8">
+                <span className="w-24 text-gray-500">Description :</span>
+                <span className="font-medium text-gray-600 line-clamp-2">{pr.description || "-"}</span>
               </div>
-            </div>
+              </div>
+
 
             {/* FOOTER */}
             <span className="text-blue-600 text-sm font-semibold mt-4">

@@ -7,14 +7,14 @@ type GalleryItem = {
 };
 
 const galleryItems: GalleryItem[] = [
-  {
-    type: "image",
-    src: "/crestline/public/media/news2.jpeg",
-  },
-  {
-    type: "image",
-    src: "/crestline/public/media/news1.jpeg",
-  },
+  // {
+  //   type: "image",
+  //   src: "/crestline/public/media/news2.jpeg",
+  // },
+  // {
+  //   type: "image",
+  //   src: "/crestline/public/media/news1.jpeg",
+  // },
   {
     type: "video",
     src: "/crestline/public/gallery/galleryVideo2.mp4",

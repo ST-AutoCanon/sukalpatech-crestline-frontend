@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
-import AllPRs from "./getAll_procurements";
+import AllPRs from "../req_pages/requestpages";
 import Procurement from "./Procurement";
 import FinanceApprovedPR from "./ProcurementFinanceApprovedPRs";
 

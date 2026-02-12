@@ -219,9 +219,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
-      <div className="w-full max-w-7xl bg-white text-gray-900 rounded-xl flex flex-col max-h-[95vh]">
+      <div className="w-full max-w-7xl bg-white text-gray-900 rounded-xl flex flex-col max-h-[95vh] overflow-visible">
         {/* HEADER */}
-        <div className="flex justify-between items-center px-6 py-4  border-gray-200 sticky top-0 bg-white z-10">
+        <div className="flex justify-between items-center px-6 py-4 border-gray-200 sticky top-0 bg-white z-10">
           <h2 className="text-xl font-semibold text-purple-600">
             New Procurement Request
           </h2>
@@ -241,7 +241,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
         )}
 
         {/* FORM AREA */}
-        <div className="p-6 flex-1 overflow-y-auto space-y-6">
+        <div className="p-6 pt-20  sm:pt-6 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
           {/* PR INFO */}
           <div className="bg-gray-100 rounded-xl p-4 overflow-x-auto">
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
@@ -395,7 +395,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     <div>
                       <label className="text-xs text-gray-600">Vendor</label>
                       <select
-                        className="w-full p-2 border rounded mt-1"
+                        className="w-full max-w-full p-2 border rounded mt-1 relative z-20 bg-white"
                         onChange={(e) =>
                           handleVendorChange(i, vi, "vendor_id", e.target.value)
                         }

@@ -55,14 +55,7 @@ interface FinancePR {
   department_statuses: DepartmentStatus[];
   items: Item[];
 }
-interface User {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  department_id?: number; // existing
-  category:string
-}
+
 
 
 /* ================= COMPONENT ================= */
@@ -108,90 +101,6 @@ export default function SubmittedFinanceRequestsPage() {
   const [departmentMap, setDepartmentMap] = useState<Record<string, string>>(
     {}
   );
-
-  const CATEGORY_LIMITS: Record<string, number> = { LOW: 50000, MEDIUM: 200000, HIGH: Infinity };
-  
-    const resolvedCategory = useMemo(() => {
-    return user?.category ? user.category.toUpperCase() : null;
-  }, [user]);
-  
-    const userLimit = useMemo(() => {
-    if (!resolvedCategory) return Infinity;
-  
-    return CATEGORY_LIMITS[resolvedCategory] ?? Infinity;
-  }, [resolvedCategory]);
-  
-  
-  
-   const totalPrice = useMemo(() => {
-    return updateData.items.reduce((sum, item) => {
-      return sum + item.vendors.reduce((vendorSum, v) => {
-        // Remove commas and convert to number safely
-        const price = Number(String(v.total_price || 0).replace(/,/g, ""));
-        return vendorSum + (isNaN(price) ? 0 : price);
-      }, 0);
-    }, 0);
-  }, [updateData.items]);
-  
-  
-  const checkLimit = (): boolean => {
-    if (!resolvedCategory) {
-      setAlert({ type: "error", message: "Approval denied. User category not assigned." });
-      return true;
-    }
-  
-    if (resolvedCategory === "HIGH") return false;
-  
-    if (isNaN(totalPrice)) {
-      setAlert({ type: "error", message: "Total price is invalid." });
-      return true;
-    }
-  
-    if (totalPrice > userLimit) {
-      const limitText = resolvedCategory === "LOW" ? "₹50,000" : "₹2,00,000";
-      setAlert({
-        type: "error",
-        message: `Approval denied. ${resolvedCategory} category limit is ${limitText}, but total PR is ₹${totalPrice}.`,
-      });
-      return true;
-    }
-  
-    return false;
-  };
-  
-    // Inside your component, after calculating userLimit, totalPrice, and isBlocked
-    useEffect(() => {
-  if (!resolvedCategory) return;
-
-  if (resolvedCategory !== "HIGH" && totalPrice > userLimit) {
-    const limitText =
-      resolvedCategory === "LOW" ? "₹50,000" : "₹2,00,000";
-
-    setAlert({
-      type: "error",
-      message: `Approval denied. ${resolvedCategory} category limit is ${limitText}, but total PR is ₹${totalPrice}.`,
-    });
-  } else {
-    setAlert(null);
-  }
-}, [totalPrice, resolvedCategory, userLimit]);
-
-   const isBlocked =
-    resolvedCategory !== "HIGH" && totalPrice > userLimit;
-  
-    console.log({
-    resolvedCategory,
-    userLimit,
-    totalPrice,
-    isBlocked,
-  });
-  console.log("USER FROM AUTH:", {
-    category: user?.category,
-    permissions: user?.permissions,
-  });
-  
-  
-  
 
   const updateVendorField = (
     itemIndex: number,
@@ -257,7 +166,6 @@ export default function SubmittedFinanceRequestsPage() {
     setTimeout(() => setAlert(null), 2000);
     return;
   }
-   if (checkLimit()) return;
 
 
 
@@ -577,7 +485,7 @@ export default function SubmittedFinanceRequestsPage() {
                   <div className="flex justify-end mt-4">
                     <button
                       onClick={submitUpdate}
-                className={`px-6 py-2 rounded text-white ${isBlocked ? "bg-red-500 hover:bg-red-600" : "bg-blue-600 hover:bg-blue-700"}`}
+                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                     >
                       Update Finance PR
                     </button>
