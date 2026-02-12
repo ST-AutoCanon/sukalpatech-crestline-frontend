@@ -280,6 +280,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   onChange={handlePRChange}
                 />
               </div>
+
               <div>
                 <label className="text-sm text-gray-600">Department</label>
                 {/* <select name="department" className="w-full border rounded-lg p-2 mt-1 bg-white" onChange={handlePRChange}>
@@ -424,7 +425,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     </div>
 
                     {/* Unit Price */}
-                    <div>
+                   <div>
                       <label className="text-xs text-gray-600">Unit Price</label>
                       <input
                         type="number"
@@ -464,9 +465,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
                     {/* Validity */}
                     <div>
-                      <label className="text-xs text-gray-600">
-                        Quotation Validity
-                      </label>
+                      <label className="text-xs text-gray-600">Quotation Validity</label>
                       <input
                         type="date"
                         className="w-full p-2 border rounded mt-1"
@@ -476,6 +475,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                         }
                       />
                     </div>
+
 
                     {/* Comments */}
                     <div>

@@ -10,6 +10,9 @@ export default function EmployeeDashboard() {
   const { user, token } = useContext(AuthContext);
   const { departments, loading } = useEmployee(user?.email ?? "", token ?? "");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  console.log("Departments from backend:", departments);
+
+ 
 
   const apiNameToKey: Record<string, string> = {
     procurement: "procurement",
