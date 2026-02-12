@@ -1,47 +1,70 @@
 // import React, { useState } from "react";
-
+// import AllPRs from "../req_pages/requestpages";
 // import UpdateFeasibility from "./UpdateFeasibility";
-// import ViewFeasibilityRequests from "./ViewFeasibilityReq";
-// import Allfeasibility from "../Businessdevelopment/Allfeasibility";
-// import feasibility from "../Businessdevelopment/Feasibility";
+// import Viewfeasibility from "./ViewFeasibilityReq";
+
+// const filters = ["All PR's", "Pending", "Rejected", "Completed"] as const;
+// type FilterType = (typeof filters)[number];
+// type TabType = "allPR" | "updatePR";
 
 // const FeasibilityPage: React.FC = () => {
-//   const [activeTab, setActiveTab] = useState<"view" | "update">("view");
+//   const [activeTab, setActiveTab] = useState<TabType>("allPR");
+//   const [activeFilter, setActiveFilter] = useState<FilterType>("All PR's");
+//   const [search, setSearch] = useState("");
+//   const [refreshKey, setRefreshKey] = useState(0);
 
 //   return (
-//     <div className="px-6 pb-6 w-full">
-//       {/* HEADER ROW */}
-//       <div className="relative z-10 flex items-center justify-between mb-6">
-//         {/* LEFT */}
-//         <div className="flex gap-4">
-//           <h2
-//             onClick={() => setActiveTab("view")}
-//             className={`cursor-pointer text-lg font-semibold inline-block pb-1 ${activeTab === "view"
-//               ? "text-white border-b-2 border-white"
-//               : "text-gray-500"
+//     <div className="px-4 sm:px-6 pb-6 w-full">
+//       {/* HEADER */}
+//       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 mt-6 sm:mt-9">
+
+//         {/* FILTER TABS */}
+//         <div className="flex gap-4 sm:gap-7 text-sm font-medium text-white overflow-x-auto no-scrollbar">
+//           {filters.map((filter) => (
+//             <button
+//               key={filter}
+//               onClick={() => setActiveFilter(filter)}
+//               className={`pb-1 whitespace-nowrap ${
+//                 activeFilter === filter
+//                   ? "border-b-2 border-white text-white"
+//                   : "text-white/70 hover:text-white"
 //               }`}
-//           >
-//             All PR's
-//           </h2>
+//             >
+//               {filter}
+//             </button>
+//           ))}
 //         </div>
 
-//         {/* RIGHT */}
-//         <div className="flex items-center gap-3">
-
-
-//           <button
-//             onClick={() => setActiveTab("update")}
-//             className="h-9 rounded-md bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 px-4 text-sm font-medium text-white hover:opacity-90 transition"
-//           >
-//             + Update PR
-//           </button>
-//         </div>
+//         {/* UPDATE PR BUTTON */}
+//         <button
+//           onClick={() => setActiveTab("updatePR")}
+//           className={`w-full sm:w-auto px-4 py-2 rounded-xl text-sm font-semibold text-white ${
+//             activeTab === "updatePR" ? "bg-purple-700" : "bg-purple-500"
+//           }`}
+//         >
+//           + Update PR
+//         </button>
 //       </div>
 
-//       {/* CONTENT */}
-//       {activeTab === "view" && <ViewFeasibilityRequests />}
-//       {activeTab === "update" && (
-//         <UpdateFeasibility onBack={() => setActiveTab("view")} />
+//       {/* ================= PR LIST / UPDATE ================= */}
+
+//       {/* <Viewfeasibility
+//         filter={activeFilter}
+//         search={search}
+//         refreshKey={refreshKey}
+//         editable={true}
+//       /> */}
+
+//       {activeTab === "allPR" && (
+//         <AllPRs
+//           filter={activeFilter}
+//           search={search}
+//           refreshKey={refreshKey}
+//         />
+//       )}
+
+//       {activeTab === "updatePR" && (
+//         <UpdateFeasibility filter={activeFilter} />
 //       )}
 //     </div>
 //   );
@@ -51,60 +74,95 @@
 
 
 import React, { useState } from "react";
-
-import ViewFeasibilityRequests from "./ViewFeasibilityReq";
+// import AllPRs from "../req_pages/requestpages";
 import UpdateFeasibility from "./UpdateFeasibility";
+import ViewPRPage from "./ViewFeasibilityReq";
 
 
-type TabType = "allPR" | "updatePR" | "allBD" | "updateBD";
+const filters = ["All PR", "Pending", "Rejected", "Completed"] as const;
+type TabType = "allPR" | "updatePR";
+
 
 const FeasibilityPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>("allPR");
+  const [activeFilter, setActiveFilter] =
+    useState<(typeof filters)[number]>("All PR");
+
+  const [openCreatePR, setOpenCreatePR] = useState(false);
+  const [showUpdatePage, setShowUpdatePage] = useState(false);
+
+  const [selectedPR, setSelectedPR] = useState<any>(null);
+  const [search, setSearch] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0); // 🔥 IMPORTANT
+
 
   return (
-    <div className="px-6 pb-6 w-full">
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-6 mt-9">
-        {/* LEFT — TABS */}
-        <div className="flex gap-4">
-          <button
-            onClick={() => setActiveTab("allPR")}
-            className={`px-5 py-2 rounded-xl text-sm font-semibold text-white ${
-              activeTab === "allPR" ? "bg-purple-700" : "bg-purple-400"
-            }`}
-          >
-            All PRs
-          </button>
+    <>
+      {/* ================= FILTER BAR ================= */}
+      <div className="mt-6 px-6 py-4">
+        <div className="flex flex-wrap sm:flex-nowrap sm:justify-between sm:items-center gap-2 sm:gap-0">
 
-         
-        </div>
+          {/* FILTER TABS */}
+          <div className="flex flex-wrap gap-3 sm:gap-7 text-sm font-medium text-white">
+            {filters.map((filter) => (
+              <button
+                key={filter}
+                onClick={() => {
+                  setActiveFilter(filter);
+                  setShowUpdatePage(false);
+                }}
+                className={`pb-1 ${activeFilter === filter
+                  ? "border-b-2 border-white text-white"
+                  : "text-white/70"
+                  }`}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
 
-        {/* RIGHT — ACTIONS */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => setActiveTab("updatePR")}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold text-white ${
-              activeTab === "updatePR"
-                ? "bg-indigo-700"
-                : "bg-indigo-500"
-            }`}
-          >
-            + Update PR
-          </button>
+          {/* BUTTONS */}
+          <div className="flex gap-2 sm:gap-4 flex-shrink-0">
+            <button
+              onClick={() => {
+                setShowUpdatePage(true);
+              }}
+              className="w-full sm:w-auto px-4 py-2 rounded-xl text-sm font-semibold text-white bg-purple-600"
+            >
+              + Update PR
+            </button>
 
-          
+
+          </div>
+
+
+
         </div>
       </div>
 
-      {/* ================= CONTENT ================= */}
 
-      {/* FEASIBILITY */}
-      {activeTab === "allPR" && <ViewFeasibilityRequests />}
-      {activeTab === "updatePR" && <UpdateFeasibility />}
 
-     
-    </div>
+      {/* ================= PR LIST ================= */}
+      {!showUpdatePage && (
+        <ViewPRPage
+          filter={activeFilter}
+          search={search}
+          refreshKey={refreshKey}
+        />
+      )}
+
+      {/* UPDATE PAGE */}
+      {showUpdatePage && (
+        <UpdateFeasibility
+          onClose={() => setShowUpdatePage(false)}
+        />
+      )}
+
+
+
+    </>
   );
 };
 
 export default FeasibilityPage;
+
+

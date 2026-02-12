@@ -5,6 +5,7 @@ import {
   ShoppingCart,
   Wallet,
   Building2,
+  BarChart3,
   Menu,
 } from "lucide-react";
 import crestlineLogo from "../../../assets/crestlinetech_black_1.png";
@@ -33,10 +34,10 @@ export default function Sidebar({
   const isActive = (path: string) => location.pathname === path;
 
   const departmentIcons: Record<string, JSX.Element> = {
-    feasibility: <Lightbulb size={22} />,
+    feasibility: <Building2 size={22} />,
     procurement: <ShoppingCart size={22} />,
     finance: <Wallet size={22} />,
-    Businessdevelopment:<Building2 size={22}/>,
+    bd: <BarChart3 size={22} />,
   };
 
   return (
@@ -92,7 +93,7 @@ export default function Sidebar({
                           : "text-gray-700 hover:bg-gray-100"}
       `}
                     >
-                      {departmentIcons[dept.name.toLowerCase()] || <Building2 size={22} />}
+                      {departmentIcons[key]}
                       {sidebarOpen && <span>{dept.name}</span>}
                     </Link>
                   </div>
@@ -121,9 +122,8 @@ export default function Sidebar({
                 className={`flex flex-col items-center justify-center w-12 h-12 rounded-lg transition ${active ? "text-blue-600" : "text-gray-500"
                   }`}
               >
-                {departmentIcons[dept.name.toLowerCase()] || (
-                  <Building2 size={22} />
-                )}
+                {departmentIcons[key] || <Building2 size={22} />}
+
               </button>
             );
           })}

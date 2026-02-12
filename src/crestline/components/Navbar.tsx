@@ -21,7 +21,7 @@ const Navbar: React.FC<NavbarProps> = ({ onLoginClick, onRegisterClick }) => {
     const check = () =>
       setHiddenByEmbed(
         typeof document !== "undefined" &&
-          document.body.classList.contains("hide-shell-on-mobile"),
+        document.body.classList.contains("hide-shell-on-mobile"),
       );
 
     check();
@@ -155,6 +155,9 @@ const Navbar: React.FC<NavbarProps> = ({ onLoginClick, onRegisterClick }) => {
             onClick={() => setMenuOpen(false)}
           >
             Technology
+          </a>
+          <a href="/crestline/media" className="block hover:text-cyan-300 transition-colors" onClick={() => setMenuOpen(false)}>
+            Media
           </a>
           <a
             href="/crestline/contact"

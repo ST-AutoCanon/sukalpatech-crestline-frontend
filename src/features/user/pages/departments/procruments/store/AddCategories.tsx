@@ -22,6 +22,8 @@ export default function AddCategories() {
   const [productName, setProductName] = useState("");
   const [variantName, setVariantName] = useState("");
   const [subVariantName, setSubVariantName] = useState("");
+  const [tableData, setTableData] = useState<any[]>([]);
+
 
   const [selectedRoot, setSelectedRoot] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -50,11 +52,24 @@ export default function AddCategories() {
   };
 
   /* ================= LOAD ROOTS ================= */
-  useEffect(() => { fetchRoots(); }, []);
+useEffect(() => {
+  fetchRoots();
+  fetchHierarchy();
+}, []);
+
+const fetchHierarchy = async () => {
+  try {
+    const res = await axios.get(`${API_BASE}/hierarchy`);
+    setTableData(res.data.data || res.data || []);
+  } catch (error) {
+    console.error("Failed to fetch hierarchy", error);
+  }
+};
+
 
   const fetchRoots = async () => {
     const res = await axios.get(`${API_BASE}/root-category`);
-    setRoots(res.data || []);
+    setRoots(res.data || []); 
   };
 
   const fetchCategories = async (rootId: number) => {
@@ -85,7 +100,7 @@ export default function AddCategories() {
     if (!rootName) return setAlert({ type: "error", message: "Enter Root Category" });
     try {
       await axios.post(`${API_BASE}/root-category`, { name: rootName });
-      setRootName(""); fetchRoots();
+      setRootName(""); fetchRoots(); fetchHierarchy(); 
       setAlert({ type: "success", message: "Root Category created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Root Category" }); }
   };
@@ -94,7 +109,7 @@ export default function AddCategories() {
     if (!selectedRoot || !categoryName) return setAlert({ type: "error", message: "Select Root & Enter Category" });
     try {
       await axios.post(`${API_BASE}/category`, { name: categoryName, root_category_id: selectedRoot });
-      setCategoryName(""); fetchCategories(selectedRoot);
+      setCategoryName(""); fetchCategories(selectedRoot); fetchHierarchy(); 
       setAlert({ type: "success", message: "Category created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Category" }); }
   };
@@ -103,7 +118,7 @@ export default function AddCategories() {
     if (!selectedRoot || !selectedCategory || !productName) return setAlert({ type: "error", message: "Select Root & Category" });
     try {
       await axios.post(`${API_BASE}/product`, { name: productName, category_id: selectedCategory });
-      setProductName(""); fetchProducts(selectedCategory);
+      setProductName(""); fetchProducts(selectedCategory); fetchHierarchy(); 
       setAlert({ type: "success", message: "Product created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Product" }); }
   };
@@ -113,7 +128,7 @@ export default function AddCategories() {
       return setAlert({ type: "error", message: "Select Root, Category & Product" });
     try {
       await axios.post(`${API_BASE}/variant`, { name: variantName, product_id: selectedProduct });
-      setVariantName(""); fetchVariants(selectedProduct);
+      setVariantName(""); fetchVariants(selectedProduct); fetchHierarchy(); 
       setAlert({ type: "success", message: "Variant created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Variant" }); }
   };
@@ -123,7 +138,7 @@ export default function AddCategories() {
       return setAlert({ type: "error", message: "Complete Full Hierarchy" });
     try {
       await axios.post(`${API_BASE}/sub-variant`, { name: subVariantName, variant_id: selectedVariant });
-      setSubVariantName(""); fetchSubVariants(selectedVariant);
+      setSubVariantName(""); fetchSubVariants(selectedVariant); fetchHierarchy(); 
       setAlert({ type: "success", message: "Sub Variant created successfully!" });
     } catch { setAlert({ type: "error", message: "Failed to create Sub Variant" }); }
   };
@@ -141,6 +156,21 @@ export default function AddCategories() {
     }));
     setSearchResults(mapped);
   };
+
+  const filteredData = tableData.filter((item) => {
+  if (!searchQuery) return true;
+
+  const q = searchQuery.toLowerCase();
+
+  return (
+    item.root_name?.toLowerCase().includes(q) ||
+    item.category_name?.toLowerCase().includes(q) ||
+    item.product_name?.toLowerCase().includes(q) ||
+    item.variant_name?.toLowerCase().includes(q) ||
+    item.sub_variant_name?.toLowerCase().includes(q)
+  );
+});
+
 
 
   /* ================= UI ================= */
@@ -481,7 +511,7 @@ export default function AddCategories() {
             className="w-96 px-4 py-2 rounded-lg bg-white text-black placeholder-gray-500 shadow"
           />
           <button
-            onClick={handleSearch}
+            onClick={() =>{}}
             className="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-medium shadow hover:opacity-90"
           >
             🔍 Search
@@ -502,18 +532,19 @@ export default function AddCategories() {
               <th className="p-2 border">Sub Variant</th>
             </tr>
           </thead>
-          <tbody>
-            {searchResults.map((r, i) => (
-              <tr key={i} className="hover:bg-gray-100">
-                <td className="p-2 border">{i + 1}</td>
-                <td className="p-2 border">{r.root}</td>
-                <td className="p-2 border">{r.category}</td>
-                <td className="p-2 border">{r.product}</td>
-                <td className="p-2 border">{r.variant}</td>
-                <td className="p-2 border">{r.subVariant}</td>
-              </tr>
-            ))}
-          </tbody>
+         <tbody>
+  {filteredData.map((r, i) => (
+    <tr key={i} className="hover:bg-gray-100">
+      <td className="p-2 border">{i + 1}</td>
+      <td className="p-2 border">{r.root_name || "-"}</td>
+      <td className="p-2 border">{r.category_name || "-"}</td>
+      <td className="p-2 border">{r.product_name || "-"}</td>
+      <td className="p-2 border">{r.variant_name || "-"}</td>
+      <td className="p-2 border">{r.sub_variant_name || "-"}</td>
+    </tr>
+  ))}
+</tbody>
+
         </table>
       </div>
     </div>

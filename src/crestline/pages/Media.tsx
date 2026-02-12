@@ -7,7 +7,8 @@ const MediaPage: React.FC = () => {
 
   return (
     // <div className="min-h-screen bg-[#3D268C] flex justify-center px-4 py-6 sm:px-6 sm:py-10">
-    <div className="min-h-screen bg-[#3D268C] flex justify-center px-4 py-6 mt-6 sm:mt-0 sm:px-6 sm:py-10">
+    <div className="pt-16">
+    <div className="min-h-screen bg-[#3D268C] flex justify-center px-4 py-6 mt-6 sm:mt-0 sm:px-6 sm:py-10 pt-24">
       <div className="w-full max-w-7xl bg-white/90 backdrop-blur-md rounded-xl shadow-2xl overflow-hidden">
         {/* 🔹 TOP TABS */}
         <div className="flex justify-center px-4 pt-4 sm:px-6 sm:pt-6">
@@ -42,6 +43,7 @@ const MediaPage: React.FC = () => {
           {activeTab === "gallery" && <PhotoVideoGallery />}
         </div>
       </div>
+    </div>
     </div>
   );
 };

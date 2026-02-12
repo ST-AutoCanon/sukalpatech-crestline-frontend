@@ -57,10 +57,28 @@ export default function AddItem() {
 
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
+  const fetchAllItems = async () => {
+  try {
+    const res = await axios.get(`${API_BASE}/items/items`);
+
+    const normalized = (res.data?.data || []).map((item: any) => ({
+      id: item.id,
+      code: item.item_code,        // ✅ map correctly
+      name: item.item_name,        // ✅ map correctly
+      qty: item.qty,
+      vendors: item.vendors || [],
+    }));
+
+    setItems(normalized);
+  } catch {
+    setItems([]);
+  }
+};
 
   useEffect(() => {
     fetchRoots();
     fetchVendors();
+    fetchAllItems();
   }, []);
 
   const fetchVendors = async () => {
@@ -122,13 +140,14 @@ export default function AddItem() {
 
   const handleAddItem = async () => {
     if (!selectedRoot || !itemName) {
-     setAlert({ type: "error", message: "Root category and item name required" });      
-     return;
+      setAlert({ type: "error", message: "Root category and item name required" });
+      
+      return;
     }
 
-    await axios.post(`${API_BASE}/items/items`, {
+    const res = await axios.post(`${API_BASE}/items/items`, {
       item_name: itemName,
-      qty: qty,
+      qty,
       vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
       root_category_id: selectedRoot,
       category_id: selectedCategory || null,
@@ -137,8 +156,18 @@ export default function AddItem() {
       sub_variant_id: selectedSubVariant || null,
     });
 
-    setAlert({ type: "success", message: "Item added successfully" });
-    
+    if (res.data?.data) {
+      const addedItem = {
+        id: res.data.data.id,
+        code: res.data.data.item_code || res.data.data.id, // fallback
+        name: res.data.data.item_name,
+        qty: res.data.data.qty,
+        vendors: selectedVendors.map(v => v.vendor_id),     
+       };
+
+      setItems((prev) => [addedItem, ...prev]);
+    }
+
     setItemName("");
     setSelectedVendors([]);
     setSelectedRoot("");
@@ -166,7 +195,7 @@ export default function AddItem() {
 
   return (
     <div className="w-full h-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-8">
-        {alert && <Aleart type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
+      {alert && <Aleart type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
 
       <div className="max-w-7xl mx-auto"></div>
       <div className="max-w-7xl mx-auto">

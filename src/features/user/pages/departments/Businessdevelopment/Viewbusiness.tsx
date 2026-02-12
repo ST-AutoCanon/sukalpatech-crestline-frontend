@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface BusinessCardProps {
   data: {
@@ -61,9 +61,96 @@ interface BusinessCardProps {
   };
 }
 
+
 const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
   const attachments = Array.isArray(data.attachments) ? data.attachments : [];
   const [showModal, setShowModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState(data);
+
+  const handleChange = (key: keyof typeof data, value: any) => {
+    setFormData({ ...formData, [key]: value });
+  };
+
+  const renderEditableField = (
+    key: keyof typeof formData,
+    type: "text" | "number" | "date" = "text"
+  ) => {
+    if (!editMode) {
+      return renderValue(
+        type === "date"
+          ? formatDate(formData[key] as any)
+          : formData[key]
+      );
+    }
+
+    return (
+      <input
+        type={type}
+        value={
+          type === "date"
+            ? toDateInputValue(formData[key] as string)
+            : formData[key] ?? ""
+        }
+        onChange={(e) => handleChange(key, e.target.value)}
+        className="border rounded px-2 py-1 text-xs"
+      />
+    );
+  };
+
+  const renderCheckbox = (key: keyof typeof formData, label: string) => {
+    const checked = !!formData[key];
+
+    return (
+      <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+        {/* Hidden native checkbox */}
+        <input
+          type="checkbox"
+          checked={checked}
+          disabled={!editMode}
+          onChange={(e) => handleChange(key, e.target.checked)}
+          className="hidden"
+        />
+
+        {/* Custom checkbox */}
+        <span
+          className={`
+          w-4 h-4 flex items-center justify-center
+          rounded border
+          ${checked ? "bg-blue-600" : "border-blue-400"}
+        `}
+        >
+          {checked && (
+            <svg
+              className="w-3 h-3 text-white"  // ✅ ONLY TICK BLUE
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          )}
+        </span>
+
+        {/* Label stays normal */}
+        <span className="text-gray-700">{label}</span>
+      </label>
+    );
+  };
+
+
+  const toDateInputValue = (date: string | null | undefined) => {
+    if (!date) return "";
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+    return d.toISOString().split("T")[0];
+  };
+
 
   const renderValue = (value: any) =>
     value === null || value === undefined || value === ""
@@ -74,14 +161,16 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
           : "No"
         : value;
 
+  useEffect(() => {
+    setFormData(data);
+  }, [data]);
+
   const mainFields = [
-    { label: "description", key: "description" },
-    { label: "priority", key: "priority" },
+    { label: "Description", key: "description" },
+    { label: "Priority", key: "priority" },
     { label: "Applicant", key: "applicant_name" },
     { label: "Contact Person", key: "contact_person" },
     { label: "Mobile Number", key: "mobile_number" },
-    { label: "Email", key: "email" },
-    { label: "Address", key: "address" },
   ];
 
   const ADDITIONAL_FEATURES = [
@@ -111,25 +200,41 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-4 text-xs relative">
-      <h2 className="text-indigo-700 font-bold text-sm mb-2">BR-{data.id}</h2>
+    <div className="bg-white rounded-xl shadow-md p-4 text-sm relative">
+      <h2 className="text-purple-600 font-semibold text-lg mb-2 truncate">BR ID:{data.id}</h2>
 
       <div className="flex flex-col gap-1">
         {mainFields.map((item) => (
           <div key={item.key} className="flex">
-            <span className="w-32 text-gray-400">{item.label}:</span>
-            <span className="font-medium">
+            <span className="w-50 font-normal text-gray-400">{item.label}:</span>
+            <span className="font-medium text-gray-700 max-w-[65%] overflow-hidden text-ellipsis whitespace-nowrap">
               {renderValue(data[item.key as keyof typeof data])}
             </span>
           </div>
         ))}
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="mt-2 text-blue-600 text-xs font-medium underline self-start"
-        >
-          More Info
-        </button>
+        <div className="flex gap-3 mt-2">
+          <button
+            onClick={() => {
+              setShowModal(true);
+              setEditMode(false); // read-only
+            }}
+            className="text-sm font-semibold text-blue-600 hover:underline"
+          >
+            More Info
+          </button>
+
+          <button
+            onClick={() => {
+              setShowModal(true);
+              setEditMode(true); // editable
+            }}
+            className="text-sm font-semibold text-blue-600 hover:underline"
+          >
+            Edit
+          </button>
+        </div>
+
       </div>
 
       {/* Modal */}
@@ -160,49 +265,50 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
               {
                 title: "Request Details",
                 fields: [
-                  { label: "Description", value: data.description || data.description_request || "-" },
-                  { label: "Priority", value: data.priority || data.priority_level || "-" },
-                  { label: "Required Date", value: formatDate(data.required_date || data.required_by) },
+                  { label: "Description", value: renderEditableField("description") },
+                  { label: "Priority", value: renderEditableField("priority") },
+                  { label: "Required Date", value: renderEditableField("required_date", "date") }
+
                 ],
               },
               {
                 title: "Applicant / Organization Details",
                 fields: [
-                  { label: "Applicant Name", value: data.applicant_name },
-                  { label: "Contact Person", value: data.contact_person },
-                  { label: "Mobile Number", value: data.mobile_number },
-                  { label: "Email", value: data.email },
-                  { label: "Address", value: data.address },
-                  { label: "Body Type Required", value: data.body_type },
+                  { label: "Applicant Name", value: renderEditableField("applicant_name") },
+                  { label: "Contact Person", value: renderEditableField("contact_person") },
+                  { label: "Mobile Number", value: renderEditableField("mobile_number") },
+                  { label: "Email", value: renderEditableField("email") },
+                  { label: "Address", value: renderEditableField("address") },
+                  { label: "Body Type Required", value: renderEditableField("body_type") },
                 ],
               },
               {
                 title: "Body / Chassis Details",
                 fields: [
-                  { label: "Chassis Manufacturer", value: data.chassis_manufacturer },
-                  { label: "Chassis Model", value: data.chassis_model },
-                  { label: "Chassis Number", value: data.chassis_number },
-                  { label: "Engine Number", value: data.engine_number },
-                  { label: "Wheelbase", value: data.wheelbase },
-                  { label: "Fuel Type", value: data.fuel_type },
+                  { label: "Chassis Manufacturer", value: renderEditableField("chassis_manufacturer") },
+                  { label: "Chassis Model", value: renderEditableField("chassis_model") },
+                  { label: "Chassis Number", value: renderEditableField("chassis_number") },
+                  { label: "Engine Number", value: renderEditableField("engine_number") },
+                  { label: "Wheelbase", value: renderEditableField("wheelbase") },
+                  { label: "Fuel Type", value: renderEditableField("fuel_type") },
                 ],
               },
               {
                 title: "Seating & Interior Details",
                 fields: [
-                  { label: "Seating Capacity", value: data.seating_capacity },
-                  { label: "Seat Type", value: data.seat_type },
-                  { label: "Flooring Type", value: data.flooring_type },
-                  { label: "Interior Color", value: data.interior_color },
+                  { label: "Seating Capacity", value: renderEditableField("seating_capacity") },
+                  { label: "Seat Type", value: renderEditableField("seat_type") },
+                  { label: "Flooring Type", value: renderEditableField("flooring_type") },
+                  { label: "Interior Color", value: renderEditableField("interior_color") },
                 ],
               },
               {
                 title: "Exterior Specifications",
                 fields: [
-                  { label: "Body Material", value: data.body_material },
-                  { label: "Paint Color / Livery Details", value: data.paint_color },
-                  { label: "Window Type", value: data.window_type },
-                  { label: "Door Type", value: data.door_type },
+                  { label: "Body Material", value: renderEditableField("body_material") },
+                  { label: "Paint Color / Livery Details", value: renderEditableField("paint_color") },
+                  { label: "Window Type", value: renderEditableField("window_type") },
+                  { label: "Door Type", value: renderEditableField("door_type") },
                 ],
               },
               {
@@ -212,11 +318,12 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                     label: "Features",
                     value: (
                       <div className="flex flex-wrap gap-3">
-                        {ADDITIONAL_FEATURES.filter(f => data[f.key as keyof typeof data]).map(f => (
-                          <span key={f.key} className="text-black text-xs font-semibold">{f.label}</span>
-                        ))}
+                        {ADDITIONAL_FEATURES.map(f =>
+                          renderCheckbox(f.key as keyof typeof formData, f.label)
+                        )}
                       </div>
-                    ),
+                    )
+
                   },
                 ],
               },
@@ -227,42 +334,90 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                     label: "Standards",
                     value: (
                       <div className="flex flex-wrap gap-3">
-                        {COMPLIANCE_STANDARDS.filter(f => data[f.key as keyof typeof data]).map(f => (
-                          <span key={f.key} className="text-black text-xs font-semibold">{f.label}</span>
-                        ))}
+                        {COMPLIANCE_STANDARDS.map(f =>
+                          renderCheckbox(f.key as keyof typeof formData, f.label)
+                        )}
                       </div>
                     ),
                   },
                 ],
               },
+
               {
                 title: "Timeline & Budget",
                 fields: [
-                  { label: "Expected Delivery", value: formatDate(data.expected_delivery) },
-                  { label: "Approximate Budget", value: data.approximate_budget },
+                  {
+                    label: "Expected Delivery",
+                    value: renderEditableField("expected_delivery", "date"),
+                  },
+                  {
+                    label: "Approximate Budget",
+                    value: renderEditableField("approximate_budget", "number"),
+                  },
                 ],
               },
+
               {
                 title: "Attachments",
                 fields: [
                   {
                     label: "Attachments",
-                    value: Array.isArray(data.attachments) && data.attachments.length > 0 ? (
-                      <div className="flex flex-col gap-1">
-                        {data.attachments.map((file: any, idx: number) => {
-                          const fileName = typeof file === "string" ? file : file.originalname || file.filename;
-                          const filePath = typeof file === "string" ? file : file.path || `uploads/${file.filename}`;
-                          return (
-                            <a key={idx} href={`http://localhost:5000/${filePath}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-xs underline">
-                              {fileName}
-                            </a>
-                          );
-                        })}
+                    value: (
+                      <div className="flex flex-col gap-2">
+                        {/* OLD FILES */}
+                        {Array.isArray(formData.attachments) &&
+                          formData.attachments.length > 0 && (
+                            <div className="flex flex-col gap-1">
+                              {formData.attachments.map((file: any, idx: number) => {
+                                const fileName =
+                                  typeof file === "string"
+                                    ? file.split("/").pop()
+                                    : file.originalname ||
+                                    file.filename ||
+                                    file.name ||
+                                    "Attachment";
+
+                                return (
+                                  <span
+                                    key={idx}
+                                    className="text-xs text-blue-600 underline cursor-pointer"
+                                  >
+                                    {fileName}
+                                  </span>
+                                );
+                              })}
+
+                            </div>
+                          )}
+
+                        {/* NEW FILE PICKER */}
+                        {editMode && (
+                          <input
+                            type="file"
+                            multiple
+                            onChange={(e) =>
+                              handleChange(
+                                "attachments",
+                                Array.from(e.target.files || []) // ✅ replace, not append
+                              )
+                            }
+
+                            className="text-xs"
+                          />
+                        )}
+
+                        {/* NO FILES */}
+                        {!editMode &&
+                          (!formData.attachments ||
+                            formData.attachments.length === 0) &&
+                          "-"}
                       </div>
-                    ) : "-",
+                    ),
                   },
                 ],
               },
+
+
               {
                 title: "Department Status",
                 fields: [
@@ -270,21 +425,38 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                     label: "",
                     value: (
                       <div className="grid grid-cols-2 gap-4">
+                        {/* BD Status */}
                         <div className="flex flex-col">
-                          <span className="text-gray-600 text-xs font-medium">BD Status</span>
-                          <span className="font-semibold text-xs text-black">{renderValue(data.bd_status)}</span>
+                          <span className="text-xs font-medium">BD Status</span>
+                          {editMode ? (
+                            <select
+                              value={formData.bd_status}
+                              onChange={(e) => handleChange("bd_status", e.target.value)}
+                              className="border rounded text-xs px-2 py-1"
+                            >
+                              <option value="PENDING">PENDING</option>
+                              <option value="SUBMITTED">SUBMITTED</option>
+                              <option value="APPROVED">APPROVED</option>
+                            </select>
+                          ) : (
+                            <span className="text-xs font-semibold">{formData.bd_status}</span>
+                          )}
                         </div>
+
+                        {/* BD Comments */}
                         <div className="flex flex-col">
-                          <span className="text-gray-600 text-xs font-medium">BD Comments</span>
-                          <span className="font-semibold text-xs text-black">{renderValue(data.bd_comments)}</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-gray-600 text-xs font-medium">Feasibility Status</span>
-                          <span className="font-semibold text-xs text-black">{renderValue(data.feasibility_status)}</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-gray-600 text-xs font-medium">Feasibility Comments</span>
-                          <span className="font-semibold text-xs text-black">{renderValue(data.feasibility_comments)}</span>
+                          <span className="text-xs font-medium">BD Comments</span>
+                          {editMode ? (
+                            <textarea
+                              value={formData.bd_comments || ""}
+                              onChange={(e) => handleChange("bd_comments", e.target.value)}
+                              className="border rounded text-xs px-2 py-1"
+                            />
+                          ) : (
+                            <span className="text-xs font-semibold">
+                              {renderValue(formData.bd_comments)}
+                            </span>
+                          )}
                         </div>
                       </div>
                     ),
@@ -297,25 +469,58 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                   {
                     label: "",
                     value: (
-                      <div className="flex justify-between gap-6">
-                        <div className="flex flex-col gap-2">
-                          <div>
-                            <span className="text-gray-600 text-xs font-medium">Declaration Date</span>
-                            <div className="font-semibold text-xs text-black">{renderValue(formatDate(data.declaration_date))}</div>
-                          </div>
-                          <div>
-                            <span className="text-gray-600 text-xs font-medium">Place</span>
-                            <div className="font-semibold text-xs text-black">{renderValue(data.place)}</div>
-                          </div>
-                          <div>
-                            <span className="text-gray-600 text-xs font-medium">Applicant Signature</span>
-                            <div className="font-semibold text-xs text-black">{renderValue(data.applicant_signature)}</div>
-                          </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">Declaration Date</span>
+                          {editMode ? (
+                            <input
+                              type="date"
+                              value={toDateInputValue(formData.declaration_date)}
+                              onChange={(e) =>
+                                handleChange("declaration_date", e.target.value)
+                              }
+                              className="border rounded text-xs px-2 py-1"
+                            />
+
+                          ) : (
+                            <span className="text-xs font-semibold">
+                              {formatDate(formData.declaration_date)}
+                            </span>
+                          )}
                         </div>
 
-                        <div className="flex flex-col gap-2 text-right">
-                          <div className="font-semibold text-xs text-black">{renderValue(data.requested_by_person)}</div>
-                          <div className="font-semibold text-xs text-black">{formatDate(data.created_at)}</div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">Place</span>
+                          {editMode ? (
+                            <input
+                              type="text"
+                              value={formData.place || ""}
+                              onChange={(e) => handleChange("place", e.target.value)}
+                              className="border rounded text-xs px-2 py-1"
+                            />
+                          ) : (
+                            <span className="text-xs font-semibold">
+                              {renderValue(formData.place)}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">Applicant Signature</span>
+                          {editMode ? (
+                            <input
+                              type="text"
+                              value={formData.applicant_signature || ""}
+                              onChange={(e) =>
+                                handleChange("applicant_signature", e.target.value)
+                              }
+                              className="border rounded text-xs px-2 py-1"
+                            />
+                          ) : (
+                            <span className="text-xs font-semibold">
+                              {renderValue(formData.applicant_signature)}
+                            </span>
+                          )}
                         </div>
                       </div>
                     ),
@@ -341,6 +546,40 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                 </div>
               </div>
             ))}
+            {editMode && (
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setFormData(data); // reset
+                    setEditMode(false);
+                  }}
+                  className="px-4 py-1 border rounded text-sm"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={async () => {
+                    try {
+                      console.log("Updated Data:", formData);
+
+                      // 🔥 CALL UPDATE API HERE
+                      // await updateBusiness(formData);
+
+                      setEditMode(false);
+                      setShowModal(false); // ✅ CLOSE POPUP
+                    } catch (err) {
+                      console.error("Save failed", err);
+                    }
+                  }}
+
+                  className="px-4 py-1 bg-blue-600 text-white rounded text-sm"
+                >
+                  Save
+                </button>
+              </div>
+            )}
+
 
             {/* Close button */}
             <button

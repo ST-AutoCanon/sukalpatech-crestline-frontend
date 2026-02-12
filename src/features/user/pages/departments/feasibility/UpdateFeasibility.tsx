@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useMemo } from "react";
 import axios from "axios";
 import Alert from "../../../components/Aleartmessage";
 import { AuthContext } from "../../../../../context/AuthContext";
@@ -52,14 +52,24 @@ interface FeasibilityPR {
   items: Item[];
 }
 
+interface User {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  department_id?: number; // existing
+  category:string
+}
+
 /* ================= COMPONENT ================= */
 
 export default function SubmittedRequestsPage() {
-  const { user, token } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/new-feasibility`;
 
   const [requests, setRequests] = useState<FeasibilityPR[]>([]);
   const [selectedPR, setSelectedPR] = useState<FeasibilityPR | null>(null);
+
   const [modalOpen, setModalOpen] = useState(false);
 
   const [expandItems, setExpandItems] = useState(true);
@@ -68,86 +78,119 @@ export default function SubmittedRequestsPage() {
   const [newStatus, setNewStatus] = useState("");
   const [newComment, setNewComment] = useState("");
 
-  const [alert, setAlert] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
-
+  const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const department_statuses = ["Feasibility APPROVED", "Feasibility REJECTED", "Feasibility PENDING"];
-  const VENDOR_STATUS_OPTIONS = [
-    "feasibility Approved",
-    "feasibility Rejected",
-    "feasibility Pending",
+  const VENDOR_STATUS_OPTIONS = ["feasibility Approved", "feasibility Rejected", "feasibility Pending"];
 
-  ];
-
-  const [updateData, setUpdateData] = useState<{
-    department_statuses: DepartmentStatus[];
-    items: Item[];
-  }>({
+  const [updateData, setUpdateData] = useState<{ department_statuses: DepartmentStatus[]; items: Item[] }>({
     department_statuses: [],
     items: [],
   });
 
-  const [vendorUpdates, setVendorUpdates] = useState<{
-    [key: string]: { status: string; comment: string };
-  }>({});
-
+  const [vendorUpdates, setVendorUpdates] = useState<{ [key: string]: { status: string; comment: string } }>({});
   const [vendorMap, setVendorMap] = useState<Record<string, string>>({});
-  const [departmentMap, setDepartmentMap] = useState<Record<string, string>>(
-    {}
-  );
+  const [departmentMap, setDepartmentMap] = useState<Record<string, string>>({});
 
-  const updateVendorField = (
-    itemIndex: number,
-    vendorIndex: number,
-    field: "status" | "comment",
-    value: string
-  ) => {
+  const CATEGORY_LIMITS: Record<string, number> = { LOW: 50000, MEDIUM: 200000, HIGH: Infinity };
+
+  const resolvedCategory = useMemo(() => {
+  return user?.category ? user.category.toUpperCase() : null;
+}, [user]);
+
+  const userLimit = useMemo(() => {
+  if (!resolvedCategory) return Infinity;
+
+  return CATEGORY_LIMITS[resolvedCategory] ?? Infinity;
+}, [resolvedCategory]);
+
+
+
+ const totalPrice = useMemo(() => {
+  return updateData.items.reduce((sum, item) => {
+    return sum + item.vendors.reduce((vendorSum, v) => {
+      // Remove commas and convert to number safely
+      const price = Number(String(v.total_price || 0).replace(/,/g, ""));
+      return vendorSum + (isNaN(price) ? 0 : price);
+    }, 0);
+  }, 0);
+}, [updateData.items]);
+
+
+const checkLimit = (): boolean => {
+  if (!resolvedCategory) {
+    setAlert({ type: "error", message: "Approval denied. User category not assigned." });
+    return true;
+  }
+
+  if (resolvedCategory === "HIGH") return false;
+
+  if (isNaN(totalPrice)) {
+    setAlert({ type: "error", message: "Total price is invalid." });
+    return true;
+  }
+
+  if (totalPrice > userLimit) {
+    const limitText = resolvedCategory === "LOW" ? "₹50,000" : "₹2,00,000";
+    setAlert({
+      type: "error",
+      message: `Approval denied. ${resolvedCategory} category limit is ${limitText}, but total PR is ₹${totalPrice}.`,
+    });
+    return true;
+  }
+
+  return false;
+};
+
+  // Inside your component, after calculating userLimit, totalPrice, and isBlocked
+ const isBlocked =
+  resolvedCategory !== "HIGH" && totalPrice > userLimit;
+
+  console.log({
+  resolvedCategory,
+  userLimit,
+  totalPrice,
+  isBlocked,
+});
+console.log("USER FROM AUTH:", {
+  category: user?.category,
+  permissions: user?.permissions,
+});
+
+
+
+  const updateVendorField = (itemIndex: number, vendorIndex: number, field: "status" | "comment", value: string) => {
     const key = `${itemIndex}-${vendorIndex}`;
-    setVendorUpdates((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], [field]: value },
-    }));
+    setVendorUpdates((prev) => ({ ...prev, [key]: { ...prev[key], [field]: value } }));
   };
 
-  const formatDate = (date?: string) =>
-    date ? new Date(date).toLocaleDateString("en-GB") : "";
+  const formatDate = (date?: string) => (date ? new Date(date).toLocaleDateString("en-GB") : "");
 
   useEffect(() => {
     // Fetch submitted PRs
-    axios.get(`${API_BASE}/submitted-requests`).then((res) => {
-      setRequests(res.data.data || []);
-    });
+
+    axios.get(`${API_BASE}/submitted-requests`).then((res) => setRequests(res.data.data || []));
     // Fetch vendors
-    axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
-      .then((res) => {
-        const map: Record<string, string> = {};
-        (res.data.data || []).forEach(
-          (v: any) => (map[String(v.vendor_id)] = v.vendor_name)
-        );
-        setVendorMap(map);
-      });
+    axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`).then((res) => {
+      const map: Record<string, string> = {};
+      (res.data.data || []).forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
+      setVendorMap(map);
+    });
     // Fetch departments
-    axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`)
-      .then((res) => {
-        const map: Record<string, string> = {};
-        (res.data.data || []).forEach(
-          (d: any) => (map[String(d.department_id)] = d.name)
-        );
-        setDepartmentMap(map);
-      });
-  }, []);
+    axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`).then((res) => {
+  const map: Record<string, string> = {};
+
+  (res.data.data || []).forEach((d: any) => {
+    map[String(d.department_id)] = d.name;
+  });
+
+  setDepartmentMap(map);
+});
+}, []);
 
   const openPR = (pr: FeasibilityPR) => {
     setSelectedPR(pr);
-    setUpdateData({
-      department_statuses: pr.department_statuses || [],
-      items: pr.items || [],
-    });
+    setUpdateData({ department_statuses: pr.department_statuses || [], items: pr.items || [] });
     setModalOpen(true);
     setNewStatus("");
     setNewComment("");
@@ -156,12 +199,11 @@ export default function SubmittedRequestsPage() {
 
   const submitUpdate = async () => {
     if (!selectedPR || !newStatus) {
-      setAlert({
-        type: "error",
-        message: "Please select procurement PR status",
-      });
+      setAlert({ type: "error", message: "Please select PR status" });
       return;
     }
+
+    if (checkLimit()) return;
 
     const payload = {
       department_statuses: [
@@ -178,30 +220,16 @@ export default function SubmittedRequestsPage() {
           const key = `${i}-${vi}`;
           const vendorData = vendorUpdates[key] || { status: "", comment: "" };
           const newVendorComments: VendorComment[] = vendorData.comment
-            ? [{ comment: vendorData.comment, commented_by: 2 }]
+            ? [{ comment: vendorData.comment, commented_by: user.id }]
             : [];
-          return {
-            ...vendor,
-            status: vendorData.status || vendor.status,
-            comments: [...(vendor.comments || []), ...newVendorComments],
-          };
+          return { ...vendor, status: vendorData.status || vendor.status, comments: [...(vendor.comments || []), ...newVendorComments] };
         }),
       })),
     };
 
-    await axios.put(
-      `${API_BASE}/feasibility-requests/${selectedPR.id}`,
-      payload
-    );
-    setAlert({
-      type: "success",
-      message: "Feasibility PR updated successfully",
-    });
-
-    setTimeout(() => {
-      setAlert(null);
-    }, 2000);
-
+    await axios.put(`${API_BASE}/feasibility-requests/${selectedPR.id}`, payload);
+    setAlert({ type: "success", message: "Feasibility PR updated successfully" });
+    setTimeout(() => setAlert(null), 2000);
     setModalOpen(false);
   };
 
@@ -210,35 +238,22 @@ export default function SubmittedRequestsPage() {
       {/* PR CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {requests.map((pr) => (
-          <div
-            key={pr.id}
-            onClick={() => openPR(pr)}
-            className="bg-white border rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col"
-          >
-            <h2 className="text-purple-600 font-semibold text-lg mb-2 truncate">
-              PR ID: {pr.id}
-            </h2>
+          <div key={pr.id} onClick={() => openPR(pr)} className="bg-white border rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col">
+            <h2 className="text-purple-600 font-semibold text-lg mb-2 truncate">PR ID: {pr.id}</h2>
             <div className="flex-1 space-y-1 text-sm">
               {[
-                [
-                  "Department",
-                  departmentMap[String(pr.department)] ?? pr.department,
-                ],
+                ["Department", departmentMap[String(pr.department)] ?? pr.department],
                 ["Priority", pr.priority],
                 ["Required", formatDate(pr.required_date)],
                 ["Description", pr.description],
               ].map(([label, value], i) => (
                 <div key={i} className="flex justify-between">
                   <span className="text-gray-500">{label}</span>
-                  <span className="font-medium text-gray-800 truncate">
-                    {value || "-"}
-                  </span>
+                  <span className="font-medium text-gray-800 truncate">{value || "-"}</span>
                 </div>
               ))}
             </div>
-            <span className="text-blue-600 text-sm font-medium mt-2">
-              Update
-            </span>
+            <span className="text-blue-600 text-sm font-medium mt-2">Update</span>
           </div>
         ))}
       </div>
@@ -250,20 +265,10 @@ export default function SubmittedRequestsPage() {
             <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
               Update PR-{selectedPR.id} info
             </h2>
-            <button
-              className="absolute top-2 right-2 text-2xl text-gray-600 hover:text-gray-800"
-              onClick={() => setModalOpen(false)}
-            >
+            <button className="absolute top-2 right-2 text-2xl text-gray-600 hover:text-gray-800" onClick={() => setModalOpen(false)}>
               ×
             </button>
-            {alert && (
-              <Alert
-                type={alert.type}
-                message={alert.message}
-                onClose={() => setAlert(null)}
-              />
-            )}
-
+            {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
             {/* PR DETAILS */}
             <div className="bg-gray-100 p-4 rounded mb-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
@@ -277,7 +282,7 @@ export default function SubmittedRequestsPage() {
                   [
                     "Department",
                     departmentMap[String(selectedPR.department)] ??
-                      selectedPR.department,
+                    selectedPR.department,
                   ],
                   ["Remarks", selectedPR.remarks],
                 ].map(([label, value], i) => (
@@ -442,8 +447,8 @@ export default function SubmittedRequestsPage() {
                                 value={
                                   vendor.quotation_validity_date
                                     ? new Date(
-                                        vendor.quotation_validity_date
-                                      ).toLocaleDateString()
+                                      vendor.quotation_validity_date
+                                    ).toLocaleDateString()
                                     : ""
                                 }
                                 placeholder="Validity Date"
@@ -580,8 +585,8 @@ export default function SubmittedRequestsPage() {
                               value={
                                 vendor.quotation_validity_date
                                   ? new Date(
-                                      vendor.quotation_validity_date
-                                    ).toLocaleDateString()
+                                    vendor.quotation_validity_date
+                                  ).toLocaleDateString()
                                   : ""
                               }
                               placeholder="Validity Date"
@@ -725,7 +730,7 @@ export default function SubmittedRequestsPage() {
             <div className="flex justify-end mt-4">
               <button
                 onClick={submitUpdate}
-                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+                className={`px-6 py-2 rounded text-white ${isBlocked ? "bg-red-500 hover:bg-red-600" : "bg-blue-600 hover:bg-blue-700"}`}
               >
                 Update Feasibility PR
               </button>
@@ -734,6 +739,5 @@ export default function SubmittedRequestsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }
-
