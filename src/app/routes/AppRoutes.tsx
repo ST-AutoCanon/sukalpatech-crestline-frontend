@@ -229,6 +229,7 @@ export default function AppRoutes() {
           </RequireAuth>
         }
       >
+        {/*  */}
         <Route index element={<DashboardHome />} />
         <Route path="create_organisation" element={<CreateOrganisation />} />        
       </Route>
