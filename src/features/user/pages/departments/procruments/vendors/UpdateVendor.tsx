@@ -54,20 +54,44 @@ const AllVendors: React.FC = () => {
   const [formData, setFormData] = useState<any>({});
 
   /* ---------- Fetch Vendors ---------- */
+  // useEffect(() => {
+  //   const fetchVendors = async () => {
+  //     try {
+  //       const res = await axios.get(
+  //         `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors`,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         }
+  //       );
+  //       setVendors(res.data?.data || []);
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   };
+  //   fetchVendors();
+  // }, [token]);
+
+
   useEffect(() => {
+    if (!token) return;
+
     const fetchVendors = async () => {
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors`,
           {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
         );
+
         setVendors(res.data?.data || []);
       } catch (err) {
-        console.error(err);
+        console.error("Vendor fetch error:", err);
       }
     };
+
     fetchVendors();
   }, [token]);
 
@@ -77,21 +101,44 @@ const AllVendors: React.FC = () => {
   };
 
   /* ---------- Update Vendor ---------- */
+  // const updateVendor = async () => {
+  //   try {
+  //     await axios.put(
+  //       `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors/${
+  //         formData.vendor_id
+  //       }`,
+  //       formData,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+
+  //     // Update UI list
+  //     setVendors((prev) =>
+  //       prev.map((v) => (v.vendor_id === formData.vendor_id ? formData : v))
+  //     );
+
+  //     setActiveVendor(null);
+  //   } catch (error) {
+  //     console.error("Update failed", error);
+  //   }
+  // };
+
   const updateVendor = async () => {
     try {
       await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors/${
-          formData.vendor_id
-        }`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors/${formData.vendor_id}`,
         formData,
         {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
 
       // Update UI list
       setVendors((prev) =>
-        prev.map((v) => (v.vendor_id === formData.vendor_id ? formData : v))
+        prev.map((v) => (v.vendor_id === formData.vendor_id ? formData : v)),
       );
 
       setActiveVendor(null);

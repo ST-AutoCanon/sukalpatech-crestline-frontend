@@ -166,28 +166,68 @@ console.log("USER FROM AUTH:", {
 
   const formatDate = (date?: string) => (date ? new Date(date).toLocaleDateString("en-GB") : "");
 
-  useEffect(() => {
-    // Fetch submitted PRs
+//   useEffect(() => {
+//     // Fetch submitted PRs
 
-    axios.get(`${API_BASE}/submitted-requests`).then((res) => setRequests(res.data.data || []));
-    // Fetch vendors
-    axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`).then((res) => {
-      const map: Record<string, string> = {};
-      (res.data.data || []).forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
-      setVendorMap(map);
-    });
-    // Fetch departments
-    axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`).then((res) => {
-  const map: Record<string, string> = {};
+//     axios.get(`${API_BASE}/submitted-requests`).then((res) => setRequests(res.data.data || []));
+//     // Fetch vendors
+//     axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`).then((res) => {
+//       const map: Record<string, string> = {};
+//       (res.data.data || []).forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
+//       setVendorMap(map);
+//     });
+//     // Fetch departments
+//     axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`).then((res) => {
+//   const map: Record<string, string> = {};
 
-  (res.data.data || []).forEach((d: any) => {
-    map[String(d.department_id)] = d.name;
-  });
+//   (res.data.data || []).forEach((d: any) => {
+//     map[String(d.department_id)] = d.name;
+//   });
 
-  setDepartmentMap(map);
-});
-}, []);
+//   setDepartmentMap(map);
+// });
+// }, []);
 
+  
+    useEffect(() => {
+      const token = localStorage.getItem("token");
+
+      // Fetch submitted PRs
+      axios
+        .get(`${API_BASE}/submitted-requests`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          setRequests(res.data.data || []);
+        });
+
+      // Fetch vendors
+      axios
+        .get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          const map: Record<string, string> = {};
+          (res.data.data || []).forEach(
+            (v: any) => (map[String(v.vendor_id)] = v.vendor_name),
+          );
+          setVendorMap(map);
+        });
+
+      // Fetch departments
+      axios
+        .get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          const map: Record<string, string> = {};
+          (res.data.data || []).forEach(
+            (d: any) => (map[String(d.department_id)] = d.name),
+          );
+          setDepartmentMap(map);
+        });
+    }, []);
+  
   const openPR = (pr: FeasibilityPR) => {
     setSelectedPR(pr);
     setUpdateData({ department_statuses: pr.department_statuses || [], items: pr.items || [] });
@@ -199,11 +239,12 @@ console.log("USER FROM AUTH:", {
 
   const submitUpdate = async () => {
     if (!selectedPR || !newStatus) {
-      setAlert({ type: "error", message: "Please select PR status" });
+      setAlert({
+        type: "error",
+        message: "Please select procurement PR status",
+      });
       return;
     }
-
-    if (checkLimit()) return;
 
     const payload = {
       department_statuses: [
@@ -220,16 +261,36 @@ console.log("USER FROM AUTH:", {
           const key = `${i}-${vi}`;
           const vendorData = vendorUpdates[key] || { status: "", comment: "" };
           const newVendorComments: VendorComment[] = vendorData.comment
-            ? [{ comment: vendorData.comment, commented_by: user.id }]
+            ? [{ comment: vendorData.comment, commented_by: 2 }]
             : [];
-          return { ...vendor, status: vendorData.status || vendor.status, comments: [...(vendor.comments || []), ...newVendorComments] };
+          return {
+            ...vendor,
+            status: vendorData.status || vendor.status,
+            comments: [...(vendor.comments || []), ...newVendorComments],
+          };
         }),
       })),
     };
 
-    await axios.put(`${API_BASE}/feasibility-requests/${selectedPR.id}`, payload);
-    setAlert({ type: "success", message: "Feasibility PR updated successfully" });
-    setTimeout(() => setAlert(null), 2000);
+    const token = localStorage.getItem("token");
+
+    await axios.put(
+      `${API_BASE}/feasibility-requests/${selectedPR.id}`,
+      payload,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    setAlert({
+      type: "success",
+      message: "Feasibility PR updated successfully",
+    });
+
+    setTimeout(() => {
+      setAlert(null);
+    }, 2000);
+
     setModalOpen(false);
   };
 

@@ -89,9 +89,28 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
   const [departmentMap, setDepartmentMap] = useState<Record<string, string>>(
     {}
   );
+  // useEffect(() => {
+  //   // Fetch vendor master
+  //   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       const map: Record<string, string> = {};
+  //       (data?.data || []).forEach((v: any) => {
+  //         map[String(v.vendor_id)] = v.vendor_name;
+  //       });
+  //       setVendorMap(map);
+  //     })
+  //     .catch((err) => console.error("Vendor fetch error:", err));
+  // }, []);
+
   useEffect(() => {
-    // Fetch vendor master
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
+    const token = localStorage.getItem("token");
+
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         const map: Record<string, string> = {};
@@ -130,7 +149,27 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
   //   setRequests(res.data.data || []);
   // };
 
+  // const fetchApprovedRequests = async () => {
+  //   let url = "";
+
+  //   switch (status) {
+  //     case "pending":
+  //       url = `${API_BASE}/pending-finance-requests`;
+  //       break;
+  //     case "rejected":
+  //       url = `${API_BASE}/rejected-finance-requests`;
+  //       break;
+  //     default:
+  //       url = `${API_BASE}/approved-finance-requests`;
+  //   }
+
+  //   const res = await axios.get(url);
+  //   setRequests(res.data.data || []);
+  // };
+
+
   const fetchApprovedRequests = async () => {
+    const token = localStorage.getItem("token");
     let url = "";
 
     switch (status) {
@@ -144,13 +183,20 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
         url = `${API_BASE}/approved-finance-requests`;
     }
 
-    const res = await axios.get(url);
+    const res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     setRequests(res.data.data || []);
   };
 
   useEffect(() => {
     fetchApprovedRequests();
   }, []);
+
+
 
   /* ================= HANDLERS ================= */
   const openPR = (pr: FinancePR) => {

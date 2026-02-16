@@ -12,6 +12,8 @@ export default function EmployeeDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   console.log("Departments from backend:", departments);
 
+ 
+
   const apiNameToKey: Record<string, string> = {
     procurement: "procurement",
     fessibility: "feasibility",
@@ -31,7 +33,7 @@ export default function EmployeeDashboard() {
     "/employee/procurement": "Procurement",
     "/employee/feasibility": "Feasibility",
     "/employee/finance": "Finance",
-    "/employee/bd": "Business development",
+     "/employee/bd": "Business development",
   };
 
   if (!user) return <h3 className="p-6 text-lg">Loading user...</h3>;
@@ -57,5 +59,4 @@ export default function EmployeeDashboard() {
       </div>
     </div>
   );
-  //
 }

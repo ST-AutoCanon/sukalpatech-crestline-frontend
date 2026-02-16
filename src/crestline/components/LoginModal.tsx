@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../features/auth/hooks/useAuth";
@@ -20,7 +21,37 @@ const LoginModal: React.FC<LoginModalProps> = ({
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [orgCode, setOrgCode] = useState("");
+  const [orgCodes, setOrgCodes] = useState<string[]>([]); // ✅ dropdown data
   const [showPassword, setShowPassword] = useState(false);
+
+  // Fetch org codes
+  useEffect(() => {
+    const fetchOrgCodes = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/organisation/org-codes`,
+        );
+        const data = await res.json();
+
+        if (data.success) {
+          // If backend returns array of strings
+          if (typeof data.data[0] === "string") {
+            setOrgCodes(data.data);
+          }
+          // If backend returns [{ org_code: "ORG001" }]
+          else {
+            console.log('org code is not defined:', orgCode);
+            setOrgCodes(data.data.map((org: any) => org.org_code));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch org codes", err);
+      }
+    };
+
+    fetchOrgCodes();
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,23 +63,61 @@ const LoginModal: React.FC<LoginModalProps> = ({
 
   if (!isOpen) return null;
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   try {
+  //     const result = await login(email, password, orgCode);
+  //     const role = result.data.user.role;
+
+  //     onClose();
+
+  //     if (role === "admin") navigate("/admin");
+  //     else if (role === "employee") navigate("/employee");
+  //     else if (role === "super_admin") navigate("/super_admin");
+  //   } catch (err) {
+  //     console.error("Login failed", err);
+  //   }
+  // };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      const result = await login(email, password);
-      const role = result.data.user.role;
+      const result = await login(email, password, orgCode);
+      console.log("LOGIN RESPONSE:", result);
+      const { user, token } = result.data;
 
-      onClose(); // close modal first
+      const isIframe = window.parent !== window;
 
-      if (role === "admin") navigate("/admin");
-      else if (role === "employee") navigate("/employee");
+      if (isIframe) {
+        // 🚫 Block super_admin only when inside iframe
+        if (user.role === "super_admin") {
+          alert("Super Admin login is not allowed from this website.");
+          return;
+        }
+
+        // ✅ Send to parent website
+        window.parent.postMessage(
+          {
+            type: "LOGIN_SUCCESS",
+            token,
+            user,
+          },
+          "http://localhost:5173",
+        );
+      } else {
+        // ✅ Normal standalone login (5174)
+        if (user.role === "admin") navigate("/admin");
+        else if (user.role === "employee") navigate("/employee");
+        else if (user.role === "super_admin") navigate("/super_admin");
+      }
     } catch (err) {
       console.error("Login failed", err);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center   p-4 sm:p-6 md:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8">
       <div className="relative w-full max-w-md sm:max-w-lg md:max-w-4xl flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-2xl border border-white/20 bg-white/10 backdrop-blur-xl">
         {/* Left Image */}
         <div className="relative w-full md:w-1/2 h-52 sm:h-64 md:h-auto shrink-0">
@@ -77,6 +146,30 @@ const LoginModal: React.FC<LoginModalProps> = ({
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Org Code Dropdown */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-white/80 font-medium">
+                Organization Code
+              </label>
+
+              <select
+                value={orgCode}
+                onChange={(e) => setOrgCode(e.target.value)}
+                className="w-full rounded-xl bg-white/20 text-white px-4 py-2.5 border border-white/20 focus:ring-2 focus:ring-[#3A8DFF]"
+              >
+                <option value="" className="text-black">
+                  Select Organization
+                </option>
+
+                {orgCodes.map((code) => (
+                  <option key={code} value={code} className="text-black">
+                    {code}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Email */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-white/80 font-medium">Email</label>
               <input
@@ -89,6 +182,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
               />
             </div>
 
+            {/* Password */}
             <div className="flex flex-col gap-2">
               <label className="text-sm text-white/80 font-medium">
                 Password
@@ -131,7 +225,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
           </button>
         </div>
 
-        {/* Close */}       
+        {/* Close */}
         <button
           onClick={onClose}
           className="fixed top-4 right-4 z-[999] text-white text-4xl"

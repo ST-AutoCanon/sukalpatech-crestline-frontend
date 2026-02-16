@@ -57,23 +57,47 @@ export default function AddItem() {
 
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
+//   const fetchAllItems = async () => {
+//   try {
+//     const res = await axios.get(`${API_BASE}/items/items`);
+
+//     const normalized = (res.data?.data || []).map((item: any) => ({
+//       id: item.id,
+//       code: item.item_code,        // ✅ map correctly
+//       name: item.item_name,        // ✅ map correctly
+//       qty: item.qty,
+//       vendors: item.vendors || [],
+//     }));
+
+//     setItems(normalized);
+//   } catch {
+//     setItems([]);
+//   }
+// };
+
   const fetchAllItems = async () => {
-  try {
-    const res = await axios.get(`${API_BASE}/items/items`);
+    try {
+      const token = localStorage.getItem("token");
 
-    const normalized = (res.data?.data || []).map((item: any) => ({
-      id: item.id,
-      code: item.item_code,        // ✅ map correctly
-      name: item.item_name,        // ✅ map correctly
-      qty: item.qty,
-      vendors: item.vendors || [],
-    }));
+      const res = await axios.get(`${API_BASE}/items/items`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    setItems(normalized);
-  } catch {
-    setItems([]);
-  }
-};
+      const normalized = (res.data?.data || []).map((item: any) => ({
+        id: item.id,
+        code: item.item_code,
+        name: item.item_name,
+        qty: item.qty,
+        vendors: item.vendors || [],
+      }));
+
+      setItems(normalized);
+    } catch {
+      setItems([]);
+    }
+  };
 
   useEffect(() => {
     fetchRoots();
@@ -81,20 +105,89 @@ export default function AddItem() {
     fetchAllItems();
   }, []);
 
+  // const fetchVendors = async () => {
+  //   try {
+  //     const res = await axios.get(`${API_BASE}/vendor/vendors`);
+  //     setVendorList(Array.isArray(res.data?.data) ? res.data.data : []);
+  //   } catch {
+  //     setVendorList([]);
+  //   }
+  // };
+
   const fetchVendors = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/vendor/vendors`);
+      const token = localStorage.getItem("token");
+
+      const res = await axios.get(`${API_BASE}/vendor/vendors`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setVendorList(Array.isArray(res.data?.data) ? res.data.data : []);
     } catch {
       setVendorList([]);
     }
   };
 
+
+  // const fetchRoots = async () => {
+  //   const res = await axios.get(`${API_BASE}/categories/root-category`);
+  //   setRoots(res.data.map((r: any) => ({ ...r, id: String(r.id) })));
+  // };
+
+
+  // const fetchCategories = async (rootId: string) => {
+  //   setSelectedCategory("");
+  //   setProducts([]);
+  //   setVariants([]);
+  //   setSubVariants([]);
+
+  //   const res = await axios.get(
+  //     `${API_BASE}/categories/list?root_id=${rootId}`
+  //   );
+  //   setCategories(res.data.map((c: any) => ({ ...c, id: String(c.id) })));
+  // };
+
+  // const fetchProducts = async (categoryId: string) => {
+  //   setSelectedProduct("");
+  //   setVariants([]);
+  //   setSubVariants([]);
+
+  //   const res = await axios.get(
+  //     `${API_BASE}/categories/products?category_id=${categoryId}`
+  //   );
+  //   setProducts(res.data.map((p: any) => ({ ...p, id: String(p.id) })));
+  // };
+
+  // const fetchVariants = async (productId: string) => {
+  //   setSelectedVariant("");
+  //   setSubVariants([]);
+
+  //   const res = await axios.get(
+  //     `${API_BASE}/categories/variants?product_id=${productId}`
+  //   );
+  //   setVariants(res.data.map((v: any) => ({ ...v, id: String(v.id) })));
+  // };
+
+  // const fetchSubVariants = async (variantId: string) => {
+  //   setSelectedSubVariant("");
+
+  //   const res = await axios.get(
+  //     `${API_BASE}/categories/sub-variants?variant_id=${variantId}`
+  //   );
+  //   setSubVariants(res.data.map((sv: any) => ({ ...sv, id: String(sv.id) })));
+  // };
+
   const fetchRoots = async () => {
-    const res = await axios.get(`${API_BASE}/categories/root-category`);
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(`${API_BASE}/categories/root-category`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
     setRoots(res.data.map((r: any) => ({ ...r, id: String(r.id) })));
   };
-
 
   const fetchCategories = async (rootId: string) => {
     setSelectedCategory("");
@@ -102,9 +195,15 @@ export default function AddItem() {
     setVariants([]);
     setSubVariants([]);
 
+    const token = localStorage.getItem("token");
+
     const res = await axios.get(
-      `${API_BASE}/categories/list?root_id=${rootId}`
+      `${API_BASE}/categories/list?root_id=${rootId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
     );
+
     setCategories(res.data.map((c: any) => ({ ...c, id: String(c.id) })));
   };
 
@@ -113,9 +212,15 @@ export default function AddItem() {
     setVariants([]);
     setSubVariants([]);
 
+    const token = localStorage.getItem("token");
+
     const res = await axios.get(
-      `${API_BASE}/categories/products?category_id=${categoryId}`
+      `${API_BASE}/categories/products?category_id=${categoryId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
     );
+
     setProducts(res.data.map((p: any) => ({ ...p, id: String(p.id) })));
   };
 
@@ -123,47 +228,115 @@ export default function AddItem() {
     setSelectedVariant("");
     setSubVariants([]);
 
+    const token = localStorage.getItem("token");
+
     const res = await axios.get(
-      `${API_BASE}/categories/variants?product_id=${productId}`
+      `${API_BASE}/categories/variants?product_id=${productId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
     );
+
     setVariants(res.data.map((v: any) => ({ ...v, id: String(v.id) })));
   };
 
   const fetchSubVariants = async (variantId: string) => {
     setSelectedSubVariant("");
 
+    const token = localStorage.getItem("token");
+
     const res = await axios.get(
-      `${API_BASE}/categories/sub-variants?variant_id=${variantId}`
+      `${API_BASE}/categories/sub-variants?variant_id=${variantId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
     );
+
     setSubVariants(res.data.map((sv: any) => ({ ...sv, id: String(sv.id) })));
   };
 
+  // const handleAddItem = async () => {
+  //   if (!selectedRoot || !itemName) {
+  //     setAlert({ type: "error", message: "Root category and item name required" });
+      
+  //     return;
+  //   }
+
+  //   const res = await axios.post(`${API_BASE}/items/items`, {
+  //     item_name: itemName,
+  //     qty,
+  //     vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
+  //     root_category_id: selectedRoot,
+  //     category_id: selectedCategory || null,
+  //     product_id: selectedProduct || null,
+  //     variant_id: selectedVariant || null,
+  //     sub_variant_id: selectedSubVariant || null,
+  //   });
+
+  //   if (res.data?.data) {
+  //     const addedItem = {
+  //       id: res.data.data.id,
+  //       code: res.data.data.item_code || res.data.data.id, // fallback
+  //       name: res.data.data.item_name,
+  //       qty: res.data.data.qty,
+  //       vendors: selectedVendors.map(v => v.vendor_id),
+  //      };
+
+  //     setItems((prev) => [addedItem, ...prev]);
+  //   }
+
+  //   setItemName("");
+  //   setSelectedVendors([]);
+  //   setSelectedRoot("");
+  //   setSelectedCategory("");
+  //   setSelectedProduct("");
+  //   setSelectedVariant("");
+  //   setSelectedSubVariant("");
+  //   setCategories([]);
+  //   setProducts([]);
+  //   setVariants([]);
+  //   setSubVariants([]);
+  //   setQty("");
+  // };
+
   const handleAddItem = async () => {
     if (!selectedRoot || !itemName) {
-      setAlert({ type: "error", message: "Root category and item name required" });
-      
+      setAlert({
+        type: "error",
+        message: "Root category and item name required",
+      });
       return;
     }
 
-    const res = await axios.post(`${API_BASE}/items/items`, {
-      item_name: itemName,
-      qty,
-      vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
-      root_category_id: selectedRoot,
-      category_id: selectedCategory || null,
-      product_id: selectedProduct || null,
-      variant_id: selectedVariant || null,
-      sub_variant_id: selectedSubVariant || null,
-    });
+    const token = localStorage.getItem("token");
+
+    const res = await axios.post(
+      `${API_BASE}/items/items`,
+      {
+        item_name: itemName,
+        qty,
+        vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
+        root_category_id: selectedRoot,
+        category_id: selectedCategory || null,
+        product_id: selectedProduct || null,
+        variant_id: selectedVariant || null,
+        sub_variant_id: selectedSubVariant || null,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     if (res.data?.data) {
       const addedItem = {
         id: res.data.data.id,
-        code: res.data.data.item_code || res.data.data.id, // fallback
+        code: res.data.data.item_code || res.data.data.id,
         name: res.data.data.item_name,
         qty: res.data.data.qty,
-        vendors: selectedVendors.map(v => v.vendor_id),     
-       };
+        vendors: selectedVendors.map((v) => v.vendor_id),
+      };
 
       setItems((prev) => [addedItem, ...prev]);
     }
@@ -182,9 +355,23 @@ export default function AddItem() {
     setQty("");
   };
 
+  // const handleSearch = async () => {
+  //   if (!search) return;
+  //   const res = await axios.get(`${API_BASE}/items/search?query=${search}`);
+  //   setItems(res.data?.data || []);
+  // };
+
   const handleSearch = async () => {
     if (!search) return;
-    const res = await axios.get(`${API_BASE}/items/search?query=${search}`);
+
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(`${API_BASE}/items/search?query=${search}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     setItems(res.data?.data || []);
   };
 

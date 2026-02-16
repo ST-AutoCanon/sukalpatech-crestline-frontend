@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import TopNav from "../components/TopNav";
 import DepartmentPage from "./Department";
+import EmployeeUpdate from "./EmployeeUpdate";
 
 export default function AdminDashboard() {
   const { pathname } = useLocation();
@@ -10,6 +11,7 @@ export default function AdminDashboard() {
   const pathToPage: Record<string, string> = {
     "/admin": "Dashboard",
     "/admin/departments": "Departments",
+    "/admin/employeea": "Employeea",
   };
 
   // Determine active page from current path
@@ -18,6 +20,7 @@ export default function AdminDashboard() {
   const pageComponents: Record<string, JSX.Element> = {
     Dashboard: <div>Welcome to Admin Dashboard!</div>,
     Departments: <DepartmentPage />,
+    Employeea: <EmployeeUpdate />,
   };
 
   return (
@@ -34,5 +37,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
-

@@ -83,9 +83,28 @@ export default function SubmittedStoreeRequestsPage() {
   const [departmentMap, setDepartmentMap] = useState<Record<string, string>>(
     {}
   );
+  // useEffect(() => {
+  //   // Fetch vendor master
+  //   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       const map: Record<string, string> = {};
+  //       (data?.data || []).forEach((v: any) => {
+  //         map[String(v.vendor_id)] = v.vendor_name;
+  //       });
+  //       setVendorMap(map);
+  //     })
+  //     .catch((err) => console.error("Vendor fetch error:", err));
+  // }, []);
+
   useEffect(() => {
-    // Fetch vendor master
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
+    const token = localStorage.getItem("token");
+
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         const map: Record<string, string> = {};
@@ -119,12 +138,25 @@ export default function SubmittedStoreeRequestsPage() {
   };
 
   /* ================= API ================= */
+  // const fetchApprovedRequests = async () => {
+  //   const res = await axios.get(
+  //     `${API_BASE}/purchase-requests`
+  //   );
+  //   setRequests(res.data.data || []);
+  // };
+
   const fetchApprovedRequests = async () => {
-    const res = await axios.get(
-      `${API_BASE}/purchase-requests`
-    );
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(`${API_BASE}/purchase-requests`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     setRequests(res.data.data || []);
   };
+
 
   useEffect(() => {
     fetchApprovedRequests();
