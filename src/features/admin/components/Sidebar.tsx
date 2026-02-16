@@ -6,6 +6,7 @@ export default function Sidebar() {
   const links = [
     { name: "Dashboard", path: "/admin" },
     { name: "Departments", path: "/admin/departments" },
+    { name: "Employeea", path: "/admin/employeea" },
   ];
 
   return (

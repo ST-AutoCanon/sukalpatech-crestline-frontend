@@ -79,46 +79,132 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
   
 
   // Fetch vendors
+  // useEffect(() => {
+  //   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       const vendors = data?.data || [];
+  //       const map: Record<string, string> = {};
+  //       vendors.forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
+  //       setVendorMap(map);
+  //     })
+  //     .catch((err) => console.error("Vendor fetch error", err));
+  // }, []);
+
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
+    const token = localStorage.getItem("token");
+
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         const vendors = data?.data || [];
         const map: Record<string, string> = {};
-        vendors.forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
+
+        vendors.forEach((v: any) => {
+          map[String(v.vendor_id)] = v.vendor_name;
+        });
+
         setVendorMap(map);
       })
       .catch((err) => console.error("Vendor fetch error", err));
   }, []);
 
+
   // Fetch departments
+  // useEffect(() => {
+  //   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       const departments = data?.data || [];
+  //       const map: Record<string, string> = {};
+  //       departments.forEach((d: any) => (map[String(d.department_id)] = d.name));
+  //       setDepartmentMap(map);
+  //     })
+  //     .catch((err) => console.error("Department fetch error", err));
+  // }, []);
+
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`)
+    const token = localStorage.getItem("token");
+
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         const departments = data?.data || [];
         const map: Record<string, string> = {};
-        departments.forEach((d: any) => (map[String(d.department_id)] = d.name));
+
+        departments.forEach((d: any) => {
+          map[String(d.department_id)] = d.name;
+        });
+
         setDepartmentMap(map);
       })
       .catch((err) => console.error("Department fetch error", err));
   }, []);
 
+
+  // const fetchPRs = async () => {
+  //   setLoading(true);
+  //   try {
+  //     let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
+  //     if (filter === "Pending" || filter === "Rejected" || filter === "Completed") {
+  //       const status = filter === "Completed" ? "APPROVED" : filter.toUpperCase();
+  //       url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
+  //     }
+  //     const res = await fetch(url);
+  //     const data = await res.json();
+  //     const prsData = (data?.data || []).map((pr: PR) => ({
+  //       ...pr,
+  //       items: pr.items || [],
+  //       department_statuses: pr.department_statuses || [],
+  //     }));
+  //     setPrs(prsData);
+  //   } catch (err) {
+  //     console.error("Fetch PR error", err);
+  //     setPrs([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchPRs = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem("token");
+
       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
-      if (filter === "Pending" || filter === "Rejected" || filter === "Completed") {
-        const status = filter === "Completed" ? "APPROVED" : filter.toUpperCase();
+
+      if (
+        filter === "Pending" ||
+        filter === "Rejected" ||
+        filter === "Completed"
+      ) {
+        const status =
+          filter === "Completed" ? "APPROVED" : filter.toUpperCase();
         url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
       }
-      const res = await fetch(url);
+
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       const data = await res.json();
+
       const prsData = (data?.data || []).map((pr: PR) => ({
         ...pr,
         items: pr.items || [],
         department_statuses: pr.department_statuses || [],
       }));
+
       setPrs(prsData);
     } catch (err) {
       console.error("Fetch PR error", err);
@@ -128,6 +214,7 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
     }
   };
 
+  
   useEffect(() => {
     fetchPRs();
   }, [filter, search, refreshKey]);

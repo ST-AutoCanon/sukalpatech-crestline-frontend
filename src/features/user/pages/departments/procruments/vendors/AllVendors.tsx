@@ -43,23 +43,46 @@ const AllVendors: React.FC = () => {
   const [vendors, setVendors] = useState<any[]>([]);
   const [activeVendor, setActiveVendor] = useState<any | null>(null);
 
+  // useEffect(() => {
+  //   const fetchVendors = async () => {
+  //     try {
+  //       const res = await axios.get(
+  //         `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors`,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         }
+  //       );
+  //       setVendors(res.data?.data || []);
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   };
+  //   fetchVendors();
+  // }, [token]);
+
+
   useEffect(() => {
     const fetchVendors = async () => {
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors`,
           {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
         );
+
         setVendors(res.data?.data || []);
       } catch (err) {
-        console.error(err);
+        console.error("Vendor fetch error:", err);
       }
     };
-    fetchVendors();
-  }, [token]);
 
+    if (token) {
+      fetchVendors();
+    }
+  }, [token]);
 
  
 

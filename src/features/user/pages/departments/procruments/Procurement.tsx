@@ -17,24 +17,67 @@ export default function NewProcurementPage({ onClose, onCreated }) {
   const API_BASE1 = `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`;
   const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
 
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const res = await axios.get(`${API_BASE2}`);
-        console.log(res.data.data);
-        setDepartments(res.data.data);
-      } catch (err) {
-        console.error("Department fetch error", err);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchDepartments = async () => {
+  //     try {
+  //       const res = await axios.get(`${API_BASE2}`);
+  //       console.log(res.data.data);
+  //       setDepartments(res.data.data);
+  //     } catch (err) {
+  //       console.error("Department fetch error", err);
+  //     }
+  //   };
 
-    fetchDepartments();
-  }, []);
+  //   fetchDepartments();
+  // }, []);
+
+  useEffect(() => {
+  const fetchDepartments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.get(`${API_BASE2}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log(res.data.data);
+      setDepartments(res.data.data);
+    } catch (err) {
+      console.error("Department fetch error", err);
+    }
+  };
+
+  fetchDepartments();
+}, []);
+
+  
+  // useEffect(() => {
+  //   const fetchVendors = async () => {
+  //     try {
+  //       const res = await axios.get(`${API_BASE1}`);
+  //       console.log(res.data.data);
+  //       setVendorList(res.data.data);
+  //     } catch (err) {
+  //       console.error("Vendor fetch error", err);
+  //     }
+  //   };
+
+  //   fetchVendors();
+  // }, []);
 
   useEffect(() => {
     const fetchVendors = async () => {
       try {
-        const res = await axios.get(`${API_BASE1}`);
+        const token = localStorage.getItem("token");
+
+        const res = await axios.get(`${API_BASE1}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         console.log(res.data.data);
         setVendorList(res.data.data);
       } catch (err) {
@@ -181,41 +224,78 @@ export default function NewProcurementPage({ onClose, onCreated }) {
     setPrData({ ...prData, items: updated });
   };
 
-  const submitPR = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("data", JSON.stringify(prData));
+  // const submitPR = async () => {
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("data", JSON.stringify(prData));
 
-      Object.values(vendorFiles).forEach((files: any) => {
-        files.forEach((file: File) => formData.append("attachments", file));
-      });
+  //     Object.values(vendorFiles).forEach((files: any) => {
+  //       files.forEach((file: File) => formData.append("attachments", file));
+  //     });
 
-      await axios.post(`${API_BASE}/purchase-requests`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  //     await axios.post(`${API_BASE}/purchase-requests`, formData, {
+  //       headers: { "Content-Type": "multipart/form-data" },
+  //     });
 
-      // ✅ SUCCESS ALERT
-      setAlert({
-        type: "success",
-        message: "PR created successfully",
-      });
-      // 🔥 THIS IS THE KEY LINE
-      onCreated();
+  //     // ✅ SUCCESS ALERT
+  //     setAlert({
+  //       type: "success",
+  //       message: "PR created successfully",
+  //     });
+  //     // 🔥 THIS IS THE KEY LINE
+  //     onCreated();
 
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-    } catch (err) {
-      console.error(err);
+  //     setTimeout(() => {
+  //       onClose();
+  //     }, 2000);
+  //   } catch (err) {
+  //     console.error(err);
 
-      // ❌ ERROR ALERT
-      setAlert({
-        type: "error",
-        message: "Something went wrong while creating PR",
-      });
-    }
-  };
+  //     // ❌ ERROR ALERT
+  //     setAlert({
+  //       type: "error",
+  //       message: "Something went wrong while creating PR",
+  //     });
+  //   }
+  // };
 
+const submitPR = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(prData));
+
+    Object.values(vendorFiles).forEach((files: any) => {
+      files.forEach((file: File) => formData.append("attachments", file));
+    });
+
+    await axios.post(`${API_BASE}/purchase-requests`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setAlert({
+      type: "success",
+      message: "PR created successfully",
+    });
+
+    onCreated();
+
+    setTimeout(() => {
+      onClose();
+    }, 2000);
+  } catch (err) {
+    console.error(err);
+
+    setAlert({
+      type: "error",
+      message: "Something went wrong while creating PR",
+    });
+  }
+};
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">

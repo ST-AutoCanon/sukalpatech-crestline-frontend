@@ -33,28 +33,28 @@ import DashboardHome from "../../features/admin/pages/DashboardHome";
 import EmployeeDashboardHome from "../../features/user/pages/EmployeeDashboardHome";
 import DepartmentPage from "../../features/admin/pages/Department";
 import UpdatedFeasibilityPage from "../../features/user/pages/departments/Businessdevelopment/UpdatedFeasibilitypage";
-
+import EmployeeUpdate from "../../features/admin/pages/EmployeeUpdate";
+import SuperAdminDashboard from "../../features/superadmin/pages/SuperAdminDashboard";
+import CreateOrganisation from "../../features/superadmin/pages/CreateOrganisation";
+import LoginPage from "../../features/auth/pages/Login";
 const componentMap: Record<string, React.LazyExoticComponent<any>> = {
   procurement: React.lazy(
     () =>
-      import("../../features/user/pages/departments/procruments/procrumentHome")
+      import("../../features/user/pages/departments/procruments/procrumentHome"),
   ),
 
   feasibility: React.lazy(
     () =>
-      import(
-        "../../features/user/pages/departments/feasibility/FeasibilityHome"
-      )
+      import("../../features/user/pages/departments/feasibility/FeasibilityHome"),
   ),
   finance: React.lazy(
-    () => import("../../features/user/pages/departments/finance/FinanceHome")
+    () => import("../../features/user/pages/departments/finance/FinanceHome"),
   ),
-   BD: React.lazy(
-    () => import( "../../features/user/pages/departments/Businessdevelopment/BusinessdevelopmentHome"
-      )
+  BD: React.lazy(
+    () =>
+      import("../../features/user/pages/departments/Businessdevelopment/BusinessdevelopmentHome"),
   ),
 };
-
 
 const RequireAuth = ({
   children,
@@ -80,7 +80,6 @@ const RequireAuth = ({
   return children;
 };
 
-
 type ModalState = "none" | "normal" | "register";
 
 const WebsiteLayout = () => {
@@ -97,10 +96,24 @@ const WebsiteLayout = () => {
     navigate("/hrms");
   };
 
+  // const handleLoginSuccess = (token: string, user: any) => {
+  //   localStorage.setItem("token", token);
+  //   localStorage.setItem("user", JSON.stringify(user));
+  //   closeAll();
+  // };
+
   const handleLoginSuccess = (token: string, user: any) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
     closeAll();
+
+    if (user.role === "super_admin") {
+      navigate("/super_admin");
+    } else if (user.role === "admin") {
+      navigate("/admin");
+    } else if (user.role === "employee") {
+      navigate("/employee");
+    }
   };
 
   return (
@@ -128,6 +141,7 @@ const WebsiteLayout = () => {
           <Route path="/crestline/requestquote" element={<RequestQuote />} />
           <Route path="/crestline/appointment" element={<AppointmentPage />} />
           <Route path="/hrms" element={<HRMSPage />} />
+          <Route path="/embedded-login" element={<LoginPage />} />
         </Routes>
       </main>
 
@@ -171,7 +185,6 @@ export default function AppRoutes() {
           </RequireAuth>
         }
       >
-
         <Route index element={<EmployeeDashboardHome />} />
         <Route path="dashboard" element={<EmployeeDashboardHome />} />
         {Object.entries(componentMap).map(([key, Component]) => (
@@ -184,7 +197,6 @@ export default function AppRoutes() {
               </Suspense>
             }
           />
-          
         ))}
         <Route
           path="bd/updated"
@@ -206,6 +218,19 @@ export default function AppRoutes() {
       >
         <Route index element={<DashboardHome />} />
         <Route path="departments" element={<DepartmentPage />} />
+        <Route path="employeea" element={<EmployeeUpdate />} />
+      </Route>
+
+      <Route
+        path="/super_admin"
+        element={
+          <RequireAuth roles={["super_admin"]}>
+            <SuperAdminDashboard />
+          </RequireAuth>
+        }
+      >
+        <Route index element={<DashboardHome />} />
+        <Route path="create_organisation" element={<CreateOrganisation />} />
       </Route>
     </Routes>
   );

@@ -122,10 +122,31 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
   const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
 
+  // useEffect(() => {
+  //   const fetchDepartments = async () => {
+  //     try {
+  //       const res = await axios.get(`${API_BASE2}`);
+  //       console.log(res.data.data);
+  //       setDepartments(res.data.data);
+  //     } catch (err) {
+  //       console.error("Department fetch error", err);
+  //     }
+  //   };
+
+  //   fetchDepartments();
+  // }, []);
+
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const res = await axios.get(`${API_BASE2}`);
+        const token = localStorage.getItem("token");
+
+        const res = await axios.get(`${API_BASE2}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         console.log(res.data.data);
         setDepartments(res.data.data);
       } catch (err) {
@@ -135,6 +156,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
     fetchDepartments();
   }, []);
+
 
 
   useEffect(() => {

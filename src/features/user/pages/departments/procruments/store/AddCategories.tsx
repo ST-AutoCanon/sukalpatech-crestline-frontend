@@ -57,96 +57,335 @@ useEffect(() => {
   fetchHierarchy();
 }, []);
 
-const fetchHierarchy = async () => {
-  try {
-    const res = await axios.get(`${API_BASE}/hierarchy`);
-    setTableData(res.data.data || res.data || []);
-  } catch (error) {
-    console.error("Failed to fetch hierarchy", error);
-  }
-};
+// const fetchHierarchy = async () => {
+//   try {
+//     const res = await axios.get(`${API_BASE}/hierarchy`);
+//     setTableData(res.data.data || res.data || []);
+//   } catch (error) {
+//     console.error("Failed to fetch hierarchy", error);
+//   }
+// };
+
+  const fetchHierarchy = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.get(`${API_BASE}/hierarchy`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setTableData(res.data.data || res.data || []);
+    } catch (error) {
+      console.error("Failed to fetch hierarchy", error);
+    }
+  };
 
 
+  // const fetchRoots = async () => {
+  //   const res = await axios.get(`${API_BASE}/root-category`);
+  //   setRoots(res.data || []);
+  // };
+
+  // const fetchCategories = async (rootId: number) => {
+  //   const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`);
+  //   setCategories(res.data || []);
+  //   setProducts([]); setVariants([]); setSubVariants([]);
+  // };
+
+  // const fetchProducts = async (categoryId: number) => {
+  //   const res = await axios.get(`${API_BASE}/products?category_id=${categoryId}`);
+  //   setProducts(res.data || []);
+  //   setVariants([]); setSubVariants([]);
+  // };
+
+  // const fetchVariants = async (productId: number) => {
+  //   const res = await axios.get(`${API_BASE}/variants?product_id=${productId}`);
+  //   setVariants(res.data || []);
+  //   setSubVariants([]);
+  // };
+
+  // const fetchSubVariants = async (variantId: number) => {
+  //   const res = await axios.get(`${API_BASE}/sub-variants?variant_id=${variantId}`);
+  //   setSubVariants(res.data || []);
+  // };
+  
   const fetchRoots = async () => {
-    const res = await axios.get(`${API_BASE}/root-category`);
-    setRoots(res.data || []); 
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(`${API_BASE}/root-category`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setRoots(res.data || []);
   };
 
   const fetchCategories = async (rootId: number) => {
-    const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`);
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(`${API_BASE}/list?root_id=${rootId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
     setCategories(res.data || []);
-    setProducts([]); setVariants([]); setSubVariants([]);
+    setProducts([]);
+    setVariants([]);
+    setSubVariants([]);
   };
 
   const fetchProducts = async (categoryId: number) => {
-    const res = await axios.get(`${API_BASE}/products?category_id=${categoryId}`);
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(
+      `${API_BASE}/products?category_id=${categoryId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
     setProducts(res.data || []);
-    setVariants([]); setSubVariants([]);
+    setVariants([]);
+    setSubVariants([]);
   };
 
   const fetchVariants = async (productId: number) => {
-    const res = await axios.get(`${API_BASE}/variants?product_id=${productId}`);
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(
+      `${API_BASE}/variants?product_id=${productId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
     setVariants(res.data || []);
     setSubVariants([]);
   };
 
   const fetchSubVariants = async (variantId: number) => {
-    const res = await axios.get(`${API_BASE}/sub-variants?variant_id=${variantId}`);
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(
+      `${API_BASE}/sub-variants?variant_id=${variantId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
     setSubVariants(res.data || []);
   };
 
+
+
   /* ================= CREATE ================= */
+  // const addRootCategory = async () => {
+  //   if (!rootName) return setAlert({ type: "error", message: "Enter Root Category" });
+  //   try {
+  //     await axios.post(`${API_BASE}/root-category`, { name: rootName });
+  //     setRootName(""); fetchRoots(); fetchHierarchy();
+  //     setAlert({ type: "success", message: "Root Category created successfully!" });
+  //   } catch { setAlert({ type: "error", message: "Failed to create Root Category" }); }
+  // };
+
+  // const addCategory = async () => {
+  //   if (!selectedRoot || !categoryName) return setAlert({ type: "error", message: "Select Root & Enter Category" });
+  //   try {
+  //     await axios.post(`${API_BASE}/category`, { name: categoryName, root_category_id: selectedRoot });
+  //     setCategoryName(""); fetchCategories(selectedRoot); fetchHierarchy();
+  //     setAlert({ type: "success", message: "Category created successfully!" });
+  //   } catch { setAlert({ type: "error", message: "Failed to create Category" }); }
+  // };
+
+  // const addProduct = async () => {
+  //   if (!selectedRoot || !selectedCategory || !productName) return setAlert({ type: "error", message: "Select Root & Category" });
+  //   try {
+  //     await axios.post(`${API_BASE}/product`, { name: productName, category_id: selectedCategory });
+  //     setProductName(""); fetchProducts(selectedCategory); fetchHierarchy();
+  //     setAlert({ type: "success", message: "Product created successfully!" });
+  //   } catch { setAlert({ type: "error", message: "Failed to create Product" }); }
+  // };
+
+  // const addVariant = async () => {
+  //   if (!selectedRoot || !selectedCategory || !selectedProduct || !variantName)
+  //     return setAlert({ type: "error", message: "Select Root, Category & Product" });
+  //   try {
+  //     await axios.post(`${API_BASE}/variant`, { name: variantName, product_id: selectedProduct });
+  //     setVariantName(""); fetchVariants(selectedProduct); fetchHierarchy();
+  //     setAlert({ type: "success", message: "Variant created successfully!" });
+  //   } catch { setAlert({ type: "error", message: "Failed to create Variant" }); }
+  // };
+
+  // const addSubVariant = async () => {
+  //   if (!selectedRoot || !selectedCategory || !selectedProduct || !selectedVariant || !subVariantName)
+  //     return setAlert({ type: "error", message: "Complete Full Hierarchy" });
+  //   try {
+  //     await axios.post(`${API_BASE}/sub-variant`, { name: subVariantName, variant_id: selectedVariant });
+  //     setSubVariantName(""); fetchSubVariants(selectedVariant); fetchHierarchy();
+  //     setAlert({ type: "success", message: "Sub Variant created successfully!" });
+  //   } catch { setAlert({ type: "error", message: "Failed to create Sub Variant" }); }
+  // };
+  
+
   const addRootCategory = async () => {
-    if (!rootName) return setAlert({ type: "error", message: "Enter Root Category" });
+    if (!rootName)
+      return setAlert({ type: "error", message: "Enter Root Category" });
+
     try {
-      await axios.post(`${API_BASE}/root-category`, { name: rootName });
-      setRootName(""); fetchRoots(); fetchHierarchy(); 
-      setAlert({ type: "success", message: "Root Category created successfully!" });
-    } catch { setAlert({ type: "error", message: "Failed to create Root Category" }); }
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        `${API_BASE}/root-category`,
+        { name: rootName },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      setRootName("");
+      fetchRoots();
+      fetchHierarchy();
+
+      setAlert({
+        type: "success",
+        message: "Root Category created successfully!",
+      });
+    } catch {
+      setAlert({ type: "error", message: "Failed to create Root Category" });
+    }
   };
 
   const addCategory = async () => {
-    if (!selectedRoot || !categoryName) return setAlert({ type: "error", message: "Select Root & Enter Category" });
+    if (!selectedRoot || !categoryName)
+      return setAlert({
+        type: "error",
+        message: "Select Root & Enter Category",
+      });
+
     try {
-      await axios.post(`${API_BASE}/category`, { name: categoryName, root_category_id: selectedRoot });
-      setCategoryName(""); fetchCategories(selectedRoot); fetchHierarchy(); 
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        `${API_BASE}/category`,
+        { name: categoryName, root_category_id: selectedRoot },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      setCategoryName("");
+      fetchCategories(selectedRoot);
+      fetchHierarchy();
+
       setAlert({ type: "success", message: "Category created successfully!" });
-    } catch { setAlert({ type: "error", message: "Failed to create Category" }); }
+    } catch {
+      setAlert({ type: "error", message: "Failed to create Category" });
+    }
   };
 
   const addProduct = async () => {
-    if (!selectedRoot || !selectedCategory || !productName) return setAlert({ type: "error", message: "Select Root & Category" });
+    if (!selectedRoot || !selectedCategory || !productName)
+      return setAlert({ type: "error", message: "Select Root & Category" });
+
     try {
-      await axios.post(`${API_BASE}/product`, { name: productName, category_id: selectedCategory });
-      setProductName(""); fetchProducts(selectedCategory); fetchHierarchy(); 
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        `${API_BASE}/product`,
+        { name: productName, category_id: selectedCategory },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      setProductName("");
+      fetchProducts(selectedCategory);
+      fetchHierarchy();
+
       setAlert({ type: "success", message: "Product created successfully!" });
-    } catch { setAlert({ type: "error", message: "Failed to create Product" }); }
+    } catch {
+      setAlert({ type: "error", message: "Failed to create Product" });
+    }
   };
 
   const addVariant = async () => {
     if (!selectedRoot || !selectedCategory || !selectedProduct || !variantName)
-      return setAlert({ type: "error", message: "Select Root, Category & Product" });
+      return setAlert({
+        type: "error",
+        message: "Select Root, Category & Product",
+      });
+
     try {
-      await axios.post(`${API_BASE}/variant`, { name: variantName, product_id: selectedProduct });
-      setVariantName(""); fetchVariants(selectedProduct); fetchHierarchy(); 
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        `${API_BASE}/variant`,
+        { name: variantName, product_id: selectedProduct },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      setVariantName("");
+      fetchVariants(selectedProduct);
+      fetchHierarchy();
+
       setAlert({ type: "success", message: "Variant created successfully!" });
-    } catch { setAlert({ type: "error", message: "Failed to create Variant" }); }
+    } catch {
+      setAlert({ type: "error", message: "Failed to create Variant" });
+    }
   };
 
   const addSubVariant = async () => {
-    if (!selectedRoot || !selectedCategory || !selectedProduct || !selectedVariant || !subVariantName)
+    if (
+      !selectedRoot ||
+      !selectedCategory ||
+      !selectedProduct ||
+      !selectedVariant ||
+      !subVariantName
+    )
       return setAlert({ type: "error", message: "Complete Full Hierarchy" });
+
     try {
-      await axios.post(`${API_BASE}/sub-variant`, { name: subVariantName, variant_id: selectedVariant });
-      setSubVariantName(""); fetchSubVariants(selectedVariant); fetchHierarchy(); 
-      setAlert({ type: "success", message: "Sub Variant created successfully!" });
-    } catch { setAlert({ type: "error", message: "Failed to create Sub Variant" }); }
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        `${API_BASE}/sub-variant`,
+        { name: subVariantName, variant_id: selectedVariant },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      setSubVariantName("");
+      fetchSubVariants(selectedVariant);
+      fetchHierarchy();
+
+      setAlert({
+        type: "success",
+        message: "Sub Variant created successfully!",
+      });
+    } catch {
+      setAlert({ type: "error", message: "Failed to create Sub Variant" });
+    }
   };
 
+
   /* ================= SEARCH ================= */
+  // const handleSearch = async () => {
+  //   if (!searchQuery) return setSearchResults([]);
+  //   const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`);
+  //   const mapped = (res.data.data || res.data || []).map((item: any) => ({
+  //     root: item.root_category?.name || "",
+  //     category: item.category?.name || "",
+  //     product: item.product?.name || "",
+  //     variant: item.variant?.name || "",
+  //     subVariant: item.sub_variant?.name || "",
+  //   }));
+  //   setSearchResults(mapped);
+  // };
+
   const handleSearch = async () => {
     if (!searchQuery) return setSearchResults([]);
-    const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`);
+
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(`${API_BASE}/search?query=${searchQuery}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     const mapped = (res.data.data || res.data || []).map((item: any) => ({
       root: item.root_category?.name || "",
       category: item.category?.name || "",
@@ -154,6 +393,7 @@ const fetchHierarchy = async () => {
       variant: item.variant?.name || "",
       subVariant: item.sub_variant?.name || "",
     }));
+
     setSearchResults(mapped);
   };
 

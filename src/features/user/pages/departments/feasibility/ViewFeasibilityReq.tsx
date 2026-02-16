@@ -563,21 +563,68 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   const [showItems, setShowItems] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // const fetchPRs = async () => {
+  //   setLoading(true);
+  //   try {
+  //     let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
+  //     if (filter === "Pending" || filter === "Rejected" || filter === "Completed") {
+  //       const status = filter === "Completed" ? "APPROVED" : filter.toUpperCase();
+  //       url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
+  //     }
+  //     const res = await fetch(url);
+  //     const data = await res.json();
+  //     const prsData = (data?.data || []).map((pr: PR) => ({
+  //       ...pr,
+  //       items: pr.items || [],
+  //       department_statuses: pr.department_statuses || [],
+  //     }));
+  //     setPrs(prsData);
+  //   } catch (err) {
+  //     console.error("Fetch PR error", err);
+  //     setPrs([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
   const fetchPRs = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem("token"); // or however you store it
+
       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
-      if (filter === "Pending" || filter === "Rejected" || filter === "Completed") {
-        const status = filter === "Completed" ? "APPROVED" : filter.toUpperCase();
+
+      if (
+        filter === "Pending" ||
+        filter === "Rejected" ||
+        filter === "Completed"
+      ) {
+        const status =
+          filter === "Completed" ? "APPROVED" : filter.toUpperCase();
         url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
       }
-      const res = await fetch(url);
+
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch PRs");
+      }
+
       const data = await res.json();
+
       const prsData = (data?.data || []).map((pr: PR) => ({
         ...pr,
         items: pr.items || [],
         department_statuses: pr.department_statuses || [],
       }));
+
       setPrs(prsData);
     } catch (err) {
       console.error("Fetch PR error", err);
@@ -597,9 +644,28 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       [itemId]: !prev[itemId],
     }));
   };
+  // useEffect(() => {
+  //   // Fetch vendor master
+  //   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       const map: Record<string, string> = {};
+  //       (data?.data || []).forEach((v: any) => {
+  //         map[String(v.vendor_id)] = v.vendor_name;
+  //       });
+  //       setVendorMap(map);
+  //     })
+  //     .catch((err) => console.error("Vendor fetch error:", err));
+  // }, []);
+
   useEffect(() => {
-    // Fetch vendor master
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
+    const token = localStorage.getItem("token");
+
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         const map: Record<string, string> = {};
@@ -612,13 +678,27 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   }, []);
 
 
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/new-feasibility/submitted-requests`)
-      .then((res) => res.json())
-      .then((data) => setPrs(data?.data || []))
-      .catch((err) => console.error("Fetch PR Error:", err));
-  }, []);
+  // useEffect(() => {
+  //   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/new-feasibility/submitted-requests`)
+  //     .then((res) => res.json())
+  //     .then((data) => setPrs(data?.data || []))
+  //     .catch((err) => console.error("Fetch PR Error:", err));
+  // }, []);
 
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  fetch(`${import.meta.env.VITE_BACKEND_URL}/api/new-feasibility/submitted-requests`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => setPrs(data?.data || []))
+    .catch((err) => console.error("Fetch PR Error:", err));
+}, []);
+
+  
   //  const isEditable = (pr: PR) => {
   //   if (filter !== "PR Raised") return false;
   //   const latestStatus = pr.department_statuses?.[pr.department_statuses.length - 1]?.department_status;
@@ -1278,16 +1358,30 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   className="px-4 py-2 rounded bg-blue-600 text-white"
                   onClick={async () => {
                     try {
-                      // Save changes
-                      await fetch(
-                        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${activePR.id}`,
-                        {
-                          method: "PUT",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify(activePR),
-                        }
-                      );
+                      // // Save changes
+                      // await fetch(
+                      //   `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${activePR.id}`,
+                      //   {
+                      //     method: "PUT",
+                      //     headers: { "Content-Type": "application/json" },
+                      //     body: JSON.stringify(activePR),
+                      //   }
+                      // );
+const token = localStorage.getItem("token");
 
+await fetch(
+  `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${activePR.id}`,
+  {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(activePR),
+  },
+);
+
+                      
                       // Update PR in list
                       setPrs((prevPrs) =>
                         prevPrs.map((pr) => (pr.id === activePR.id ? activePR : pr))
