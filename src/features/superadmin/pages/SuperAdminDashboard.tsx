@@ -1,37 +1,8 @@
-// import Sidebar from "../components/Sidebar";
-// import TopNav from "../components/TopNav";
-
-// const SuperAdminDashboard = () => {
-//   const activePage = "Dashboard";
-
-//   return (
-//     <div className="flex min-h-screen">
-//       <Sidebar />
-//       <div className="flex-1 flex flex-col">
-//         <TopNav pageTitle={activePage} />
-
-//         <div className="p-6 flex-1 bg-gray-50">
-//           <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-//             Welcome to Super Admin Dashboard
-//           </h2>
-//           <p className="text-gray-700">
-//             Use the sidebar to navigate to different sections, like creating a
-//             new organisation.
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default SuperAdminDashboard;
-
-
 import { useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import TopNav from "../components/TopNav";
 import CreateOrganisation from "./CreateOrganisation";
-
+import ManageOrganisation from "./ManageOrgDepartments";
 export default function SuperAdminDashboard() {
   const { pathname } = useLocation();
 
@@ -39,12 +10,11 @@ export default function SuperAdminDashboard() {
   const pathToPage: Record<string, string> = {
     "/super_admin": "Dashboard",
     "/super_admin/create_organisation": "Create Organisation",
+    "/super_admin/manage_organisation": "Manage Organisation",
   };
 
-  // Determine active page
   const activePage = pathToPage[pathname] || "Dashboard";
 
-  // Map page names to components
   const pageComponents: Record<string, JSX.Element> = {
     Dashboard: (
       <div>
@@ -52,8 +22,7 @@ export default function SuperAdminDashboard() {
           Welcome to Super Admin Dashboard
         </h2>
         <p className="text-gray-700">
-          Use the sidebar to navigate to different sections, like creating a new
-          organisation.
+          Use the sidebar to navigate to different sections.
         </p>
       </div>
     ),
@@ -61,15 +30,22 @@ export default function SuperAdminDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
+    <div className="min-h-screen bg-gray-100">
+      {/* Layout Wrapper */}
+      <div className="flex">
+        {/* Sidebar */}
+        <Sidebar />
 
-      <div className="flex-1 flex flex-col">
-        <TopNav pageTitle={activePage} />
+        {/* Content Area */}
+        <div className="flex-1 flex flex-col w-full">
+          {/* Top Navigation */}
+          <TopNav pageTitle={activePage} />
 
-        <main className="p-6 flex-1 bg-gray-50">
-          {pageComponents[activePage]}
-        </main>
+          {/* Main Content */}
+          <main className="flex-1 p-4 sm:p-6 bg-gray-50 overflow-auto">
+            {pageComponents[activePage]}
+          </main>
+        </div>
       </div>
     </div>
   );
