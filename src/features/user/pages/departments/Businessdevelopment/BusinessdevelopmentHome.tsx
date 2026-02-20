@@ -6,16 +6,24 @@ import { useNavigate } from "react-router-dom";
 
 const BusinessDevelopmentHome = () => {
   const [showModal, setShowModal] = useState(false);
-   const [refreshList, setRefreshList] = useState(false);
+  const [refreshList, setRefreshList] = useState(false);
   const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = useState<FilterType>("All PR");
+  const [showUpdatePage, setShowUpdatePage] = useState(false);
+
+
+
 
   const handleModalSuccess = () => {
     setRefreshList((prev) => !prev); // toggle to refresh BusinessList
   };
 
+  const filters = ["All PR", "Pending", "Rejected", "Completed"] as const;
+  type FilterType = (typeof filters)[number];
+
 
   return (
-    <div className="bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c]  p-4 sm:p-6 font-sans">
+    <div className="min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c]  p-4 sm:p-6 font-sans">
 
 
       {/* HEADER BAR */}
@@ -60,36 +68,61 @@ const BusinessDevelopmentHome = () => {
 
         </div>
       </div>
+<div className="flex overflow-x-auto gap-3 sm:gap-1 text-sm font-medium text-white w-full sm:w-auto mt-10 mb-6">
+        {filters.map((filter) => (
+          <button
+            key={filter}
+            onClick={() => {
+              setActiveFilter(filter);
+              setShowUpdatePage(false);
+            }}
+            className={` pb-1 px-2 sm:px-4  ${activeFilter === filter
+              ? "border-b-2 border-white text-white"
+              : "text-white/70 "
+              }`}
+          >
+            {filter}
+          </button>
+        ))}
+      </div>
+
 
 
 
       {/* BUSINESS LIST */}
-      <BusinessList refresh={refreshList}/>
+      <BusinessList
+        refresh={refreshList}
+        filter={
+          activeFilter === "All PR"
+            ? "ALL"
+            : activeFilter.toUpperCase()
+        }
+      />
 
       {/* MODAL */}
-     <div
-  className={`fixed inset-0 z-50 bg-black/50 flex justify-center items-start sm:items-center p-2 sm:p-4 overflow-y-auto ${
-    showModal ? "block" : "hidden"
-  }`}
->
-  <div className="bg-white rounded-xl w-full max-w-5xl p-4 sm:p-6 relative shadow-xl">
-    <button
-      onClick={() => setShowModal(false)}
-      className="absolute top-3 right-3 text-2xl font-bold text-gray-600 hover:text-black"
-    >
-      ×
-    </button>
+      <div
+        className={`fixed inset-0 z-50 bg-black/50 flex justify-center items-start sm:items-center p-2 sm:p-4 overflow-y-auto ${showModal ? "block" : "hidden"
+          }`}
+      >
+        <div className="bg-white rounded-xl w-full max-w-5xl p-4 sm:p-6 relative shadow-xl">
+          <button
+            onClick={() => setShowModal(false)}
+            className="absolute top-3 right-3 text-2xl font-bold text-gray-600 hover:text-black"
+          >
+            ×
+          </button>
 
- <CreateBusinessModal
+          <CreateBusinessModal
             onClose={() => setShowModal(false)}
             onSuccess={() => {
               handleModalSuccess();
               setShowModal(false);
             }}
           />  </div>
-</div>
-</div>
+      </div>
+    </div>
 
-      )};
+  )
+};
 
 export default BusinessDevelopmentHome;

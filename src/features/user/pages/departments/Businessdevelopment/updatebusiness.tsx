@@ -1,4 +1,4 @@
-import { useEffect, useState,useRef,memo } from "react";
+import { useEffect, useState, useRef, memo } from "react";
 import { api } from "../../../api/businessApi";
 import axios from "axios";
 
@@ -122,31 +122,10 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
   const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
 
-  // useEffect(() => {
-  //   const fetchDepartments = async () => {
-  //     try {
-  //       const res = await axios.get(`${API_BASE2}`);
-  //       console.log(res.data.data);
-  //       setDepartments(res.data.data);
-  //     } catch (err) {
-  //       console.error("Department fetch error", err);
-  //     }
-  //   };
-
-  //   fetchDepartments();
-  // }, []);
-
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        const res = await axios.get(`${API_BASE2}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
+        const res = await axios.get(`${API_BASE2}`);
         console.log(res.data.data);
         setDepartments(res.data.data);
       } catch (err) {
@@ -156,7 +135,6 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
     fetchDepartments();
   }, []);
-
 
 
   useEffect(() => {
@@ -400,7 +378,6 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             </Section>
 
             {/* Chassis / Body Details */}
-            {/* Chassis / Body Details */}
             <Section
               title="Body / Chassis Details"
               sectionKey="chassis"
@@ -589,13 +566,19 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             </Section>
 
             {/* Attachments */}
-            <Section title="Attachments" sectionKey="attachments" expanded={expandedSections.attachments}
-              toggle={toggleSection}>
+            <Section
+              title="Attachments"
+              sectionKey="attachments"
+              expanded={expandedSections.attachments}
+              toggle={toggleSection}
+            >
+              {/* Hidden Native Input */}
               <input
                 ref={fileInputRef}
                 type="file"
                 multiple
                 accept=".tsx,.pdf,.xls,.xlsx,image/*"
+                className="hidden"
                 onChange={(e) => {
                   if (!e.target.files) return;
 
@@ -607,7 +590,8 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                     const uniqueFiles = selectedFiles.filter(
                       (file) =>
                         !existingFiles.some(
-                          (f: File) => f.name === file.name && f.size === file.size
+                          (f: File) =>
+                            f.name === file.name && f.size === file.size
                         )
                     );
 
@@ -617,26 +601,44 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                     };
                   });
 
-                  // ✅ keep this
+                  // allow selecting same file again
                   e.target.value = "";
                 }}
               />
 
+              {/* Custom Button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="cursor-pointer px-2 py-1 bg-white text-gray-600 rounded-md hover:bg-purple-200 transition"
+              >
+                Choose Files
+              </button>
 
+              {/* Selected Files List */}
               {form.attachments.length > 0 ? (
-                <ul className="mt-2 space-y-1 text-sm">
+                <ul className="mt-3 space-y-2 text-sm">
                   {form.attachments.map((file: File, idx: number) => (
-                    <li key={idx} className="flex justify-between items-center">
-                      <span className="truncate">{file.name}</span>
+                    <li
+                      key={idx}
+                      className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-md"
+                    >
+                      <span className="truncate">
+                        {file.name} (
+                        {(file.size / 1024).toFixed(1)} KB)
+                      </span>
+
                       <button
                         type="button"
                         onClick={() =>
                           setForm((prev: any) => ({
                             ...prev,
-                            attachments: prev.attachments.filter((_: any, i: number) => i !== idx),
+                            attachments: prev.attachments.filter(
+                              (_: any, i: number) => i !== idx
+                            ),
                           }))
                         }
-                        className="text-red-500 text-xs"
+                        className="text-red-500 hover:text-red-700 text-xs font-semibold"
                       >
                         Remove
                       </button>
@@ -644,15 +646,18 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-gray-400 mt-1">No files selected</p>
+                <p className="text-xs text-gray-400 mt-2">
+                  No files selected
+                </p>
               )}
-
             </Section>
+
 
             {/* Declaration */}
             <Section title="Declaration" sectionKey="declaration" expanded={expandedSections.declaration}
               toggle={toggleSection}>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+
                 <div>
                   <label className="text-xs font-semibold text-gray-700 mb-1 block">Declaration Date</label>
                   <input type="date" name="declaration_date" value={form.declaration_date} onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-sm w-full" />
@@ -675,7 +680,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
                 <select name="bd_status" value={form.bd_status} onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-sm">
                   <option value="CREATED">CREATED</option>
-                  <option value="IN_PROGRESS">IN PROGRESS</option>
+                  <option value="PENDING">PENDING</option>
                   <option value="REJECTED">REJECTED</option>
                 </select>
                 <input name="bd_comments" value={form.bd_comments} placeholder="BD Comments" onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-sm" />

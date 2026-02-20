@@ -41,6 +41,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
     { label: "Priority", key: "priority" },
     { label: "Applicant", key: "applicant_name" },
     { label: "Contact Person", key: "contact_person" },
+    { label: "Requested By", key: "requested_by_person" },
     { label: "Mobile Number", key: "mobile_number" },
   ];
 
@@ -72,55 +73,122 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
 
   // Handle Feasibility update
   const handleFeasibilityUpdate = async () => {
-    try {
-      const res = await api.patch(
-        `/business-development/feasibility/${data.id}/review`,
-        {
-          feasibility_status,
-          feasibility_comments,
-        }
-      );
-      onUpdate(res.data);
-      setShowModal(false);
-    } catch (err) {
-      console.error("Failed to update feasibility", err);
-      alert("Failed to update feasibility");
+  try {
+    // Get token from localStorage (or wherever you store it)
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("You are not logged in");
+      return;
     }
-  };
+
+    // API call with Authorization header
+    const res = await api.patch(
+      `/business-development/feasibility/${data.id}/review`,
+      {
+        feasibility_status,
+        feasibility_comments,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ send JWT
+        },
+      }
+    );
+
+    // Update parent state
+    onUpdate(res.data.data);
+    setShowModal(false);
+  } catch (err) {
+    console.error("Failed to update feasibility", err);
+    alert("Failed to update feasibility");
+  }
+};
+
 
   // Handle BD team update
-  const handleBdUpdate = async () => {
-    try {
-      const res = await api.patch(
-        `/business-development/${data.id}/bd-update`,
-        {
-          bd_status: finalStatus,
-          bd_comments: finalComments,
-        }
-      );
-      onUpdate(res.data);
-      setShowModal(false);
-    } catch (err) {
-      console.error("Failed to update BD info", err);
-      alert("Failed to update BD info");
-    }
+ const handleBdUpdate = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await api.patch(
+      `/business-development/${data.id}/bd-update`,
+      {
+        bd_status: finalStatus,
+        bd_comments: finalComments,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` }, // ✅ send token
+      }
+    );
+    onUpdate(res.data.data);
+    setShowModal(false);
+  } catch (err) {
+    console.error("Failed to update BD info", err);
+    alert("Failed to update BD info");
+  }
+};
+
+
+  const renderCheckbox = (checked: boolean, label: string) => {
+    return (
+      <label className="flex items-center gap-2 text-xs font-semibold">
+        {/* Hidden native checkbox (read-only) */}
+        <input
+          type="checkbox"
+          checked={checked}
+          readOnly
+          className="hidden"
+        />
+
+        {/* Custom checkbox UI */}
+        <span
+          className={`
+          w-4 h-4 flex items-center justify-center
+          rounded border
+          ${checked ? "bg-blue-600 border-blue-600" : "border-blue-400"}
+        `}
+        >
+          {checked && (
+            <svg
+              className="w-3 h-3 text-white"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          )}
+        </span>
+
+        <span className="text-gray-700">{label}</span>
+      </label>
+    );
   };
+
 
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-sm relative">
       <h2 className="text-purple-600 font-semibold text-sm mb-2 truncate">
-      BR ID:{data.id}
+        BR ID:{data.id}
       </h2>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-0.5">
         {mainFields.map((item) => (
-          <div key={item.key} className="flex gap-2 item-center">
-            <span className="w-32 text-gray-400">{item.label}:</span>
-            <span className="font-medium text-gray-700">
+          <div key={item.key} className="flex items-center">
+            <span className="w-40 shrink-0 text-gray-400">
+              {item.label}:
+            </span>
+            <span className="font-medium text-gray-700 truncate">
               {renderValue(data[item.key as keyof typeof data])}
             </span>
           </div>
+
         ))}
 
         <button
@@ -167,7 +235,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                     label: "Required Date",
                     value: formatDate(data.required_date || data.required_by),
                   },
-                 
+
                 ],
               },
               {
@@ -217,11 +285,10 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                     label: "Features",
                     value: (
                       <div className="flex flex-wrap gap-2">
-                        {ADDITIONAL_FEATURES.filter((f) => data[f.key]).map((f) => (
-                          <span key={f.key} className="text-black text-xs font-semibold">
-                            {f.label}
-                          </span>
-                        ))}
+                        {ADDITIONAL_FEATURES.map((f) =>
+                          renderCheckbox(!!data[f.key], f.label)
+                        )}
+
                       </div>
                     ),
                   },
@@ -234,11 +301,10 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                     label: "Standards",
                     value: (
                       <div className="flex flex-wrap gap-2">
-                        {COMPLIANCE_STANDARDS.filter((f) => data[f.key]).map((f) => (
-                          <span key={f.key} className="text-black text-xs font-semibold">
-                            {f.label}
-                          </span>
-                        ))}
+                        {COMPLIANCE_STANDARDS.map((f) =>
+                          renderCheckbox(!!data[f.key], f.label)
+                        )}
+
                       </div>
                     ),
                   },
@@ -274,6 +340,8 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                           </div>
                         </div>
 
+
+
                         {/* Feasibility Status */}
                         <div className="flex flex-col gap-1">
                           <span className="text-gray-600 text-xs">Feasibility Status</span>
@@ -284,9 +352,9 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                               className="w-full h-[38px] p-2 border rounded text-xs"
                             >
                               <option value="">Select</option>
-                              <option value="APPROVED">FEASIBILITY APPROVED</option>
-                              <option value="PENDING">FEASIBILITY PENDING</option>
-                              <option value="REJECTED">FEASIBILITY REJECTED</option>
+                              <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
+                              <option value="FEASIBILITY PENDING">FEASIBILITY PENDING</option>
+                              <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
                             </select>
                           ) : (
                             <div className="h-[38px] flex items-center font-semibold text-black">
@@ -315,6 +383,66 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                   },
                 ],
               },
+
+              {
+                title: "Declaration",
+                fields: [
+                  {
+                    label: "",
+                    value: (
+                      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+
+                        <div className="flex flex-col">
+                          <span className="text-gray-600 text-xs font-medium">
+                            Declaration Date
+                          </span>
+                          <span className="font-semibold text-black">
+                            {formatDate(data.declaration_date)}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col">
+                          <span className="text-gray-600 text-xs font-medium">
+                            Place
+                          </span>
+                          <span className="font-semibold text-black">
+                            {renderValue(data.place)}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col">
+                          <span className="text-gray-600 text-xs font-medium">
+                            Applicant Signature
+                          </span>
+                          <span className="font-semibold text-black">
+                            {renderValue(data.applicant_signature)}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col">
+                          <span className="text-gray-600 text-xs font-medium">
+                            Requested By
+                          </span>
+                          <span className="font-semibold text-black">
+                            {renderValue(data.requested_by_person)}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col">
+                          <span className="text-gray-600 text-xs font-medium">
+                            Created At
+                          </span>
+                          <span className="font-semibold text-black">
+                            {formatDate(data.created_at)}
+                          </span>
+                        </div>
+
+                      </div>
+                    ),
+                  },
+                ],
+              },
+
             ].map((section) => (
               <div
                 key={section.title}
@@ -381,7 +509,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                 {/* BUTTON: OUTSIDE GRAY BOX, RIGHT END */}
                 <div className="flex justify-end mt-4">
                   <button
-                    onClick={handleFeasibilityUpdate}
+                    onClick={handleBdUpdate}
                     className="bg-purple-700 text-white px-5 py-2 rounded text-sm sm:text-base"
                   >
                     Update Business Development

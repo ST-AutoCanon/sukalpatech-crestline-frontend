@@ -1,23 +1,38 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../../../api/businessApi";
 import FeasibilityCard from "./Allfeasibility";
+import { useNavigate } from "react-router-dom";
+
 
 const UpdatedFeasibilityPage = () => {
   const [prs, setPrs] = useState<any[]>([]);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     fetchPRs();
   }, []);
 
   const fetchPRs = async () => {
-    try {
-      const res = await api.get("/business-development");
-      const updatedPrs = res.data.data.filter((pr: any) => pr.feasibility_status);
-      setPrs(updatedPrs);
-    } catch (err) {
-      console.error("Failed to fetch PRs", err);
-    }
-  };
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await api.get("/business-development", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const updatedPrs = res.data.data.filter(
+      (pr: any) => pr.feasibility_status
+    );
+
+    setPrs(updatedPrs);
+  } catch (err) {
+    console.error("Failed to fetch PRs", err);
+  }
+};
+
 
   // Update a PR in state after BD update or Feasibility update
   const handleUpdate = (updatedPr: any) => {
@@ -27,7 +42,15 @@ const UpdatedFeasibilityPage = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-6 pt-12">
+    <div className="min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-6 pt-12">
+      <button
+  onClick={() => navigate(-1)}
+  className="text-white font-bold text-4xl mr-10"
+>
+  ←
+</button>
+
+
       <button
         className="
     px-4 sm:px-5
@@ -42,6 +65,7 @@ const UpdatedFeasibilityPage = () => {
       >
         Updated Business BR
       </button>
+      
 
       <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
         {prs.map((pr) => (

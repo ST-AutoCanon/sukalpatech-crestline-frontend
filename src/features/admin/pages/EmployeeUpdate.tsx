@@ -9,6 +9,8 @@ interface Employee {
   email: string;
   role: string;
   status?: string;
+  category?: string;
+
 }
 
 export default function EmployeeManagementPage() {
@@ -22,6 +24,8 @@ export default function EmployeeManagementPage() {
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
 
   const [newEmployee, setNewEmployee] = useState({
     first_name: "",
@@ -29,6 +33,8 @@ export default function EmployeeManagementPage() {
     email: "",
     password: "",
     role: "employee",
+    category: "Medium",
+
   });
 
   /* ================= FETCH ================= */
@@ -50,6 +56,11 @@ export default function EmployeeManagementPage() {
 
   /* ================= CREATE ================= */
   const handleCreate = async () => {
+    if (emailError) {
+      alert("Invalid Email Id");
+      return;
+    }
+
     try {
       setLoading(true);
       await axios.post(`${ADMIN_API_BASE}/employees`, newEmployee, {
@@ -62,8 +73,8 @@ export default function EmployeeManagementPage() {
         email: "",
         password: "",
         role: "employee",
+        category: "",
       });
-
       setCreating(false);
       fetchEmployees();
     } catch (err) {
@@ -72,6 +83,7 @@ export default function EmployeeManagementPage() {
       setLoading(false);
     }
   };
+
 
   /* ================= UPDATE ================= */
   const handleUpdate = async () => {
@@ -154,10 +166,25 @@ export default function EmployeeManagementPage() {
                 className="border p-2.5 rounded-lg w-full md:col-span-2"
                 placeholder="Email"
                 value={newEmployee.email}
-                onChange={(e) =>
-                  setNewEmployee({ ...newEmployee, email: e.target.value })
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setNewEmployee({ ...newEmployee, email: value });
+
+                  // ✅ Simple email regex validation
+                  const emailRegex = /^[\w.-]+@(gmail\.com|yopmail\.com)$/i;
+                  if (!emailRegex.test(value)) {
+                    setEmailError("Invalid email. Must be @gmail.com or @yopmail.com");
+                  } else {
+                    setEmailError(null);
+                  }
+                }}
+
+                {...emailError && (
+                  <p className="text-red-600 text-sm mt-1">{emailError}</p>
+                )}
+
               />
+
 
               <div className="relative w-full md:col-span-2">
                 <input
@@ -177,6 +204,19 @@ export default function EmployeeManagementPage() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              <select
+                className="border p-2 rounded-lg col-span-2"
+                value={newEmployee.category}
+                onChange={(e) =>
+                  setNewEmployee({ ...newEmployee, category: e.target.value })
+                }
+              >
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+
+
             </div>
 
             <button
@@ -199,6 +239,8 @@ export default function EmployeeManagementPage() {
                   <th className="whitespace-nowrap">Email</th>
                   <th className="whitespace-nowrap">Role</th>
                   <th className="whitespace-nowrap">Status</th>
+                  <th className="whitespace-nowrap">Category</th>
+
                   <th className="text-right pr-4 whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
@@ -217,6 +259,8 @@ export default function EmployeeManagementPage() {
                     <td className="whitespace-nowrap">
                       {emp.status || "active"}
                     </td>
+                    <td className="whitespace-nowrap capitalize">{emp.category}</td>
+
 
                     <td className="pr-4">
                       <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
@@ -278,6 +322,18 @@ export default function EmployeeManagementPage() {
                     })
                   }
                 />
+                <select
+                  className="w-full border p-2 rounded-lg"
+                  value={selectedEmployee.category || ""} // empty string default
+                  onChange={(e) =>
+                    setSelectedEmployee({ ...selectedEmployee, category: e.target.value })
+                  }
+                >
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+
 
                 <button
                   onClick={handleUpdate}

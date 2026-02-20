@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 interface BusinessCardProps {
   data: {
@@ -59,14 +60,29 @@ interface BusinessCardProps {
     feasibility_status?: string;
     feasibility_comments?: string;
   };
+  onUpdate: (updatedData: any) => void;
 }
 
 
-const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
+const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
   const attachments = Array.isArray(data.attachments) ? data.attachments : [];
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState(data);
+  const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+
+
+
+  const DROPDOWN_OPTIONS: Record<string, string[]> = {
+    priority: ["LOW", "MEDIUM", "HIGH"],
+    body_type: ["Mini Bus", "Sleeper", "Tourist", "School Bus", "City Bus", "staff Bus"],
+    seat_type: ["Push-back", "Fixed", "Recliner", "Semi-Sleeper", "Sleeper"],
+    fuel_type: ["Diesel", "CNG (Compressed Natural Gas)", "LNG (Liquefied Natural Gas)", "Electric", "Hybrid (Diesel/Electric)", "Petrol", "Hydrogen (Fuel Cell)", "Biodiesel"],
+    flooring_type: ["Vinyl", "Rubber", "Anti-skid"],
+  };
+
+
 
   const handleChange = (key: keyof typeof data, value: any) => {
     setFormData({ ...formData, [key]: value });
@@ -84,6 +100,25 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
       );
     }
 
+    // ✅ If field has dropdown options
+    if (DROPDOWN_OPTIONS[key as string]) {
+      return (
+        <select
+          value={formData[key] ?? ""}
+          onChange={(e) => handleChange(key, e.target.value)}
+          className="border rounded px-2 py-1 text-xs"
+        >
+          <option value="">Select</option>
+          {DROPDOWN_OPTIONS[key as string].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    // ✅ Normal input
     return (
       <input
         type={type}
@@ -97,6 +132,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
       />
     );
   };
+
 
   const renderCheckbox = (key: keyof typeof formData, label: string) => {
     const checked = !!formData[key];
@@ -170,6 +206,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
     { label: "Priority", key: "priority" },
     { label: "Applicant", key: "applicant_name" },
     { label: "Contact Person", key: "contact_person" },
+    { label: "Requested By", key: "requested_by_person" },
     { label: "Mobile Number", key: "mobile_number" },
   ];
 
@@ -198,6 +235,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
     if (isNaN(d.getTime())) return "-";
     return d.toLocaleDateString("en-GB");
   };
+  const canEdit = !data.feasibility_status;
+
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-sm relative">
@@ -224,18 +263,31 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
             More Info
           </button>
 
-          <button
-            onClick={() => {
-              setShowModal(true);
-              setEditMode(true); // editable
-            }}
-            className="text-sm font-semibold text-blue-600 hover:underline"
-          >
-            Edit
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => {
+                setShowModal(true);
+                setEditMode(true);
+              }}
+              className="text-sm font-semibold text-blue-600 hover:underline"
+            >
+              Edit
+            </button>
+          )}
+
         </div>
 
       </div>
+      {message && (
+        <div
+          className={`fixed top-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded shadow-md text-white z-50 animate-fade-in ${message.type === "success" ? "bg-green-600" : "bg-red-600"
+            }`}
+        >
+          {message.text}
+        </div>
+      )}
+
+
 
       {/* Modal */}
       {showModal && (
@@ -365,30 +417,27 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                     value: (
                       <div className="flex flex-col gap-2">
                         {/* OLD FILES */}
-                        {Array.isArray(formData.attachments) &&
-                          formData.attachments.length > 0 && (
-                            <div className="flex flex-col gap-1">
-                              {formData.attachments.map((file: any, idx: number) => {
-                                const fileName =
-                                  typeof file === "string"
-                                    ? file.split("/").pop()
-                                    : file.originalname ||
-                                    file.filename ||
-                                    file.name ||
-                                    "Attachment";
+                        {Array.isArray(formData.attachments) && formData.attachments.length > 0 ? (
+                          <div className="flex flex-col gap-1">
+                            {formData.attachments.map((file: any, idx: number) => {
+                              const fileName =
+                                typeof file === "string"
+                                  ? file.split("/").pop()
+                                  : file.originalname || file.filename || file.name || "Attachment";
 
-                                return (
-                                  <span
-                                    key={idx}
-                                    className="text-xs text-blue-600 underline cursor-pointer"
-                                  >
-                                    {fileName}
-                                  </span>
-                                );
-                              })}
-
-                            </div>
-                          )}
+                              return (
+                                <span
+                                  key={idx}
+                                  className="text-xs text-blue-600 underline cursor-pointer"
+                                >
+                                  {fileName}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ) : !editMode ? (
+                          <span className="text-xs text-gray-500">No files uploaded</span>
+                        ) : null}
 
                         {/* NEW FILE PICKER */}
                         {editMode && (
@@ -396,24 +445,15 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                             type="file"
                             multiple
                             onChange={(e) =>
-                              handleChange(
-                                "attachments",
-                                Array.from(e.target.files || []) // ✅ replace, not append
-                              )
+                              handleChange("attachments", Array.from(e.target.files || []))
                             }
-
                             className="text-xs"
                           />
                         )}
-
-                        {/* NO FILES */}
-                        {!editMode &&
-                          (!formData.attachments ||
-                            formData.attachments.length === 0) &&
-                          "-"}
                       </div>
                     ),
-                  },
+                  }
+
                 ],
               },
 
@@ -458,6 +498,46 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                             </span>
                           )}
                         </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">Feasibility Status</span>
+                          {editMode ? (
+                            <select
+                              value={formData.feasibility_status || ""}
+                              onChange={(e) =>
+                                handleChange("feasibility_status", e.target.value)
+                              }
+                              className="border rounded text-xs px-2 py-1"
+                            >
+                              <option value="">Select</option>
+                              <option value="PENDING">PENDING</option>
+                              <option value="APPROVED">APPROVED</option>
+                              <option value="REJECTED">REJECTED</option>
+                            </select>
+                          ) : (
+                            <span className="text-xs font-semibold">
+                              {renderValue(formData.feasibility_status)}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Feasibility Comments */}
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">Feasibility Comments</span>
+                          {editMode ? (
+                            <textarea
+                              value={formData.feasibility_comments || ""}
+                              onChange={(e) =>
+                                handleChange("feasibility_comments", e.target.value)
+                              }
+                              className="border rounded text-xs px-2 py-1"
+                            />
+                          ) : (
+                            <span className="text-xs font-semibold">
+                              {renderValue(formData.feasibility_comments)}
+                            </span>
+                          )}
+                        </div>
+
                       </div>
                     ),
                   },
@@ -469,7 +549,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                   {
                     label: "",
                     value: (
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-5 gap-4">
                         <div className="flex flex-col">
                           <span className="text-xs font-medium">Declaration Date</span>
                           {editMode ? (
@@ -522,6 +602,39 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                             </span>
                           )}
                         </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">Requested By</span>
+                          {editMode ? (
+                            <input
+                              type="text"
+                              value={formData.requested_by_person || ""}
+                              onChange={(e) => handleChange("requested_by_person", e.target.value)}
+                              className="border rounded text-xs px-2 py-1"
+                            />
+                          ) : (
+                            <span className="text-xs font-semibold">
+                              {renderValue(formData.requested_by_person)}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">Created At</span>
+                          {editMode ? (
+                            <input
+                              type="date"
+                              value={toDateInputValue(formData.created_at)}
+                              onChange={(e) => handleChange("created_at", e.target.value)}
+                              className="border rounded text-xs px-2 py-1"
+                            />
+                          ) : (
+                            <span className="text-xs font-semibold">
+                              {formatDate(formData.created_at)}
+                            </span>
+                          )}
+                        </div>
+
+
                       </div>
                     ),
                   },
@@ -540,7 +653,9 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                   {section.fields.map(f => (
                     <div key={f.label} className="flex flex-col">
                       <span className="text-gray-600 text-xs font-medium">{f.label}</span>
-                      <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">{React.isValidElement(f.value) ? f.value : renderValue(f.value)}</span>
+                      <div className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">
+                        {React.isValidElement(f.value) ? f.value : renderValue(f.value)}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -557,26 +672,69 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data }) => {
                 >
                   Cancel
                 </button>
-
                 <button
+                  className="px-4 py-1 bg-blue-600 text-white rounded text-sm"
                   onClick={async () => {
                     try {
-                      console.log("Updated Data:", formData);
+                      const fd = new FormData();
 
-                      // 🔥 CALL UPDATE API HERE
-                      // await updateBusiness(formData);
+                      Object.entries(formData).forEach(([key, value]) => {
+                        if (key === "attachments") return;
+                        if (value !== undefined && value !== null) {
+                          fd.append(key, value.toString());
+                        }
+                      });
 
+                      if (formData.attachments) {
+                        const attachmentsArray = Array.isArray(formData.attachments)
+                          ? formData.attachments
+                          : [formData.attachments];
+
+                        attachmentsArray.forEach((file: any) => {
+                          if (file instanceof File) fd.append("attachments", file);
+                          else fd.append("attachments", JSON.stringify(file));
+                        });
+                      }
+
+                     const token = localStorage.getItem("token"); // or wherever you store it
+
+const res = await fetch(
+  `${import.meta.env.VITE_BACKEND_URL}/api/business-development/${data.id}`,
+  {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: fd,
+  }
+);
+
+
+                      if (!res.ok) throw new Error("Update failed");
+
+                      const result = await res.json();
+
+                      onUpdate(result.data);
                       setEditMode(false);
-                      setShowModal(false); // ✅ CLOSE POPUP
+                      setShowModal(false);
+
+                      // ✅ Success message
+                      setMessage({ text: "Business details updated successfully!", type: "success" });
+                      setTimeout(() => setMessage(null), 3000);
                     } catch (err) {
                       console.error("Save failed", err);
+                      // ✅ Error message
+                      setMessage({ text: "Failed to update business details.", type: "error" });
+                      setTimeout(() => setMessage(null), 3000);
                     }
                   }}
 
-                  className="px-4 py-1 bg-blue-600 text-white rounded text-sm"
+
                 >
                   Save
                 </button>
+
+
               </div>
             )}
 
