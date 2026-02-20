@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Building2, UserCog, Menu } from "lucide-react";
+import { LayoutDashboard, Building2, UserCog, Menu, BarChart2 } from "lucide-react";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -26,6 +26,11 @@ export default function Sidebar() {
       path: "/admin/employee-update",
       icon: <UserCog size={22} />,
     },
+    { name: "Category Limit", 
+      path: "/admin/categorylimit",
+      icon: <BarChart2 size={22} />, 
+    },
+
   ];
 
   const isActive = (path: string) => location.pathname === path;

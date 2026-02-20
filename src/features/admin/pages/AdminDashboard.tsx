@@ -44,6 +44,8 @@ import Sidebar from "../components/Sidebar";
 import TopNav from "../components/TopNav";
 import DepartmentPage from "./Department";
 import EmployeeUpdate from "./EmployeeUpdate";
+import CategoryLimitPage from "./Categorylimit";
+
 
 export default function AdminDashboard() {
   const { pathname } = useLocation();
@@ -52,6 +54,8 @@ export default function AdminDashboard() {
     "/admin": "Dashboard",
     "/admin/departments": "Departments",
     "/admin/employee-update": "EmployeeUpdate",
+    "/admin/categorylimit": "CategoryLimit",
+
   };
 
   const activePage = pathToPage[pathname] || "Dashboard";
@@ -60,7 +64,7 @@ export default function AdminDashboard() {
     Dashboard: <div>Welcome to Admin Dashboard!</div>,
     Departments: <DepartmentPage />,
     EmployeeUpdate: <EmployeeUpdate />,
-  };
+    CategoryLimit: <CategoryLimitPage />,  };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">

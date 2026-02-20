@@ -108,18 +108,19 @@ const CreateOrganisation = () => {
     }
   };
 
-  return (
-    <>
-      {alert && (
-        <Alert
-          type={alert.type}
-          message={alert.message}
-          onClose={() => setAlert(null)}
-        />
-      )}
+ return (
+  <>
+    {alert && (
+      <Alert
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert(null)}
+      />
+    )}
 
-      {/* Outer wrapper - responsive spacing */}
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+    {/* Outer wrapper */}
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6">
         {/* Card container */}
         <div className="w-full max-w-5xl mx-auto bg-white shadow-lg rounded-2xl p-6 sm:p-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
@@ -130,8 +131,8 @@ const CreateOrganisation = () => {
             Register a new organisation and assign an administrator.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* ================= Organisation Info ================= */}
+          <form onSubmit={handleSubmit} className="space-y-8 pb-20">
+            {/* Organisation Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-2">
@@ -162,7 +163,7 @@ const CreateOrganisation = () => {
               </div>
             </div>
 
-            {/* ================= Admin Section ================= */}
+            {/* Admin Section */}
             <div className="bg-gray-50 p-5 sm:p-6 rounded-xl border">
               <h3 className="text-lg font-semibold text-gray-800 mb-5">
                 Organisation Admin
@@ -177,7 +178,6 @@ const CreateOrganisation = () => {
                   placeholder="First Name"
                   required
                 />
-
                 <input
                   type="text"
                   value={adminLastName}
@@ -186,7 +186,6 @@ const CreateOrganisation = () => {
                   placeholder="Last Name"
                   required
                 />
-
                 <input
                   type="email"
                   value={adminEmail}
@@ -198,7 +197,7 @@ const CreateOrganisation = () => {
               </div>
             </div>
 
-            {/* ================= Departments ================= */}
+            {/* Departments */}
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Select Departments
@@ -207,7 +206,6 @@ const CreateOrganisation = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
                 {availableDepartments.map((dept) => {
                   const isSelected = selectedDepartments.includes(dept.value);
-
                   return (
                     <div
                       key={dept.value}
@@ -223,7 +221,6 @@ const CreateOrganisation = () => {
                         <span className="font-medium text-gray-700 text-sm sm:text-base">
                           {dept.label}
                         </span>
-
                         <div
                           className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
                           ${
@@ -232,9 +229,7 @@ const CreateOrganisation = () => {
                               : "border-gray-300"
                           }`}
                         >
-                          {isSelected && (
-                            <div className="w-2 h-2 bg-white rounded-full" />
-                          )}
+                          {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
                         </div>
                       </div>
                     </div>
@@ -243,7 +238,7 @@ const CreateOrganisation = () => {
               </div>
             </div>
 
-            {/* ================= Submit ================= */}
+            {/* Submit Button */}
             <div>
               <button
                 type="submit"
@@ -256,8 +251,8 @@ const CreateOrganisation = () => {
           </form>
         </div>
       </div>
-    </>
-  );
-};
-
+    </div>
+  </>
+);
+}
 export default CreateOrganisation;

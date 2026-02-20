@@ -64,7 +64,7 @@ interface User {
 /* ================= COMPONENT ================= */
 
 export default function SubmittedRequestsPage() {
-  const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);//user,category
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/new-feasibility`;
 
   const [requests, setRequests] = useState<FeasibilityPR[]>([]);
@@ -91,73 +91,6 @@ export default function SubmittedRequestsPage() {
   const [vendorUpdates, setVendorUpdates] = useState<{ [key: string]: { status: string; comment: string } }>({});
   const [vendorMap, setVendorMap] = useState<Record<string, string>>({});
   const [departmentMap, setDepartmentMap] = useState<Record<string, string>>({});
-
-  const CATEGORY_LIMITS: Record<string, number> = { LOW: 50000, MEDIUM: 200000, HIGH: Infinity };
-
-  const resolvedCategory = useMemo(() => {
-  return user?.category ? user.category.toUpperCase() : null;
-}, [user]);
-
-  const userLimit = useMemo(() => {
-  if (!resolvedCategory) return Infinity;
-
-  return CATEGORY_LIMITS[resolvedCategory] ?? Infinity;
-}, [resolvedCategory]);
-
-
-
- const totalPrice = useMemo(() => {
-  return updateData.items.reduce((sum, item) => {
-    return sum + item.vendors.reduce((vendorSum, v) => {
-      // Remove commas and convert to number safely
-      const price = Number(String(v.total_price || 0).replace(/,/g, ""));
-      return vendorSum + (isNaN(price) ? 0 : price);
-    }, 0);
-  }, 0);
-}, [updateData.items]);
-
-
-const checkLimit = (): boolean => {
-  if (!resolvedCategory) {
-    setAlert({ type: "error", message: "Approval denied. User category not assigned." });
-    return true;
-  }
-
-  if (resolvedCategory === "HIGH") return false;
-
-  if (isNaN(totalPrice)) {
-    setAlert({ type: "error", message: "Total price is invalid." });
-    return true;
-  }
-
-  if (totalPrice > userLimit) {
-    const limitText = resolvedCategory === "LOW" ? "₹50,000" : "₹2,00,000";
-    setAlert({
-      type: "error",
-      message: `Approval denied. ${resolvedCategory} category limit is ${limitText}, but total PR is ₹${totalPrice}.`,
-    });
-    return true;
-  }
-
-  return false;
-};
-
-  // Inside your component, after calculating userLimit, totalPrice, and isBlocked
- const isBlocked =
-  resolvedCategory !== "HIGH" && totalPrice > userLimit;
-
-  console.log({
-  resolvedCategory,
-  userLimit,
-  totalPrice,
-  isBlocked,
-});
-console.log("USER FROM AUTH:", {
-  category: user?.category,
-  permissions: user?.permissions,
-});
-
-
 
   const updateVendorField = (itemIndex: number, vendorIndex: number, field: "status" | "comment", value: string) => {
     const key = `${itemIndex}-${vendorIndex}`;
@@ -237,65 +170,88 @@ console.log("USER FROM AUTH:", {
     setVendorUpdates({});
   };
 
-  const submitUpdate = async () => {
-    if (!selectedPR || !newStatus) {
-      setAlert({
-        type: "error",
-        message: "Please select procurement PR status",
-      });
-      return;
-    }
+  const totalPrice = useMemo(() => {
+  return updateData.items.reduce((sum, item) => {
+    return (
+      sum +
+      item.vendors.reduce((vendorSum, v) => {
+        const price = Number(
+          String(v.total_price || 0).replace(/,/g, "")
+        );
+        return vendorSum + (isNaN(price) ? 0 : price);
+      }, 0)
+    );
+  }, 0);
+}, [updateData.items]);
 
-    const payload = {
-      department_statuses: [
-        {
-          department_status: newStatus,
-          department_comment: newComment,
-          status_updated_by: user.first_name,
-          updated_at: new Date().toISOString(),
-        },
-      ],
-      items: updateData.items.map((item, i) => ({
-        ...item,
-        vendors: item.vendors.map((vendor, vi) => {
-          const key = `${i}-${vi}`;
-          const vendorData = vendorUpdates[key] || { status: "", comment: "" };
-          const newVendorComments: VendorComment[] = vendorData.comment
-            ? [{ comment: vendorData.comment, commented_by: 2 }]
-            : [];
-          return {
-            ...vendor,
-            status: vendorData.status || vendor.status,
-            comments: [...(vendor.comments || []), ...newVendorComments],
-          };
-        }),
-      })),
-    };
 
-    const token = localStorage.getItem("token");
+ const submitUpdate = async () => {
+  if (!selectedPR || !newStatus) {
+    setAlert({
+      type: "error",
+      message: "Please select procurement PR status",
+    });
+    return;
+  }
 
-    await axios.put(
-      `${API_BASE}/feasibility-requests/${selectedPR.id}`,
-      payload,
+  const token = localStorage.getItem("token");
+
+  try {
+    // 🔹 1️⃣ Call approval check API first
+    const approvalRes = await axios.post(
+      `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit/approve`,
+      { amount: totalPrice },
       {
         headers: { Authorization: `Bearer ${token}` },
-      },
+      }
     );
 
+    // 🔹 2️⃣ If allowed → continue update
+    if (approvalRes.data.success) {
+
+      const payload = {
+        department_statuses: [
+          {
+            department_status: newStatus,
+            department_comment: newComment,
+            status_updated_by: user.first_name,
+            updated_at: new Date().toISOString(),
+          },
+        ],
+        items: updateData.items,
+      };
+
+      await axios.put(
+        `${API_BASE}/feasibility-requests/${selectedPR.id}`,
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setAlert({
+        type: "success",
+        message: "Feasibility PR approved successfully",
+      });
+
+      setModalOpen(false);
+    }
+
+  } catch (error: any) {
     setAlert({
-      type: "success",
-      message: "Feasibility PR updated successfully",
+      type: "error",
+      message:
+        error.response?.data?.message ||
+        "Approval denied. Limit exceeded.",
     });
+  }
+};
 
-    setTimeout(() => {
-      setAlert(null);
-    }, 2000);
-
-    setModalOpen(false);
-  };
 
   return (
     <div className="p-4 sm:p-6 text-black">
+                  {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
+
       {/* PR CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {requests.map((pr) => (
@@ -329,7 +285,6 @@ console.log("USER FROM AUTH:", {
             <button className="absolute top-2 right-2 text-2xl text-gray-600 hover:text-gray-800" onClick={() => setModalOpen(false)}>
               ×
             </button>
-            {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
             {/* PR DETAILS */}
             <div className="bg-gray-100 p-4 rounded mb-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
@@ -791,7 +746,7 @@ console.log("USER FROM AUTH:", {
             <div className="flex justify-end mt-4">
               <button
                 onClick={submitUpdate}
-                className={`px-6 py-2 rounded text-white ${isBlocked ? "bg-red-500 hover:bg-red-600" : "bg-blue-600 hover:bg-blue-700"}`}
+                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
                 Update Feasibility PR
               </button>

@@ -210,19 +210,28 @@ export default function NewProcurementPage({ onClose, onCreated }) {
     });
   };
 
-  const handleFileUpload = (i, vi, files) => {
-    const key = `${i}-${vi}`;
-    setVendorFiles({
-      ...vendorFiles,
-      [key]: Array.from(files),
-    });
-  };
-
+  
   const handleComment = (i, vi, value) => {
     const updated = [...prData.items];
     updated[i].vendors[vi].comments = [{ comment: value, commented_by: 5 }];
     setPrData({ ...prData, items: updated });
   };
+
+  const handleFileUpload = (i: number, vi: number, files: FileList | null) => {
+  if (!files) return;
+  const key = `${i}-${vi}`;
+  const fileArray = Array.from(files).map((file) => ({
+    file,
+    preview: URL.createObjectURL(file), // create a preview URL
+  }));
+
+  setVendorFiles((prev) => ({
+    ...prev,
+    [key]: fileArray,
+  }));
+};
+
+
 
   // const submitPR = async () => {
   //   try {
@@ -444,7 +453,7 @@ const submitPR = async () => {
                       className="w-full sm:w-28 border rounded-lg px-2 py-1"
                       onKeyDown={(e) => {
                         // Block invalid keys
-                        if (["e", "E", "+", "-", ".", "0"].includes(e.key)) {
+                        if (["e", "E", "+", "-", "."].includes(e.key)) {
                           e.preventDefault();
                         }
                       }}
@@ -499,9 +508,37 @@ const submitPR = async () => {
                         type="file"
                         className="w-full p-2 border rounded mt-1"
                         onChange={(e) =>
-                          handleFileUpload(i, vi, e.target.files)
-                        }
+                          handleFileUpload(i, vi, e.target.files)}
+                          multiple
                       />
+                      {/* File preview */}
+{vendorFiles[`${i}-${vi}`]?.length > 0 && (
+  <div className="mt-2 space-y-1">
+   {vendorFiles[`${i}-${vi}`]?.map((f, index) => (
+  <div key={index} className="flex items-center gap-2">
+    <span className="text-xs truncate">{f.file.name}</span>
+
+    {f.file.type.startsWith("image/") && (
+      <img
+        src={f.preview}
+        alt={f.file.name}
+        className="w-16 h-16 object-cover border rounded"
+      />
+    )}
+
+    <a
+      href={f.preview}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 text-xs underline ml-2"
+    >
+      View
+    </a>
+  </div>
+))}
+
+  </div>
+)}
                     </div>
 
                     {/* Unit Price */}
@@ -548,7 +585,7 @@ const submitPR = async () => {
                       <label className="text-xs text-gray-600">Quotation Validity</label>
                       <input
                         type="date"
-                        className="w-full p-2 border rounded mt-1"
+                        className="w-full p-2 pr-2 border rounded mt-1"
                         min={new Date().toISOString().split("T")[0]} // prevent past dates
                         onChange={(e) =>
                           handleVendorChange(i, vi, "quotation_validity_date", e.target.value)

@@ -239,6 +239,13 @@ export default function SubmittedFinanceRequestsPage() {
 
   return (
     <div className="p-4 sm:p-6 text-black">
+      {alert && (
+              <Alert
+                type={alert.type}
+                message={alert.message}
+                onClose={() => setAlert(null)}
+              />
+            )}
       {/* ================= PR CARDS ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         {requests.map((pr) => (
@@ -288,13 +295,7 @@ export default function SubmittedFinanceRequestsPage() {
             >
               ×
             </button>
-            {alert && (
-              <Alert
-                type={alert.type}
-                message={alert.message}
-                onClose={() => setAlert(null)}
-              />
-            )}
+            
 
             {/* PR DETAILS */}
             <div className="bg-gray-100 p-3 sm:p-4 rounded mb-4 overflow-x-auto">

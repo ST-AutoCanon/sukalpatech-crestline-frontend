@@ -18,6 +18,7 @@ import CreateOrganisation from "./features/superadmin/pages/CreateOrganisation";
 
 import UpdatedFeasibilityPage from "./features/user/pages/departments/Businessdevelopment/UpdatedFeasibilitypage";
 import Home from "./pages/Home";
+import CategoryLimitPage from "./features/admin/pages/Categorylimit";
 
 /* =========================
    Lazy Loaded Departments
@@ -128,6 +129,8 @@ export default function AppRoutes() {
         <Route index element={<DashboardHome />} />
         <Route path="departments" element={<DepartmentPage />} />
         <Route path="employee-update" element={<EmployeeUpdate />} />
+        <Route path="categorylimit" element={<CategoryLimitPage/>}/>
+
       </Route>
 
       {/* Super Admin Routes */}

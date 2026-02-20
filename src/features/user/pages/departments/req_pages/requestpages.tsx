@@ -74,6 +74,8 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
 
   const [vendorMap, setVendorMap] = useState<Record<string, string>>({});
   const [departmentMap, setDepartmentMap] = useState<Record<string, string>>({});
+  const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
 
   
   
@@ -229,9 +231,18 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
 
   if (loading) return <div className="p-6">Loading PRs...</div>;
 
-  return (
+ return (
     <>
-      {/* PR Cards */}
+      {message && (
+        <div
+          className={`fixed top-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded shadow-md text-white z-50 animate-fade-in ${message.type === "success" ? "bg-green-600" : "bg-red-600"
+            }`}
+        >
+          {message.text}
+        </div>
+      )}
+
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {prs.map((pr) => {
           const latestStatusObj = pr.department_statuses?.[pr.department_statuses.length - 1];
@@ -318,43 +329,74 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
 
                 <div>
                   <div className="text-gray-900">Priority</div>
-                  <input
-                    value={activePR.priority || ""}
-                    readOnly={!editMode}
-                    onChange={(e) =>
-                      setActivePR({ ...activePR, priority: e.target.value })
-                    }
-                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
-                      }`}
-                  />
+                  {editMode ? (
+                    <select
+                      value={activePR.priority || ""}
+                      onChange={(e) =>
+                        setActivePR({ ...activePR, priority: e.target.value })
+                      }
+                      className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
+                    >
+                      <option value="">Select Priority</option>
+                      <option value="LOW">LOW</option>
+                      <option value="MEDIUM">MEDIUM</option>
+                      <option value="HIGH">HIGH</option>
+                    </select>
+                  ) : (
+                    <input
+                      value={activePR.priority || ""}
+                      readOnly
+                      className="bg-gray-100 border rounded px-2 py-1 w-full"
+                    />
+                  )}
 
                 </div>
 
                 <div>
                   <div className="text-gray-900"> Delivery Date</div>
                   <input
-                    value={activePR.required_date || ""}
-                    readOnly={!editMode}
+                    type="date"
+                    value={
+                      activePR.required_date
+                        ? activePR.required_date.split("T")[0]
+                        : ""
+                    }
+                    disabled={!editMode}
                     onChange={(e) =>
                       setActivePR({ ...activePR, required_date: e.target.value })
                     }
-                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
                       }`}
                   />
+
 
                 </div>
 
                 <div>
                   <div className="text-gray-900">Department</div>
-                  <input
-                    value={activePR.department || ""}
-                    readOnly={!editMode}
-                    onChange={(e) =>
-                      setActivePR({ ...activePR, department: e.target.value })
-                    }
-                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
-                      }`}
-                  />
+                  {editMode ? (
+                    <select
+                      value={activePR.department || ""}
+                      onChange={(e) =>
+                        setActivePR({ ...activePR, department: e.target.value })
+                      }
+                      className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
+                    >
+                      <option value="">Select Department</option>
+                      {Object.entries(departmentMap).map(([id, name]) => (
+                        <option key={id} value={id}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      value={departmentMap[String(activePR.department)] ?? activePR.department}
+                      readOnly
+                      className="bg-gray-100 border rounded px-2 py-1 w-full"
+                    />
+                  )}
+
 
                 </div>
 
@@ -393,35 +435,67 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                       }`}
                   />
 
-                  <input
-                    value={activePR.priority || ""}
-                    readOnly={!editMode}
-                    onChange={(e) =>
-                      setActivePR({ ...activePR, priority: e.target.value })
-                    }
-                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
-                      }`}
-                  />
+                  {editMode ? (
+                    <select
+                      value={activePR.priority || ""}
+                      onChange={(e) =>
+                        setActivePR({ ...activePR, priority: e.target.value })
+                      }
+                      className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
+                    >
+                      <option value="">Select Priority</option>
+                      <option value="LOW">LOW</option>
+                      <option value="MEDIUM">MEDIUM</option>
+                      <option value="HIGH">HIGH</option>
+                    </select>
+                  ) : (
+                    <input
+                      value={activePR.priority || ""}
+                      readOnly
+                      className="bg-gray-100 border rounded px-2 py-1 w-full"
+                    />
+                  )}
+
 
                   <input
-                    value={activePR.required_date || ""}
-                    readOnly={!editMode}
+                    type="date"
+                    value={
+                      activePR.required_date
+                        ? activePR.required_date.split("T")[0]
+                        : ""
+                    }
+                    disabled={!editMode}
                     onChange={(e) =>
                       setActivePR({ ...activePR, required_date: e.target.value })
                     }
-                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
                       }`}
                   />
 
-                  <input
-                    value={activePR.department || ""}
-                    readOnly={!editMode}
-                    onChange={(e) =>
-                      setActivePR({ ...activePR, department: e.target.value })
-                    }
-                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
-                      }`}
-                  />
+
+                  {editMode ? (
+                    <select
+                      value={activePR.department || ""}
+                      onChange={(e) =>
+                        setActivePR({ ...activePR, department: e.target.value })
+                      }
+                      className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
+                    >
+                      <option value="">Select Department</option>
+                      {Object.entries(departmentMap).map(([id, name]) => (
+                        <option key={id} value={id}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      value={departmentMap[String(activePR.department)] ?? activePR.department}
+                      readOnly
+                      className="bg-gray-100 border rounded px-2 py-1 w-full"
+                    />
+                  )}
+
 
                   <input
                     value={activePR.remarks || ""}
@@ -589,12 +663,14 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                                 )}
 
                                 <label
-                                  className={`border rounded px-2 py-1 w-full text-sm flex items-center ${editMode
+                                  className={`border rounded px-2 py-1 w-full text-sm flex items-center overflow-hidden ${editMode
                                     ? "cursor-pointer border-blue-400 bg-white"
                                     : "bg-gray-100 text-gray-600"
                                     }`}
                                 >
-                                  {vendor.attachments?.[0]?.file_name || "No file uploaded"}
+                                  <span className="truncate w-full block">
+                                    {vendor.attachments?.[0]?.file_name || "No file uploaded"}
+                                  </span>
 
                                   {editMode && (
                                     <input
@@ -620,6 +696,7 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                                     />
                                   )}
                                 </label>
+
 
 
 
@@ -735,10 +812,10 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                           })}
 
                           {/* ===== MOBILE VIEW ===== */}
-                          {item.vendors.map((vendor) => {
+                          {/* ===== MOBILE VIEW ===== */}
+                          {item.vendors.map((vendor, vendorIndex) => {
                             const prComment =
                               vendor.comments?.[0]?.comment || "";
-
 
                             const feasibilityComment =
                               vendor.comments?.find((c) => c.commented_by === 2)
@@ -747,49 +824,176 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                             return (
                               <div
                                 key={vendor.id}
-                                className="sm:hidden flex gap-4 overflow-x-auto mb-4"
+                                className="sm:hidden bg-white border rounded-lg p-3 mb-4 space-y-3"
                               >
-                                {[
-                                  [
-                                    "Vendor",
-                                    vendorMap[String(vendor.vendor_id)] ??
-                                    vendor.vendor_id,
-                                  ],
-                                  [
-                                    "Upload Quotation",
-                                    vendor.attachments?.[0]?.file_name || "-",
-                                  ],
-                                  ["Unit Price", vendor.unit_price ?? "-"],
-                                  ["Total Price", vendor.total_price ?? "-"],
-                                  [
-                                    "Quotation Validity",
-                                    vendor.quotation_validity_date
-                                      ? new Date(
-                                        vendor.quotation_validity_date
-                                      ).toLocaleDateString()
-                                      : "-",
-                                  ],
-                                  ["Comments", prComment],
-                                  ["Feasibility Comment", feasibilityComment],
-                                  ["Status", vendor.status || "-"],
-                                ].map(([label, value], idx) => (
-                                  <div
-                                    key={idx}
-                                    className="flex flex-col min-w-[150px]"
-                                  >
-                                    <span className="text-gray-500 text-xs">
-                                      {label}
-                                    </span>
+                                {/* Vendor */}
+                                <div>
+                                  <label className="text-xs text-gray-500">Vendor</label>
+                                  {editMode ? (
+                                    <select
+                                      value={vendor.vendor_id}
+                                      onChange={(e) => {
+                                        const updatedItems = [...activePR.items];
+                                        updatedItems[itemIndex].vendors[vendorIndex].vendor_id =
+                                          e.target.value;
+                                        setActivePR({ ...activePR, items: updatedItems });
+                                      }}
+                                      className="w-full border border-blue-400 rounded px-2 py-1"
+                                    >
+                                      {Object.entries(vendorMap).map(([id, name]) => (
+                                        <option key={id} value={id}>
+                                          {name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ) : (
                                     <input
                                       readOnly
-                                      value={value}
-                                      className="bg-white border rounded px-2 py-1 w-full"
+                                      value={
+                                        vendorMap[String(vendor.vendor_id)] ??
+                                        vendor.vendor_id
+                                      }
+                                      className="w-full bg-gray-100 border rounded px-2 py-1"
                                     />
-                                  </div>
-                                ))}
+                                  )}
+                                </div>
+
+                                {/* Unit Price */}
+                                <div>
+                                  <label className="text-xs text-gray-500">Unit Price</label>
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    value={vendor.unit_price ?? ""}
+                                    readOnly={!editMode}
+                                    onChange={(e) => {
+                                      const updatedItems = [...activePR.items];
+                                      const price = Number(e.target.value);
+                                      const qty =
+                                        updatedItems[itemIndex].quantity_required || 0;
+
+                                      updatedItems[itemIndex].vendors[vendorIndex] = {
+                                        ...vendor,
+                                        unit_price: price,
+                                        total_price: qty * price,
+                                      };
+
+                                      setActivePR({ ...activePR, items: updatedItems });
+                                    }}
+                                    className={`w-full border rounded px-2 py-1 ${editMode ? "border-blue-400 bg-white" : "bg-gray-100"
+                                      }`}
+                                  />
+                                </div>
+
+                                {/* Total Price */}
+                                <div>
+                                  <label className="text-xs text-gray-500">Total Price</label>
+                                  <input
+                                    readOnly
+                                    value={vendor.total_price ?? ""}
+                                    className="w-full bg-gray-100 border rounded px-2 py-1"
+                                  />
+                                </div>
+
+                                {/* Validity Date */}
+                                <div>
+                                  <label className="text-xs text-gray-500">
+                                    Quotation Validity
+                                  </label>
+                                  <input
+                                    type="date"
+                                    value={vendor.quotation_validity_date ?? ""}
+                                    disabled={!editMode}
+                                    onChange={(e) => {
+                                      const updatedItems = [...activePR.items];
+                                      updatedItems[itemIndex].vendors[vendorIndex]
+                                        .quotation_validity_date = e.target.value;
+
+                                      setActivePR({ ...activePR, items: updatedItems });
+                                    }}
+                                    className={`w-full border rounded px-2 py-1 ${editMode
+                                        ? "border-blue-400 bg-white"
+                                        : "bg-gray-100 cursor-not-allowed"
+                                      }`}
+                                  />
+                                </div>
+
+                                {/* Comments */}
+                                <div>
+                                  <label className="text-xs text-gray-500">Comments</label>
+                                  <input
+                                    value={prComment}
+                                    readOnly={!editMode}
+                                    onChange={(e) => {
+                                      const updatedItems = [...activePR.items];
+
+                                      if (
+                                        !updatedItems[itemIndex].vendors[vendorIndex]
+                                          .comments
+                                      ) {
+                                        updatedItems[itemIndex].vendors[
+                                          vendorIndex
+                                        ].comments = [];
+                                      }
+
+                                      if (
+                                        updatedItems[itemIndex].vendors[vendorIndex]
+                                          .comments.length === 0
+                                      ) {
+                                        updatedItems[itemIndex].vendors[
+                                          vendorIndex
+                                        ].comments.push({
+                                          id: Date.now(),
+                                          comment: e.target.value,
+                                          commented_at: new Date().toISOString(),
+                                          commented_by: 1,
+                                        });
+                                      } else {
+                                        updatedItems[itemIndex].vendors[
+                                          vendorIndex
+                                        ].comments[0].comment = e.target.value;
+                                      }
+
+                                      setActivePR({ ...activePR, items: updatedItems });
+                                    }}
+                                    className={`w-full border rounded px-2 py-1 ${editMode ? "border-blue-400 bg-white" : "bg-gray-100"
+                                      }`}
+                                  />
+                                </div>
+
+                                {/* Status */}
+                                <div>
+                                  <label className="text-xs text-gray-500">Status</label>
+                                  <input
+                                    value={vendor.status ?? ""}
+                                    readOnly={!editMode}
+                                    onChange={(e) => {
+                                      const updatedItems = [...activePR.items];
+                                      updatedItems[itemIndex].vendors[vendorIndex]
+                                        .status = e.target.value;
+
+                                      setActivePR({ ...activePR, items: updatedItems });
+                                    }}
+                                    className={`w-full border rounded px-2 py-1 ${editMode ? "border-blue-400 bg-white" : "bg-gray-100"
+                                      }`}
+                                  />
+                                </div>
+
+                                {/* Feasibility Comment (Read Only) */}
+                                <div>
+                                  <label className="text-xs text-gray-500">
+                                    Feasibility Comment
+                                  </label>
+                                  <input
+                                    readOnly
+                                    value={feasibilityComment}
+                                    className="w-full bg-gray-100 border rounded px-2 py-1"
+                                  />
+                                </div>
                               </div>
                             );
                           })}
+
                         </>
                       )}
                     </div>
@@ -809,7 +1013,7 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                 </button>
               </div>
 
-               <div className="border border-gray-300 rounded-lg p-4 overflow-x-auto">
+              <div className="border border-gray-300 rounded-lg p-4 overflow-x-auto">
                 <h3 className="font-semibold text-base mb-3">Statuses</h3>
 
                 {showStatuses && (
@@ -870,25 +1074,111 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
 
                 <button
                   className="px-4 py-2 rounded bg-blue-600 text-white"
+
                   onClick={async () => {
                     try {
+                      // 1️⃣ Update PR Details
+                      console.log("Sending PR Data:", activePR);
+
                       await fetch(
-                        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${activePR.id}`, // <-- NEW route
+                        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/${activePR.id}`,
                         {
                           method: "PUT",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify(activePR),
+                          body: JSON.stringify({
+                            description: activePR.description,
+                            priority: activePR.priority,
+                            required_date: activePR.required_date,
+                            remarks: activePR.remarks,
+                            department: activePR.department,
+                          }),
                         }
                       );
 
+                      // 2️⃣ Update Items
+                      await fetch(
+                        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/${activePR.id}/items`,
+                        {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            items: activePR.items.map((item) => ({
+                              id: item.id,
+                              item_code: item.item_code,
+                              item_name: item.item_name,
+                              quantity_required: item.quantity_required,
+                            })),
+                          }),
+                        }
+                      );
+
+                      // 3️⃣ Update Vendors
+                      for (const item of activePR.items) {
+                        await fetch(
+                          `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/items/${item.id}/vendors`,
+                          {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              vendors: item.vendors.map((vendor) => ({
+                                id: vendor.id,
+                                vendor_id: vendor.vendor_id,
+                                status: vendor.status,
+                                unit_price: vendor.unit_price,
+                                total_price: vendor.total_price,
+                                quotation_validity_date: vendor.quotation_validity_date,
+                              })),
+                            }),
+                          }
+                        );
+
+                        // 4️⃣ Update Attachments
+                        for (const vendor of item.vendors) {
+                          await fetch(
+                            `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/attachments`,
+                            {
+                              method: "PUT",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                attachments: vendor.attachments || [],
+                              }),
+                            }
+                          );
+
+                          // 5️⃣ Update Comments
+                          await fetch(
+                            `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/comments`,
+                            {
+                              method: "PUT",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                comments: vendor.comments || [],
+                              }),
+                            }
+                          );
+                        }
+                      }
 
                       setEditMode(false);
                       setActivePR(null);
-                      fetchPRs(); // refresh list
+                      fetchPRs();
+
+                      setMessage({
+                        text: "PR updated successfully!",
+                        type: "success",
+                      });
+                      setTimeout(() => setMessage(null), 3000);
+
                     } catch (err) {
                       console.error("Save failed", err);
+                      setMessage({
+                        text: "Failed to update PR.",
+                        type: "error",
+                      });
+                      setTimeout(() => setMessage(null), 3000);
                     }
                   }}
+
                 >
                   Save
                 </button>

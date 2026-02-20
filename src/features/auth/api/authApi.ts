@@ -28,7 +28,8 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 export const login = async (
   email: string,
   password: string,
-  org_code: string
+  org_code: string,
+   category:string,
 ) => {
   if (!BASE_URL) {
     throw new Error("Backend URL is missing. Check your .env file.");
@@ -42,6 +43,7 @@ export const login = async (
         email,
         password,
         org_code,
+        category,
       }),
     });
 

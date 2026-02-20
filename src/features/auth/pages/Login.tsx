@@ -81,7 +81,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
           <select
             value={orgCode}
             onChange={(e) => setOrgCode(e.target.value)}
-            required
+           
             className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
             <option value="">Select Organization</option>
