@@ -199,7 +199,7 @@ export default function SubmittedRequestsPage() {
   try {
     // 🔹 1️⃣ Call approval check API first
     const approvalRes = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/api/admin/approve`,
+      `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit/approve`,
       { amount: totalPrice },
       {
         headers: { Authorization: `Bearer ${token}` },

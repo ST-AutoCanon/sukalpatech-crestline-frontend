@@ -8,11 +8,11 @@ interface CategoryLimits {
 }
 
 export default function CategoryLimitPage() {
-  const ADMIN_API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/admin`;
+  const ADMIN_API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit`;
   const token = localStorage.getItem("token");
 
   const [Limits, setLimits] = useState<CategoryLimits>({ high: 0, medium: 0, low: 0 });
-  const [newLimits, setNewLimits] = useState<CategoryLimits>({ high: 0, medium: 0, low: 0 });
+  const [newLimits, setNewLimits] = useState<Partial<CategoryLimits>>({});
   const [updatedLimits, setUpdatedLimits] = useState<CategoryLimits | null>(null);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -23,7 +23,11 @@ export default function CategoryLimitPage() {
       const res = await axios.get(`${ADMIN_API_BASE}/category-limits`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setLimits(res.data.data ?? { high: 0, medium: 0, low: 0 });
+
+      if (res.data?.data) {
+        setLimits(res.data.data);
+        setNewLimits(res.data.data);
+      }
     } catch (err) {
       console.error("Failed to fetch category limits", err);
     }
@@ -38,30 +42,29 @@ export default function CategoryLimitPage() {
     try {
       setLoading(true);
 
-      const updated = { ...newLimits };
+      const payload = {
+        high: newLimits.high,
+        medium: newLimits.medium,
+        low: newLimits.low,
+      };
 
-      const apiCall =
-        Limits.high || Limits.medium || Limits.low
-          ? axios.put(`${ADMIN_API_BASE}/category-limits/update`, updated, {
-              headers: { Authorization: `Bearer ${token}` },
-            })
-          : axios.post(`${ADMIN_API_BASE}/category-limits/add`, updated, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+      const res = await axios.put(
+        `${ADMIN_API_BASE}/category-limits/update`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      await apiCall;
+      // Update both tables immediately
+      setLimits(res.data.data);
+      setUpdatedLimits(res.data.data);
+      setNewLimits(res.data.data);
 
-      setUpdatedLimits(updated);
-      setLimits(updated);
-      setNewLimits({ high: 0, medium: 0, low: 0 });
-      setEditing(false);
     } catch (err) {
       console.error("Update failed", err);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8 text-black">
       <div className="max-w-3xl mx-auto">
@@ -95,13 +98,16 @@ export default function CategoryLimitPage() {
               <div key={level}>
                 <label className="block mb-1 capitalize">{level}</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder={`Enter ${level} limit`}
                   className="border p-2 rounded-lg w-full"
-                  value={newLimits[level as keyof CategoryLimits]}
+                  value={newLimits[level as keyof CategoryLimits] || ""}
                   onChange={(e) =>
                     setNewLimits({
                       ...newLimits,
-                      [level]: Number(e.target.value),
+                      [level]: e.target.value === "" ? undefined : Number(e.target.value),
                     })
                   }
                 />
