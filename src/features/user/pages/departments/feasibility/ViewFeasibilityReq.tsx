@@ -101,55 +101,11 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   // };
 
 
-  // const fetchPRs = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const token = localStorage.getItem("token"); // or however you store it
-
-  //     let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
-
-  //     if (
-  //       filter === "Pending" ||
-  //       filter === "Rejected" ||
-  //       filter === "Completed"
-  //     ) {
-  //       const status =
-  //         filter === "Completed" ? "APPROVED" : filter.toUpperCase();
-  //       url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
-  //     }
-
-  //     const res = await fetch(url, {
-  //       method: "GET",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-
-  //     if (!res.ok) {
-  //       throw new Error("Failed to fetch PRs");
-  //     }
-
-  //     const data = await res.json();
-
-  //     const prsData = (data?.data || []).map((pr: PR) => ({
-  //       ...pr,
-  //       items: pr.items || [],
-  //       department_statuses: pr.department_statuses || [],
-  //     }));
-
-  //     setPrs(prsData);
-  //   } catch (err) {
-  //     console.error("Fetch PR error", err);
-  //     setPrs([]);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const fetchPRs = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem("token"); // or however you store it
+
       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
       if (
@@ -166,11 +122,14 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         credentials: "include", // <-- added
       });
 
-      if (!res.ok) throw new Error("Failed to fetch PRs");
+      if (!res.ok) {
+        throw new Error("Failed to fetch PRs");
+      }
 
       const data = await res.json();
 
@@ -213,20 +172,20 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   //     .catch((err) => console.error("Vendor fetch error:", err));
   // }, []);
 
- useEffect(() => {
-   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-     credentials: "include", // <-- added
-   })
-     .then((res) => res.json())
-     .then((data) => {
-       const map: Record<string, string> = {};
-       (data?.data || []).forEach((v: any) => {
-         map[String(v.vendor_id)] = v.vendor_name;
-       });
-       setVendorMap(map);
-     })
-     .catch((err) => console.error("Vendor fetch error:", err));
- }, []);
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+      credentials: "include", // <-- added
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const map: Record<string, string> = {};
+        (data?.data || []).forEach((v: any) => {
+          map[String(v.vendor_id)] = v.vendor_name;
+        });
+        setVendorMap(map);
+      })
+      .catch((err) => console.error("Vendor fetch error:", err));
+  }, []);
 
 
   // useEffect(() => {
@@ -236,19 +195,19 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   //     .catch((err) => console.error("Fetch PR Error:", err));
   // }, []);
 
-useEffect(() => {
-  fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/api/new-feasibility/submitted-requests`,
-    {
-      credentials: "include", // <-- added
-    },
-  )
-    .then((res) => res.json())
-    .then((data) => setPrs(data?.data || []))
-    .catch((err) => console.error("Fetch PR Error:", err));
-}, []);
+  useEffect(() => {
+    fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/api/new-feasibility/submitted-requests`,
+      {
+        credentials: "include", // <-- added
+      },
+    )
+      .then((res) => res.json())
+      .then((data) => setPrs(data?.data || []))
+      .catch((err) => console.error("Fetch PR Error:", err));
+  }, []);
 
-  
+
   //  const isEditable = (pr: PR) => {
   //   if (filter !== "PR Raised") return false;
   //   const latestStatus = pr.department_statuses?.[pr.department_statuses.length - 1]?.department_status;
@@ -276,6 +235,8 @@ useEffect(() => {
   const toggleItemsSection = () => setShowItems((prev) => !prev);
 
   if (loading) return <div className="p-6">Loading PRs...</div>;
+
+
 
 
   return (
@@ -380,13 +341,17 @@ useEffect(() => {
                 <div>
                   <div className="text-gray-900"> Delivery Date</div>
                   <input
-                    value={activePR.required_date || ""}
+                    type="date"
+                    value={activePR.required_date ? activePR.required_date.split("T")[0] : ""}
                     readOnly={true}
-                    onChange={(e) =>
-                      setActivePR({ ...activePR, required_date: e.target.value })
-                    }
-                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
-                      }`}
+                    onChange={(e) => {
+                      const date = e.target.value; // "2026-03-01"
+                      setActivePR({
+                        ...activePR,
+                        required_date: new Date(date).toISOString(), // full ISO
+                      });
+                    }}
+                    className={`bg-white border rounded px-2 py-1 w-full`}
                   />
 
                 </div>
@@ -451,13 +416,17 @@ useEffect(() => {
                   />
 
                   <input
-                    value={activePR.required_date || ""}
+                    type="date"
+                    value={activePR.required_date ? activePR.required_date.split("T")[0] : ""}
                     readOnly={true}
-                    onChange={(e) =>
-                      setActivePR({ ...activePR, required_date: e.target.value })
-                    }
-                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
-                      }`}
+                    onChange={(e) => {
+                      const date = e.target.value; // "2026-03-01"
+                      setActivePR({
+                        ...activePR,
+                        required_date: new Date(date).toISOString(), // full ISO
+                      });
+                    }}
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""}`}
                   />
 
                   <input
@@ -597,11 +566,12 @@ useEffect(() => {
                           {item.vendors.map((vendor, vendorIndex) => {
                             const prComment =
                               vendor.comments?.[0]?.comment || "";
+                            console.log("Vendor comments:", vendor.comments);
+
 
 
                             const feasibilityComment =
-                              vendor.comments?.find((c) => c.commented_by === 2)
-                                ?.comment || "";
+                              vendor.comments?.[vendor.comments.length - 1]?.comment || "";
 
                             return (
                               <div
@@ -673,7 +643,7 @@ useEffect(() => {
                                   )}
                                 </label> */}
 
-                                <label className="border rounded px-2 py-1 w-full text-sm flex items-center bg-gray-100 text-gray-600 cursor-not-allowed">
+                                <label className="border rounded px-2 py-1 w-full text-sm flex items-center bg-gray-100 text-gray-600 cursor-not-allowed  truncate overflow-hidden whitespace-nowrap">
                                   {vendor.attachments?.[0]?.file_name || "No file uploaded"}
                                 </label>
 
@@ -742,11 +712,39 @@ useEffect(() => {
 
 
                                 <input
-                                  readOnly
                                   value={feasibilityComment}
-                                  className="bg-white border rounded px-2 py-1 w-full"
-                                />
+                                  readOnly={!editMode}
+                                  onChange={(e) => {
+                                    const updatedItems = [...activePR.items];
 
+                                    const vendorToUpdate =
+                                      updatedItems[itemIndex].vendors[vendorIndex];
+
+                                    // If no comments exist, create one
+                                    if (!vendorToUpdate.comments || vendorToUpdate.comments.length === 0) {
+                                      vendorToUpdate.comments = [
+                                        {
+                                          id: 0,
+                                          comment: e.target.value,
+                                          commented_by: user.id,
+                                          commented_at: new Date().toISOString(),
+                                        },
+                                      ];
+                                    } else {
+                                      // Update last feasibility comment
+                                      const lastIndex = vendorToUpdate.comments.length - 1;
+
+                                      vendorToUpdate.comments[lastIndex] = {
+                                        ...vendorToUpdate.comments[lastIndex],
+                                        comment: e.target.value,
+                                      };
+                                    }
+
+                                    setActivePR({ ...activePR, items: updatedItems });
+                                  }}
+                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                                    }`}
+                                />
                                 <input
                                   value={vendor.status ?? ""}
                                   readOnly={false}
@@ -777,8 +775,7 @@ useEffect(() => {
 
 
                             const feasibilityComment =
-                              vendor.comments?.find((c) => c.commented_by === 2)
-                                ?.comment || "";
+                              vendor.comments?.[vendor.comments.length - 1]?.comment || "";
 
                             return (
                               <div
@@ -850,22 +847,33 @@ useEffect(() => {
 
                 {showStatus && (
                   <div className="space-y-4 min-w-[350px] sm:min-w-[500px]">
-                    {activePR.department_statuses?.map((ds, idx) => (
-                      <div
+                    {Array.isArray(activePR.department_statuses) &&
+                      activePR.department_statuses.map((ds, idx) => (<div
                         key={idx}
                         className="bg-gray-100 border border-blue-200 rounded-xl p-4 text-sm"
                       >
                         <div className="flex flex-col sm:flex-row justify-between mb-1 text-xs text-gray-600 gap-2">
-                          <input
-                            value={ds.department_status}
-                            readOnly={!editMode} // editable
-                            onChange={(e) => {
-                              const updatedStatuses = [...activePR.department_statuses];
-                              updatedStatuses[idx].department_status = e.target.value;
-                              setActivePR({ ...activePR, department_statuses: updatedStatuses });
-                            }}
-                            className="px-1 py-0.5  text-xs w-full sm:w-auto"
-                          />
+                          {editMode ? (
+                            <select
+                              value={ds.department_status}
+                              onChange={(e) => {
+                                const updatedStatuses = [...activePR.department_statuses];
+                                updatedStatuses[idx].department_status = e.target.value;
+                                setActivePR({ ...activePR, department_statuses: updatedStatuses });
+                              }}
+                              className="px-2 py-1 text-xs border rounded w-full sm:w-auto"
+                            >
+                              <option value="FEASIBILITY PENDING"> FEASIBILITY PENDING</option>
+                              <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
+                              <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
+                            </select>
+                          ) : (
+                            <input
+                              value={ds.department_status}
+                              readOnly
+                              className="px-1 py-0.5 text-xs w-full sm:w-auto bg-gray-100"
+                            />
+                          )}
 
                           <span className="font-medium text-gray-800">
                             {ds.status_updated_by ?? "—"} •{" "}
@@ -886,7 +894,7 @@ useEffect(() => {
                           />
                         </div>
                       </div>
-                    ))}
+                      ))}
                   </div>
                 )}
 
@@ -903,35 +911,40 @@ useEffect(() => {
                 >
                   Cancel
                 </button>
-
                 <button
                   className="px-4 py-2 rounded bg-blue-600 text-white"
                   onClick={async () => {
                     try {
+                      const token = localStorage.getItem("token");
 
-await fetch(
-  `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${activePR.id}`,
-  {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include", // <-- added
-    body: JSON.stringify(activePR),
-  },
-);
+                      const res = await fetch(
+                        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${activePR.id}`,
+                        {
+                          method: "PUT",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                          },
+                          credentials: "include", // <-- added
+                          body: JSON.stringify(activePR),
+                        }
+                      );
 
-                      
-                      // Update PR in list
+                      if (!res.ok) throw new Error("Save failed");
+
+                      const updatedPR: PR = await res.json(); // <-- make sure backend returns the updated PR
+
+                      // 1️⃣ Update modal
+                      setActivePR(updatedPR);
+
+                      // 2️⃣ Update list
                       setPrs((prevPrs) =>
-                        prevPrs.map((pr) => (pr.id === activePR.id ? activePR : pr))
+                        prevPrs.map((pr) => (pr.id === updatedPR.id ? updatedPR : pr))
                       );
 
                       setEditMode(false); // exit edit mode
-                      // setActivePR(null); // optionally close modal
-
                     } catch (err) {
-                      console.error("Save failed", err);
+                      console.error(err);
                     }
                   }}
                 >

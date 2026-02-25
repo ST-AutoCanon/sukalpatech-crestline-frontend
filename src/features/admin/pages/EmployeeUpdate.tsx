@@ -33,7 +33,7 @@ export default function EmployeeManagementPage() {
     email: "",
     password: "",
     role: "employee",
-    category: "Medium",
+    category: "",
 
   });
 
@@ -55,8 +55,38 @@ export default function EmployeeManagementPage() {
     fetchEmployees();
   }, []);
 
+  const validateForm = () => {
+  if (!newEmployee.first_name.trim()) {
+    alert("First Name is required");
+    return false;
+  }
+
+  if (!newEmployee.email.trim()) {
+    alert("Email is required");
+    return false;
+  }
+
+  const emailRegex = /^[\w.-]+@(gmail\.com|yopmail\.com)$/i;
+  if (!emailRegex.test(newEmployee.email)) {
+    alert("Invalid email. Must be @gmail.com or @yopmail.com");
+    return false;
+  }
+
+  if (!newEmployee.password.trim()) {
+    alert("Password is required");
+    return false;
+  }
+
+  if (!newEmployee.category) {
+    alert("Category is required");
+    return false;
+  }
+
+  return true;
+};
+
   /* ================= CREATE ================= */
-  const handleCreate = async () => {
+   const handleCreate = async () => {
     if (emailError) {
       alert("Invalid Email Id");
       return;
@@ -213,6 +243,9 @@ export default function EmployeeManagementPage() {
                   setNewEmployee({ ...newEmployee, category: e.target.value })
                 }
               >
+                <option value="" disabled>
+                  Select Category Limit
+                </option>
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
                 <option value="Low">Low</option>
@@ -331,6 +364,9 @@ export default function EmployeeManagementPage() {
                     setSelectedEmployee({ ...selectedEmployee, category: e.target.value })
                   }
                 >
+                   <option value="" disabled>
+                  Select Category Limit
+                </option>
                   <option value="High">High</option>
                   <option value="Medium">Medium</option>
                   <option value="Low">Low</option>

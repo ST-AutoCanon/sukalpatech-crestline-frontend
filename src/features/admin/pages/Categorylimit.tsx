@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -10,29 +9,29 @@ interface CategoryLimits {
 
 export default function CategoryLimitPage() {
   const ADMIN_API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit`;
+  const token = localStorage.getItem("token");
 
-  const [Limits, setLimits] = useState<CategoryLimits>({
-    high: 0,
-    medium: 0,
-    low: 0,
-  });
+  const [Limits, setLimits] = useState<CategoryLimits>({ high: 0, medium: 0, low: 0 });
   const [newLimits, setNewLimits] = useState<Partial<CategoryLimits>>({});
-  const [updatedLimits, setUpdatedLimits] = useState<CategoryLimits | null>(
-    null,
-  );
+  const [updatedLimits, setUpdatedLimits] = useState<CategoryLimits | null>(null);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
 
   /* ================= FETCH CURRENT LIMITS ================= */
   const fetchLimits = async () => {
-    try {
+     try {
       const res = await axios.get(`${ADMIN_API_BASE}/category-limits`, {
         withCredentials: true,
       });
 
-      if (res.data?.data) {
-        setLimits(res.data.data);
-        setNewLimits(res.data.data);
+      const limits = res.data?.data?.data; // 👈 correct path
+
+      if (limits) {
+        setLimits({
+          high: Number(limits.high),
+          medium: Number(limits.medium),
+          low: Number(limits.low),
+        });
       }
     } catch (err) {
       console.error("Failed to fetch category limits", err);
@@ -40,7 +39,10 @@ export default function CategoryLimitPage() {
   };
 
   useEffect(() => {
-    fetchLimits();
+    const init = async () => {
+      await fetchLimits();
+    };
+    init();
   }, []);
 
   /* ================= ADD/UPDATE ================= */
@@ -49,21 +51,23 @@ export default function CategoryLimitPage() {
       setLoading(true);
 
       const payload = {
-        high: newLimits.high,
-        medium: newLimits.medium,
-        low: newLimits.low,
+        high: Number(newLimits.high),
+        medium: Number(newLimits.medium),
+        low: Number(newLimits.low),
       };
 
-      const res = await axios.put(
+     const res = await axios.put(
         `${ADMIN_API_BASE}/category-limits/update`,
         payload,
         { withCredentials: true },
       );
 
-      // Update both tables immediately
-      setLimits(res.data.data);
+      // Save updated values separately
       setUpdatedLimits(res.data.data);
-      setNewLimits(res.data.data);
+
+      // Refresh current limits from DB
+      await fetchLimits();
+
     } catch (err) {
       console.error("Update failed", err);
     } finally {
@@ -74,12 +78,10 @@ export default function CategoryLimitPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8 text-black">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">
-          Category Limits
-        </h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Category Limits</h1>
 
         {/* ================= CURRENT LIMITS TABLE ================= */}
-        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md mb-6 sm:mb-8">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md mb-6 sm:mb-8 mt-4">
           <h2 className="font-semibold mb-4">Current Limits</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             <div className="bg-gray-100 p-4 rounded-lg">
@@ -115,10 +117,7 @@ export default function CategoryLimitPage() {
                   onChange={(e) =>
                     setNewLimits({
                       ...newLimits,
-                      [level]:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
+                      [level]: e.target.value === "" ? undefined : Number(e.target.value),
                     })
                   }
                 />
@@ -136,8 +135,7 @@ export default function CategoryLimitPage() {
             </button>
             <button
               onClick={() => {
-                setEditing(false);
-                setNewLimits({ high: 0, medium: 0, low: 0 });
+                setNewLimits(Limits); // Reset to current DB values
               }}
               className="w-full sm:w-auto bg-gray-300 text-black px-6 py-2 rounded-lg"
             >

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import AllPRs from "../req_pages/requestpages";
 import FinanceApprovedPR from "../finance/UpdateFinance";
+import ViewPR from "./ViewFinanceRequests";
 
 const filters = ["All PR", "Pending", "Rejected", "Completed"] as const;
 type FilterType = (typeof filters)[number];
@@ -26,8 +27,8 @@ const FinancePage: React.FC = () => {
                   setShowUpdatePage(false);
                 }}
                 className={` pb-1 px-2 sm:px-4  ${activeFilter === filter
-                    ? "border-b-2 border-white text-white"
-                    : "text-white/70 "
+                  ? "border-b-2 border-white text-white"
+                  : "text-white/70 "
                   }`}
               >
                 {filter}
@@ -50,14 +51,14 @@ const FinancePage: React.FC = () => {
       {/* ================= PR LIST ================= */}
       {!showUpdatePage && (
         <div className="overflow-x-hidden">
-          <AllPRs
-            filter={
-              activeFilter === "All PR"
-                ? "ALL"
-                : activeFilter.toUpperCase() as "PENDING" | "REJECTED" | "APPROVED"
-            }
-            search={search}
-            refreshKey={refreshKey}
+          <ViewPR
+            status={
+  activeFilter === "All PR"
+    ? "ALL"
+    : activeFilter === "Completed"
+      ? "APPROVED"
+      : activeFilter.toUpperCase() as "PENDING" | "REJECTED"
+}
           />
         </div>
       )}

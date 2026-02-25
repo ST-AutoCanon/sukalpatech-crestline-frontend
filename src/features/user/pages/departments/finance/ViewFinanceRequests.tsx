@@ -48,8 +48,9 @@ interface FinancePR {
   items: Item[];
 }
 interface Props {
-  status: "all" | "pending" | "rejected";
+  status: "ALL" | "PENDING" | "REJECTED" | "APPROVED";
 }
+
 
 /* ================= COMPONENT ================= */
 // export default function SubmittedFinanceRequestsPage() {
@@ -164,19 +165,22 @@ useEffect(() => {
   // };
 
 
-  const fetchApprovedRequests = async () => {
+ const fetchApprovedRequests = async () => {
     const token = localStorage.getItem("token");
     let url = "";
 
     switch (status) {
-      case "pending":
+      case "PENDING":
         url = `${API_BASE}/pending-finance-requests`;
         break;
-      case "rejected":
+      case "REJECTED":
         url = `${API_BASE}/rejected-finance-requests`;
         break;
-      default:
+      case "APPROVED":
         url = `${API_BASE}/approved-finance-requests`;
+        break;
+      default:
+        url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
     }
 
 const res = await axios.get(url, {
@@ -188,7 +192,7 @@ const res = await axios.get(url, {
 
   useEffect(() => {
     fetchApprovedRequests();
-  }, []);
+  }, [status]);
 
 
 
@@ -366,8 +370,8 @@ const res = await axios.get(url, {
                       {item.vendors.map((vendor, vi) => {
                         // Find the latest feasibility comment (commented_by = 2)
                         const feasibilityComment =
-                          vendor.comments?.find((c) => c.commented_by === 2)
-                            ?.comment || "";
+                              vendor.comments?.[vendor.comments.length - 1]?.comment || "";
+
 
                         return (
                           <div

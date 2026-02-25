@@ -32,7 +32,7 @@ export default function SuperAdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Layout Wrapper */}
-      <div className="flex">
+      <div className="flex min-h-screen">
         {/* Sidebar */}
         <Sidebar />
 

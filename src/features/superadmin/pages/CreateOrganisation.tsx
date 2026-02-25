@@ -136,7 +136,7 @@ const CreateOrganisation = () => {
             {/* Organisation Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
+                <label className="block text-base font-semibold text-gray-600 mb-2 mt-2">
                   Organisation Name
                 </label>
                 <input
@@ -150,7 +150,7 @@ const CreateOrganisation = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
+                <label className="block text-base font-semibold text-gray-600 mb-2 mt-2">
                   Organisation Code
                 </label>
                 <input

@@ -64,7 +64,7 @@ type PR = {
   items: Item[];
 };
 
-export default function ViewPRPage({ filter, search, refreshKey}: Props) {
+export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   const [prs, setPrs] = useState<PR[]>([]);
   const [activePR, setActivePR] = useState<PR | null>(null);
   const [showItems, setShowItems] = useState(false);
@@ -77,8 +77,8 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
 
-  
-  
+
+
 
   // Fetch vendors
   // useEffect(() => {
@@ -96,21 +96,21 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-  credentials: "include", // ✅ send cookie
-})
-  .then((res) => res.json())
-  .then((data) => {
-    const vendors = data?.data || [];
-    const map: Record<string, string> = {};
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+      credentials: "include", // ✅ send cookie
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const vendors = data?.data || [];
+        const map: Record<string, string> = {};
 
-    vendors.forEach((v: any) => {
-      map[String(v.vendor_id)] = v.vendor_name;
-    });
+        vendors.forEach((v: any) => {
+          map[String(v.vendor_id)] = v.vendor_name;
+        });
 
-    setVendorMap(map);
-  })
-  .catch((err) => console.error("Vendor fetch error", err));
+        setVendorMap(map);
+      })
+      .catch((err) => console.error("Vendor fetch error", err));
   }, []);
 
 
@@ -130,21 +130,21 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
   useEffect(() => {
 
 
-fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
-  credentials: "include", // ✅ send cookie
-})
-  .then((res) => res.json())
-  .then((data) => {
-    const departments = data?.data || [];
-    const map: Record<string, string> = {};
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
+      credentials: "include", // ✅ send cookie
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const departments = data?.data || [];
+        const map: Record<string, string> = {};
 
-    departments.forEach((d: any) => {
-      map[String(d.department_id)] = d.name;
-    });
+        departments.forEach((d: any) => {
+          map[String(d.department_id)] = d.name;
+        });
 
-    setDepartmentMap(map);
-  })
-  .catch((err) => console.error("Department fetch error", err));
+        setDepartmentMap(map);
+      })
+      .catch((err) => console.error("Department fetch error", err));
   }, []);
 
 
@@ -189,9 +189,9 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
         url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
       }
 
- const res = await fetch(url, {
-   credentials: "include", // ✅ send cookie
- });
+      const res = await fetch(url, {
+        credentials: "include", // ✅ send cookie
+      });
 
       const data = await res.json();
 
@@ -210,7 +210,7 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
     }
   };
 
-  
+
   useEffect(() => {
     fetchPRs();
   }, [filter, search, refreshKey]);
@@ -225,7 +225,7 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
 
   if (loading) return <div className="p-6">Loading PRs...</div>;
 
- return (
+  return (
     <>
       {message && (
         <div
@@ -621,9 +621,7 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
 
 
                             const feasibilityComment =
-                              vendor.comments?.find((c) => c.commented_by === 2)
-                                ?.comment || "";
-
+                              vendor.comments?.[vendor.comments.length - 1]?.comment || "";
                             return (
                               <div
                                 key={vendor.id}
@@ -806,15 +804,13 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
                           })}
 
                           {/* ===== MOBILE VIEW ===== */}
-                          {/* ===== MOBILE VIEW ===== */}
                           {item.vendors.map((vendor, vendorIndex) => {
                             const prComment =
                               vendor.comments?.[0]?.comment || "";
 
+                           
                             const feasibilityComment =
-                              vendor.comments?.find((c) => c.commented_by === 2)
-                                ?.comment || "";
-
+                              vendor.comments?.[vendor.comments.length - 1]?.comment || "";
                             return (
                               <div
                                 key={vendor.id}
@@ -906,8 +902,8 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
                                       setActivePR({ ...activePR, items: updatedItems });
                                     }}
                                     className={`w-full border rounded px-2 py-1 ${editMode
-                                        ? "border-blue-400 bg-white"
-                                        : "bg-gray-100 cursor-not-allowed"
+                                      ? "border-blue-400 bg-white"
+                                      : "bg-gray-100 cursor-not-allowed"
                                       }`}
                                   />
                                 </div>
@@ -1068,12 +1064,28 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
 
                 <button
                   className="px-4 py-2 rounded bg-blue-600 text-white"
-
                   onClick={async () => {
                     try {
-                      // 1️⃣ Update PR Details
-                      console.log("Sending PR Data:", activePR);
+                      const token = localStorage.getItem("token");
 
+                      // ✅ 0️⃣ Save FULL PR in one go
+                      const fullRes = await fetch(
+                        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${activePR.id}`,
+                        {
+                          method: "PUT",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                          },
+                          credentials: "include",
+                          body: JSON.stringify(activePR),
+                        }
+                      );
+
+                      if (!fullRes.ok) throw new Error("Full PR Save failed");
+                      const updatedFullPR = await fullRes.json();
+
+                      // 1️⃣ Update PR Details (optional, fallback)
                       await fetch(
                         `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/${activePR.id}`,
                         {
@@ -1087,7 +1099,7 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
                             remarks: activePR.remarks,
                             department: activePR.department,
                           }),
-                        },
+                        }
                       );
 
                       // 2️⃣ Update Items
@@ -1105,10 +1117,10 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
                               quantity_required: item.quantity_required,
                             })),
                           }),
-                        },
+                        }
                       );
 
-                      // 3️⃣ Update Vendors
+                      // 3️⃣ Update Vendors + 4️⃣ Attachments + 5️⃣ Comments
                       for (const item of activePR.items) {
                         await fetch(
                           `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/items/${item.id}/vendors`,
@@ -1123,14 +1135,12 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
                                 status: vendor.status,
                                 unit_price: vendor.unit_price,
                                 total_price: vendor.total_price,
-                                quotation_validity_date:
-                                  vendor.quotation_validity_date,
+                                quotation_validity_date: vendor.quotation_validity_date,
                               })),
                             }),
-                          },
+                          }
                         );
 
-                        // 4️⃣ Update Attachments
                         for (const vendor of item.vendors) {
                           await fetch(
                             `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/attachments`,
@@ -1138,47 +1148,38 @@ fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
                               method: "PUT",
                               credentials: "include",
                               headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({
-                                attachments: vendor.attachments || [],
-                              }),
-                            },
+                              body: JSON.stringify({ attachments: vendor.attachments || [] }),
+                            }
                           );
 
-                          // 5️⃣ Update Comments
                           await fetch(
                             `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/comments`,
                             {
                               method: "PUT",
                               credentials: "include",
                               headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({
-                                comments: vendor.comments || [],
-                              }),
-                            },
+                              body: JSON.stringify({ comments: vendor.comments || [] }),
+                            }
                           );
                         }
                       }
 
+                      // ✅ Update frontend state
+                      setActivePR(updatedFullPR);
+                      setPrs((prev) =>
+                        prev.map((pr) => (pr.id === updatedFullPR.id ? updatedFullPR : pr))
+                      );
                       setEditMode(false);
-                      setActivePR(null);
                       fetchPRs();
 
-                      setMessage({
-                        text: "PR updated successfully!",
-                        type: "success",
-                      });
+                      setMessage({ text: "PR updated successfully!", type: "success" });
                       setTimeout(() => setMessage(null), 3000);
-
                     } catch (err) {
                       console.error("Save failed", err);
-                      setMessage({
-                        text: "Failed to update PR.",
-                        type: "error",
-                      });
+                      setMessage({ text: "Failed to update PR.", type: "error" });
                       setTimeout(() => setMessage(null), 3000);
                     }
                   }}
-
                 >
                   Save
                 </button>
