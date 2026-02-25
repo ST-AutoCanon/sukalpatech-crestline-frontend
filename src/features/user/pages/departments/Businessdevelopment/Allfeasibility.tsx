@@ -72,63 +72,98 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   };
 
   // Handle Feasibility update
+//   const handleFeasibilityUpdate = async () => {
+//   try {
+//     // Get token from localStorage (or wherever you store it)
+//     const token = localStorage.getItem("token");
+
+//     if (!token) {
+//       alert("You are not logged in");
+//       return;
+//     }
+
+//     // API call with Authorization header
+//     const res = await api.patch(
+//       `/business-development/feasibility/${data.id}/review`,
+//       {
+//         feasibility_status,
+//         feasibility_comments,
+//       },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`, // ✅ send JWT
+//         },
+//       }
+//     );
+
+//     // Update parent state
+//     onUpdate(res.data.data);
+//     setShowModal(false);
+//   } catch (err) {
+//     console.error("Failed to update feasibility", err);
+//     alert("Failed to update feasibility");
+//   }
+// };
+
   const handleFeasibilityUpdate = async () => {
-  try {
-    // Get token from localStorage (or wherever you store it)
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("You are not logged in");
-      return;
-    }
-
-    // API call with Authorization header
-    const res = await api.patch(
-      `/business-development/feasibility/${data.id}/review`,
-      {
-        feasibility_status,
-        feasibility_comments,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`, // ✅ send JWT
+    try {
+      const res = await api.patch(
+        `/business-development/feasibility/${data.id}/review`,
+        {
+          feasibility_status,
+          feasibility_comments,
         },
-      }
-    );
+      );
 
-    // Update parent state
-    onUpdate(res.data.data);
-    setShowModal(false);
-  } catch (err) {
-    console.error("Failed to update feasibility", err);
-    alert("Failed to update feasibility");
-  }
-};
-
+      onUpdate(res.data.data);
+      setShowModal(false);
+    } catch (err) {
+      console.error("Failed to update feasibility", err);
+      alert("Failed to update feasibility");
+    }
+  };
 
   // Handle BD team update
- const handleBdUpdate = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await api.patch(
-      `/business-development/${data.id}/bd-update`,
-      {
-        bd_status: finalStatus,
-        bd_comments: finalComments,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` }, // ✅ send token
-      }
-    );
-    onUpdate(res.data.data);
-    setShowModal(false);
-  } catch (err) {
-    console.error("Failed to update BD info", err);
-    alert("Failed to update BD info");
-  }
-};
+//  const handleBdUpdate = async () => {
+//   try {
+//     const token = localStorage.getItem("token");
+//     const res = await api.patch(
+//       `/business-development/${data.id}/bd-update`,
+//       {
+//         bd_status: finalStatus,
+//         bd_comments: finalComments,
+//       },
+//       {
+//         headers: { Authorization: `Bearer ${token}` }, // ✅ send token
+//       }
+//     );
+//     onUpdate(res.data.data);
+//     setShowModal(false);
+//   } catch (err) {
+//     console.error("Failed to update BD info", err);
+//     alert("Failed to update BD info");
+//   }
+// };
 
 
+  const handleBdUpdate = async () => {
+    try {
+      const res = await api.patch(
+        `/business-development/${data.id}/bd-update`,
+        {
+          bd_status: finalStatus,
+          bd_comments: finalComments,
+        },
+      );
+
+      onUpdate(res.data.data);
+      setShowModal(false);
+    } catch (err) {
+      console.error("Failed to update BD info", err);
+      alert("Failed to update BD info");
+    }
+  };
+  
   const renderCheckbox = (checked: boolean, label: string) => {
     return (
       <label className="flex items-center gap-2 text-xs font-semibold">

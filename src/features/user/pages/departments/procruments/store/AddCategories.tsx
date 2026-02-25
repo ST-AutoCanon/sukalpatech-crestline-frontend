@@ -13,11 +13,15 @@ type TabType = "root" | "category" | "product" | "variant" | "subvariant";
 
 const token = localStorage.getItem("token");
 
+// const api = axios.create({
+//   baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/categories`,
+//   headers: { Authorization: `Bearer ${token}` },
+// });
+
 const api = axios.create({
   baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/categories`,
-  headers: { Authorization: `Bearer ${token}` },
+  withCredentials: true, // ✅ sends HTTP-only cookie automatically
 });
-
 
 export default function AddCategories() {
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/categories`;

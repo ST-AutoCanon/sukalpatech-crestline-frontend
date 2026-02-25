@@ -696,35 +696,49 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                         });
                       }
 
-                     const token = localStorage.getItem("token"); // or wherever you store it
+                    //  const token = localStorage.getItem("token"); // or wherever you store it
 
-const res = await fetch(
+// const res = await fetch(
+//   `${import.meta.env.VITE_BACKEND_URL}/api/business-development/${data.id}`,
+//   {
+//     method: "PATCH",
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//     },
+//     body: fd,
+//   }
+                      // );
+                      const res = await fetch(
   `${import.meta.env.VITE_BACKEND_URL}/api/business-development/${data.id}`,
   {
     method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    body: fd,
+    credentials: "include", // ✅ required for HTTP-only cookies
+    body: fd,               // ✅ FormData (do NOT set Content-Type manually)
   }
 );
 
+if (!res.ok) {
+  const errorData = await res.json().catch(() => ({}));
+  throw new Error(errorData?.message || "Update failed");
+}
 
-                      if (!res.ok) throw new Error("Update failed");
+const result = await res.json();
 
-                      const result = await res.json();
+onUpdate(result.data);
+setEditMode(false);
+setShowModal(false);
 
-                      onUpdate(result.data);
-                      setEditMode(false);
-                      setShowModal(false);
-
-                      // ✅ Success message
-                      setMessage({ text: "Business details updated successfully!", type: "success" });
+setMessage({
+  text: "Business details updated successfully!",
+  type: "success",
+});
                       setTimeout(() => setMessage(null), 3000);
-                    } catch (err) {
-                      console.error("Save failed", err);
-                      // ✅ Error message
-                      setMessage({ text: "Failed to update business details.", type: "error" });
+} catch (err: any) {
+                      console.error("Update failed", err);
+                      setMessage({
+                        text: err.message || "Failed to update business details",
+                        type: "error",
+                      });
                       setTimeout(() => setMessage(null), 3000);
                     }
                   }}

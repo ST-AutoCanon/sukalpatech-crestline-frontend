@@ -1,3 +1,84 @@
+// import { createContext, useState, ReactNode, useEffect } from "react";
+
+// interface User {
+//   id: number;
+//   first_name: string;
+//   last_name: string;
+//   email: string;
+//   role: string;
+//   permissions: string[];
+//   department_id: number | null;
+//   category:string;
+// }
+
+// interface AuthContextType {
+//   user: User | null;
+//   token: string | null;
+//   isInitializing: boolean;
+//   login: (user: User, token: string) => void;
+//   logout: () => void;
+// }
+
+// export const AuthContext = createContext<AuthContextType>({
+//   user: null,
+//   token: null,
+//   isInitializing: true,
+//   login: () => {},
+//   logout: () => {},
+// });
+
+// export const AuthProvider = ({ children }: { children: ReactNode }) => {
+//   const [user, setUser] = useState<User | null>(null);
+//   const [token, setToken] = useState<string | null>(null);
+//   const [isInitializing, setIsInitializing] = useState(true);
+
+//   // 🔹 Restore auth state from localStorage on refresh
+//   useEffect(() => {
+//     const storedUser = localStorage.getItem("user");
+//     const storedToken = localStorage.getItem("token");
+
+//     if (storedUser && storedToken) {
+//       setUser(JSON.parse(storedUser));
+//       setToken(storedToken);
+//     }
+
+//     // ✅ important: unblock routing AFTER restore
+//     setIsInitializing(false);
+//   }, []);
+
+//   // 🔹 Login handler
+//   const login = (user: User, token: string) => {
+//     setUser(user);
+//     setToken(token);
+
+//     localStorage.setItem("user", JSON.stringify(user));
+//     localStorage.setItem("token", token);
+//   };
+
+//   // 🔹 Logout handler
+//   const logout = () => {
+//     setUser(null);
+//     setToken(null);
+
+//     localStorage.removeItem("user");
+//     localStorage.removeItem("token");
+//   };
+
+//   return (
+//     <AuthContext.Provider
+//       value={{
+//         user,
+//         token,
+//         isInitializing,
+//         login,
+//         logout,
+//       }}
+//     >
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// };
+
 import { createContext, useState, ReactNode, useEffect } from "react";
 
 interface User {
@@ -8,20 +89,18 @@ interface User {
   role: string;
   permissions: string[];
   department_id: number | null;
-  category:string;
+  category: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isInitializing: boolean;
-  login: (user: User, token: string) => void;
+  login: (user: User) => void;
   logout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
-  token: null,
   isInitializing: true,
   login: () => {},
   logout: () => {},
@@ -29,47 +108,56 @@ export const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
-  
 
-  // 🔹 Restore auth state from localStorage on refresh
+  /* =========================
+     🔥 Restore Session From Cookie
+  ========================= */
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("token");
+    const restoreSession = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/me`, {
+          credentials: "include", // VERY IMPORTANT
+        });
 
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
-    }
+        const data = await res.json();
 
-    // ✅ important: unblock routing AFTER restore
-    setIsInitializing(false);
+        if (data.success) {
+          setUser(data.data.user);
+        }
+      } catch (err) {
+        console.log("No active session");
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    restoreSession();
   }, []);
 
-  // 🔹 Login handler
-  const login = (user: User, token: string) => {
-    setUser(user);
-    setToken(token);
-
-    localStorage.setItem("user", JSON.stringify(user));
-    localStorage.setItem("token", token);
+  /* =========================
+     Login
+  ========================= */
+  const login = (userData: User) => {
+    setUser(userData);
   };
 
-  // 🔹 Logout handler
-  const logout = () => {
-    setUser(null);
-    setToken(null);
+  /* =========================
+     Logout
+  ========================= */
+  const logout = async () => {
+    await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
 
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    setUser(null);
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
         isInitializing,
         login,
         logout,

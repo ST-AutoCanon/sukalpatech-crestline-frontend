@@ -120,44 +120,21 @@ export default function SubmittedFinanceRequestsPage() {
     return new Date(date).toLocaleDateString("en-GB");
   };
 
-  // const fetchApprovedRequests = async () => {
-  //   const res = await axios.get(`${API_BASE}/finance-approved-pr-requests`);
-  //   setRequests(res.data.data || []);
-  // };
-  const fetchApprovedRequests = async () => {
-    const token = localStorage.getItem("token");
+const fetchApprovedRequests = async () => {
+  const res = await axios.get(
+    `${API_BASE}/finance-approved-pr-requests`,
+    { withCredentials: true }, // ✅ send cookie
+  );
 
-    const res = await axios.get(`${API_BASE}/finance-approved-pr-requests`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    setRequests(res.data.data || []);
-  };
+  setRequests(res.data.data || []);
+};
 
 
 
-  // useEffect(() => {
-  //   // Fetch vendor master
-  //   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       const map: Record<string, string> = {};
-  //       (data?.data || []).forEach((v: any) => {
-  //         map[String(v.vendor_id)] = v.vendor_name;
-  //       });
-  //       setVendorMap(map);
-  //     })
-  //     .catch((err) => console.error("Vendor fetch error:", err));
-  // }, []);
 useEffect(() => {
-  const token = localStorage.getItem("token");
 
   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    credentials: "include", // ✅ send cookie
   })
     .then((res) => res.json())
     .then((data) => {
@@ -244,11 +221,11 @@ useEffect(() => {
       items: updateData.items,
     };
 
-    await axios.put(`${API_BASE}/pr-requests/${selectedPR.id}`, payload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+await axios.put(
+  `${API_BASE}/pr-requests/${selectedPR.id}`,
+  payload,
+  { withCredentials: true }, // ✅ send cookie
+);
 
     setAlert({
       type: "success",

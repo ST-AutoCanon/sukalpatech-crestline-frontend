@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -9,11 +10,16 @@ interface CategoryLimits {
 
 export default function CategoryLimitPage() {
   const ADMIN_API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit`;
-  const token = localStorage.getItem("token");
 
-  const [Limits, setLimits] = useState<CategoryLimits>({ high: 0, medium: 0, low: 0 });
+  const [Limits, setLimits] = useState<CategoryLimits>({
+    high: 0,
+    medium: 0,
+    low: 0,
+  });
   const [newLimits, setNewLimits] = useState<Partial<CategoryLimits>>({});
-  const [updatedLimits, setUpdatedLimits] = useState<CategoryLimits | null>(null);
+  const [updatedLimits, setUpdatedLimits] = useState<CategoryLimits | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
 
@@ -21,7 +27,7 @@ export default function CategoryLimitPage() {
   const fetchLimits = async () => {
     try {
       const res = await axios.get(`${ADMIN_API_BASE}/category-limits`, {
-        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
 
       if (res.data?.data) {
@@ -51,24 +57,26 @@ export default function CategoryLimitPage() {
       const res = await axios.put(
         `${ADMIN_API_BASE}/category-limits/update`,
         payload,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true },
       );
 
       // Update both tables immediately
       setLimits(res.data.data);
       setUpdatedLimits(res.data.data);
       setNewLimits(res.data.data);
-
     } catch (err) {
       console.error("Update failed", err);
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8 text-black">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Category Limits</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">
+          Category Limits
+        </h1>
 
         {/* ================= CURRENT LIMITS TABLE ================= */}
         <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md mb-6 sm:mb-8">
@@ -107,7 +115,10 @@ export default function CategoryLimitPage() {
                   onChange={(e) =>
                     setNewLimits({
                       ...newLimits,
-                      [level]: e.target.value === "" ? undefined : Number(e.target.value),
+                      [level]:
+                        e.target.value === ""
+                          ? undefined
+                          : Number(e.target.value),
                     })
                   }
                 />

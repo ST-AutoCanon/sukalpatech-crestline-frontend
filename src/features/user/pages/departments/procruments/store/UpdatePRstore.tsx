@@ -131,10 +131,13 @@ export default function SubmittedFinanceRequestsPage() {
   const fetchApprovedRequests = async () => {
     const token = localStorage.getItem("token");
 
+    // const res = await axios.get(`${API_BASE}/finance-approved-store-requests`, {
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    // });
     const res = await axios.get(`${API_BASE}/finance-approved-store-requests`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      withCredentials: true,
     });
 
     setRequests(res.data.data || []);
@@ -155,23 +158,49 @@ export default function SubmittedFinanceRequestsPage() {
   //     .catch((err) => console.error("Vendor fetch error:", err));
   // }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
 
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
+  //   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+  //     headers: {
+  //       Authorization: `Bearer ${token}`,
+  //     },
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       const map: Record<string, string> = {};
+  //       (data?.data || []).forEach((v: any) => {
+  //         map[String(v.vendor_id)] = v.vendor_name;
+  //       });
+  //       setVendorMap(map);
+  //     })
+  //     .catch((err) => console.error("Vendor fetch error:", err));
+  // }, []);
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`,
+          {
+            method: "GET",
+            credentials: "include", // enables cookies
+          },
+        );
+
+        const data = await res.json();
+
         const map: Record<string, string> = {};
         (data?.data || []).forEach((v: any) => {
           map[String(v.vendor_id)] = v.vendor_name;
         });
         setVendorMap(map);
-      })
-      .catch((err) => console.error("Vendor fetch error:", err));
+      } catch (err) {
+        console.error("Vendor fetch error:", err);
+      }
+    };
+
+    fetchVendors();
   }, []);
 
   useEffect(() => {
@@ -261,10 +290,13 @@ export default function SubmittedFinanceRequestsPage() {
         items: updateData.items,
       };
 
+      // await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // });
       await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        withCredentials: true,
       });
 
       setAlert({

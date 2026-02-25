@@ -42,6 +42,7 @@ export default function EmployeeManagementPage() {
     try {
       const res = await axios.get(`${ADMIN_API_BASE}/employees`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       setEmployees(res.data.data ?? []);
     } catch (err) {
@@ -65,6 +66,7 @@ export default function EmployeeManagementPage() {
       setLoading(true);
       await axios.post(`${ADMIN_API_BASE}/employees`, newEmployee, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
 
       setNewEmployee({

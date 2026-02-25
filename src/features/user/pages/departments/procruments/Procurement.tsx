@@ -17,76 +17,42 @@ export default function NewProcurementPage({ onClose, onCreated }) {
   const API_BASE1 = `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`;
   const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
 
-  // useEffect(() => {
-  //   const fetchDepartments = async () => {
-  //     try {
-  //       const res = await axios.get(`${API_BASE2}`);
-  //       console.log(res.data.data);
-  //       setDepartments(res.data.data);
-  //     } catch (err) {
-  //       console.error("Department fetch error", err);
-  //     }
-  //   };
 
-  //   fetchDepartments();
-  // }, []);
+
 
   useEffect(() => {
-  const fetchDepartments = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(`${API_BASE2}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      console.log(res.data.data);
-      setDepartments(res.data.data);
-    } catch (err) {
-      console.error("Department fetch error", err);
-    }
-  };
-
-  fetchDepartments();
-}, []);
-
-  
-  // useEffect(() => {
-  //   const fetchVendors = async () => {
-  //     try {
-  //       const res = await axios.get(`${API_BASE1}`);
-  //       console.log(res.data.data);
-  //       setVendorList(res.data.data);
-  //     } catch (err) {
-  //       console.error("Vendor fetch error", err);
-  //     }
-  //   };
-
-  //   fetchVendors();
-  // }, []);
-
-  useEffect(() => {
-    const fetchVendors = async () => {
+    const fetchDepartments = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        const res = await axios.get(`${API_BASE1}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const res = await axios.get(`${API_BASE2}`, {
+          withCredentials: true, // ✅ required for HTTP-only cookie
         });
 
         console.log(res.data.data);
-        setVendorList(res.data.data);
+        setDepartments(res.data.data);
       } catch (err) {
-        console.error("Vendor fetch error", err);
+        console.error("Department fetch error", err);
       }
     };
 
-    fetchVendors();
+    fetchDepartments();
   }, []);
+
+useEffect(() => {
+  const fetchVendors = async () => {
+    try {
+      const res = await axios.get(`${API_BASE1}`, {
+        withCredentials: true, // ✅ required
+      });
+
+      console.log(res.data.data);
+      setVendorList(res.data.data);
+    } catch (err) {
+      console.error("Vendor fetch error", err);
+    }
+  };
+
+  fetchVendors();
+}, []);
 
   const [vendorFiles, setVendorFiles] = useState({});
   const [prData, setPrData] = useState({
@@ -233,57 +199,20 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
 
 
-  // const submitPR = async () => {
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("data", JSON.stringify(prData));
 
-  //     Object.values(vendorFiles).forEach((files: any) => {
-  //       files.forEach((file: File) => formData.append("attachments", file));
-  //     });
-
-  //     await axios.post(`${API_BASE}/purchase-requests`, formData, {
-  //       headers: { "Content-Type": "multipart/form-data" },
-  //     });
-
-  //     // ✅ SUCCESS ALERT
-  //     setAlert({
-  //       type: "success",
-  //       message: "PR created successfully",
-  //     });
-  //     // 🔥 THIS IS THE KEY LINE
-  //     onCreated();
-
-  //     setTimeout(() => {
-  //       onClose();
-  //     }, 2000);
-  //   } catch (err) {
-  //     console.error(err);
-
-  //     // ❌ ERROR ALERT
-  //     setAlert({
-  //       type: "error",
-  //       message: "Something went wrong while creating PR",
-  //     });
-  //   }
-  // };
 
 const submitPR = async () => {
   try {
-    const token = localStorage.getItem("token");
-
     const formData = new FormData();
     formData.append("data", JSON.stringify(prData));
 
     Object.values(vendorFiles).forEach((files: any) => {
-      files.forEach((file: File) => formData.append("attachments", file));
+      files.forEach((f: any) => formData.append("attachments", f.file));
     });
 
     await axios.post(`${API_BASE}/purchase-requests`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-      },
+      withCredentials: true, // ✅ REQUIRED
+      // ❌ DO NOT set Content-Type manually
     });
 
     setAlert({

@@ -103,24 +103,20 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
   //     .catch((err) => console.error("Vendor fetch error:", err));
   // }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+useEffect(() => {
+  fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+    credentials: "include", // send cookies automatically
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      const map: Record<string, string> = {};
+      (data?.data || []).forEach((v: any) => {
+        map[String(v.vendor_id)] = v.vendor_name;
+      });
+      setVendorMap(map);
     })
-      .then((res) => res.json())
-      .then((data) => {
-        const map: Record<string, string> = {};
-        (data?.data || []).forEach((v: any) => {
-          map[String(v.vendor_id)] = v.vendor_name;
-        });
-        setVendorMap(map);
-      })
-      .catch((err) => console.error("Vendor fetch error:", err));
-  }, []);
+    .catch((err) => console.error("Vendor fetch error:", err));
+}, []);
 
   const updateVendorField = (
     itemIndex: number,
@@ -183,11 +179,9 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
         url = `${API_BASE}/approved-finance-requests`;
     }
 
-    const res = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+const res = await axios.get(url, {
+  withCredentials: true, // send cookies automatically
+});
 
     setRequests(res.data.data || []);
   };

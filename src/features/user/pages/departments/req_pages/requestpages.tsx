@@ -96,23 +96,21 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const vendors = data?.data || [];
-        const map: Record<string, string> = {};
+fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+  credentials: "include", // ✅ send cookie
+})
+  .then((res) => res.json())
+  .then((data) => {
+    const vendors = data?.data || [];
+    const map: Record<string, string> = {};
 
-        vendors.forEach((v: any) => {
-          map[String(v.vendor_id)] = v.vendor_name;
-        });
+    vendors.forEach((v: any) => {
+      map[String(v.vendor_id)] = v.vendor_name;
+    });
 
-        setVendorMap(map);
-      })
-      .catch((err) => console.error("Vendor fetch error", err));
+    setVendorMap(map);
+  })
+  .catch((err) => console.error("Vendor fetch error", err));
   }, []);
 
 
@@ -130,25 +128,23 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
   // }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
 
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const departments = data?.data || [];
-        const map: Record<string, string> = {};
 
-        departments.forEach((d: any) => {
-          map[String(d.department_id)] = d.name;
-        });
+fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
+  credentials: "include", // ✅ send cookie
+})
+  .then((res) => res.json())
+  .then((data) => {
+    const departments = data?.data || [];
+    const map: Record<string, string> = {};
 
-        setDepartmentMap(map);
-      })
-      .catch((err) => console.error("Department fetch error", err));
+    departments.forEach((d: any) => {
+      map[String(d.department_id)] = d.name;
+    });
+
+    setDepartmentMap(map);
+  })
+  .catch((err) => console.error("Department fetch error", err));
   }, []);
 
 
@@ -193,11 +189,9 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
         url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
       }
 
-      const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+ const res = await fetch(url, {
+   credentials: "include", // ✅ send cookie
+ });
 
       const data = await res.json();
 
@@ -1084,6 +1078,7 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                         `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/${activePR.id}`,
                         {
                           method: "PUT",
+                          credentials: "include",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({
                             description: activePR.description,
@@ -1092,7 +1087,7 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                             remarks: activePR.remarks,
                             department: activePR.department,
                           }),
-                        }
+                        },
                       );
 
                       // 2️⃣ Update Items
@@ -1100,6 +1095,7 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                         `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/${activePR.id}/items`,
                         {
                           method: "PUT",
+                          credentials: "include",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({
                             items: activePR.items.map((item) => ({
@@ -1109,7 +1105,7 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                               quantity_required: item.quantity_required,
                             })),
                           }),
-                        }
+                        },
                       );
 
                       // 3️⃣ Update Vendors
@@ -1118,6 +1114,7 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                           `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/items/${item.id}/vendors`,
                           {
                             method: "PUT",
+                            credentials: "include",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
                               vendors: item.vendors.map((vendor) => ({
@@ -1126,10 +1123,11 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                                 status: vendor.status,
                                 unit_price: vendor.unit_price,
                                 total_price: vendor.total_price,
-                                quotation_validity_date: vendor.quotation_validity_date,
+                                quotation_validity_date:
+                                  vendor.quotation_validity_date,
                               })),
                             }),
-                          }
+                          },
                         );
 
                         // 4️⃣ Update Attachments
@@ -1138,11 +1136,12 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                             `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/attachments`,
                             {
                               method: "PUT",
+                              credentials: "include",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
                                 attachments: vendor.attachments || [],
                               }),
-                            }
+                            },
                           );
 
                           // 5️⃣ Update Comments
@@ -1150,11 +1149,12 @@ export default function ViewPRPage({ filter, search, refreshKey}: Props) {
                             `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/comments`,
                             {
                               method: "PUT",
+                              credentials: "include",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
                                 comments: vendor.comments || [],
                               }),
-                            }
+                            },
                           );
                         }
                       }
