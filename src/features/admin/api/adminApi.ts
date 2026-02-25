@@ -98,6 +98,106 @@
 // };
 
 
+// const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
+// const handleRes = async (res: Response) => {
+//   const json = await res.json().catch(() => ({}));
+//   if (!res.ok) throw new Error(json?.message || "API error");
+//   return json.data ?? json;
+// };
+
+// // ---------------- DEPARTMENTS ---------------- //
+// export const getDepartments = async (token: string) => {
+//   const res = await fetch(`${API_URL}/api/departments`, {
+//     headers: { Authorization: `Bearer ${token}` },
+//   });
+//   return handleRes(res);
+// };
+
+// export const createDepartment = async (name: string, token: string) => {
+//   const res = await fetch(`${API_URL}/api/departments`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+//     body: JSON.stringify({ name }),
+//   });
+//   return handleRes(res);
+// };
+
+// // ---------------- EMPLOYEES WITH DEPARTMENTS ---------------- //
+// export const getEmployees = async (token: string) => {
+//   const res = await fetch(`${API_URL}/api/departments/employees-departments`, {
+//     headers: { Authorization: `Bearer ${token}` },
+//   });
+//   return handleRes(res);
+// };
+
+// // ---------------- GET EMPLOYEES OF ONE DEPARTMENT ---------------- //
+// export const getEmployeesByDepartment = async (deptId: number, token: string) => {
+//   const res = await fetch(`${API_URL}/api/departments/${deptId}/employees`, {
+//     headers: { Authorization: `Bearer ${token}` },
+//   });
+//   return handleRes(res);
+// };
+
+
+// // ---------------- ASSIGN / UNASSIGN DEPARTMENT ---------------- //
+// export const assignEmployeeDepartment = async (
+//   employeeId: number,
+//   deptId: number,
+//   permission: string | null,
+//   token: string
+// ) => {
+//   const res = await fetch(`${API_URL}/api/departments/employee/${employeeId}/assign-department`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+//     body: JSON.stringify({ department_id: deptId, permission }),
+//   });
+//   return handleRes(res);
+// };
+
+// export const unassignEmployee = async (
+//   employeeId: number,
+//   deptId: number,
+//   token: string
+// ) => {
+//   const res = await fetch(`${API_URL}/api/departments/employee/${employeeId}/unassign-department`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+//     body: JSON.stringify({ department_id: deptId }),
+//   });
+//   return handleRes(res);
+// };
+
+// // ---------------- ASSIGN / UPDATE PERMISSION ---------------- //
+// export const updatePermission = async (
+//   employeeId: number,
+//   deptId: number,
+//   permission: string,
+//   token: string
+// ) => {
+//   const res = await fetch(`${API_URL}/api/departments/employee/${employeeId}/assign-permission`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+//     body: JSON.stringify({ department_id: deptId, permission }),
+//   });
+//   return handleRes(res);
+// };
+
+// // ---------------- UNASSIGN PERMISSION ---------------- //
+// export const removePermission = async (
+//   employeeId: number,
+//   deptId: number,
+//   token: string
+// ) => {
+//   const res = await fetch(`${API_URL}/api/departments/employee/${employeeId}/unassign-permission`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+//     body: JSON.stringify({ department_id: deptId }),
+//   });
+//   return handleRes(res);
+// };
+
+
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 const handleRes = async (res: Response) => {
@@ -107,92 +207,110 @@ const handleRes = async (res: Response) => {
 };
 
 // ---------------- DEPARTMENTS ---------------- //
-export const getDepartments = async (token: string) => {
+
+export const getDepartments = async () => {
   const res = await fetch(`${API_URL}/api/departments`, {
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: "include",
   });
   return handleRes(res);
 };
 
-export const createDepartment = async (name: string, token: string) => {
+export const createDepartment = async (name: string) => {
   const res = await fetch(`${API_URL}/api/departments`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name }),
   });
   return handleRes(res);
 };
 
 // ---------------- EMPLOYEES WITH DEPARTMENTS ---------------- //
-export const getEmployees = async (token: string) => {
+
+export const getEmployees = async () => {
   const res = await fetch(`${API_URL}/api/departments/employees-departments`, {
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: "include",
   });
   return handleRes(res);
 };
 
 // ---------------- GET EMPLOYEES OF ONE DEPARTMENT ---------------- //
-export const getEmployeesByDepartment = async (deptId: number, token: string) => {
+
+export const getEmployeesByDepartment = async (deptId: number) => {
   const res = await fetch(`${API_URL}/api/departments/${deptId}/employees`, {
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: "include",
   });
   return handleRes(res);
 };
 
-
 // ---------------- ASSIGN / UNASSIGN DEPARTMENT ---------------- //
+
 export const assignEmployeeDepartment = async (
   employeeId: number,
   deptId: number,
-  permission: string | null,
-  token: string
+  permission: string | null
 ) => {
-  const res = await fetch(`${API_URL}/api/departments/employee/${employeeId}/assign-department`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ department_id: deptId, permission }),
-  });
+  const res = await fetch(
+    `${API_URL}/api/departments/employee/${employeeId}/assign-department`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ department_id: deptId, permission }),
+    }
+  );
   return handleRes(res);
 };
 
 export const unassignEmployee = async (
   employeeId: number,
-  deptId: number,
-  token: string
+  deptId: number
 ) => {
-  const res = await fetch(`${API_URL}/api/departments/employee/${employeeId}/unassign-department`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ department_id: deptId }),
-  });
+  const res = await fetch(
+    `${API_URL}/api/departments/employee/${employeeId}/unassign-department`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ department_id: deptId }),
+    }
+  );
   return handleRes(res);
 };
 
 // ---------------- ASSIGN / UPDATE PERMISSION ---------------- //
+
 export const updatePermission = async (
   employeeId: number,
   deptId: number,
-  permission: string,
-  token: string
+  permission: string
 ) => {
-  const res = await fetch(`${API_URL}/api/departments/employee/${employeeId}/assign-permission`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ department_id: deptId, permission }),
-  });
+  const res = await fetch(
+    `${API_URL}/api/departments/employee/${employeeId}/assign-permission`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ department_id: deptId, permission }),
+    }
+  );
   return handleRes(res);
 };
 
 // ---------------- UNASSIGN PERMISSION ---------------- //
+
 export const removePermission = async (
   employeeId: number,
-  deptId: number,
-  token: string
+  deptId: number
 ) => {
-  const res = await fetch(`${API_URL}/api/departments/employee/${employeeId}/unassign-permission`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ department_id: deptId }),
-  });
+  const res = await fetch(
+    `${API_URL}/api/departments/employee/${employeeId}/unassign-permission`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ department_id: deptId }),
+    }
+  );
   return handleRes(res);
 };

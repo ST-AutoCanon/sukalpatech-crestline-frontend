@@ -122,44 +122,72 @@ export default function SubmittedRequestsPage() {
 // }, []);
 
   
-    useEffect(() => {
-      const token = localStorage.getItem("token");
+    // useEffect(() => {
+    //   const token = localStorage.getItem("token");
 
-      // Fetch submitted PRs
-      axios
-        .get(`${API_BASE}/submitted-requests`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => {
-          setRequests(res.data.data || []);
-        });
+    //   // Fetch submitted PRs
+    //   axios
+    //     .get(`${API_BASE}/submitted-requests`, {
+    //       headers: { Authorization: `Bearer ${token}` },
+    //     })
+    //     .then((res) => {
+    //       setRequests(res.data.data || []);
+    //     });
 
-      // Fetch vendors
-      axios
-        .get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => {
-          const map: Record<string, string> = {};
-          (res.data.data || []).forEach(
-            (v: any) => (map[String(v.vendor_id)] = v.vendor_name),
-          );
-          setVendorMap(map);
-        });
+    //   // Fetch vendors
+    //   axios
+    //     .get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+    //       headers: { Authorization: `Bearer ${token}` },
+    //     })
+    //     .then((res) => {
+    //       const map: Record<string, string> = {};
+    //       (res.data.data || []).forEach(
+    //         (v: any) => (map[String(v.vendor_id)] = v.vendor_name),
+    //       );
+    //       setVendorMap(map);
+    //     });
 
-      // Fetch departments
-      axios
-        .get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => {
-          const map: Record<string, string> = {};
-          (res.data.data || []).forEach(
-            (d: any) => (map[String(d.department_id)] = d.name),
-          );
-          setDepartmentMap(map);
-        });
-    }, []);
+    //   // Fetch departments
+    //   axios
+    //     .get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
+    //       headers: { Authorization: `Bearer ${token}` },
+    //     })
+    //     .then((res) => {
+    //       const map: Record<string, string> = {};
+    //       (res.data.data || []).forEach(
+    //         (d: any) => (map[String(d.department_id)] = d.name),
+    //       );
+    //       setDepartmentMap(map);
+    //     });
+    // }, []);
+  
+  useEffect(() => {
+  // Fetch submitted PRs
+  axios
+    .get(`${API_BASE}/submitted-requests`, { withCredentials: true })
+    .then((res) => setRequests(res.data.data || []))
+    .catch((err) => console.error(err));
+
+  // Fetch vendors
+  axios
+    .get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, { withCredentials: true })
+    .then((res) => {
+      const map: Record<string, string> = {};
+      (res.data.data || []).forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
+      setVendorMap(map);
+    })
+    .catch((err) => console.error(err));
+
+  // Fetch departments
+  axios
+    .get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, { withCredentials: true })
+    .then((res) => {
+      const map: Record<string, string> = {};
+      (res.data.data || []).forEach((d: any) => (map[String(d.department_id)] = d.name));
+      setDepartmentMap(map);
+    })
+    .catch((err) => console.error(err));
+  }, []);
   
   const openPR = (pr: FeasibilityPR) => {
     setSelectedPR(pr);
@@ -185,7 +213,69 @@ export default function SubmittedRequestsPage() {
 }, [updateData.items]);
 
 
- const submitUpdate = async () => {
+//  const submitUpdate = async () => {
+//   if (!selectedPR || !newStatus) {
+//     setAlert({
+//       type: "error",
+//       message: "Please select procurement PR status",
+//     });
+//     return;
+//   }
+
+//   const token = localStorage.getItem("token");
+
+//   try {
+//     // 🔹 1️⃣ Call approval check API first
+//     const approvalRes = await axios.post(
+//       `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit/approve`,
+//       { amount: totalPrice },
+//       {
+//         headers: { Authorization: `Bearer ${token}` },
+//       }
+//     );
+
+//     // 🔹 2️⃣ If allowed → continue update
+//     if (approvalRes.data.success) {
+
+//       const payload = {
+//         department_statuses: [
+//           {
+//             department_status: newStatus,
+//             department_comment: newComment,
+//             status_updated_by: user.first_name,
+//             updated_at: new Date().toISOString(),
+//           },
+//         ],
+//         items: updateData.items,
+//       };
+
+//       await axios.put(
+//         `${API_BASE}/feasibility-requests/${selectedPR.id}`,
+//         payload,
+//         {
+//           headers: { Authorization: `Bearer ${token}` },
+//         }
+//       );
+
+//       setAlert({
+//         type: "success",
+//         message: "Feasibility PR approved successfully",
+//       });
+
+//       setModalOpen(false);
+//     }
+
+//   } catch (error: any) {
+//     setAlert({
+//       type: "error",
+//       message:
+//         error.response?.data?.message ||
+//         "Approval denied. Limit exceeded.",
+//     });
+//   }
+// };
+
+const submitUpdate = async () => {
   if (!selectedPR || !newStatus) {
     setAlert({
       type: "error",
@@ -194,21 +284,15 @@ export default function SubmittedRequestsPage() {
     return;
   }
 
-  const token = localStorage.getItem("token");
-
   try {
-    // 🔹 1️⃣ Call approval check API first
+    // 1️⃣ Call approval check API
     const approvalRes = await axios.post(
       `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit/approve`,
       { amount: totalPrice },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      { withCredentials: true },
     );
 
-    // 🔹 2️⃣ If allowed → continue update
     if (approvalRes.data.success) {
-
       const payload = {
         department_statuses: [
           {
@@ -224,30 +308,23 @@ export default function SubmittedRequestsPage() {
       await axios.put(
         `${API_BASE}/feasibility-requests/${selectedPR.id}`,
         payload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { withCredentials: true },
       );
 
       setAlert({
         type: "success",
         message: "Feasibility PR approved successfully",
       });
-
       setModalOpen(false);
     }
-
   } catch (error: any) {
     setAlert({
       type: "error",
       message:
-        error.response?.data?.message ||
-        "Approval denied. Limit exceeded.",
+        error.response?.data?.message || "Approval denied. Limit exceeded.",
     });
   }
 };
-
-
   return (
     <div className="p-4 sm:p-6 text-black">
                   {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}

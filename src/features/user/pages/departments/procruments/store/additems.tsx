@@ -57,12 +57,16 @@ export default function AddItem() {
 
   const token = localStorage.getItem("token"); // fetch once
 
+
+  const api = axios.create({
+  baseURL: `${API_BASE}`,
+  withCredentials: true, // ✅ sends HTTP-only cookie automatically
+  });
+  
   // Fetch all items
   const fetchAllItems = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/items/items`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+const res = await api.get("/items/items");
       const normalized = (res.data?.data || []).map((item: any) => ({
         id: item.id,
         code: item.item_code,
@@ -79,9 +83,7 @@ export default function AddItem() {
   // Fetch vendors
   const fetchVendors = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/vendor/vendors`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+const res = await api.get("/vendor/vendors");
       setVendorList(Array.isArray(res.data?.data) ? res.data.data : []);
     } catch {
       setVendorList([]);
@@ -91,9 +93,7 @@ export default function AddItem() {
   // Fetch roots
   const fetchRoots = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/categories/root-category`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+const res = await api.get("/categories/root-category");
       setRoots(res.data.map((r: any) => ({ ...r, id: String(r.id) })));
     } catch {
       setRoots([]);
@@ -107,9 +107,7 @@ export default function AddItem() {
     setVariants([]);
     setSubVariants([]);
     try {
-      const res = await axios.get(`${API_BASE}/categories/list?root_id=${rootId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+const res = await api.get(`/categories/list?root_id=${rootId}`);
       setCategories(res.data.map((c: any) => ({ ...c, id: String(c.id) })));
     } catch {
       setCategories([]);
@@ -121,9 +119,8 @@ export default function AddItem() {
     setVariants([]);
     setSubVariants([]);
     try {
-      const res = await axios.get(`${API_BASE}/categories/products?category_id=${categoryId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+// Fetch products for a category
+const res = await api.get(`/categories/products?category_id=${categoryId}`);
       setProducts(res.data.map((p: any) => ({ ...p, id: String(p.id) })));
     } catch {
       setProducts([]);
@@ -134,9 +131,7 @@ export default function AddItem() {
     setSelectedVariant("");
     setSubVariants([]);
     try {
-      const res = await axios.get(`${API_BASE}/categories/variants?product_id=${productId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+const res = await api.get(`/categories/variants?product_id=${productId}`);
       setVariants(res.data.map((v: any) => ({ ...v, id: String(v.id) })));
     } catch {
       setVariants([]);
@@ -146,9 +141,7 @@ export default function AddItem() {
   const fetchSubVariants = async (variantId: string) => {
     setSelectedSubVariant("");
     try {
-      const res = await axios.get(`${API_BASE}/categories/sub-variants?variant_id=${variantId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+const res = await api.get(`/categories/sub-variants?variant_id=${variantId}`);
       setSubVariants(res.data.map((sv: any) => ({ ...sv, id: String(sv.id) })));
     } catch {
       setSubVariants([]);
@@ -163,20 +156,16 @@ export default function AddItem() {
     }
 
     try {
-      const res = await axios.post(
-        `${API_BASE}/items/items`,
-        {
-          item_name: itemName,
-          qty,
-          vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
-          root_category_id: selectedRoot,
-          category_id: selectedCategory || null,
-          product_id: selectedProduct || null,
-          variant_id: selectedVariant || null,
-          sub_variant_id: selectedSubVariant || null,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+const res = await api.post("/items/items", {
+  item_name: itemName,
+  qty,
+  vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
+  root_category_id: selectedRoot,
+  category_id: selectedCategory || null,
+  product_id: selectedProduct || null,
+  variant_id: selectedVariant || null,
+  sub_variant_id: selectedSubVariant || null,
+});
 
       if (res.data?.data) {
         const addedItem = {
@@ -212,9 +201,7 @@ export default function AddItem() {
   const handleSearch = async () => {
     if (!search) return;
     try {
-      const res = await axios.get(`${API_BASE}/items/search?query=${search}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+const res = await api.get(`/items/search?query=${search}`);
       setItems(res.data?.data || []);
     } catch {
       setItems([]);

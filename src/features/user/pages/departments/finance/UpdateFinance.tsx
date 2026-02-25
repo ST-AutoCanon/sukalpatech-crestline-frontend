@@ -123,54 +123,32 @@ export default function SubmittedFinanceRequestsPage() {
     return new Date(date).toLocaleDateString("en-GB");
   };
 
-  // const fetchApprovedRequests = async () => {
-  //   const res = await axios.get(`${API_BASE}/approved-finance-requests`);
-  //   setRequests(res.data.data || []);
-  // };
-  const fetchApprovedRequests = async () => {
-    const token = localStorage.getItem("token");
-
+const fetchApprovedRequests = async () => {
+  try {
     const res = await axios.get(`${API_BASE}/approved-finance-requests`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      withCredentials: true, // <-- use cookies instead of token
     });
-
     setRequests(res.data.data || []);
-  };
+  } catch (err) {
+    console.error("Error fetching approved finance requests:", err);
+  }
+};
 
 
-  // useEffect(() => {
-  //   // Fetch vendor master
-  //   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`)
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       const map: Record<string, string> = {};
-  //       (data?.data || []).forEach((v: any) => {
-  //         map[String(v.vendor_id)] = v.vendor_name;
-  //       });
-  //       setVendorMap(map);
-  //     })
-  //     .catch((err) => console.error("Vendor fetch error:", err));
-  // }, []);
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const map: Record<string, string> = {};
-        (data?.data || []).forEach((v: any) => {
-          map[String(v.vendor_id)] = v.vendor_name;
-        });
-        setVendorMap(map);
-      })
-      .catch((err) => console.error("Vendor fetch error:", err));
-  }, []);
+ useEffect(() => {
+   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+     credentials: "include", // <-- cookies for auth
+   })
+     .then((res) => res.json())
+     .then((data) => {
+       const map: Record<string, string> = {};
+       (data?.data || []).forEach((v: any) => {
+         map[String(v.vendor_id)] = v.vendor_name;
+       });
+       setVendorMap(map);
+     })
+     .catch((err) => console.error("Vendor fetch error:", err));
+ }, []);
 
 
   useEffect(() => {
@@ -188,55 +166,89 @@ export default function SubmittedFinanceRequestsPage() {
     setNewComment("");
   };
 
-  const submitUpdate = async () => {
-    if (!selectedPR || !newStatus) {
-    setAlert({
-      type: "error",
-      message: "Please select finance status",
-    });
+  // const submitUpdate = async () => {
+  //   if (!selectedPR || !newStatus) {
+  //   setAlert({
+  //     type: "error",
+  //     message: "Please select finance status",
+  //   });
+  //   setTimeout(() => setAlert(null), 2000);
+  //   return;
+  // }
+
+
+
+  //   const payload = {
+  //     department_statuses: [
+  //       {
+  //         department_status: newStatus,
+  //         department_comment: newComment,
+  //         status_updated_by: user.first_name,
+  //         updated_at: new Date().toISOString(),
+  //       },
+  //     ],
+  //     items: updateData.items,
+  //   };
+
+  //   // await axios.put(`${API_BASE}/finance-requests/${selectedPR.id}`, payload);
+  //   const token = localStorage.getItem("token");
+
+  //   await axios.put(`${API_BASE}/finance-requests/${selectedPR.id}`, payload, {
+  //     headers: {
+  //       Authorization: `Bearer ${token}`,
+  //     },
+  //   });
+
+  //     setAlert({
+  //     type: "success",
+  //     message: "Feasibility PR updated successfully",
+  //   });
+
+  //    setTimeout(() => {
+  //     setAlert(null);
+  //   }, 4000);
+    
+  //   setModalOpen(false);
+  //   fetchApprovedRequests();
+    
+    
+  // };
+  
+const submitUpdate = async () => {
+  if (!selectedPR || !newStatus) {
+    setAlert({ type: "error", message: "Please select finance status" });
     setTimeout(() => setAlert(null), 2000);
     return;
   }
 
-
-
-    const payload = {
-      department_statuses: [
-        {
-          department_status: newStatus,
-          department_comment: newComment,
-          status_updated_by: user.first_name,
-          updated_at: new Date().toISOString(),
-        },
-      ],
-      items: updateData.items,
-    };
-
-    // await axios.put(`${API_BASE}/finance-requests/${selectedPR.id}`, payload);
-    const token = localStorage.getItem("token");
-
-    await axios.put(`${API_BASE}/finance-requests/${selectedPR.id}`, payload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+  const payload = {
+    department_statuses: [
+      {
+        department_status: newStatus,
+        department_comment: newComment,
+        status_updated_by: user.first_name,
+        updated_at: new Date().toISOString(),
       },
+    ],
+    items: updateData.items,
+  };
+
+  try {
+    await axios.put(`${API_BASE}/finance-requests/${selectedPR.id}`, payload, {
+      withCredentials: true, // <-- use cookies
     });
 
-      setAlert({
-      type: "success",
-      message: "Feasibility PR updated successfully",
-    });
-
-     setTimeout(() => {
-      setAlert(null);
-    }, 4000);
-    
+    setAlert({ type: "success", message: "Finance PR updated successfully" });
+    setTimeout(() => setAlert(null), 4000);
     setModalOpen(false);
     fetchApprovedRequests();
-    
-    
+  } catch (err) {
+    console.error("Error updating finance PR:", err);
+    setAlert({ type: "error", message: "Failed to update Finance PR" });
+    setTimeout(() => setAlert(null), 4000);
+  }
   };
   
-
   return (
     <div className="p-4 sm:p-6 text-black">
       {alert && (
