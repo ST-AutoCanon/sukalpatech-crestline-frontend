@@ -394,9 +394,9 @@ const submitUpdate = async () => {
 
                       {item.vendors.map((vendor, vi) => {
                         // Find the latest feasibility comment (commented_by = 2)
-                        const feasibilityComment =
-                          vendor.comments?.find((c) => c.commented_by === 2)
-                            ?.comment || "";
+                       const feasibilityComment =
+                              vendor.comments?.[vendor.comments.length - 1]?.comment || "";
+
 
                         return (
                           <div

@@ -10,23 +10,52 @@ interface BusinessListProps {
 const BusinessList = ({ refresh, filter }: BusinessListProps) => {
   const [requests, setRequests] = useState<any[]>([]);
 
+  // const fetchRequests = async () => {
+  //   try {
+  //     let url = "/business-development";
+
+  //     // ✅ send filter to backend
+  //     if (filter && filter !== "ALL") {
+  //       url += `?status=${filter}`;
+  //     }
+
+  //     const res = await api.get(url);
+
+  //     setRequests(res.data.data);
+  //   } catch (error) {
+  //     console.error("Error fetching requests:", error);
+  //   }
+  // };
+
   const fetchRequests = async () => {
-    try {
-      let url = "/business-development";
+  try {
+    const token = localStorage.getItem("token");
+    console.log("Selected Filter:", filter);
 
-      // ✅ send filter to backend
-      if (filter && filter !== "ALL") {
-        url += `?status=${filter}`;
-      }
+    let url = "/business-development";
 
-      const res = await api.get(url);
+     // 🔥 Map COMPLETED → APPROVED
+    let statusToSend = filter;
 
-      setRequests(res.data.data);
-    } catch (error) {
-      console.error("Error fetching requests:", error);
+    if (filter === "COMPLETED") {
+      statusToSend = "APPROVED";
     }
-  };
+    if (statusToSend && statusToSend !== "ALL") {
+      url += `?status=${statusToSend}`;
+    }
 
+    const res = await api.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setRequests(res.data.data);
+
+  } catch (error) {
+    console.error("Error fetching requests:", error);
+  }
+};
   useEffect(() => {
     fetchRequests();
   }, [refresh, filter]); // ✅ VERY IMPORTANT

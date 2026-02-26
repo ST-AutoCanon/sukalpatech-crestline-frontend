@@ -4,6 +4,12 @@ import { AuthContext } from "../../../../../context/AuthContext";
 import { Upload } from "lucide-react";
 import Aleart from "../../../components/Aleartmessage";
 
+interface attachments {
+  file_name: string;
+  file_path: string;
+  uploaded_at: string;
+}
+
 export default function NewProcurementPage({ onClose, onCreated }) {
   const { user, token } = useContext(AuthContext);
   const [departments, setDepartments] = useState([]);
@@ -17,10 +23,21 @@ export default function NewProcurementPage({ onClose, onCreated }) {
   const API_BASE1 = `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`;
   const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
 
+  // useEffect(() => {
+  //   const fetchDepartments = async () => {
+  //     try {
+  //       const res = await axios.get(`${API_BASE2}`);
+  //       console.log(res.data.data);
+  //       setDepartments(res.data.data);
+  //     } catch (err) {
+  //       console.error("Department fetch error", err);
+  //     }
+  //   };
 
+  //   fetchDepartments();
+  // }, []);
 
-
-  useEffect(() => {
+    useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const res = await axios.get(`${API_BASE2}`, {
@@ -37,7 +54,22 @@ export default function NewProcurementPage({ onClose, onCreated }) {
     fetchDepartments();
   }, []);
 
-useEffect(() => {
+  
+  // useEffect(() => {
+  //   const fetchVendors = async () => {
+  //     try {
+  //       const res = await axios.get(`${API_BASE1}`);
+  //       console.log(res.data.data);
+  //       setVendorList(res.data.data);
+  //     } catch (err) {
+  //       console.error("Vendor fetch error", err);
+  //     }
+  //   };
+
+  //   fetchVendors();
+  // }, []);
+
+ useEffect(() => {
   const fetchVendors = async () => {
     try {
       const res = await axios.get(`${API_BASE1}`, {
@@ -185,21 +217,85 @@ useEffect(() => {
 
   const handleFileUpload = (i: number, vi: number, files: FileList | null) => {
   if (!files) return;
+
   const key = `${i}-${vi}`;
+
   const fileArray = Array.from(files).map((file) => ({
-    file,
-    preview: URL.createObjectURL(file), // create a preview URL
+    file, // actual File object (for FormData)
+    file_name: file.name,
+    file_path: "", // backend will update this
+    uploaded_at: new Date().toISOString(),
+    preview: URL.createObjectURL(file),
   }));
 
+  // ✅ Update vendorFiles (for UI display)
   setVendorFiles((prev) => ({
     ...prev,
     [key]: fileArray,
   }));
+
+  // ✅ ALSO update prData.attachments (IMPORTANT FIX)
+  setPrData((prev) => {
+    const updatedItems = [...prev.items];
+
+    const updatedVendors = [...updatedItems[i].vendors];
+
+    updatedVendors[vi] = {
+      ...updatedVendors[vi],
+        attachments: fileArray.map((f) => ({
+        file_name: f.file_name,
+        file_path: "", // backend will fill
+        uploaded_at: f.uploaded_at,
+      })),
+    };
+
+    updatedItems[i] = {
+      ...updatedItems[i],
+      vendors: updatedVendors,
+    };
+
+    return {
+      ...prev,
+      items: updatedItems,
+    };
+  });
 };
 
 
+  // const submitPR = async () => {
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("data", JSON.stringify(prData));
 
+  //     Object.values(vendorFiles).forEach((files: any) => {
+  //       files.forEach((file: File) => formData.append("attachments", file));
+  //     });
 
+  //     await axios.post(`${API_BASE}/purchase-requests`, formData, {
+  //       headers: { "Content-Type": "multipart/form-data" },
+  //     });
+
+  //     // ✅ SUCCESS ALERT
+  //     setAlert({
+  //       type: "success",
+  //       message: "PR created successfully",
+  //     });
+  //     // 🔥 THIS IS THE KEY LINE
+  //     onCreated();
+
+  //     setTimeout(() => {
+  //       onClose();
+  //     }, 2000);
+  //   } catch (err) {
+  //     console.error(err);
+
+  //     // ❌ ERROR ALERT
+  //     setAlert({
+  //       type: "error",
+  //       message: "Something went wrong while creating PR",
+  //     });
+  //   }
+  // };
 
 const submitPR = async () => {
   try {
@@ -234,6 +330,7 @@ const submitPR = async () => {
     });
   }
 };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
@@ -430,46 +527,27 @@ const submitPR = async () => {
 
                     {/* Upload */}
                     <div>
-                      <label className="text-xs text-gray-600">
-                        Upload Quotation
-                      </label>
-                      <input
-                        type="file"
-                        className="w-full p-2 border rounded mt-1"
-                        onChange={(e) =>
-                          handleFileUpload(i, vi, e.target.files)}
-                          multiple
-                      />
-                      {/* File preview */}
-{vendorFiles[`${i}-${vi}`]?.length > 0 && (
-  <div className="mt-2 space-y-1">
-   {vendorFiles[`${i}-${vi}`]?.map((f, index) => (
-  <div key={index} className="flex items-center gap-2">
-    <span className="text-xs truncate">{f.file.name}</span>
+  <label className="text-xs text-gray-600">
+    Upload Quotation
+  </label>
 
-    {f.file.type.startsWith("image/") && (
-      <img
-        src={f.preview}
-        alt={f.file.name}
-        className="w-16 h-16 object-cover border rounded"
-      />
-    )}
+  <input
+    type="file"
+    id={`file-${i}-${vi}`}
+    className="hidden"
+    multiple
+    onChange={(e) => handleFileUpload(i, vi, e.target.files)}
+  />
 
-    <a
-      href={f.preview}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-600 text-xs underline ml-2"
-    >
-      View
-    </a>
-  </div>
-))}
-
-  </div>
-)}
-                    </div>
-
+  <label
+    htmlFor={`file-${i}-${vi}`}
+    className="block w-full p-2 mt-1 border rounded bg-white cursor-pointer text-sm text-gray-500 truncate"
+  >
+    {vendorFiles[`${i}-${vi}`]?.length > 0
+      ? vendorFiles[`${i}-${vi}`].map((f) => f.file.name).join(", ")
+      : "Choose File"}
+  </label>
+</div>
                     {/* Unit Price */}
                    <div>
                       <label className="text-xs text-gray-600">Unit Price</label>
