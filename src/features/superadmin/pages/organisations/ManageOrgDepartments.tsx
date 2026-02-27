@@ -32,11 +32,12 @@ const ManageOrgDepartments = () => {
     const fetchOrgs = async () => {
       try {
         const res = await axios.get<ApiResponse<Organisation[]>>(
-          `${API_BASE}/organisations`,
+          `${API_BASE}/organisations-admin`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            withCredentials: true,
+            // headers: {
+            //   Authorization: `Bearer ${token}`,
+            // },
           },
         );
 
@@ -69,10 +70,12 @@ const ManageOrgDepartments = () => {
           org_code: selectedOrg,
           department_name: departmentName,
         },
+
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          withCredentials: true,
+          // headers: {
+          //   Authorization: `Bearer ${token}`,
+          // },
         },
       );
 
@@ -109,9 +112,10 @@ const ManageOrgDepartments = () => {
             org_code: selectedOrg,
             department_name: departmentName,
           },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          withCredentials: true,
+          // headers: {
+          //   Authorization: `Bearer ${token}`,
+          // },
         },
       );
 
@@ -130,7 +134,7 @@ const ManageOrgDepartments = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-6">
+    <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-8">
         <h2 className="text-3xl font-bold text-gray-800 mb-6">
           Manage Organisation Departments
