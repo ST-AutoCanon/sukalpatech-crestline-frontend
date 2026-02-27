@@ -49,7 +49,7 @@
 import React, { useState } from "react";
 import CreateOrganisation from "./CreateOrganisation";
 import UpdateOrganisation from "./UpdateOrganisation";
-import DeleteOrganisation from "./DeleteOrganisation";
+import DeleteOrganisation from "./deleteOrganisation";
 
 const OrganisationHome: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"create" | "update" | "delete">(
