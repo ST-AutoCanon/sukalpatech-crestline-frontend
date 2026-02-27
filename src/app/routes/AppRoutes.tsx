@@ -14,7 +14,7 @@ import EmployeeDashboardHome from "../../features/user/pages/EmployeeDashboardHo
 
 import DepartmentPage from "../../features/admin/pages/Department";
 import EmployeeUpdate from "../../features/admin/pages/EmployeeUpdate";
-import CreateOrganisation from "../../features/superadmin/pages/CreateOrganisation";
+import CreateOrganisation from "../../features/superadmin/pages/organisations/CreateOrganisation";
 
 import UpdatedFeasibilityPage from "../../features/user/pages/departments/Businessdevelopment/UpdatedFeasibilitypage";
 
@@ -23,17 +23,20 @@ import UpdatedFeasibilityPage from "../../features/user/pages/departments/Busine
 ========================= */
 
 const componentMap: Record<string, React.LazyExoticComponent<any>> = {
-  procurement: React.lazy(() =>
-    import("../../features/user/pages/departments/procruments/procrumentHome")
+  procurement: React.lazy(
+    () =>
+      import("../../features/user/pages/departments/procruments/procrumentHome"),
   ),
-  feasibility: React.lazy(() =>
-    import("../../features/user/pages/departments/feasibility/FeasibilityHome")
+  feasibility: React.lazy(
+    () =>
+      import("../../features/user/pages/departments/feasibility/FeasibilityHome"),
   ),
-  finance: React.lazy(() =>
-    import("../../features/user/pages/departments/finance/FinanceHome")
+  finance: React.lazy(
+    () => import("../../features/user/pages/departments/finance/FinanceHome"),
   ),
-  BD: React.lazy(() =>
-    import("../../features/user/pages/departments/Businessdevelopment/BusinessdevelopmentHome")
+  BD: React.lazy(
+    () =>
+      import("../../features/user/pages/departments/Businessdevelopment/BusinessdevelopmentHome"),
   ),
 };
 

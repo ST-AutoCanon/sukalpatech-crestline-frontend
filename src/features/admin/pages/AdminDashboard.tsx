@@ -1,52 +1,10 @@
-// import { useLocation } from "react-router-dom";
-// import Sidebar from "../components/Sidebar";
-// import TopNav from "../components/TopNav";
-// import DepartmentPage from "./Department";
-// import EmployeeUpdate from "./EmployeeUpdate";
-
-// export default function AdminDashboard() {
-//   const { pathname } = useLocation();
-
-//   // Map pathnames to page names
-//   const pathToPage: Record<string, string> = {
-//     "/admin": "Dashboard",
-//     "/admin/departments": "Departments",
-//     "/admin/employeea": "Employeea",
-//   };
-
-//   // Determine active page from current path
-//   const activePage = pathToPage[pathname] || "Dashboard";
-
-//   const pageComponents: Record<string, JSX.Element> = {
-//     Dashboard: <div>Welcome to Admin Dashboard!</div>,
-//     Departments: <DepartmentPage />,
-//     Employeea: <EmployeeUpdate />,
-//   };
-
-//   return (
-//     <div className="flex min-h-screen">
-//       <Sidebar />
-
-//       <div className="flex-1 flex flex-col">
-//         <TopNav pageTitle={activePage} />
-
-//         <main className="p-6 flex-1 bg-gray-50">
-//           {pageComponents[activePage]}
-//         </main>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
 import { useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import TopNav from "../components/TopNav";
 import DepartmentPage from "./Department";
 import EmployeeUpdate from "./EmployeeUpdate";
 import CategoryLimitPage from "./Categorylimit";
-
+import Dashboard from "./DashboardHome";
 
 export default function AdminDashboard() {
   const { pathname } = useLocation();
@@ -62,7 +20,8 @@ export default function AdminDashboard() {
   const activePage = pathToPage[pathname] || "Dashboard";
 
   const pageComponents: Record<string, JSX.Element> = {
-    Dashboard: <div>Welcome to Admin Dashboard!</div>,
+    // Dashboard: <div>Welcome to Admin Dashboard!</div>,
+    Dashboard: <Dashboard />,
     Departments: <DepartmentPage />,
     EmployeeUpdate: <EmployeeUpdate />,
     CategoryLimit: <CategoryLimitPage />,  };
@@ -78,7 +37,7 @@ export default function AdminDashboard() {
         <TopNav pageTitle={activePage} />
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 bg-gray-50 overflow-auto">
+        <main className="flex-1  bg-gray-50 overflow-auto">
           {pageComponents[activePage]}
         </main>
       </div>

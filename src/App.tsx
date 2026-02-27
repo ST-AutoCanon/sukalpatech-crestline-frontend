@@ -14,7 +14,8 @@ import EmployeeDashboardHome from "./features/user/pages/EmployeeDashboardHome";
 
 import DepartmentPage from "./features/admin/pages/Department";
 import EmployeeUpdate from "./features/admin/pages/EmployeeUpdate";
-import CreateOrganisation from "./features/superadmin/pages/CreateOrganisation";
+import CreateOrganisation from "./features/superadmin/pages/organisations/CreateOrganisation";
+import OrganisationHome from "./features/superadmin/pages/organisations/OrganisationHome";
 
 import UpdatedFeasibilityPage from "./features/user/pages/departments/Businessdevelopment/UpdatedFeasibilitypage";
 import Home from "./pages/Home";
@@ -129,8 +130,7 @@ export default function AppRoutes() {
         <Route index element={<DashboardHome />} />
         <Route path="departments" element={<DepartmentPage />} />
         <Route path="employee-update" element={<EmployeeUpdate />} />
-        <Route path="categorylimit" element={<CategoryLimitPage/>}/>
-
+        <Route path="categorylimit" element={<CategoryLimitPage />} />
       </Route>
 
       {/* Super Admin Routes */}
@@ -143,7 +143,7 @@ export default function AppRoutes() {
         }
       >
         <Route index element={<DashboardHome />} />
-        <Route path="create_organisation" element={<CreateOrganisation />} />
+        <Route path="create_organisation" element={<OrganisationHome />} />
       </Route>
 
       {/* Default Redirect */}
