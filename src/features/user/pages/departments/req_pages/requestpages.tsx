@@ -185,7 +185,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
         filter === "Completed"
       ) {
         const status =
-          filter === "Completed" ? "APPROVED" : filter.toUpperCase();
+          filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
         url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
       }
 
@@ -224,6 +224,136 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   const toggleItemsSection = () => setShowItems((prev) => !prev);
 
   if (loading) return <div className="p-6">Loading PRs...</div>;
+  const savePR = async (pr: PR) => {
+    const token = localStorage.getItem("token");
+
+    // 0️⃣ Full PR Save
+    const fullRes = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${pr.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(pr),
+      }
+    );
+
+    if (!fullRes.ok) throw new Error("Full PR Save failed");
+
+    const updatedFullPR = await fullRes.json();
+
+    // 1️⃣ Update PR Details
+    await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/${pr.id}`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          description: pr.description,
+          priority: pr.priority,
+          required_date: pr.required_date,
+          remarks: pr.remarks,
+          department: pr.department,
+        }),
+      }
+    );
+
+    // 2️⃣ Update Items
+    await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/${pr.id}/items`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: pr.items.map((item) => ({
+            id: item.id,
+            item_code: item.item_code,
+            item_name: item.item_name,
+            quantity_required: item.quantity_required,
+          })),
+        }),
+      }
+    );
+
+    // 3️⃣ Vendors + Attachments + Comments
+    for (const item of pr.items) {
+      await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/items/${item.id}/vendors`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            vendors: item.vendors.map((vendor) => ({
+              id: vendor.id,
+              vendor_id: vendor.vendor_id,
+              status: vendor.status,
+              unit_price: vendor.unit_price,
+              total_price: vendor.total_price,
+              quotation_validity_date: vendor.quotation_validity_date,
+            })),
+          }),
+        }
+      );
+
+      for (const vendor of item.vendors) {
+        await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/attachments`,
+          {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ attachments: vendor.attachments || [] }),
+          }
+        );
+
+        await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/comments`,
+          {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ comments: vendor.comments || [] }),
+          }
+        );
+      }
+    }
+
+    return updatedFullPR;
+  };
+
+  const handleSave = async () => {
+    if (!activePR) return;
+
+    try {
+      await savePR(activePR);
+
+      setEditMode(false);
+      setActivePR(null);   // ✅ CLOSE MODAL IMMEDIATELY
+
+      fetchPRs();          // refresh list
+
+      setMessage({ text: "PR updated successfully!", type: "success" });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      console.error("Save failed", err);
+      setMessage({ text: "Failed to update PR.", type: "error" });
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
+  const formatDateForInput = (date: string) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const offset = d.getTimezoneOffset();
+    const localDate = new Date(d.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().split("T")[0];
+  };
 
   return (
     <>
@@ -329,9 +459,10 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       onChange={(e) =>
                         setActivePR({ ...activePR, priority: e.target.value })
                       }
-                      className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
                     >
-                      <option value="">Select Priority</option>
+                      <option value="" disabled>
+                        Select Priority
+                      </option>
                       <option value="LOW">LOW</option>
                       <option value="MEDIUM">MEDIUM</option>
                       <option value="HIGH">HIGH</option>
@@ -350,11 +481,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   <div className="text-gray-900"> Delivery Date</div>
                   <input
                     type="date"
-                    value={
-                      activePR.required_date
-                        ? activePR.required_date.split("T")[0]
-                        : ""
-                    }
+                    value={formatDateForInput(activePR.required_date)}
                     disabled={!editMode}
                     onChange={(e) =>
                       setActivePR({ ...activePR, required_date: e.target.value })
@@ -370,13 +497,15 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   <div className="text-gray-900">Department</div>
                   {editMode ? (
                     <select
-                      value={activePR.department || ""}
+                      value={String(activePR.department ?? "")}
                       onChange={(e) =>
                         setActivePR({ ...activePR, department: e.target.value })
                       }
                       className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
                     >
-                      <option value="">Select Department</option>
+                      <option value="" disabled>
+                        Select Department
+                      </option>
                       {Object.entries(departmentMap).map(([id, name]) => (
                         <option key={id} value={id}>
                           {name}
@@ -431,13 +560,15 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
                   {editMode ? (
                     <select
-                      value={activePR.priority || ""}
+                      value={activePR.priority ?? ""}
                       onChange={(e) =>
                         setActivePR({ ...activePR, priority: e.target.value })
                       }
                       className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
                     >
-                      <option value="">Select Priority</option>
+                      <option value="" disabled>
+                        Select Priority
+                      </option>
                       <option value="LOW">LOW</option>
                       <option value="MEDIUM">MEDIUM</option>
                       <option value="HIGH">HIGH</option>
@@ -453,11 +584,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
                   <input
                     type="date"
-                    value={
-                      activePR.required_date
-                        ? activePR.required_date.split("T")[0]
-                        : ""
-                    }
+                    value={formatDateForInput(activePR.required_date)}
                     disabled={!editMode}
                     onChange={(e) =>
                       setActivePR({ ...activePR, required_date: e.target.value })
@@ -469,13 +596,15 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
                   {editMode ? (
                     <select
-                      value={activePR.department || ""}
+                      value={String(activePR.department ?? "")}
                       onChange={(e) =>
                         setActivePR({ ...activePR, department: e.target.value })
                       }
                       className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
                     >
-                      <option value="">Select Department</option>
+                      <option value="" disabled>
+                        Select Department
+                      </option>
                       {Object.entries(departmentMap).map(([id, name]) => (
                         <option key={id} value={id}>
                           {name}
@@ -582,18 +711,24 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                           value={item.quantity_required ?? ""}
                           readOnly={!editMode}
                           onChange={(e) => {
+                            const qty = Math.max(0, Number(e.target.value));
                             const updatedItems = [...activePR.items];
-                            updatedItems[itemIndex] = {
-                              ...updatedItems[itemIndex],
-                              quantity_required: Math.max(0, Number(e.target.value)),
-                            };
+
+                            // Update quantity only
+                            updatedItems[itemIndex].quantity_required = qty;
+
+                            // 🔥 Only recalculate total price (do NOT touch unit_price)
+                            updatedItems[itemIndex].vendors =
+                              updatedItems[itemIndex].vendors.map((vendor) => ({
+                                ...vendor,
+                                total_price: (vendor.unit_price || 0) * qty,
+                              }));
 
                             setActivePR({ ...activePR, items: updatedItems });
                           }}
                           className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
                             }`}
                         />
-
 
                       </div>
                     </div>
@@ -615,220 +750,44 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                           </div>
 
                           {/* ===== DESKTOP VALUES ===== */}
-                          {item.vendors.map((vendor, vendorIndex) => {
-                            const prComment =
-                              vendor.comments?.[0]?.comment || "";
+                          {item.vendors
+                            ?.filter(
+                              (vendor) =>
+                                !vendor.status ||
+                                !vendor.status.toLowerCase().trim().includes("rejected")
+                            )
+                            .map((vendor, vendorIndex) => {
+                              const sortedComments =
+                                [...(vendor.comments || [])].sort(
+                                  (a, b) =>
+                                    new Date(a.commented_at).getTime() -
+                                    new Date(b.commented_at).getTime()
+                                );
 
+                              const prComment =
+                                sortedComments.length > 0 ? sortedComments[0].comment : "";
 
-                            const feasibilityComment =
-                              vendor.comments?.[vendor.comments.length - 1]?.comment || "";
-                            return (
-                              <div
-                                key={vendor.id}
-                                className="hidden sm:grid sm:grid-cols-8 gap-4 text-sm mb-2"
-                              >
-                                {editMode ? (
-                                  <select
-                                    value={vendor.vendor_id}
-                                    onChange={(e) => {
-                                      const updatedItems = [...activePR.items];
-                                      updatedItems[itemIndex].vendors[vendorIndex] = {
-                                        ...updatedItems[itemIndex].vendors[vendorIndex],
-                                        vendor_id: e.target.value, // still store the ID
-                                      };
-                                      setActivePR({ ...activePR, items: updatedItems });
-                                    }}
-                                    className="bg-white border rounded px-2 py-1 w-full border-blue-400"
-                                  >
-                                    {Object.entries(vendorMap).map(([id, name]) => (
-                                      <option key={id} value={id}>
-                                        {name}
-                                      </option>
-                                    ))}
-                                  </select>
-                                ) : (
-                                  <input
-                                    value={vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id} // <-- show name
-                                    readOnly
-                                    className="bg-gray-100 border rounded px-2 py-1 w-full"
-                                  />
-                                )}
-
-                                <label
-                                  className={`border rounded px-2 py-1 w-full text-sm flex items-center overflow-hidden ${editMode
-                                    ? "cursor-pointer border-blue-400 bg-white"
-                                    : "bg-gray-100 text-gray-600"
-                                    }`}
+                              const feasibilityComment =
+                                sortedComments.length > 1
+                                  ? sortedComments[sortedComments.length - 1].comment
+                                  : "";
+                              return (
+                                <div
+                                  key={vendor.id}
+                                  className="hidden sm:grid sm:grid-cols-8 gap-4 text-sm mb-2"
                                 >
-                                  <span className="truncate w-full block">
-                                    {vendor.attachments?.[0]?.file_name || "No file uploaded"}
-                                  </span>
-
-                                  {editMode && (
-                                    <input
-                                      type="file"
-                                      className="hidden"
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (!file) return;
-
-                                        const updatedItems = [...activePR.items];
-                                        updatedItems[itemIndex].vendors[vendorIndex] = {
-                                          ...updatedItems[itemIndex].vendors[vendorIndex],
-                                          attachments: [
-                                            {
-                                              file_name: file.name,
-                                              file_path: "",
-                                            },
-                                          ],
-                                        };
-
-                                        setActivePR({ ...activePR, items: updatedItems });
-                                      }}
-                                    />
-                                  )}
-                                </label>
-
-
-
-
-                                <input
-                                  type="number"
-                                  min={0}
-                                  value={vendor.unit_price ?? ""}
-                                  readOnly={!editMode}
-                                  onChange={(e) => {
-                                    const updatedItems = [...activePR.items];
-
-                                    const price = Math.max(0, Number(e.target.value));
-                                    const qty = updatedItems[itemIndex].quantity_required || 0;
-
-                                    updatedItems[itemIndex].vendors[vendorIndex] = {
-                                      ...updatedItems[itemIndex].vendors[vendorIndex],
-                                      unit_price: price,
-                                      total_price: qty * price,
-                                    };
-
-                                    setActivePR({ ...activePR, items: updatedItems });
-                                  }}
-                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
-                                    }`}
-                                />
-
-
-
-                                <input
-                                  value={vendor.total_price ?? ""}
-                                  readOnly={!editMode}
-                                  onChange={(e) =>
-                                    updateVendorField(itemIndex, vendorIndex, "total_price", Number(e.target.value))
-                                  }
-                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
-                                    }`}
-                                />
-
-
-
-                                <input
-                                  type="date"
-                                  value={vendor.quotation_validity_date ?? ""}
-                                  disabled={!editMode}
-                                  onChange={(e) => {
-                                    const updatedItems = [...activePR.items];
-                                    updatedItems[itemIndex].vendors[vendorIndex] = {
-                                      ...updatedItems[itemIndex].vendors[vendorIndex],
-                                      quotation_validity_date: e.target.value,
-                                    };
-                                    setActivePR({ ...activePR, items: updatedItems });
-                                  }}
-                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
-                                    }`}
-                                />
-
-
-
-                                <input
-                                  value={prComment}
-                                  readOnly={!editMode} // editable only in edit mode
-                                  onChange={(e) => {
-                                    const updatedItems = [...activePR.items];
-                                    // Update this vendor's first comment
-                                    if (!updatedItems[itemIndex].vendors[vendorIndex].comments) {
-                                      updatedItems[itemIndex].vendors[vendorIndex].comments = [];
-                                    }
-                                    if (updatedItems[itemIndex].vendors[vendorIndex].comments.length === 0) {
-                                      updatedItems[itemIndex].vendors[vendorIndex].comments.push({
-                                        id: Date.now(), // temporary ID
-                                        comment: e.target.value,
-                                        commented_at: new Date().toISOString(),
-                                        commented_by: user?.id || 0, // current user
-                                      });
-                                    } else {
-                                      updatedItems[itemIndex].vendors[vendorIndex].comments[0].comment = e.target.value;
-                                    }
-
-                                    setActivePR({ ...activePR, items: updatedItems });
-                                  }}
-                                  className={`border px-2 py-1 rounded w-full ${editMode ? "border-blue-400 bg-white" : "bg-gray-100 border-gray-300"}`}
-                                />
-
-
-
-                                <input
-                                  readOnly
-                                  value={feasibilityComment}
-                                  className="bg-white border rounded px-2 py-1 w-full"
-                                />
-
-                                <input
-                                  value={vendor.status ?? ""}
-                                  readOnly={!editMode}
-                                  onChange={(e) => {
-                                    const updatedItems = [...activePR.items];
-
-                                    updatedItems[itemIndex].vendors[vendorIndex] = {
-                                      ...updatedItems[itemIndex].vendors[vendorIndex],
-                                      status: e.target.value,
-                                    };
-
-                                    setActivePR({ ...activePR, items: updatedItems });
-                                  }}
-                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
-                                    }`}
-                                />
-
-
-
-                              </div>
-                            );
-                          })}
-
-                          {/* ===== MOBILE VIEW ===== */}
-                          {item.vendors.map((vendor, vendorIndex) => {
-                            const prComment =
-                              vendor.comments?.[0]?.comment || "";
-
-                           
-                            const feasibilityComment =
-                              vendor.comments?.[vendor.comments.length - 1]?.comment || "";
-                            return (
-                              <div
-                                key={vendor.id}
-                                className="sm:hidden bg-white border rounded-lg p-3 mb-4 space-y-3"
-                              >
-                                {/* Vendor */}
-                                <div>
-                                  <label className="text-xs text-gray-500">Vendor</label>
                                   {editMode ? (
                                     <select
                                       value={vendor.vendor_id}
                                       onChange={(e) => {
                                         const updatedItems = [...activePR.items];
-                                        updatedItems[itemIndex].vendors[vendorIndex].vendor_id =
-                                          e.target.value;
+                                        updatedItems[itemIndex].vendors[vendorIndex] = {
+                                          ...updatedItems[itemIndex].vendors[vendorIndex],
+                                          vendor_id: e.target.value, // still store the ID
+                                        };
                                         setActivePR({ ...activePR, items: updatedItems });
                                       }}
-                                      className="w-full border border-blue-400 rounded px-2 py-1"
+                                      className="bg-white border rounded px-2 py-1 w-full border-blue-400"
                                     >
                                       {Object.entries(vendorMap).map(([id, name]) => (
                                         <option key={id} value={id}>
@@ -838,19 +797,55 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                     </select>
                                   ) : (
                                     <input
+                                      value={vendorMap[String(vendor.vendor_id)] ?? vendor.vendor_id} // <-- show name
                                       readOnly
-                                      value={
-                                        vendorMap[String(vendor.vendor_id)] ??
-                                        vendor.vendor_id
-                                      }
-                                      className="w-full bg-gray-100 border rounded px-2 py-1"
+                                      className="bg-gray-100 border rounded px-2 py-1 w-full"
                                     />
                                   )}
-                                </div>
 
-                                {/* Unit Price */}
-                                <div>
-                                  <label className="text-xs text-gray-500">Unit Price</label>
+                                  <label
+                                    className={`border rounded px-2 py-1 w-full text-sm flex items-center overflow-hidden ${editMode
+                                      ? "cursor-pointer border-blue-400 bg-white"
+                                      : "bg-gray-100 text-gray-600"
+                                      }`}
+                                  >
+                                    <span className="truncate w-full block">
+                                      {vendor.attachments?.[0]?.file_name || "No file uploaded"}
+                                    </span>
+
+                                    {editMode && (
+                                      <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (!file) return;
+
+                                          const updatedItems = [...activePR.items];
+
+                                          updatedItems[itemIndex].vendors[vendorIndex] = {
+                                            ...updatedItems[itemIndex].vendors[vendorIndex],
+                                            attachments: [
+                                              {
+                                                id: Date.now(),
+                                                file_name: file.name,
+                                                file_path: URL.createObjectURL(file), // ✅ show preview
+                                                uploaded_by: 0,
+                                                uploaded_at: new Date().toISOString(),
+                                                fileObject: file,
+                                              },
+                                            ],
+                                          };
+
+                                          setActivePR({ ...activePR, items: updatedItems });
+                                        }}
+                                      />
+                                    )}
+                                  </label>
+
+
+
+
                                   <input
                                     type="number"
                                     min={0}
@@ -858,131 +853,350 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                     readOnly={!editMode}
                                     onChange={(e) => {
                                       const updatedItems = [...activePR.items];
-                                      const price = Number(e.target.value);
-                                      const qty =
-                                        updatedItems[itemIndex].quantity_required || 0;
+
+                                      const price = Math.max(0, Number(e.target.value));
+                                      const qty = updatedItems[itemIndex].quantity_required || 0;
 
                                       updatedItems[itemIndex].vendors[vendorIndex] = {
-                                        ...vendor,
+                                        ...updatedItems[itemIndex].vendors[vendorIndex],
                                         unit_price: price,
                                         total_price: qty * price,
                                       };
 
                                       setActivePR({ ...activePR, items: updatedItems });
                                     }}
-                                    className={`w-full border rounded px-2 py-1 ${editMode ? "border-blue-400 bg-white" : "bg-gray-100"
+                                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
                                       }`}
                                   />
-                                </div>
 
-                                {/* Total Price */}
-                                <div>
-                                  <label className="text-xs text-gray-500">Total Price</label>
+
+
                                   <input
-                                    readOnly
                                     value={vendor.total_price ?? ""}
-                                    className="w-full bg-gray-100 border rounded px-2 py-1"
+                                    readOnly={!editMode}
+                                    onChange={(e) =>
+                                      updateVendorField(itemIndex, vendorIndex, "total_price", Number(e.target.value))
+                                    }
+                                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
+                                      }`}
                                   />
-                                </div>
 
-                                {/* Validity Date */}
-                                <div>
-                                  <label className="text-xs text-gray-500">
-                                    Quotation Validity
-                                  </label>
+
+
                                   <input
                                     type="date"
                                     value={vendor.quotation_validity_date ?? ""}
                                     disabled={!editMode}
                                     onChange={(e) => {
                                       const updatedItems = [...activePR.items];
-                                      updatedItems[itemIndex].vendors[vendorIndex]
-                                        .quotation_validity_date = e.target.value;
-
+                                      updatedItems[itemIndex].vendors[vendorIndex] = {
+                                        ...updatedItems[itemIndex].vendors[vendorIndex],
+                                        quotation_validity_date: e.target.value,
+                                      };
                                       setActivePR({ ...activePR, items: updatedItems });
                                     }}
-                                    className={`w-full border rounded px-2 py-1 ${editMode
-                                      ? "border-blue-400 bg-white"
-                                      : "bg-gray-100 cursor-not-allowed"
+                                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
                                       }`}
                                   />
-                                </div>
 
-                                {/* Comments */}
-                                <div>
-                                  <label className="text-xs text-gray-500">Comments</label>
+
+
                                   <input
                                     value={prComment}
-                                    readOnly={!editMode}
+                                    readOnly={!editMode} // editable only in edit mode
                                     onChange={(e) => {
                                       const updatedItems = [...activePR.items];
-
-                                      if (
-                                        !updatedItems[itemIndex].vendors[vendorIndex]
-                                          .comments
-                                      ) {
-                                        updatedItems[itemIndex].vendors[
-                                          vendorIndex
-                                        ].comments = [];
+                                      // Update this vendor's first comment
+                                      if (!updatedItems[itemIndex].vendors[vendorIndex].comments) {
+                                        updatedItems[itemIndex].vendors[vendorIndex].comments = [];
                                       }
-
-                                      if (
-                                        updatedItems[itemIndex].vendors[vendorIndex]
-                                          .comments.length === 0
-                                      ) {
-                                        updatedItems[itemIndex].vendors[
-                                          vendorIndex
-                                        ].comments.push({
-                                          id: Date.now(),
+                                      if (updatedItems[itemIndex].vendors[vendorIndex].comments.length === 0) {
+                                        updatedItems[itemIndex].vendors[vendorIndex].comments.push({
+                                          id: Date.now(), // temporary ID
                                           comment: e.target.value,
                                           commented_at: new Date().toISOString(),
-                                          commented_by: 1,
+                                          commented_by: user?.id || 0, // current user
                                         });
                                       } else {
-                                        updatedItems[itemIndex].vendors[
-                                          vendorIndex
-                                        ].comments[0].comment = e.target.value;
+                                        updatedItems[itemIndex].vendors[vendorIndex].comments[0].comment = e.target.value;
                                       }
 
                                       setActivePR({ ...activePR, items: updatedItems });
                                     }}
-                                    className={`w-full border rounded px-2 py-1 ${editMode ? "border-blue-400 bg-white" : "bg-gray-100"
-                                      }`}
+                                    className={`border px-2 py-1 rounded w-full ${editMode ? "border-blue-400 bg-white" : "bg-gray-100 border-gray-300"}`}
                                   />
-                                </div>
 
-                                {/* Status */}
-                                <div>
-                                  <label className="text-xs text-gray-500">Status</label>
+
+
+                                  <input
+                                    readOnly
+                                    value={feasibilityComment}
+                                    className="bg-white border rounded px-2 py-1 w-full"
+                                  />
+
                                   <input
                                     value={vendor.status ?? ""}
                                     readOnly={!editMode}
                                     onChange={(e) => {
                                       const updatedItems = [...activePR.items];
-                                      updatedItems[itemIndex].vendors[vendorIndex]
-                                        .status = e.target.value;
+
+                                      updatedItems[itemIndex].vendors[vendorIndex] = {
+                                        ...updatedItems[itemIndex].vendors[vendorIndex],
+                                        status: e.target.value,
+                                      };
 
                                       setActivePR({ ...activePR, items: updatedItems });
                                     }}
-                                    className={`w-full border rounded px-2 py-1 ${editMode ? "border-blue-400 bg-white" : "bg-gray-100"
+                                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
                                       }`}
                                   />
-                                </div>
 
-                                {/* Feasibility Comment (Read Only) */}
-                                <div>
-                                  <label className="text-xs text-gray-500">
-                                    Feasibility Comment
-                                  </label>
-                                  <input
-                                    readOnly
-                                    value={feasibilityComment}
-                                    className="w-full bg-gray-100 border rounded px-2 py-1"
-                                  />
+
+
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+
+                          {/* ===== MOBILE VIEW ===== */}
+                          {item.vendors
+                            ?.filter(
+                              (vendor) =>
+                                !vendor.status ||
+                                !vendor.status.toLowerCase().trim().includes("rejected")
+                            )
+                            .map((vendor, vendorIndex) => {
+                              const sortedComments =
+                                [...(vendor.comments || [])].sort(
+                                  (a, b) =>
+                                    new Date(a.commented_at).getTime() -
+                                    new Date(b.commented_at).getTime()
+                                );
+
+                              const prComment =
+                                sortedComments.length > 0 ? sortedComments[0].comment : "";
+
+                              const feasibilityComment =
+                                sortedComments.length > 1
+                                  ? sortedComments[sortedComments.length - 1].comment
+                                  : "";
+                              return (
+                                <div
+                                  key={vendor.id}
+                                  className="sm:hidden bg-white border rounded-lg p-3 mb-4 space-y-3"
+                                >
+                                  {/* Vendor */}
+                                  <div>
+                                    <label className="text-xs text-gray-500">Vendor</label>
+                                    {editMode ? (
+                                      <select
+                                        value={vendor.vendor_id}
+                                        onChange={(e) => {
+                                          const updatedItems = [...activePR.items];
+                                          updatedItems[itemIndex].vendors[vendorIndex].vendor_id =
+                                            e.target.value;
+                                          setActivePR({ ...activePR, items: updatedItems });
+                                        }}
+                                        className="w-full border border-blue-400 rounded px-2 py-1"
+                                      >
+                                        {Object.entries(vendorMap).map(([id, name]) => (
+                                          <option key={id} value={id}>
+                                            {name}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    ) : (
+                                      <input
+                                        readOnly
+                                        value={
+                                          vendorMap[String(vendor.vendor_id)] ??
+                                          vendor.vendor_id
+                                        }
+                                        className="w-full bg-gray-100 border rounded px-2 py-1"
+                                      />
+                                    )}
+                                  </div>
+                                  {/* Upload Quotation */}
+                                  <div>
+                                    <label className="text-xs text-gray-500">
+                                      Upload Quotation
+                                    </label>
+
+                                    <label
+                                      className={`w-full border rounded px-2 py-1 text-sm flex items-center overflow-hidden ${editMode
+                                          ? "cursor-pointer border-blue-400 bg-white"
+                                          : "bg-gray-100 text-gray-600"
+                                        }`}
+                                    >
+                                      <span className="truncate w-full block">
+                                        {vendor.attachments?.[0]?.file_name || "No file uploaded"}
+                                      </span>
+
+                                      {editMode && (
+                                        <input
+                                          type="file"
+                                          className="hidden"
+                                          onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+
+                                            const updatedItems = [...activePR.items];
+
+                                            updatedItems[itemIndex].vendors[vendorIndex] = {
+                                              ...updatedItems[itemIndex].vendors[vendorIndex],
+                                              attachments: [
+                                                {
+                                                  id: Date.now(),
+                                                  file_name: file.name,
+                                                  file_path: URL.createObjectURL(file),
+                                                  uploaded_by: 0,
+                                                  uploaded_at: new Date().toISOString(),
+                                                  fileObject: file,
+                                                },
+                                              ],
+                                            };
+
+                                            setActivePR({ ...activePR, items: updatedItems });
+                                          }}
+                                        />
+                                      )}
+                                    </label>
+                                  </div>
+
+                                  {/* Unit Price */}
+                                  <div>
+                                    <label className="text-xs text-gray-500">Unit Price</label>
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      value={vendor.unit_price ?? ""}
+                                      readOnly={!editMode}
+                                      onChange={(e) => {
+                                        const updatedItems = [...activePR.items];
+                                        const price = Number(e.target.value);
+                                        const qty =
+                                          updatedItems[itemIndex].quantity_required || 0;
+
+                                        updatedItems[itemIndex].vendors[vendorIndex] = {
+                                          ...vendor,
+                                          unit_price: price,
+                                          total_price: qty * price,
+                                        };
+
+                                        setActivePR({ ...activePR, items: updatedItems });
+                                      }}
+                                      className={`w-full border rounded px-2 py-1 ${editMode ? "border-blue-400 bg-white" : "bg-gray-100"
+                                        }`}
+                                    />
+                                  </div>
+
+                                  {/* Total Price */}
+                                  <div>
+                                    <label className="text-xs text-gray-500">Total Price</label>
+                                    <input
+                                      readOnly
+                                      value={vendor.total_price ?? ""}
+                                      className="w-full bg-gray-100 border rounded px-2 py-1"
+                                    />
+                                  </div>
+
+                                  {/* Validity Date */}
+                                  <div>
+                                    <label className="text-xs text-gray-500">
+                                      Quotation Validity
+                                    </label>
+                                    <input
+                                      type="date"
+                                      value={vendor.quotation_validity_date ?? ""}
+                                      disabled={!editMode}
+                                      onChange={(e) => {
+                                        const updatedItems = [...activePR.items];
+                                        updatedItems[itemIndex].vendors[vendorIndex]
+                                          .quotation_validity_date = e.target.value;
+
+                                        setActivePR({ ...activePR, items: updatedItems });
+                                      }}
+                                      className={`w-full border rounded px-2 py-1 ${editMode
+                                        ? "border-blue-400 bg-white"
+                                        : "bg-gray-100 cursor-not-allowed"
+                                        }`}
+                                    />
+                                  </div>
+
+                                  {/* Comments */}
+                                  <div>
+                                    <label className="text-xs text-gray-500">Comments</label>
+                                    <input
+                                      value={prComment}
+                                      readOnly={!editMode}
+                                      onChange={(e) => {
+                                        const updatedItems = [...activePR.items];
+
+                                        if (
+                                          !updatedItems[itemIndex].vendors[vendorIndex]
+                                            .comments
+                                        ) {
+                                          updatedItems[itemIndex].vendors[
+                                            vendorIndex
+                                          ].comments = [];
+                                        }
+
+                                        if (
+                                          updatedItems[itemIndex].vendors[vendorIndex]
+                                            .comments.length === 0
+                                        ) {
+                                          updatedItems[itemIndex].vendors[
+                                            vendorIndex
+                                          ].comments.push({
+                                            id: Date.now(),
+                                            comment: e.target.value,
+                                            commented_at: new Date().toISOString(),
+                                            commented_by: 1,
+                                          });
+                                        } else {
+                                          updatedItems[itemIndex].vendors[
+                                            vendorIndex
+                                          ].comments[0].comment = e.target.value;
+                                        }
+
+                                        setActivePR({ ...activePR, items: updatedItems });
+                                      }}
+                                      className={`w-full border rounded px-2 py-1 ${editMode ? "border-blue-400 bg-white" : "bg-gray-100"
+                                        }`}
+                                    />
+                                  </div>
+
+                                  {/* Status */}
+                                  <div>
+                                    <label className="text-xs text-gray-500">Status</label>
+                                    <input
+                                      value={vendor.status ?? ""}
+                                      readOnly={!editMode}
+                                      onChange={(e) => {
+                                        const updatedItems = [...activePR.items];
+                                        updatedItems[itemIndex].vendors[vendorIndex]
+                                          .status = e.target.value;
+
+                                        setActivePR({ ...activePR, items: updatedItems });
+                                      }}
+                                      className={`w-full border rounded px-2 py-1 ${editMode ? "border-blue-400 bg-white" : "bg-gray-100"
+                                        }`}
+                                    />
+                                  </div>
+
+                                  {/* Feasibility Comment (Read Only) */}
+                                  <div>
+                                    <label className="text-xs text-gray-500">
+                                      Feasibility Comment
+                                    </label>
+                                    <input
+                                      readOnly
+                                      value={feasibilityComment}
+                                      className="w-full bg-gray-100 border rounded px-2 py-1"
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
 
                         </>
                       )}
@@ -1054,9 +1268,10 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   className="px-4 py-2 rounded border border-gray-300"
-                  onClick={() => {
-                    setEditMode(false);
-                    setActivePR(null);
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditMode(true);
+                    setActivePR({ ...pr });  // ✅ clone properly
                   }}
                 >
                   Cancel
@@ -1064,122 +1279,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
                 <button
                   className="px-4 py-2 rounded bg-blue-600 text-white"
-                  onClick={async () => {
-                    try {
-                      const token = localStorage.getItem("token");
-
-                      // ✅ 0️⃣ Save FULL PR in one go
-                      const fullRes = await fetch(
-                        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${activePR.id}`,
-                        {
-                          method: "PUT",
-                          headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                          },
-                          credentials: "include",
-                          body: JSON.stringify(activePR),
-                        }
-                      );
-
-                      if (!fullRes.ok) throw new Error("Full PR Save failed");
-                      const updatedFullPR = await fullRes.json();
-
-                      // 1️⃣ Update PR Details (optional, fallback)
-                      await fetch(
-                        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/${activePR.id}`,
-                        {
-                          method: "PUT",
-                          credentials: "include",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            description: activePR.description,
-                            priority: activePR.priority,
-                            required_date: activePR.required_date,
-                            remarks: activePR.remarks,
-                            department: activePR.department,
-                          }),
-                        }
-                      );
-
-                      // 2️⃣ Update Items
-                      await fetch(
-                        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/${activePR.id}/items`,
-                        {
-                          method: "PUT",
-                          credentials: "include",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            items: activePR.items.map((item) => ({
-                              id: item.id,
-                              item_code: item.item_code,
-                              item_name: item.item_name,
-                              quantity_required: item.quantity_required,
-                            })),
-                          }),
-                        }
-                      );
-
-                      // 3️⃣ Update Vendors + 4️⃣ Attachments + 5️⃣ Comments
-                      for (const item of activePR.items) {
-                        await fetch(
-                          `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/items/${item.id}/vendors`,
-                          {
-                            method: "PUT",
-                            credentials: "include",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              vendors: item.vendors.map((vendor) => ({
-                                id: vendor.id,
-                                vendor_id: vendor.vendor_id,
-                                status: vendor.status,
-                                unit_price: vendor.unit_price,
-                                total_price: vendor.total_price,
-                                quotation_validity_date: vendor.quotation_validity_date,
-                              })),
-                            }),
-                          }
-                        );
-
-                        for (const vendor of item.vendors) {
-                          await fetch(
-                            `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/attachments`,
-                            {
-                              method: "PUT",
-                              credentials: "include",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ attachments: vendor.attachments || [] }),
-                            }
-                          );
-
-                          await fetch(
-                            `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/comments`,
-                            {
-                              method: "PUT",
-                              credentials: "include",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ comments: vendor.comments || [] }),
-                            }
-                          );
-                        }
-                      }
-
-                      // ✅ Update frontend state
-                      setActivePR(updatedFullPR);
-                      setPrs((prev) =>
-                        prev.map((pr) => (pr.id === updatedFullPR.id ? updatedFullPR : pr))
-                      );
-                      setEditMode(false);
-                      fetchPRs();
-
-                      setMessage({ text: "PR updated successfully!", type: "success" });
-                      setTimeout(() => setMessage(null), 3000);
-                    } catch (err) {
-                      console.error("Save failed", err);
-                      setMessage({ text: "Failed to update PR.", type: "error" });
-                      setTimeout(() => setMessage(null), 3000);
-                    }
-                  }}
+                  onClick={handleSave}
                 >
                   Save
                 </button>

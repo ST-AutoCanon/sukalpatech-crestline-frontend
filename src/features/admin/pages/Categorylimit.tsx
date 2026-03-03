@@ -219,12 +219,18 @@ export default function CategoryLimitPage() {
   const handleUpdate = async () => {
     try {
       setLoading(true);
+const payload = {
+  high:
+    newLimits.high !== undefined ? Number(newLimits.high) : limits.high,
 
-      const payload = {
-        high: Number(newLimits.high),
-        medium: Number(newLimits.medium),
-        low: Number(newLimits.low),
-      };
+  medium:
+    newLimits.medium !== undefined
+      ? Number(newLimits.medium)
+      : limits.medium,
+
+  low:
+    newLimits.low !== undefined ? Number(newLimits.low) : limits.low,
+};
 
       const res = await axios.put(
         `${ADMIN_API_BASE}/category-limits/update`,
@@ -233,6 +239,7 @@ export default function CategoryLimitPage() {
       );
 
       setUpdatedLimits(res.data.data);
+      setNewLimits({});   // ✅ Clears input fields
       await fetchLimits();
     } catch (err) {
       console.error("Update failed", err);
@@ -306,7 +313,7 @@ export default function CategoryLimitPage() {
             </button>
 
             <button
-              onClick={() => setNewLimits(limits)}
+              onClick={() => setNewLimits({})}
               className="w-full sm:w-auto bg-gray-300 text-black px-6 py-2.5 rounded-xl hover:opacity-90 transition"
             >
               Cancel

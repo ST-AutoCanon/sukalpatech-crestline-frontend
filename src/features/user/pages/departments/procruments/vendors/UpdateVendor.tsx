@@ -343,9 +343,8 @@ const EditableRating = ({
         <span
           key={star}
           onClick={() => onChange(star)}
-          className={`text-xl transition ${
-            star <= value ? "text-orange-400" : "text-gray-300"
-          } hover:scale-110`}
+          className={`text-xl transition ${star <= value ? "text-orange-400" : "text-gray-300"
+            } hover:scale-110`}
         >
           ★
         </span>
@@ -359,9 +358,8 @@ const Ratings = ({ value = 0 }: { value: number }) => (
     {[1, 2, 3, 4, 5].map((star) => (
       <span
         key={star}
-        className={`text-lg ${
-          star <= value ? "text-orange-400" : "text-gray-300"
-        }`}
+        className={`text-lg ${star <= value ? "text-orange-400" : "text-gray-300"
+          }`}
       >
         ★
       </span>
@@ -374,6 +372,7 @@ const AllVendors: React.FC = () => {
   const [vendors, setVendors] = useState<any[]>([]);
   const [activeVendor, setActiveVendor] = useState<any | null>(null);
   const [formData, setFormData] = useState<any>({});
+  const [message, setMessage] = useState<string | null>(null);
 
   /* ---------- Fetch Vendors ---------- */
   useEffect(() => {
@@ -407,22 +406,43 @@ const AllVendors: React.FC = () => {
         `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors/${formData.vendor_id}`,
         formData,
         {
-          withCredentials: true, // ✅ cookie auth
+          withCredentials: true,
         },
       );
 
+      // update UI list
       setVendors((prev) =>
-        prev.map((v) => (v.vendor_id === formData.vendor_id ? formData : v)),
+        prev.map((v) =>
+          v.vendor_id === formData.vendor_id ? formData : v,
+        ),
       );
 
       setActiveVendor(null);
+
+      // ✅ Show success message
+      setMessage("Vendor updated successfully ✅");
+
+      // auto hide after 3 seconds
+      setTimeout(() => {
+        setMessage(null);
+      }, 3000);
+
     } catch (error) {
       console.error("Update failed", error);
+      setMessage("Failed to update vendor ❌");
+
+      setTimeout(() => {
+        setMessage(null);
+      }, 3000);
     }
   };
-
   return (
     <div className="px-4 sm:px-8 py-6">
+      {message && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded shadow-md text-white z-50 animate-fade-in bg-green-600">
+          {message}
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {vendors.map((v) => (
           <div

@@ -307,7 +307,7 @@ await axios.put(
                   ["Description", selectedPR.description],
                   ["Priority", selectedPR.priority],
                   [
-                    "Required Delivery Date",
+                    "Delivery Date",
                     formatDate(selectedPR.required_date),
                   ],
                   ["Department", selectedPR.department],
@@ -383,11 +383,15 @@ await axios.put(
                         <div>status</div>
                       </div>
 
-                      {item.vendors.map((vendor, vi) => {
-                        // Find the latest feasibility comment (commented_by = 2)
-                        const feasibilityComment =
-                          vendor.comments?.find((c) => c.commented_by === 2)
-                            ?.comment || "";
+                      {item.vendors
+                        .filter(
+                          (vendor) =>
+                            !vendor.status ||
+                            !vendor.status.toLowerCase().includes("rejected")
+                        )
+                        .map((vendor, vi) => {  // Find the latest feasibility comment (commented_by = 2)
+                          const feasibilityComment =
+                            vendor.comments?.[vendor.comments.length - 1]?.comment || "";
 
                         return (
                           <div

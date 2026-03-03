@@ -104,20 +104,42 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
   //     .catch((err) => console.error("Vendor fetch error:", err));
   // }, []);
 
-useEffect(() => {
-  fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-    credentials: "include", // send cookies automatically
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      const map: Record<string, string> = {};
-      (data?.data || []).forEach((v: any) => {
-        map[String(v.vendor_id)] = v.vendor_name;
-      });
-      setVendorMap(map);
+  useEffect(() => {
+
+
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
+      credentials: "include", // ✅ send cookie
     })
-    .catch((err) => console.error("Vendor fetch error:", err));
-}, []);
+      .then((res) => res.json())
+      .then((data) => {
+        const departments = data?.data || [];
+        const map: Record<string, string> = {};
+
+        departments.forEach((d: any) => {
+          map[String(d.department_id)] = d.name;
+        });
+
+        setDepartmentMap(map);
+      })
+      .catch((err) => console.error("Department fetch error", err));
+  }, []);
+
+
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+      credentials: "include", // send cookies automatically
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const map: Record<string, string> = {};
+        (data?.data || []).forEach((v: any) => {
+          map[String(v.vendor_id)] = v.vendor_name;
+        });
+        setVendorMap(map);
+      })
+      .catch((err) => console.error("Vendor fetch error:", err));
+  }, []);
 
   const updateVendorField = (
     itemIndex: number,
@@ -164,31 +186,46 @@ useEffect(() => {
   //   setRequests(res.data.data || []);
   // };
 
+const fetchApprovedRequests = async () => {
+  let url = "";
 
- const fetchApprovedRequests = async () => {
-    const token = localStorage.getItem("token");
-    let url = "";
+  // Fetch all PRs
+  url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
-    switch (status) {
-      case "PENDING":
-        url = `${API_BASE}/pending-finance-requests`;
-        break;
-      case "REJECTED":
-        url = `${API_BASE}/rejected-finance-requests`;
-        break;
-      case "APPROVED":
-        url = `${API_BASE}/approved-finance-requests`;
-        break;
-      default:
-        url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
-    }
+  const res = await axios.get(url, {
+    withCredentials: true,
+  });
 
-const res = await axios.get(url, {
-  withCredentials: true, // send cookies automatically
-});
+  let data: FinancePR[] = res.data.data || [];
 
-    setRequests(res.data.data || []);
-  };
+  if (status === "PENDING") {
+    data = data.filter((pr) =>
+      pr.department_statuses?.some((s) =>
+        s.department_status?.toUpperCase().includes("PENDING")
+      )
+    );
+  }
+
+  if (status === "REJECTED") {
+    data = data.filter((pr) =>
+      pr.department_statuses?.some((s) =>
+        s.department_status?.toUpperCase().includes("REJECTED")
+      )
+    );
+  }
+
+  if (status === "APPROVED") {
+    data = data.filter((pr) => {
+      const latestStatus =
+        pr.department_statuses?.[pr.department_statuses.length - 1]
+          ?.department_status;
+
+      return latestStatus === "STORE APPROVED";
+    });
+  }
+
+  setRequests(data);
+};
 
   useEffect(() => {
     fetchApprovedRequests();
@@ -238,8 +275,9 @@ const res = await axios.get(url, {
             <div className="flex-1 space-y-3 text-sm">
               <div className="flex gap-8">
                 <span className="w-24 text-gray-500">Department :</span>
-                <span className="font-medium text-gray-600 truncate">{pr.department || "-"}</span>
-              </div>
+                <span className="font-medium text-gray-600 truncate">
+                  {departmentMap[String(pr.department)] ?? pr.department ?? "-"}
+                </span>              </div>
 
               <div className="flex gap-8">
                 <span className="w-24 text-gray-500">Priority :</span>
@@ -255,7 +293,7 @@ const res = await axios.get(url, {
                 <span className="w-24 text-gray-500">Description :</span>
                 <span className="font-medium text-gray-600 line-clamp-2">{pr.description || "-"}</span>
               </div>
-              </div>
+            </div>
 
 
             {/* FOOTER */}
@@ -288,10 +326,14 @@ const res = await axios.get(url, {
                   ["Description", selectedPR.description],
                   ["Priority", selectedPR.priority],
                   [
-                    "Required Delivery Date",
+                    "Delivery Date",
                     formatDate(selectedPR.required_date),
                   ],
-                  ["Department", selectedPR.department],
+                  [
+                    "Department",
+                    departmentMap[String(selectedPR.department)] ??
+                    selectedPR.department,
+                  ],
                   ["Remarks", selectedPR.remarks],
                 ].map(([label, value], i) => (
                   <div key={i}>
@@ -367,82 +409,86 @@ const res = await axios.get(url, {
 
                       {/* VENDOR ROWS */}
 
-                      {item.vendors.map((vendor, vi) => {
-                        // Find the latest feasibility comment (commented_by = 2)
-                        const feasibilityComment =
-                              vendor.comments?.[vendor.comments.length - 1]?.comment || "";
+                      {item.vendors
+                        .filter(
+                          (vendor) =>
+                            !vendor.status ||
+                            !vendor.status.toLowerCase().includes("rejected")
+                        )
+                        .map((vendor, vi) => {
+                          // Find the latest feasibility comment (commented_by = 2)
+                          const feasibilityComment =
+                            vendor.comments?.[vendor.comments.length - 1]?.comment || "";
 
 
-                        return (
-                          <div
-                            key={vi}
-                            className="grid grid-cols-8 gap-2 min-w-[700px] mb-2 text-sm"
-                          >
-                            {/* Vendor Name */}
-                            <input
-                              readOnly
-                              value={vendorMap[String(vendor.vendor_id)] || "-"}
-                              className="bg-white border rounded px-2 py-1 w-full text-xs sm:text-sm"
-                            />
+                          return (
+                            <div
+                              key={vi}
+                              className="grid grid-cols-8 gap-2 min-w-[700px] mb-2 text-sm"
+                            >
+                              {/* 1️⃣ Vendor */}
+                              <input
+                                readOnly
+                                value={vendorMap[String(vendor.vendor_id)] || "-"}
+                                className="bg-white border rounded px-2 py-1 w-full text-xs sm:text-sm"
+                              />
 
-                            {/* Unit Price */}
-                            <input
-                              readOnly
-                              value={vendor.unit_price ?? ""}
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
+                              {/* 2️⃣ Upload Quotation */}
+                              <input
+                                type="text"
+                                value={vendor.attachments?.[0]?.file_name || ""}
+                                readOnly
+                                className="bg-white border rounded px-2 py-1 text-sm"
+                              />
 
-                            {/* Total Price */}
-                            <input
-                              readOnly
-                              value={vendor.total_price ?? ""}
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
+                              {/* 3️⃣ Unit Price */}
+                              <input
+                                readOnly
+                                value={vendor.unit_price ?? ""}
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
 
-                            {/* Quotation Validity */}
-                            <input
-                              readOnly
-                              value={
-                                vendor.quotation_validity_date
-                                  ? new Date(
-                                      vendor.quotation_validity_date
-                                    ).toLocaleDateString()
-                                  : ""
-                              }
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
+                              {/* 4️⃣ Total Price */}
+                              <input
+                                readOnly
+                                value={vendor.total_price ?? ""}
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
 
-                            {/* Attachments */}
-                            <input
-                              type="text"
-                              value={vendor.attachments?.[0]?.file_name || ""}
-                              readOnly
-                              className="bg-white border rounded px-2 py-1 text-sm"
-                            />
+                              {/* 5️⃣ Quotation Validity */}
+                              <input
+                                readOnly
+                                value={
+                                  vendor.quotation_validity_date
+                                    ? new Date(vendor.quotation_validity_date).toLocaleDateString()
+                                    : ""
+                                }
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
 
-                            {/* PR comment */}
-                            <input
-                              readOnly
-                              value={vendor.comments?.[0]?.comment || ""}
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
+                              {/* 6️⃣ Comments (PR Comment) */}
+                              <input
+                                readOnly
+                                value={vendor.comments?.[0]?.comment || ""}
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
 
-                            {/* Feasibility Comment (latest by commented_by = 2) */}
-                            <input
-                              readOnly
-                              value={feasibilityComment}
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
+                              {/* 7️⃣ Feasibility Comment */}
+                              <input
+                                readOnly
+                                value={feasibilityComment}
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
 
-                            {/* Status */}
-                            <input
-                              readOnly
-                              value={vendor.status || ""}
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
-                          </div>
-                        );
-                      })}
+                              {/* 8️⃣ Status */}
+                              <input
+                                readOnly
+                                value={vendor.status || ""}
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
+                            </div>
+                          );
+                        })}
                     </div>
                   </div>
                 ))}

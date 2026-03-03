@@ -37,7 +37,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
   //   fetchDepartments();
   // }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const res = await axios.get(`${API_BASE2}`, {
@@ -54,7 +54,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
     fetchDepartments();
   }, []);
 
-  
+
   // useEffect(() => {
   //   const fetchVendors = async () => {
   //     try {
@@ -69,22 +69,22 @@ export default function NewProcurementPage({ onClose, onCreated }) {
   //   fetchVendors();
   // }, []);
 
- useEffect(() => {
-  const fetchVendors = async () => {
-    try {
-      const res = await axios.get(`${API_BASE1}`, {
-        withCredentials: true, // ✅ required
-      });
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const res = await axios.get(`${API_BASE1}`, {
+          withCredentials: true, // ✅ required
+        });
 
-      console.log(res.data.data);
-      setVendorList(res.data.data);
-    } catch (err) {
-      console.error("Vendor fetch error", err);
-    }
-  };
+        console.log(res.data.data);
+        setVendorList(res.data.data);
+      } catch (err) {
+        console.error("Vendor fetch error", err);
+      }
+    };
 
-  fetchVendors();
-}, []);
+    fetchVendors();
+  }, []);
 
   const [vendorFiles, setVendorFiles] = useState({});
   const [prData, setPrData] = useState({
@@ -208,7 +208,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
     });
   };
 
-  
+
   const handleComment = (i, vi, value) => {
     const updated = [...prData.items];
     updated[i].vendors[vi].comments = [{ comment: value, commented_by: 5 }];
@@ -216,50 +216,50 @@ export default function NewProcurementPage({ onClose, onCreated }) {
   };
 
   const handleFileUpload = (i: number, vi: number, files: FileList | null) => {
-  if (!files) return;
+    if (!files) return;
 
-  const key = `${i}-${vi}`;
+    const key = `${i}-${vi}`;
 
-  const fileArray = Array.from(files).map((file) => ({
-    file, // actual File object (for FormData)
-    file_name: file.name,
-    file_path: "", // backend will update this
-    uploaded_at: new Date().toISOString(),
-    preview: URL.createObjectURL(file),
-  }));
+    const fileArray = Array.from(files).map((file) => ({
+      file, // actual File object (for FormData)
+      file_name: file.name,
+      file_path: "", // backend will update this
+      uploaded_at: new Date().toISOString(),
+      preview: URL.createObjectURL(file),
+    }));
 
-  // ✅ Update vendorFiles (for UI display)
-  setVendorFiles((prev) => ({
-    ...prev,
-    [key]: fileArray,
-  }));
-
-  // ✅ ALSO update prData.attachments (IMPORTANT FIX)
-  setPrData((prev) => {
-    const updatedItems = [...prev.items];
-
-    const updatedVendors = [...updatedItems[i].vendors];
-
-    updatedVendors[vi] = {
-      ...updatedVendors[vi],
-        attachments: fileArray.map((f) => ({
-        file_name: f.file_name,
-        file_path: "", // backend will fill
-        uploaded_at: f.uploaded_at,
-      })),
-    };
-
-    updatedItems[i] = {
-      ...updatedItems[i],
-      vendors: updatedVendors,
-    };
-
-    return {
+    // ✅ Update vendorFiles (for UI display)
+    setVendorFiles((prev) => ({
       ...prev,
-      items: updatedItems,
-    };
-  });
-};
+      [key]: fileArray,
+    }));
+
+    // ✅ ALSO update prData.attachments (IMPORTANT FIX)
+    setPrData((prev) => {
+      const updatedItems = [...prev.items];
+
+      const updatedVendors = [...updatedItems[i].vendors];
+
+      updatedVendors[vi] = {
+        ...updatedVendors[vi],
+        attachments: fileArray.map((f) => ({
+          file_name: f.file_name,
+          file_path: "", // backend will fill
+          uploaded_at: f.uploaded_at,
+        })),
+      };
+
+      updatedItems[i] = {
+        ...updatedItems[i],
+        vendors: updatedVendors,
+      };
+
+      return {
+        ...prev,
+        items: updatedItems,
+      };
+    });
+  };
 
 
   // const submitPR = async () => {
@@ -297,39 +297,45 @@ export default function NewProcurementPage({ onClose, onCreated }) {
   //   }
   // };
 
-const submitPR = async () => {
-  try {
-    const formData = new FormData();
-    formData.append("data", JSON.stringify(prData));
+  const submitPR = async () => {
+    try {
+      const formData = new FormData();
+      const formattedData = {
+        ...prData,
+        required_date: prData.required_date
+          ? prData.required_date.split("T")[0]
+          : "",
+      };
 
-    Object.values(vendorFiles).forEach((files: any) => {
-      files.forEach((f: any) => formData.append("attachments", f.file));
-    });
+      formData.append("data", JSON.stringify(formattedData));
+      Object.values(vendorFiles).forEach((files: any) => {
+        files.forEach((f: any) => formData.append("attachments", f.file));
+      });
 
-    await axios.post(`${API_BASE}/purchase-requests`, formData, {
-      withCredentials: true, // ✅ REQUIRED
-      // ❌ DO NOT set Content-Type manually
-    });
+      await axios.post(`${API_BASE}/purchase-requests`, formData, {
+        withCredentials: true, // ✅ REQUIRED
+        // ❌ DO NOT set Content-Type manually
+      });
 
-    setAlert({
-      type: "success",
-      message: "PR created successfully",
-    });
+      setAlert({
+        type: "success",
+        message: "PR created successfully",
+      });
 
-    onCreated();
+      onCreated();
 
-    setTimeout(() => {
-      onClose();
-    }, 2000);
-  } catch (err) {
-    console.error(err);
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    } catch (err) {
+      console.error(err);
 
-    setAlert({
-      type: "error",
-      message: "Something went wrong while creating PR",
-    });
-  }
-};
+      setAlert({
+        type: "error",
+        message: "Something went wrong while creating PR",
+      });
+    }
+  };
 
 
   return (
@@ -527,29 +533,29 @@ const submitPR = async () => {
 
                     {/* Upload */}
                     <div>
-  <label className="text-xs text-gray-600">
-    Upload Quotation
-  </label>
+                      <label className="text-xs text-gray-600">
+                        Upload Quotation
+                      </label>
 
-  <input
-    type="file"
-    id={`file-${i}-${vi}`}
-    className="hidden"
-    multiple
-    onChange={(e) => handleFileUpload(i, vi, e.target.files)}
-  />
+                      <input
+                        type="file"
+                        id={`file-${i}-${vi}`}
+                        className="hidden"
+                        multiple
+                        onChange={(e) => handleFileUpload(i, vi, e.target.files)}
+                      />
 
-  <label
-    htmlFor={`file-${i}-${vi}`}
-    className="block w-full p-2 mt-1 border rounded bg-white cursor-pointer text-sm text-gray-500 truncate"
-  >
-    {vendorFiles[`${i}-${vi}`]?.length > 0
-      ? vendorFiles[`${i}-${vi}`].map((f) => f.file.name).join(", ")
-      : "Choose File"}
-  </label>
-</div>
+                      <label
+                        htmlFor={`file-${i}-${vi}`}
+                        className="block w-full p-2 mt-1 border rounded bg-white cursor-pointer text-sm text-gray-500 truncate"
+                      >
+                        {vendorFiles[`${i}-${vi}`]?.length > 0
+                          ? vendorFiles[`${i}-${vi}`].map((f) => f.file.name).join(", ")
+                          : "Choose File"}
+                      </label>
+                    </div>
                     {/* Unit Price */}
-                   <div>
+                    <div>
                       <label className="text-xs text-gray-600">Unit Price</label>
                       <input
                         type="number"
@@ -589,17 +595,18 @@ const submitPR = async () => {
 
                     {/* Validity */}
                     <div>
-                      <label className="text-xs text-gray-600">Quotation Validity</label>
+                      <label className="text-xs text-gray-600">
+                        Quotation Validity
+                      </label>
                       <input
                         type="date"
-                        className="w-full p-2 pr-2 border rounded mt-1"
-                        min={new Date().toISOString().split("T")[0]} // prevent past dates
+                       className="w-full p-2 pr-2 lg:pr-2 border rounded mt-1"
+                        min={new Date().toISOString().split("T")[0]}
                         onChange={(e) =>
                           handleVendorChange(i, vi, "quotation_validity_date", e.target.value)
                         }
                       />
                     </div>
-
 
                     {/* Comments */}
                     <div>

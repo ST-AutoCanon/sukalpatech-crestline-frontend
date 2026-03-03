@@ -447,45 +447,67 @@ export default function EmployeeManagementPage() {
   }, []);
 
   /* ================= CREATE ================= */
-  const handleCreate = async () => {
-    if (emailError) {
-      alert("Invalid Email Id");
-      return;
-    }
+ const handleCreate = async () => {
+  if (!newEmployee.first_name.trim()) {
+    alert("First Name is required");
+    return;
+  }
 
-    if (
-      !newEmployee.first_name ||
-      !newEmployee.email ||
-      !newEmployee.password ||
-      !newEmployee.category
-    ) {
-      alert("All fields are required");
-      return;
-    }
+  if (!newEmployee.last_name.trim()) {
+    alert("Last Name is required");
+    return;
+  }
 
-    try {
-      setLoading(true);
-      await axios.post(`${ADMIN_API_BASE}/employees`, newEmployee, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
+  if (!newEmployee.email.trim()) {
+    alert("Email is required");
+    return;
+  }
 
-      setNewEmployee({
-        first_name: "",
-        last_name: "",
-        email: "",
-        password: "",
-        role: "employee",
-        category: "",
-      });
-      setCreating(false);
-      fetchEmployees();
-    } catch (err) {
-      console.error("Create failed", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const emailRegex = /^[\w.-]+@(gmail\.com|yopmail\.com)$/i;
+  if (!emailRegex.test(newEmployee.email)) {
+    alert("Enter valid gmail.com or yopmail.com email");
+    return;
+  }
+
+  if (!newEmployee.password.trim()) {
+    alert("Password is required");
+    return;
+  }
+
+  if (!newEmployee.category) {
+    alert("Category Limit is required");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    await axios.post(`${ADMIN_API_BASE}/employees`, newEmployee, {
+      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true,
+    });
+
+    alert("Employee created successfully ✅");
+
+    setNewEmployee({
+      first_name: "",
+      last_name: "",
+      email: "",
+      password: "",
+      role: "employee",
+      category: "",
+    });
+
+    setCreating(false);
+    fetchEmployees();
+  } catch (err: any) {
+    alert(
+      err.response?.data?.message || "Failed to create employee ❌"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ================= UPDATE ================= */
   const handleUpdate = async () => {
@@ -496,7 +518,9 @@ export default function EmployeeManagementPage() {
       await axios.put(
         `${ADMIN_API_BASE}/employees/${selectedEmployee.id}`,
         selectedEmployee,
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}` } ,
+        withCredentials: true,
+      }
       );
 
       setSelectedEmployee(null);
@@ -516,6 +540,7 @@ export default function EmployeeManagementPage() {
     try {
       await axios.delete(`${ADMIN_API_BASE}/employees/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       fetchEmployees();
     } catch (err) {
@@ -574,10 +599,7 @@ export default function EmployeeManagementPage() {
                 onChange={(e) => {
                   const value = e.target.value;
                   setNewEmployee({ ...newEmployee, email: value });
-                  const emailRegex = /^[\w.-]+@(gmail\.com|yopmail\.com)$/i;
-                  setEmailError(
-                    !emailRegex.test(value) ? "Invalid email" : null,
-                  );
+                  
                 }}
               />
               {emailError && (
@@ -649,7 +671,7 @@ export default function EmployeeManagementPage() {
                   </td>
                   <td className="break-all max-w-[250px]">{emp.email}</td>
                   <td className="whitespace-nowrap capitalize">{emp.role}</td>
-                  <td className="whitespace-nowrap">
+                  <td className="p-4 break-words max-w-[150px] sm:max-w-none">
                     {emp.status || "active"}
                   </td>
                   <td className="whitespace-nowrap capitalize">
@@ -707,6 +729,17 @@ export default function EmployeeManagementPage() {
                     setSelectedEmployee({
                       ...selectedEmployee,
                       last_name: e.target.value,
+                    })
+                  }
+                />
+
+                <input
+                  className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={selectedEmployee.email}
+                  onChange={(e) =>
+                    setSelectedEmployee({
+                      ...selectedEmployee,
+                      email: e.target.value,
                     })
                   }
                 />
