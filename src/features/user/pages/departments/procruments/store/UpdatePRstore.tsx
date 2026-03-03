@@ -386,7 +386,7 @@ export default function SubmittedFinanceRequestsPage() {
                   ["Description", selectedPR.description],
                   ["Priority", selectedPR.priority],
                   [
-                    "Required Delivery Date",
+                    "Delivery Date",
                     formatDate(selectedPR.required_date),
                   ],
                   ["Department", selectedPR.department],
@@ -415,7 +415,7 @@ export default function SubmittedFinanceRequestsPage() {
             </div>
 
             {/* ITEMS */}
-            {expandItems && (
+          {expandItems && (
               <div className="bg-gray-100 p-3 sm:p-4 rounded mb-4 space-y-4 overflow-x-auto">
                 {updateData.items.map((item, i) => (
                   <div key={i} className="rounded-lg p-2 sm:p-4 min-w-[300px]">
@@ -462,11 +462,15 @@ export default function SubmittedFinanceRequestsPage() {
                         <div>status</div>
                       </div>
 
-                      {item.vendors.map((vendor, vi) => {
-                        // Find the latest feasibility comment (commented_by = 2)
-                        const feasibilityComment =
-                          vendor.comments?.find((c) => c.commented_by === 2)
-                            ?.comment || "";
+                      {item.vendors
+                        .filter(
+                          (vendor) =>
+                            !vendor.status ||
+                            !vendor.status.toLowerCase().includes("rejected")
+                        )
+                        .map((vendor, vi) => {  // Find the latest feasibility comment (commented_by = 2)
+                          const feasibilityComment =
+                            vendor.comments?.[vendor.comments.length - 1]?.comment || "";
 
                         return (
                           <div

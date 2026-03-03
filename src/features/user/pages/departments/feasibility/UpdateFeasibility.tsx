@@ -58,7 +58,7 @@ interface User {
   last_name: string;
   email: string;
   department_id?: number; // existing
-  category:string
+  category: string
 }
 
 /* ================= COMPONENT ================= */
@@ -99,96 +99,96 @@ export default function SubmittedRequestsPage() {
 
   const formatDate = (date?: string) => (date ? new Date(date).toLocaleDateString("en-GB") : "");
 
-//   useEffect(() => {
-//     // Fetch submitted PRs
+  //   useEffect(() => {
+  //     // Fetch submitted PRs
 
-//     axios.get(`${API_BASE}/submitted-requests`).then((res) => setRequests(res.data.data || []));
-//     // Fetch vendors
-//     axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`).then((res) => {
-//       const map: Record<string, string> = {};
-//       (res.data.data || []).forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
-//       setVendorMap(map);
-//     });
-//     // Fetch departments
-//     axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`).then((res) => {
-//   const map: Record<string, string> = {};
+  //     axios.get(`${API_BASE}/submitted-requests`).then((res) => setRequests(res.data.data || []));
+  //     // Fetch vendors
+  //     axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`).then((res) => {
+  //       const map: Record<string, string> = {};
+  //       (res.data.data || []).forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
+  //       setVendorMap(map);
+  //     });
+  //     // Fetch departments
+  //     axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`).then((res) => {
+  //   const map: Record<string, string> = {};
 
-//   (res.data.data || []).forEach((d: any) => {
-//     map[String(d.department_id)] = d.name;
-//   });
+  //   (res.data.data || []).forEach((d: any) => {
+  //     map[String(d.department_id)] = d.name;
+  //   });
 
-//   setDepartmentMap(map);
-// });
-// }, []);
+  //   setDepartmentMap(map);
+  // });
+  // }, []);
 
-  
-    // useEffect(() => {
-    //   const token = localStorage.getItem("token");
 
-    //   // Fetch submitted PRs
-    //   axios
-    //     .get(`${API_BASE}/submitted-requests`, {
-    //       headers: { Authorization: `Bearer ${token}` },
-    //     })
-    //     .then((res) => {
-    //       setRequests(res.data.data || []);
-    //     });
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
 
-    //   // Fetch vendors
-    //   axios
-    //     .get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-    //       headers: { Authorization: `Bearer ${token}` },
-    //     })
-    //     .then((res) => {
-    //       const map: Record<string, string> = {};
-    //       (res.data.data || []).forEach(
-    //         (v: any) => (map[String(v.vendor_id)] = v.vendor_name),
-    //       );
-    //       setVendorMap(map);
-    //     });
+  //   // Fetch submitted PRs
+  //   axios
+  //     .get(`${API_BASE}/submitted-requests`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     })
+  //     .then((res) => {
+  //       setRequests(res.data.data || []);
+  //     });
 
-    //   // Fetch departments
-    //   axios
-    //     .get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
-    //       headers: { Authorization: `Bearer ${token}` },
-    //     })
-    //     .then((res) => {
-    //       const map: Record<string, string> = {};
-    //       (res.data.data || []).forEach(
-    //         (d: any) => (map[String(d.department_id)] = d.name),
-    //       );
-    //       setDepartmentMap(map);
-    //     });
-    // }, []);
-  
+  //   // Fetch vendors
+  //   axios
+  //     .get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     })
+  //     .then((res) => {
+  //       const map: Record<string, string> = {};
+  //       (res.data.data || []).forEach(
+  //         (v: any) => (map[String(v.vendor_id)] = v.vendor_name),
+  //       );
+  //       setVendorMap(map);
+  //     });
+
+  //   // Fetch departments
+  //   axios
+  //     .get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     })
+  //     .then((res) => {
+  //       const map: Record<string, string> = {};
+  //       (res.data.data || []).forEach(
+  //         (d: any) => (map[String(d.department_id)] = d.name),
+  //       );
+  //       setDepartmentMap(map);
+  //     });
+  // }, []);
+
   useEffect(() => {
-  // Fetch submitted PRs
-  axios
-    .get(`${API_BASE}/submitted-requests`, { withCredentials: true })
-    .then((res) => setRequests(res.data.data || []))
-    .catch((err) => console.error(err));
+    // Fetch submitted PRs
+    axios
+      .get(`${API_BASE}/submitted-requests`, { withCredentials: true })
+      .then((res) => setRequests(res.data.data || []))
+      .catch((err) => console.error(err));
 
-  // Fetch vendors
-  axios
-    .get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, { withCredentials: true })
-    .then((res) => {
-      const map: Record<string, string> = {};
-      (res.data.data || []).forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
-      setVendorMap(map);
-    })
-    .catch((err) => console.error(err));
+    // Fetch vendors
+    axios
+      .get(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, { withCredentials: true })
+      .then((res) => {
+        const map: Record<string, string> = {};
+        (res.data.data || []).forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
+        setVendorMap(map);
+      })
+      .catch((err) => console.error(err));
 
-  // Fetch departments
-  axios
-    .get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, { withCredentials: true })
-    .then((res) => {
-      const map: Record<string, string> = {};
-      (res.data.data || []).forEach((d: any) => (map[String(d.department_id)] = d.name));
-      setDepartmentMap(map);
-    })
-    .catch((err) => console.error(err));
+    // Fetch departments
+    axios
+      .get(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, { withCredentials: true })
+      .then((res) => {
+        const map: Record<string, string> = {};
+        (res.data.data || []).forEach((d: any) => (map[String(d.department_id)] = d.name));
+        setDepartmentMap(map);
+      })
+      .catch((err) => console.error(err));
   }, []);
-  
+
   const openPR = (pr: FeasibilityPR) => {
     setSelectedPR(pr);
     setUpdateData({ department_statuses: pr.department_statuses || [], items: pr.items || [] });
@@ -199,135 +199,162 @@ export default function SubmittedRequestsPage() {
   };
 
   const totalPrice = useMemo(() => {
-  return updateData.items.reduce((sum, item) => {
-    return (
-      sum +
-      item.vendors.reduce((vendorSum, v) => {
-        const price = Number(
-          String(v.total_price || 0).replace(/,/g, "")
-        );
-        return vendorSum + (isNaN(price) ? 0 : price);
-      }, 0)
-    );
-  }, 0);
-}, [updateData.items]);
+    return updateData.items.reduce((sum, item) => {
+      return (
+        sum +
+        item.vendors.reduce((vendorSum, v) => {
+          const price = Number(
+            String(v.total_price || 0).replace(/,/g, "")
+          );
+          return vendorSum + (isNaN(price) ? 0 : price);
+        }, 0)
+      );
+    }, 0);
+  }, [updateData.items]);
 
 
-//  const submitUpdate = async () => {
-//   if (!selectedPR || !newStatus) {
-//     setAlert({
-//       type: "error",
-//       message: "Please select procurement PR status",
-//     });
-//     return;
-//   }
+  //  const submitUpdate = async () => {
+  //   if (!selectedPR || !newStatus) {
+  //     setAlert({
+  //       type: "error",
+  //       message: "Please select procurement PR status",
+  //     });
+  //     return;
+  //   }
 
-//   const token = localStorage.getItem("token");
+  //   const token = localStorage.getItem("token");
 
-//   try {
-//     // 🔹 1️⃣ Call approval check API first
-//     const approvalRes = await axios.post(
-//       `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit/approve`,
-//       { amount: totalPrice },
-//       {
-//         headers: { Authorization: `Bearer ${token}` },
-//       }
-//     );
+  //   try {
+  //     // 🔹 1️⃣ Call approval check API first
+  //     const approvalRes = await axios.post(
+  //       `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit/approve`,
+  //       { amount: totalPrice },
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
 
-//     // 🔹 2️⃣ If allowed → continue update
-//     if (approvalRes.data.success) {
+  //     // 🔹 2️⃣ If allowed → continue update
+  //     if (approvalRes.data.success) {
 
-//       const payload = {
-//         department_statuses: [
-//           {
-//             department_status: newStatus,
-//             department_comment: newComment,
-//             status_updated_by: user.first_name,
-//             updated_at: new Date().toISOString(),
-//           },
-//         ],
-//         items: updateData.items,
-//       };
+  //       const payload = {
+  //         department_statuses: [
+  //           {
+  //             department_status: newStatus,
+  //             department_comment: newComment,
+  //             status_updated_by: user.first_name,
+  //             updated_at: new Date().toISOString(),
+  //           },
+  //         ],
+  //         items: updateData.items,
+  //       };
 
-//       await axios.put(
-//         `${API_BASE}/feasibility-requests/${selectedPR.id}`,
-//         payload,
-//         {
-//           headers: { Authorization: `Bearer ${token}` },
-//         }
-//       );
+  //       await axios.put(
+  //         `${API_BASE}/feasibility-requests/${selectedPR.id}`,
+  //         payload,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         }
+  //       );
 
-//       setAlert({
-//         type: "success",
-//         message: "Feasibility PR approved successfully",
-//       });
+  //       setAlert({
+  //         type: "success",
+  //         message: "Feasibility PR approved successfully",
+  //       });
 
-//       setModalOpen(false);
-//     }
+  //       setModalOpen(false);
+  //     }
 
-//   } catch (error: any) {
-//     setAlert({
-//       type: "error",
-//       message:
-//         error.response?.data?.message ||
-//         "Approval denied. Limit exceeded.",
-//     });
-//   }
-// };
+  //   } catch (error: any) {
+  //     setAlert({
+  //       type: "error",
+  //       message:
+  //         error.response?.data?.message ||
+  //         "Approval denied. Limit exceeded.",
+  //     });
+  //   }
+  // };
 
-const submitUpdate = async () => {
-  if (!selectedPR || !newStatus) {
-    setAlert({
-      type: "error",
-      message: "Please select procurement PR status",
-    });
-    return;
-  }
+  const submitUpdate = async () => {
+    if (!selectedPR || !newStatus) {
+      setAlert({
+        type: "error",
+        message: "Please select procurement PR status",
+      });
+      return;
+    }
 
-  try {
-    // 1️⃣ Call approval check API
-    const approvalRes = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit/approve`,
-      { amount: totalPrice },
-      { withCredentials: true },
-    );
-
-    if (approvalRes.data.success) {
-      const payload = {
-        department_statuses: [
-          {
-            department_status: newStatus,
-            department_comment: newComment,
-            status_updated_by: user.first_name,
-            updated_at: new Date().toISOString(),
-          },
-        ],
-        items: updateData.items,
-      };
-
-      await axios.put(
-        `${API_BASE}/feasibility-requests/${selectedPR.id}`,
-        payload,
-        { withCredentials: true },
+    try {
+      const approvalRes = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit/approve`,
+        { amount: totalPrice },
+        { withCredentials: true }
       );
 
+      if (approvalRes.data.success) {
+
+        // 🔥 MERGE vendorUpdates INTO items
+        const updatedItems = updateData.items.map((item, itemIndex) => ({
+          ...item,
+          vendors: item.vendors.map((vendor, vendorIndex) => {
+            const key = `${itemIndex}-${vendorIndex}`;
+            const updates = vendorUpdates[key];
+
+            if (!updates) return vendor;
+
+            return {
+              ...vendor,
+              status: updates.status || vendor.status,
+              comments: updates.comment
+                ? [
+                  ...(vendor.comments || []),
+                  {
+                    comment: updates.comment,
+                    commented_by: user.id,
+                    commented_at: new Date().toISOString(),
+                  },
+                ]
+                : vendor.comments,
+            };
+          }),
+        }));
+
+        const payload = {
+          department_statuses: [
+            {
+              department_status: newStatus,
+              department_comment: newComment,
+              status_updated_by: user.first_name,
+              updated_at: new Date().toISOString(),
+            },
+          ],
+          items: updatedItems, // ✅ send merged items
+        };
+
+        await axios.put(
+          `${API_BASE}/feasibility-requests/${selectedPR.id}`,
+          payload,
+          { withCredentials: true }
+        );
+
+        setAlert({
+          type: "success",
+          message: "Feasibility PR updated successfully",
+        });
+
+        setModalOpen(false);
+      }
+    } catch (error: any) {
       setAlert({
-        type: "success",
-        message: "Feasibility PR approved successfully",
+        type: "error",
+        message:
+          error.response?.data?.message || "Approval denied. Limit exceeded.",
       });
-      setModalOpen(false);
     }
-  } catch (error: any) {
-    setAlert({
-      type: "error",
-      message:
-        error.response?.data?.message || "Approval denied. Limit exceeded.",
-    });
-  }
-};
+  };
   return (
     <div className="p-4 sm:p-6 text-black">
-                  {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
+      {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
 
       {/* PR CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -369,7 +396,7 @@ const submitUpdate = async () => {
                   ["Description", selectedPR.description],
                   ["Priority", selectedPR.priority],
                   [
-                    "Required Delivery Date",
+                    "Delivery Date",
                     formatDate(selectedPR.required_date),
                   ],
                   [
@@ -823,7 +850,7 @@ const submitUpdate = async () => {
             <div className="flex justify-end mt-4">
               <button
                 onClick={submitUpdate}
-                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
                 Update Feasibility PR
               </button>

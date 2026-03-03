@@ -385,15 +385,15 @@ const CreateOrganisation = () => {
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">
               Create Organisation
             </h2>
-            <p className="text-gray-500 mb-6 text-sm sm:text-base">
+            <p className="text-gray-500 mb-10 text-sm sm:text-base">
               Register a new organisation and assign an administrator.
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6 mt-3">
               {/* Organisation Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-gray-700 font-medium mb-1">
+                  <label className="text-md sm:text-lg font-semibold text-gray-800 mb-3">
                     Organisation Name
                   </label>
                   <input
@@ -407,7 +407,7 @@ const CreateOrganisation = () => {
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-medium mb-1">
+                  <label className="text-md sm:text-lg font-semibold text-gray-800 mb-3">
                     Organisation Code
                   </label>
                   <input

@@ -75,6 +75,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   const [editMode, setEditMode] = useState(false);
   const [showItems, setShowItems] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [newStatus, setNewStatus] = useState("");
+  const [newComment, setNewComment] = useState("");
 
   // const fetchPRs = async () => {
   //   setLoading(true);
@@ -114,7 +116,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
         filter === "Completed"
       ) {
         const status =
-          filter === "Completed" ? "APPROVED" : filter.toUpperCase();
+          filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
         url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
       }
 
@@ -196,6 +198,27 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   // }, []);
 
   useEffect(() => {
+
+
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
+      credentials: "include", // ✅ send cookie
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const departments = data?.data || [];
+        const map: Record<string, string> = {};
+
+        departments.forEach((d: any) => {
+          map[String(d.department_id)] = d.name;
+        });
+
+        setDepartmentMap(map);
+      })
+      .catch((err) => console.error("Department fetch error", err));
+  }, []);
+
+
+  useEffect(() => {
     fetch(
       `${import.meta.env.VITE_BACKEND_URL}/api/new-feasibility/submitted-requests`,
       {
@@ -236,8 +259,104 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
   if (loading) return <div className="p-6">Loading PRs...</div>;
 
+  const savePR = async (pr: PR) => {
+    const token = localStorage.getItem("token");
 
+    const res = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${pr.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(pr),
+      }
+    );
 
+    if (!res.ok) {
+      throw new Error("Save failed");
+    }
+
+    const updatedPR: PR = await res.json();
+    return updatedPR;
+  };
+
+  const handleSave = async () => {
+    if (!activePR) return;
+
+    try {
+      let updatedPRData = { ...activePR };
+
+      // ✅ If new status selected, append it
+      if (newStatus) {
+        updatedPRData = {
+          ...updatedPRData,
+          department_statuses: [
+            ...(updatedPRData.department_statuses || []),
+            {
+              department_status: newStatus,
+              department_comment: newComment,
+              status_updated_by: user?.id || "",
+              updated_at: new Date().toISOString(),
+            },
+          ],
+        };
+      }
+
+      const savedPR = await savePR(updatedPRData);
+
+      // ✅ Update PR list
+      setPrs((prev) =>
+        prev.map((pr) =>
+          pr.id === savedPR.id ? savedPR : pr
+        )
+      );
+
+      // ✅ Reset form
+      setNewStatus("");
+      setNewComment("");
+
+      // ✅ CLOSE MODAL IMMEDIATELY
+      setActivePR(null);
+      setEditMode(false);
+
+    } catch (err) {
+      console.error("Save error:", err);
+    }
+  };
+
+  const formatDateForInput = (date: string) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const offset = d.getTimezoneOffset();
+    const localDate = new Date(d.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().split("T")[0];
+  };
+
+  const isEditable = (pr: PR) => {
+    const latestStatus =
+      pr.department_statuses?.[pr.department_statuses.length - 1]
+        ?.department_status;
+
+    if (!latestStatus) return true;
+
+    const statusUpper = latestStatus.toUpperCase();
+
+    // ❌ Block only final-level approvals
+    if (
+      statusUpper.includes("STORE APPROVED") ||
+      statusUpper.includes("FINANCE APPROVED") ||
+      statusUpper.includes("COMPLETED") ||
+      statusUpper.includes("REJECTED")
+    ) {
+      return false;
+    }
+
+    // ✅ Allow editing for feasibility statuses
+    return true;
+  };
 
   return (
     <>
@@ -279,16 +398,18 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   More Info
                 </button>
 
-                <button
-                  className="text-sm font-semibold text-blue-600 hover:underline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditMode(true);
-                    setActivePR(pr);
-                  }}
-                >
-                  Edit
-                </button>
+                {isEditable(pr) && (
+                  <button
+                    className="text-sm font-semibold text-blue-600 hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditMode(true);
+                      setActivePR(pr);
+                    }}
+                  >
+                    Edit
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -342,7 +463,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   <div className="text-gray-900"> Delivery Date</div>
                   <input
                     type="date"
-                    value={activePR.required_date ? activePR.required_date.split("T")[0] : ""}
+                    value={formatDateForInput(activePR.required_date)}
                     readOnly={true}
                     onChange={(e) => {
                       const date = e.target.value; // "2026-03-01"
@@ -359,8 +480,11 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 <div>
                   <div className="text-gray-900">Department</div>
                   <input
-                    value={activePR.department || ""}
-                    readOnly={true}
+                    value={
+                      departmentMap[String(activePR.department)] ??
+                      activePR.department ??
+                      ""
+                    } readOnly={true}
                     onChange={(e) =>
                       setActivePR({ ...activePR, department: e.target.value })
                     }
@@ -417,7 +541,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
                   <input
                     type="date"
-                    value={activePR.required_date ? activePR.required_date.split("T")[0] : ""}
+                    value={formatDateForInput(activePR.required_date)}
                     readOnly={true}
                     onChange={(e) => {
                       const date = e.target.value; // "2026-03-01"
@@ -430,8 +554,11 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   />
 
                   <input
-                    value={activePR.department || ""}
-                    readOnly={true}
+                    value={
+                      departmentMap[String(activePR.department)] ??
+                      activePR.department ??
+                      ""
+                    } readOnly={true}
                     onChange={(e) =>
                       setActivePR({ ...activePR, department: e.target.value })
                     }
@@ -571,7 +698,9 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
 
                             const feasibilityComment =
-                              vendor.comments?.[vendor.comments.length - 1]?.comment || "";
+                              vendor.comments?.length > 1
+                                ? vendor.comments[vendor.comments.length - 1]?.comment
+                                : "";
 
                             return (
                               <div
@@ -775,7 +904,9 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
 
                             const feasibilityComment =
-                              vendor.comments?.[vendor.comments.length - 1]?.comment || "";
+                              vendor.comments?.length > 1
+                                ? vendor.comments[vendor.comments.length - 1]?.comment
+                                : "";
 
                             return (
                               <div
@@ -848,56 +979,70 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 {showStatus && (
                   <div className="space-y-4 min-w-[350px] sm:min-w-[500px]">
                     {Array.isArray(activePR.department_statuses) &&
-                      activePR.department_statuses.map((ds, idx) => (<div
-                        key={idx}
-                        className="bg-gray-100 border border-blue-200 rounded-xl p-4 text-sm"
-                      >
-                        <div className="flex flex-col sm:flex-row justify-between mb-1 text-xs text-gray-600 gap-2">
-                          {editMode ? (
-                            <select
-                              value={ds.department_status}
-                              onChange={(e) => {
-                                const updatedStatuses = [...activePR.department_statuses];
-                                updatedStatuses[idx].department_status = e.target.value;
-                                setActivePR({ ...activePR, department_statuses: updatedStatuses });
-                              }}
-                              className="px-2 py-1 text-xs border rounded w-full sm:w-auto"
-                            >
-                              <option value="FEASIBILITY PENDING"> FEASIBILITY PENDING</option>
-                              <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
-                              <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
-                            </select>
-                          ) : (
+                      activePR.department_statuses.map((ds, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-gray-100 border border-blue-200 rounded-xl p-4 text-sm"
+                        >
+                          <div className="flex flex-col sm:flex-row justify-between mb-1 text-xs text-gray-600 gap-2">
+
+                            {/* ALWAYS READ-ONLY STATUS */}
                             <input
                               value={ds.department_status}
                               readOnly
-                              className="px-1 py-0.5 text-xs w-full sm:w-auto bg-gray-100"
+                              className="px-2 py-1 text-xs bg-gray-200 rounded w-full sm:w-auto"
                             />
-                          )}
 
-                          <span className="font-medium text-gray-800">
-                            {ds.status_updated_by ?? "—"} •{" "}
-                            {new Date(ds.updated_at).toLocaleDateString()}
-                          </span>
-                        </div>
+                            <span className="font-medium text-gray-800">
+                              {ds.status_updated_by ?? "—"} •{" "}
+                              {ds.updated_at
+                                ? new Date(ds.updated_at).toLocaleDateString()
+                                : "—"}
+                            </span>
+                          </div>
 
-                        <div className="text-xs text-gray-600 mt-1">
-                          <input
-                            value={ds.department_comment}
-                            readOnly={!editMode} // editable
-                            onChange={(e) => {
-                              const updatedStatuses = [...activePR.department_statuses];
-                              updatedStatuses[idx].department_comment = e.target.value;
-                              setActivePR({ ...activePR, department_statuses: updatedStatuses });
-                            }}
-                            className=" px-1 py-0.5 rounded  w-full text-xs"
-                          />
+                          {/* ALWAYS READ-ONLY COMMENT */}
+                          <div className="text-xs text-gray-600 mt-1">
+                            <input
+                              value={ds.department_comment || ""}
+                              readOnly
+                              className="px-2 py-1 rounded w-full text-xs bg-gray-200"
+                            />
+                          </div>
                         </div>
-                      </div>
                       ))}
                   </div>
                 )}
 
+                {editMode && (
+                  <div className="mt-4 bg-white border border-gray-200 rounded-xl p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                      <select
+                        className="px-3 py-2 border rounded text-sm"
+                        value={newStatus}
+                        onChange={(e) => setNewStatus(e.target.value)}
+                      >
+                        <option value="">Select Feasibility Status</option>
+                        <option value="FEASIBILITY PENDING">FEASIBILITY PENDING</option>
+                        <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
+                        <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
+                      </select>
+
+                      <input
+                        type="text"
+                        placeholder="Enter comment"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="px-3 py-2 border rounded text-sm"
+                      />
+                    </div>
+
+                    <div className="flex justify-end mt-3">
+
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             {editMode && (
@@ -913,40 +1058,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 </button>
                 <button
                   className="px-4 py-2 rounded bg-blue-600 text-white"
-                  onClick={async () => {
-                    try {
-                      const token = localStorage.getItem("token");
-
-                      const res = await fetch(
-                        `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests/full/${activePR.id}`,
-                        {
-                          method: "PUT",
-                          headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                          },
-                          credentials: "include", // <-- added
-                          body: JSON.stringify(activePR),
-                        }
-                      );
-
-                      if (!res.ok) throw new Error("Save failed");
-
-                      const updatedPR: PR = await res.json(); // <-- make sure backend returns the updated PR
-
-                      // 1️⃣ Update modal
-                      setActivePR(updatedPR);
-
-                      // 2️⃣ Update list
-                      setPrs((prevPrs) =>
-                        prevPrs.map((pr) => (pr.id === updatedPR.id ? updatedPR : pr))
-                      );
-
-                      setEditMode(false); // exit edit mode
-                    } catch (err) {
-                      console.error(err);
-                    }
-                  }}
+                  onClick={handleSave}
                 >
                   Save
                 </button>
