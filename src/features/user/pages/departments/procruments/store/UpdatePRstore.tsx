@@ -45,6 +45,28 @@ interface Item {
   vendors: Vendor[];
 }
 
+interface FinancePaymentDetails {
+  id: number;
+  payment_stage?: string;
+  partial_percentage?: number | null;
+  final_completed?: boolean;
+  finance_comment?: string;
+  payment_proof_file_name?: string;
+  payment_proof_file_path?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface PROrderDetails {
+  order_placed_at: string;
+  expected_delivery_date: string;
+  po_file_name?: string | null;
+  po_file_path?: string | null;
+  transport_mode: string;
+  in_house_type: string;
+  vendor_address: string | null;
+}
+
 interface StorePR {
   id: string;
   department?: string;
@@ -55,6 +77,9 @@ interface StorePR {
   remarks?: string;
   department_statuses: DepartmentStatus[];
   items: Item[];
+
+  finance_payment_details?: FinancePaymentDetails;
+  order_details?: PROrderDetails;
 }
 
 /* ================= COMPONENT ================= */
@@ -72,6 +97,14 @@ export default function SubmittedFinanceRequestsPage() {
 
   const [newStatus, setNewStatus] = useState("");
   const [newComment, setNewComment] = useState("");
+
+    const [orderDetails, setOrderDetails] = useState({
+    quantityStatus: "",
+    partialQuantity: "",
+    rejectionReason: "",
+    building: "",
+    rack: "",
+  });
 
   const STORE_STATUS_OPTIONS = [
         "STORE APPROVED",
@@ -266,59 +299,122 @@ export default function SubmittedFinanceRequestsPage() {
 // };
 
   
+  // const submitUpdate = async () => {
+  //   if (!selectedPR || !newStatus) {
+  //     setAlert({
+  //       type: "error",
+  //       message: "Please select procurement PR status",
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     const token = localStorage.getItem("token");
+
+  //     const payload = {
+  //       department_statuses: [
+  //         {
+  //           department_status: newStatus,
+  //           department_comment: newComment,
+  //           status_updated_by: user.first_name,
+  //           updated_at: new Date().toISOString(),
+  //         },
+  //       ],
+  //       items: updateData.items,
+  //     };
+
+  //     // await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
+  //     //   headers: {
+  //     //     Authorization: `Bearer ${token}`,
+  //     //   },
+  //     // });
+  //     await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
+  //       withCredentials: true,
+  //     });
+
+  //     setAlert({
+  //       type: "success",
+  //       message: "Procurement PR Updated",
+  //     });
+
+  //     setTimeout(() => {
+  //       setModalOpen(false);
+  //       setAlert(null);
+  //     }, 2000);
+
+  //     fetchApprovedRequests();
+  //   } catch (err) {
+  //     console.error(err);
+  //     setAlert({
+  //       type: "error",
+  //       message: "Failed to update PR",
+  //     });
+  //   }
+  // };
+
+
+
   const submitUpdate = async () => {
-    if (!selectedPR || !newStatus) {
-      setAlert({
-        type: "error",
-        message: "Please select procurement PR status",
-      });
-      return;
-    }
+  if (!selectedPR || !newStatus) {
+    setAlert({
+      type: "error",
+      message: "Please select procurement PR status",
+    });
+    return;
+  }
 
-    try {
-      const token = localStorage.getItem("token");
+  try {
+    // Map frontend state to backend expected key
+    const storeReceivingDetails = {
+      quantity_status: orderDetails.quantityStatus,
+      partial_quantity: orderDetails.partialQuantity || null,
+      rejection_reason: orderDetails.rejectionReason || null,
+      building: orderDetails.building || null,
+      rack: orderDetails.rack || null,
+      received_at: new Date().toISOString(),
+      received_by: user.first_name,
+    };
 
-      const payload = {
-        department_statuses: [
-          {
-            department_status: newStatus,
-            department_comment: newComment,
-            status_updated_by: user.first_name,
-            updated_at: new Date().toISOString(),
-          },
-        ],
-        items: updateData.items,
-      };
+    console.log("Submitting Store Receiving Details:", storeReceivingDetails);
 
-      // await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // });
-      await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
-        withCredentials: true,
-      });
+    const payload = {
+      department_statuses: [
+        {
+          department_status: newStatus,
+          department_comment: newComment,
+          status_updated_by: user.first_name,
+          updated_at: new Date().toISOString(),
+        },
+      ],
+      items: updateData.items,
+      store_receiving_details: storeReceivingDetails, // <- key matches backend
+    };
 
-      setAlert({
-        type: "success",
-        message: "Procurement PR Updated",
-      });
+    // Send to backend
+    await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
+      withCredentials: true,
+    });
 
-      setTimeout(() => {
-        setModalOpen(false);
-        setAlert(null);
-      }, 2000);
+    setAlert({
+      type: "success",
+      message: "Store PR updated successfully",
+    });
 
-      fetchApprovedRequests();
-    } catch (err) {
-      console.error(err);
-      setAlert({
-        type: "error",
-        message: "Failed to update PR",
-      });
-    }
-  };
+    setTimeout(() => {
+      setModalOpen(false);
+      setAlert(null);
+    }, 2000);
 
+    // Refresh list
+    fetchApprovedRequests();
+  } catch (err) {
+    console.error("❌ Failed to update Store PR:", err);
+    setAlert({
+      type: "error",
+      message: "Failed to update Store PR",
+    });
+  }
+};
 
   return (
     <div className="p-4 sm:p-6 text-black">
@@ -547,6 +643,298 @@ export default function SubmittedFinanceRequestsPage() {
                 ))}
               </div>
             )}
+
+
+  {/* ================= FINANCE PAYMENT DETAILS ================= */}
+            {selectedPR.finance_payment_details && (
+              <div className="border border-gray-200 rounded p-4 mb-4">
+                <h3 className="font-semibold mb-4 text-purple-600">
+                  Finance Payment Details
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                  {/* Payment Stage */}
+                  <div>
+                    <label className="text-xs font-medium">Payment Stage</label>
+                    <input
+                      readOnly
+                      value={
+                        selectedPR.finance_payment_details.payment_stage || ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Partial Percentage (only if stage = PARTIAL) */}
+                  {selectedPR.finance_payment_details.payment_stage ===
+                    "PARTIAL" && (
+                    <div>
+                      <label className="text-xs font-medium">
+                        Partial Percentage
+                      </label>
+                      <input
+                        readOnly
+                        value={
+                          selectedPR.finance_payment_details.partial_percentage
+                            ? `${selectedPR.finance_payment_details.partial_percentage}%`
+                            : "0%"
+                        }
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
+
+                  {/* Final Completed */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Final Completed
+                    </label>
+                    <input
+                      readOnly
+                      value={
+                        selectedPR.finance_payment_details.final_completed
+                          ? "Yes"
+                          : "No"
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Finance Comment */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Finance Comment
+                    </label>
+                    <input
+                      readOnly
+                      value={
+                        selectedPR.finance_payment_details.finance_comment || ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Payment Proof */}
+                {selectedPR.finance_payment_details.payment_proof_file_path && (
+                  <div className="mt-4">
+                    <a
+                      href={`${import.meta.env.VITE_BACKEND_URL}/${selectedPR.finance_payment_details.payment_proof_file_path}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      {selectedPR.finance_payment_details
+                        .payment_proof_file_name || "View Payment Proof"}
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+
+            
+            {/* ================= PR ORDER DETAILS ================= */}
+            {selectedPR.order_details && (
+              <div className="border border-gray-200 rounded p-4 mb-4">
+                <h3 className="font-semibold mb-4 text-purple-600">
+                  PR Order Details
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                  {/* Order Placed */}
+                  <div>
+                    <label className="text-xs font-medium">Order Placed</label>
+                    <input
+                      readOnly
+                      value={
+                        selectedPR.order_details.order_placed_at
+                          ? new Date(
+                              selectedPR.order_details.order_placed_at,
+                            ).toLocaleDateString()
+                          : ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Expected Delivery */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Expected Delivery
+                    </label>
+                    <input
+                      readOnly
+                      value={
+                        selectedPR.order_details.expected_delivery_date
+                          ? new Date(
+                              selectedPR.order_details.expected_delivery_date,
+                            ).toLocaleDateString()
+                          : ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Transport Mode */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Transport Mode
+                    </label>
+                    <input
+                      readOnly
+                      value={selectedPR.order_details.transport_mode || ""}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* In-House Type */}
+                  <div>
+                    <label className="text-xs font-medium">In-House Type</label>
+                    <input
+                      readOnly
+                      value={selectedPR.order_details.in_house_type || ""}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Vendor Address */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Vendor Address
+                    </label>
+                    <input
+                      readOnly
+                      value={selectedPR.order_details.vendor_address || ""}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* PO File */}
+                  {selectedPR.order_details.po_file_path && (
+                    <div>
+                      <label className="text-xs font-medium">PO File</label>
+                      <a
+                        href={`${import.meta.env.VITE_BACKEND_URL}/${selectedPR.order_details.po_file_path}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        {selectedPR.order_details.po_file_name ||
+                          "View PO File"}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+      
+ {/* =================  ORDER Receiving DETAILS ================= */}
+            {selectedPR && (
+  <div className="border border-gray-200 rounded p-4 mb-4">
+    <h3 className="font-semibold mb-4 text-purple-600">
+      Order Receiving Details
+    </h3>
+
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+      {/* Quantity Status */}
+      <div>
+        <label className="text-xs font-medium">Quantity Status</label>
+        <select
+          value={orderDetails.quantityStatus}
+          onChange={(e) =>
+            setOrderDetails({
+              ...orderDetails,
+              quantityStatus: e.target.value,
+              partialQuantity: "", // reset if changed
+            })
+          }
+          className="border p-2 rounded w-full bg-white"
+        >
+          <option value="">Select</option>
+          <option value="FULL">Full</option>
+          <option value="HALF">Half</option>
+          <option value="PARTIAL">Partial</option>
+        </select>
+      </div>
+
+      {/* Partial Quantity */}
+      {orderDetails.quantityStatus === "PARTIAL" && (
+        <div>
+          <label className="text-xs font-medium">Partial Quantity</label>
+          <input
+            type="number"
+            placeholder="Enter quantity"
+            value={orderDetails.partialQuantity}
+            onChange={(e) =>
+              setOrderDetails({
+                ...orderDetails,
+                partialQuantity: e.target.value,
+              })
+            }
+            className="border p-2 rounded w-full bg-white"
+          />
+        </div>
+      )}
+
+      {/* Rejection Reason */}
+      <div>
+        <label className="text-xs font-medium">Rejection Reason</label>
+        <input
+          type="text"
+          placeholder="Enter reason (if rejected)"
+          value={orderDetails.rejectionReason}
+          onChange={(e) =>
+            setOrderDetails({
+              ...orderDetails,
+              rejectionReason: e.target.value,
+            })
+          }
+          className="border p-2 rounded w-full bg-white"
+        />
+      </div>
+
+      {/* Stored Building */}
+      <div>
+        <label className="text-xs font-medium">Stored Building</label>
+        <select
+          value={orderDetails.building}
+          onChange={(e) =>
+            setOrderDetails({
+              ...orderDetails,
+              building: e.target.value,
+            })
+          }
+          className="border p-2 rounded w-full bg-white"
+        >
+          <option value="">Select Building</option>
+          <option value="Building A">Building A</option>
+          <option value="Building B">Building B</option>
+        </select>
+      </div>
+
+      {/* Rack */}
+      <div>
+        <label className="text-xs font-medium">Rack</label>
+        <select
+          value={orderDetails.rack}
+          onChange={(e) =>
+            setOrderDetails({
+              ...orderDetails,
+              rack: e.target.value,
+            })
+          }
+          className="border p-2 rounded w-full bg-white"
+        >
+          <option value="">Select Rack</option>
+          <option value="R1">Rack 1</option>
+          <option value="R2">Rack 2</option>
+        </select>
+      </div>
+    </div>
+  </div>
+            )}
+
 
             {/* STATUS SECTION */}
             <div className="flex justify-end mb-2">
