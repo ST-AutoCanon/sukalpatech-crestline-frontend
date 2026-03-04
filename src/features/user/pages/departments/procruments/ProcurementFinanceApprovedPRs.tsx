@@ -44,6 +44,18 @@ interface Item {
   vendors: Vendor[];
 }
 
+interface FinancePaymentDetails {
+  id: number;
+  payment_stage?: string;
+  partial_percentage?: number | null;
+  final_completed?: boolean;
+  finance_comment?: string;
+  payment_proof_file_name?: string;
+  payment_proof_file_path?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 interface ProcurementPR {
   id: string;
   department?: string;
@@ -54,6 +66,8 @@ interface ProcurementPR {
   remarks?: string;
   department_statuses: DepartmentStatus[];
   items: Item[];
+
+  finance_payment_details?: FinancePaymentDetails | null; // ✅ ADD THIS ONLY
 }
 
 /* ================= COMPONENT ================= */
@@ -71,6 +85,15 @@ export default function SubmittedFinanceRequestsPage() {
 
   const [newStatus, setNewStatus] = useState("");
   const [newComment, setNewComment] = useState("");
+
+  const [orderDetails, setOrderDetails] = useState({
+  orderPlaced: "",
+  expectedDeliveryDate: "",
+  file: null as File | null,
+  transportMode: "",
+  inHouseType: "",
+  vendorAddress: "",
+});
 
   const PR_STATUS_OPTIONS = [
     "PR APPROVED",
@@ -198,48 +221,110 @@ useEffect(() => {
   // };
 
 
-  const submitUpdate = async () => {
-    if (!selectedPR || !newStatus) {
-      setAlert({
-        type: "error",
-        message: "Please select procurement PR status",
-      });
-      return;
-    }
+//   const submitUpdate = async () => {
+//     if (!selectedPR || !newStatus) {
+//       setAlert({
+//         type: "error",
+//         message: "Please select procurement PR status",
+//       });
+//       return;
+//     }
 
-    const token = localStorage.getItem("token");
+//     const token = localStorage.getItem("token");
 
-    const payload = {
-      department_statuses: [
-        {
-          department_status: newStatus,
-          department_comment: newComment,
-          status_updated_by: user.first_name,
-          updated_at: new Date().toISOString(),
-        },
-      ],
-      items: updateData.items,
-    };
+//     const payload = {
+//       department_statuses: [
+//         {
+//           department_status: newStatus,
+//           department_comment: newComment,
+//           status_updated_by: user.first_name,
+//           updated_at: new Date().toISOString(),
+//         },
+//       ],
+//       items: updateData.items,
+//     };
 
-await axios.put(
-  `${API_BASE}/pr-requests/${selectedPR.id}`,
-  payload,
-  { withCredentials: true }, // ✅ send cookie
-);
+// await axios.put(
+//   `${API_BASE}/pr-requests/${selectedPR.id}`,
+//   payload,
+//   { withCredentials: true }, // ✅ send cookie
+// );
 
+//     setAlert({
+//       type: "success",
+//       message: "Procurement PR Updated",
+//     });
+
+//     setTimeout(() => {
+//       setModalOpen(false);
+//       setAlert(null);
+//     }, 2000);
+
+//     fetchApprovedRequests();
+//   };
+
+
+const submitUpdate = async () => {
+  if (!selectedPR || !newStatus) {
     setAlert({
-      type: "success",
-      message: "Procurement PR Updated",
+      type: "error",
+      message: "Please select procurement PR status",
     });
+    return;
+  }
 
-    setTimeout(() => {
-      setModalOpen(false);
-      setAlert(null);
-    }, 2000);
+  const formData = new FormData();
 
-    fetchApprovedRequests();
-  };
+  // 🔹 department status
+  formData.append(
+    "department_statuses",
+    JSON.stringify([
+      {
+        department_status: newStatus,
+        department_comment: newComment,
+        status_updated_by: user.first_name,
+        updated_at: new Date().toISOString(),
+      },
+    ]),
+  );
 
+  // 🔹 order details
+  formData.append(
+    "order_details",
+    JSON.stringify({
+      order_status:
+        orderDetails.orderPlaced === "YES"
+          ? "PLACED"
+          : orderDetails.orderPlaced === "NO"
+            ? "NOT_PLACED"
+            : null,
+      expected_delivery_date: orderDetails.expectedDeliveryDate,
+      transport_mode: orderDetails.transportMode,
+      in_house_type: orderDetails.inHouseType,
+      vendor_address: orderDetails.vendorAddress,
+    }),
+  );
+
+  // 🔹 file
+  if (orderDetails.file) {
+    formData.append("order_file", orderDetails.file);
+  }
+
+  await axios.put(`${API_BASE}/pr-requests/${selectedPR.id}`, formData, {
+    withCredentials: true,
+  });
+
+  setAlert({
+    type: "success",
+    message: "Procurement PR Updated",
+  });
+  setTimeout(() => {
+    setAlert(null); // remove alert
+    setModalOpen(false); // close modal (if needed)
+  }, 1500); // 1.5 seconds
+
+  fetchApprovedRequests();
+};
 
   return (
     <div className="p-4 sm:p-6 text-black">
@@ -469,6 +554,259 @@ await axios.put(
               </div>
             )}
 
+
+
+            {/* ================= FINANCE PAYMENT DETAILS ================= */}
+            {selectedPR.finance_payment_details && (
+              <div className="border border-gray-200 rounded p-4 mb-4">
+                <h3 className="font-semibold mb-4 text-purple-600">
+                  Finance Payment Details
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                  {/* Payment Stage */}
+                  <div>
+                    <label className="text-xs font-medium">Payment Stage</label>
+                    <input
+                      readOnly
+                      value={
+                        selectedPR.finance_payment_details.payment_stage || ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* ✅ Show Percentage ONLY if PARTIAL */}
+                  {selectedPR.finance_payment_details.payment_stage ===
+                    "PARTIAL" && (
+                    <div>
+                      <label className="text-xs font-medium">
+                        Partial Percentage
+                      </label>
+                      <input
+                        readOnly
+                        value={
+                          selectedPR.finance_payment_details.partial_percentage
+                            ? `${selectedPR.finance_payment_details.partial_percentage}%`
+                            : "0%"
+                        }
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
+
+                  {/* Final Completed */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Final Completed
+                    </label>
+                    <input
+                      readOnly
+                      value={
+                        selectedPR.finance_payment_details.final_completed
+                          ? "Yes"
+                          : "No"
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Finance Comment */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Finance Comment
+                    </label>
+                    <input
+                      readOnly
+                      value={
+                        selectedPR.finance_payment_details.finance_comment || ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Payment Proof */}
+                {selectedPR.finance_payment_details.payment_proof_file_path && (
+                  <div className="mt-4">
+                    <a
+                      href={`${import.meta.env.VITE_BACKEND_URL}/${selectedPR.finance_payment_details.payment_proof_file_path}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      View Payment Proof
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+            
+
+            {/* ================= ORDER DETAILS SECTION ================= */}
+
+            <div className="border border-gray-200 rounded p-4 mb-4">
+              <h3 className="font-semibold mb-4 text-lg">Order Details</h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Order Placed */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Order Placed
+                  </label>
+                  <select
+                    value={orderDetails.orderPlaced}
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      setOrderDetails({
+                        ...orderDetails,
+                        orderPlaced: value,
+                        // reset everything if NO
+                        ...(value === "NO" && {
+                          expectedDeliveryDate: "",
+                          transportMode: "",
+                          inHouseType: "",
+                          vendorAddress: "",
+                          file: null,
+                        }),
+                      });
+
+                      console.log("Order Placed:", value);
+                    }}
+                    className="border p-2 rounded w-full bg-white"
+                  >
+                    <option value="">Select Option</option>
+                    <option value="YES">YES</option>
+                    <option value="NO">NO</option>
+                  </select>
+                </div>
+
+                {/* Expected Delivery Date */}
+                {orderDetails.orderPlaced === "YES" && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Expected Delivery Date
+                    </label>
+                    <input
+                      type="date"
+                      value={orderDetails.expectedDeliveryDate}
+                      onChange={(e) => {
+                        setOrderDetails({
+                          ...orderDetails,
+                          expectedDeliveryDate: e.target.value,
+                        });
+                        console.log("Expected Date:", e.target.value);
+                      }}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+                )}
+
+                {/* File Upload */}
+                {orderDetails.orderPlaced === "YES" && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Upload Document
+                    </label>
+                    <input
+                      type="file"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+
+                        setOrderDetails({
+                          ...orderDetails,
+                          file,
+                        });
+
+                        console.log("Uploaded File:", file);
+                      }}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+                )}
+
+                {/* Mode of Transportation */}
+                {orderDetails.orderPlaced === "YES" && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Mode of Transportation
+                    </label>
+                    <select
+                      value={orderDetails.transportMode}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        setOrderDetails({
+                          ...orderDetails,
+                          transportMode: value,
+                          inHouseType: "",
+                          vendorAddress: "",
+                        });
+
+                        console.log("Transport Mode:", value);
+                      }}
+                      className="border p-2 rounded w-full bg-white"
+                    >
+                      <option value="">Select Mode</option>
+                      <option value="IN_HOUSE">In-house Delivery</option>
+                      <option value="COLLECT">Need to Collect</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              {/* In-House Options */}
+              {orderDetails.orderPlaced === "YES" &&
+                orderDetails.transportMode === "IN_HOUSE" && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium mb-1">
+                      Delivery Type
+                    </label>
+                    <select
+                      value={orderDetails.inHouseType}
+                      onChange={(e) => {
+                        setOrderDetails({
+                          ...orderDetails,
+                          inHouseType: e.target.value,
+                        });
+
+                        console.log("In-house Type:", e.target.value);
+                      }}
+                      className="border p-2 rounded w-full bg-white"
+                    >
+                      <option value="">Select Type</option>
+                      <option value="COURIER">Courier</option>
+                      <option value="TRANSPORT">Transportation</option>
+                    </select>
+                  </div>
+                )}
+
+              {/* Collect from Vendor */}
+              {orderDetails.orderPlaced === "YES" &&
+                orderDetails.transportMode === "COLLECT" && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium mb-1">
+                      Vendor Address
+                    </label>
+                    <input
+                      type="text"
+                      value={orderDetails.vendorAddress}
+                      onChange={(e) => {
+                        setOrderDetails({
+                          ...orderDetails,
+                          vendorAddress: e.target.value,
+                        });
+
+                        console.log("Vendor Address:", e.target.value);
+                      }}
+                      placeholder="Enter Vendor Address"
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+                )}
+            </div>
+            
             {/* STATUS SECTION */}
             <div className="flex justify-end mb-2">
               <button

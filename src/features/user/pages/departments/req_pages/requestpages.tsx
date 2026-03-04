@@ -50,6 +50,35 @@ type Item = {
   vendors: Vendor[];
 };
 
+interface FinancePaymentDetails {
+  id: number;
+  payment_stage?: string;
+  partial_percentage?: number | null;
+  final_completed?: boolean;
+  finance_comment?: string;
+  payment_proof_file_name?: string;
+  payment_proof_file_path?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+interface PROrderDetails {
+  order_placed_at: string;
+  expected_delivery_date: string;
+  po_file_name?: string | null;
+  po_file_path?: string | null;
+  transport_mode: string;
+  in_house_type: string;
+  vendor_address: string | null;
+}
+
+
+interface StoreReceivingDetails {
+  building: string; // Stored Building
+  rack: string; // Rack
+  quantity_status: string; // e.g., "FULL", "PARTIAL"
+  partial_quantity?: number | null;
+  rejection_reason?: string | null;
+}
 type PR = {
   id: string;
   department: string;
@@ -62,6 +91,10 @@ type PR = {
   updated_at: string;
   department_statuses: DepartmentStatus[];
   items: Item[];
+
+  finance_payment_details?: FinancePaymentDetails | null;
+  order_details?: PROrderDetails;
+  store_receiving_details?: StoreReceivingDetails | null;
 };
 
 export default function ViewPRPage({ filter, search, refreshKey }: Props) {
@@ -1203,6 +1236,267 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+            
+     {/* FINANCE PAYMENT DETAILS */}
+            {activePR.finance_payment_details && (
+              <div className="border border-gray-200 rounded p-4 mb-4">
+                <h3 className="font-semibold mb-3 text-purple-600">
+                  Finance Payment Details
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  {/* Payment Stage */}
+                  <div>
+                    <label className="text-xs font-medium">Payment Stage</label>
+                    <input
+                      readOnly
+                      value={
+                        activePR.finance_payment_details.payment_stage || ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* ✅ Show Percentage ONLY if PARTIAL */}
+                  {activePR.finance_payment_details.payment_stage ===
+                    "PARTIAL" && (
+                    <div>
+                      <label className="text-xs font-medium">
+                        Partial Percentage
+                      </label>
+                      <input
+                        readOnly
+                        value={
+                          activePR.finance_payment_details.partial_percentage
+                            ? `${activePR.finance_payment_details.partial_percentage}%`
+                            : "0%"
+                        }
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
+
+                  {/* Final Completed */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Final Completed
+                    </label>
+                    <input
+                      readOnly
+                      value={
+                        activePR.finance_payment_details.final_completed
+                          ? "Yes"
+                          : "No"
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Finance Comment */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Finance Comment
+                    </label>
+                    <input
+                      readOnly
+                      value={
+                        activePR.finance_payment_details.finance_comment || ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Payment Proof */}
+                {activePR.finance_payment_details.payment_proof_file_path && (
+                  <div className="mt-4">
+                    <a
+                      href={`${import.meta.env.VITE_BACKEND_URL}/${activePR.finance_payment_details.payment_proof_file_path}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      View Payment Proof
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* PR ORDER DETAILS */}
+            {activePR.order_details && (
+              <div className="border border-gray-200 rounded p-4 mb-4">
+                <h3 className="font-semibold mb-4 text-purple-600">
+                  PR Order Details
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                  {/* Order Placed */}
+                  <div>
+                    <label className="text-xs font-medium">Order Placed</label>
+                    <input
+                      readOnly
+                      value={
+                        activePR.order_details.order_placed_at
+                          ? new Date(
+                              activePR.order_details.order_placed_at,
+                            ).toLocaleDateString()
+                          : ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Expected Delivery */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Expected Delivery
+                    </label>
+                    <input
+                      readOnly
+                      value={
+                        activePR.order_details.expected_delivery_date
+                          ? new Date(
+                              activePR.order_details.expected_delivery_date,
+                            ).toLocaleDateString()
+                          : ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Transport Mode */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Transport Mode
+                    </label>
+                    <input
+                      readOnly
+                      value={activePR.order_details.transport_mode || ""}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* In-House Type */}
+                  <div>
+                    <label className="text-xs font-medium">In-House Type</label>
+                    <input
+                      readOnly
+                      value={activePR.order_details.in_house_type || ""}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Vendor Address */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Vendor Address
+                    </label>
+                    <input
+                      readOnly
+                      value={activePR.order_details.vendor_address || ""}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* PO File */}
+                  {activePR.order_details.po_file_path && (
+                    <div>
+                      <label className="text-xs font-medium">PO File</label>
+                      <a
+                        href={`${import.meta.env.VITE_BACKEND_URL}/${activePR.order_details.po_file_path}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        {activePR.order_details.po_file_name ||
+                          "View PO File"}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* STORE RECEIVING DETAILS */}
+            {activePR.store_receiving_details && (
+              <div className="border border-gray-200 rounded p-4 mb-4">
+                <h3 className="font-semibold mb-4 text-purple-600">
+                  Store Receiving Details
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  {/* Quantity Status */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Quantity Status
+                    </label>
+                    <input
+                      readOnly
+                      value={
+                        activePR.store_receiving_details.quantity_status || ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Partial Quantity (only if applicable) */}
+                  {activePR.store_receiving_details.quantity_status ===
+                    "PARTIAL" && (
+                    <div>
+                      <label className="text-xs font-medium">
+                        Partial Quantity
+                      </label>
+                      <input
+                        readOnly
+                        value={
+                          activePR.store_receiving_details.partial_quantity ??
+                          0
+                        }
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
+
+                  {/* Rejection Reason (if exists) */}
+                  {activePR.store_receiving_details.rejection_reason && (
+                    <div className="sm:col-span-2">
+                      <label className="text-xs font-medium">
+                        Rejection Reason
+                      </label>
+                      <textarea
+                        readOnly
+                        value={
+                          activePR.store_receiving_details.rejection_reason
+                        }
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
+
+                  {/* Stored Building */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Stored Building
+                    </label>
+                    <input
+                      readOnly
+                      value={activePR.store_receiving_details.building || ""}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Rack */}
+                  <div>
+                    <label className="text-xs font-medium">Rack</label>
+                    <input
+                      readOnly
+                      value={activePR.store_receiving_details.rack || ""}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
