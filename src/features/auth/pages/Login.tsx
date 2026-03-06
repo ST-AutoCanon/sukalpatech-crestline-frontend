@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
+import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -44,20 +45,53 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
   /* =========================
      Submit
   ========================= */
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     const result = await login(email, password, orgCode);
+  //     // const { user } = result.data;
+
+  //     //  const token = result.data.token;
+  //     const token = result.data.data.token;
+
+  //      // decode token
+  //     const user: any = jwtDecode(token);
+      
+  //     // ✅ Close modal if provided
+  //     if (onSuccess) onSuccess();
+
+  //     // Redirect based on role
+  //     if (user.role === "admin") navigate("/admin");
+  //     else if (user.role === "employee") navigate("/employee");
+  //     else if (user.role === "super_admin") navigate("/super_admin");
+  //   } catch (err) {
+  //     console.error("Login failed", err);
+  //   }
+  // };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const result = await login(email, password, orgCode);
-      const { user } = result.data;
+      const result = await login(email, password, orgCode, "");
 
-      // ✅ Close modal if provided
+      console.log("LOGIN RESULT:", result);
+
+      const token = result.data.token || result.data.data.token;
+
+      const user: any = jwtDecode(token);
+
+      console.log("USER:", user);
+
       if (onSuccess) onSuccess();
 
-      // Redirect based on role
       if (user.role === "admin") navigate("/admin");
       else if (user.role === "employee") navigate("/employee");
-      else if (user.role === "super_admin") navigate("/super_admin");
+      else if (user.role === "manager") {
+        navigate("/manager");
+      } else if (user.role === "super_admin") navigate("/super_admin");
     } catch (err) {
       console.error("Login failed", err);
     }

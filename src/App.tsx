@@ -17,6 +17,14 @@ import EmployeeUpdate from "./features/admin/pages/EmployeeUpdate";
 import CreateOrganisation from "./features/superadmin/pages/organisations/CreateOrganisation";
 import OrganisationHome from "./features/superadmin/pages/organisations/OrganisationHome";
 
+
+import ManagerDashboard from "./features/manager/pages/ManagerDashboard";
+import ManagerDashboardHome from "./features/manager/pages/ManagerHome";
+import EngineeringDesignPage from "./features/manager/pages/manager/EngineeringDesignPage";
+import StoreMaterialsPage from "./features/manager/pages/manager/StoresMaterialsPage";
+import FabricationPage from "./features/manager/pages/manager/FabricationStructurePage";
+import QualityControlPage from "./features/manager/pages/manager/QualityControlPage";
+
 import UpdatedFeasibilityPage from "./features/user/pages/departments/Businessdevelopment/UpdatedFeasibilitypage";
 import Home from "./pages/Home";
 import CategoryLimitPage from "./features/admin/pages/Categorylimit";
@@ -116,6 +124,23 @@ export default function AppRoutes() {
             </Suspense>
           }
         />
+      </Route>
+
+      {/* Manager Routes */}
+      <Route
+        path="/manager"
+        element={
+          <RequireAuth roles={["manager"]}>
+            <ManagerDashboard />
+          </RequireAuth>
+        }
+      >
+        <Route index element={<ManagerDashboardHome />} />
+        <Route path="dashboard" element={<ManagerDashboardHome />} />
+        <Route path="engineering-design" element={<EngineeringDesignPage />} />
+        <Route path="store-materials" element={<StoreMaterialsPage />} />
+        <Route path="fabrication" element={<FabricationPage />} />
+        <Route path="quality-control" element={<QualityControlPage />} />
       </Route>
 
       {/* Admin Routes */}
