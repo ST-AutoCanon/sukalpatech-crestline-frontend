@@ -168,6 +168,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Alert from "../../../components/Aleartmessage";
 
 interface CategoryLimits {
   high: number;
@@ -189,6 +190,11 @@ export default function CategoryLimitPage() {
     null,
   );
   const [loading, setLoading] = useState(false);
+
+  const [alert, setAlert] = useState<{
+  type: "success" | "error";
+  message: string;
+} | null>(null);
 
   /* ================= FETCH CURRENT LIMITS ================= */
   const fetchLimits = async () => {
@@ -217,38 +223,58 @@ export default function CategoryLimitPage() {
 
   /* ================= UPDATE ================= */
   const handleUpdate = async () => {
-    try {
-      setLoading(true);
-const payload = {
-  high:
-    newLimits.high !== undefined ? Number(newLimits.high) : limits.high,
+  try {
+    setLoading(true);
 
-  medium:
-    newLimits.medium !== undefined
-      ? Number(newLimits.medium)
-      : limits.medium,
+    const payload = {
+      high:
+        newLimits.high !== undefined ? Number(newLimits.high) : limits.high,
 
-  low:
-    newLimits.low !== undefined ? Number(newLimits.low) : limits.low,
+      medium:
+        newLimits.medium !== undefined
+          ? Number(newLimits.medium)
+          : limits.medium,
+
+      low:
+        newLimits.low !== undefined ? Number(newLimits.low) : limits.low,
+    };
+
+    const res = await axios.put(
+      `${ADMIN_API_BASE}/category-limits/update`,
+      payload,
+      { withCredentials: true }
+    );
+
+    setUpdatedLimits(res.data.data);
+
+    setAlert({
+      type: "success",
+      message: "Category limits updated successfully ✅",
+    });
+
+    setNewLimits({});
+    await fetchLimits();
+
+  } catch (err: any) {
+    setAlert({
+      type: "error",
+      message:
+        err.response?.data?.message || "Failed to update category limits ❌",
+    });
+  } finally {
+    setLoading(false);
+  }
 };
 
-      const res = await axios.put(
-        `${ADMIN_API_BASE}/category-limits/update`,
-        payload,
-        { withCredentials: true },
-      );
-
-      setUpdatedLimits(res.data.data);
-      setNewLimits({});   // ✅ Clears input fields
-      await fetchLimits();
-    } catch (err) {
-      console.error("Update failed", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
+    <>
+    {alert && (
+      <Alert
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert(null)}
+      />
+    )}
     <div className="min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] text-white p-4 sm:p-8">
       <div className="max-w-4xl mx-auto">
         {/* ================= PAGE TITLE ================= */}
@@ -337,5 +363,6 @@ const payload = {
         )}
       </div>
     </div>
+    </>
   );
 }

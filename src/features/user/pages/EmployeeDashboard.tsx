@@ -71,7 +71,7 @@ import TopNav from "../components/TopNav";
 import Sidebar from "../components/Sidebar";
 
 const API_URL =
-  import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+  import.meta.env.VITE_BACKEND_URL || "http://localhost:5004";
 
 const handleRes = async (res: Response) => {
   const json = await res.json().catch(() => ({}));
@@ -137,27 +137,38 @@ export default function EmployeeDashboard() {
 
   /* ================= ROUTE MAPPINGS ================= */
 
-  const apiNameToKey: Record<string, string> = {
-    procurement: "procurement",
-    fessibility: "feasibility",
-    feasibility: "feasibility",
-    finance: "finance",
-    bd: "bd",
-  };
+ const apiNameToKey: Record<string, string> = {
+  procurement: "procurement",
+  feasibility: "feasibility",
+  finance: "finance",
+  bd: "bd",
 
-  const deptRoutes: Record<string, string> = {
-    procurement: "/employee/procurement",
-    feasibility: "/employee/feasibility",
-    finance: "/employee/finance",
-    bd: "/employee/bd",
-  };
+  two_wheeler: "two_wheeler",
+  three_wheeler: "three_wheeler",
 
+  foodbusiness: "food_business",
+};
+
+ const deptRoutes: Record<string, string> = {
+  procurement: "/employee/procurement",
+  feasibility: "/employee/feasibility",
+  finance: "/employee/finance",
+  bd: "/employee/bd",
+
+  two_wheeler: "/employee/bd2/2w",
+  three_wheeler: "/employee/bd2/3w",
+  food_business: "/employee/bd2/food", // ✅ FIX
+};
   const departmentNames: Record<string, string> = {
     "/employee/procurement": "Procurement",
     "/employee/feasibility": "Feasibility",
     "/employee/finance": "Finance",
     "/employee/bd": "Business Development",
-  };
+   
+  "/employee/bd2/2w": "Two Wheeler",
+  "/employee/bd2/3w": "Three Wheeler",
+  "/employee/bd2/food": "Food Business",
+};
 
   if (!user) return <h3 className="p-6 text-lg">Loading user...</h3>;
   if (loading) return <h3 className="p-6 text-lg">Loading dashboard...</h3>;

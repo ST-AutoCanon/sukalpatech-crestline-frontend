@@ -17,12 +17,15 @@ export default function TopNav({ departmentNames }: TopNavProps) {
     if (path === "/employee" || path === "/employee/dashboard")
       return "Dashboard";
 
-    if (departmentNames) {
-      for (const [route, name] of Object.entries(departmentNames)) {
-        if (path.startsWith(route)) return name;
-      }
-    }
+   if (departmentNames) {
+  const sortedRoutes = Object.entries(departmentNames).sort(
+    (a, b) => b[0].length - a[0].length
+  );
 
+  for (const [route, name] of sortedRoutes) {
+    if (path.startsWith(route)) return name;
+  }
+}
     return "";
   };
 

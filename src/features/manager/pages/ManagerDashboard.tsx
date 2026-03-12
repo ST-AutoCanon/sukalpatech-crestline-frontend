@@ -56,6 +56,7 @@ export default function ManagerDashboard() {
     stores_materials: "stores_materials",
     fabrication_structure: "fabrication_structure",
     quality_control: "quality_control",
+    Two_Wheeler: "Two_Wheeler",
   };
 
   
@@ -65,6 +66,7 @@ export default function ManagerDashboard() {
     stores_materials: "/manager/store-materials",
     fabrication_structure: "/manager/fabrication",
     quality_control: "/manager/quality-control",
+    Two_Wheeler: "/manager/Two_Wheeler",
   };
 
 const departmentNames: Record<string, string> = {
@@ -72,6 +74,7 @@ const departmentNames: Record<string, string> = {
   "/manager/store-materials": "Stores & Materials",
   "/manager/fabrication": "Fabrication & Structure",
   "/manager/quality-control": "Quality Control",
+  "/manager/Two_Wheeler": "Two Wheeler",
 };
 
   if (!user) return <h3 className="p-6 text-lg">Loading user...</h3>;

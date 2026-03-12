@@ -59,6 +59,9 @@ import Sidebar from "../components/Sidebar";
 import TopNav from "../components/TopNav";
 import OrganisationHome from "./organisations/OrganisationHome";
 import UpdateOrganisation from "./organisations/UpdateOrganisation";
+import TwoWheelerPage from "./Businessdev/TwoWheelerPage";
+import ThreeWheelerPage from "./Businessdev/ThreeWheelerPage";
+import Foodbusiness from "./Businessdev/Foodbusiness";
 
 export default function SuperAdminDashboard() {
   const { pathname } = useLocation();
@@ -68,9 +71,30 @@ export default function SuperAdminDashboard() {
     "/super_admin": "Dashboard",
     "/super_admin/create_organisation": "Create Organisation",
     "/super_admin/manage_organisation": "Manage Organisation",
+
+    "/business/TwoWheelerpage": "Two Wheeler",
+    "/business/ThreeWheelerpage": "Three Wheeler",
+    "/business/Foodbusiness": "Food Industry",
   };
 
-  const activePage = pathToPage[pathname] || "Dashboard";
+  let activePage = "Dashboard";
+
+  if (pathname.includes("create_organisation")) {
+    activePage = "Create Organisation";
+  }
+  else if (pathname.includes("manage_organisation")) {
+    activePage = "Manage Organisation";
+  }
+  else if (pathname.includes("TwoWheelerpage")) {
+    activePage = "Two Wheeler";
+  }
+  else if (pathname.includes("ThreeWheelerpage")) {
+    activePage = "Three Wheeler";
+  }
+  else if (pathname.includes("Foodbusiness")) {
+    activePage = "Food Industry";
+  }
+
 
   const pageComponents: Record<string, JSX.Element> = {
     Dashboard: (
@@ -89,6 +113,10 @@ export default function SuperAdminDashboard() {
     ),
     "Create Organisation": <OrganisationHome />,
     "Manage Organisation": <UpdateOrganisation />,
+
+    "Two Wheeler": <TwoWheelerPage />,
+    "Three Wheeler": <ThreeWheelerPage />,
+    "Food Industry": <Foodbusiness />,
   };
 
   return (

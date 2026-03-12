@@ -17,6 +17,9 @@ import EmployeeUpdate from "./features/admin/pages/EmployeeUpdate";
 import CreateOrganisation from "./features/superadmin/pages/organisations/CreateOrganisation";
 import OrganisationHome from "./features/superadmin/pages/organisations/OrganisationHome";
 
+import TwoWheelerHome from "./features/user/pages/departments/TwoWheeler/TwoWheelerHome";
+import ThreeWheelerHome from "./features/user/pages/departments/ThreeWheeler/ThreeWheelerHome";
+import FoodBusinessHome from "./features/user/pages/departments/FoodBusiness/FoodBusinessHome";
 
 import ManagerDashboard from "./features/manager/pages/ManagerDashboard";
 import ManagerDashboardHome from "./features/manager/pages/ManagerHome";
@@ -124,6 +127,33 @@ export default function AppRoutes() {
             </Suspense>
           }
         />
+        {/* BD2 ROUTES */}
+<Route
+  path="bd2/2w"
+  element={
+    <Suspense fallback={<div>Loading Two Wheeler...</div>}>
+      <TwoWheelerHome />
+    </Suspense>
+  }
+/>
+
+<Route
+  path="bd2/3w"
+  element={
+    <Suspense fallback={<div>Loading Three Wheeler...</div>}>
+      <ThreeWheelerHome />
+    </Suspense>
+  }
+/>
+
+<Route
+  path="bd2/food"
+  element={
+    <Suspense fallback={<div>Loading Food Business...</div>}>
+      <FoodBusinessHome />
+    </Suspense>
+  }
+/>
       </Route>
 
       {/* Manager Routes */}
@@ -169,6 +199,7 @@ export default function AppRoutes() {
       >
         <Route index element={<DashboardHome />} />
         <Route path="create_organisation" element={<OrganisationHome />} />
+
       </Route>
 
       {/* Default Redirect */}
