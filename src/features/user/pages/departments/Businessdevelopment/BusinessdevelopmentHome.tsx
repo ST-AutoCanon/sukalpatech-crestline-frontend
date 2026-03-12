@@ -68,7 +68,7 @@ const BusinessDevelopmentHome = () => {
 
         </div>
       </div>
-<div className="flex overflow-x-auto gap-3 sm:gap-1 text-sm font-medium text-white w-full sm:w-auto mt-10 mb-6">
+      <div className="flex overflow-x-auto gap-3 sm:gap-1 text-sm font-medium text-white w-full sm:w-auto mt-10 mb-6">
         {filters.map((filter) => (
           <button
             key={filter}
@@ -118,7 +118,8 @@ const BusinessDevelopmentHome = () => {
               handleModalSuccess();
               setShowModal(false);
             }}
-          />  </div>
+          />  
+          </div>
       </div>
     </div>
 

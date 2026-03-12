@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Aleart from "../../../components/Aleartmessage";
 
 interface BusinessCardProps {
   data: {
@@ -59,6 +60,8 @@ interface BusinessCardProps {
     attachments: any[];
     feasibility_status?: string;
     feasibility_comments?: string;
+    finalbd_status:string;
+    finalbd_comment:string;
   };
   onUpdate: (updatedData: any) => void;
 }
@@ -69,7 +72,10 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState(data);
-  const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
 
 
@@ -237,6 +243,68 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
   };
   const canEdit = !data.feasibility_status;
 
+  const handleSave = async () => {
+    try {
+      const fd = new FormData();
+
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === "attachments") return;
+        if (value !== undefined && value !== null) {
+          fd.append(key, value.toString());
+        }
+      });
+
+      if (formData.attachments) {
+        const attachmentsArray = Array.isArray(formData.attachments)
+          ? formData.attachments
+          : [formData.attachments];
+
+        attachmentsArray.forEach((file: any) => {
+          if (file instanceof File) fd.append("attachments", file);
+          else fd.append("attachments", JSON.stringify(file));
+        });
+      }
+
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/business-development/${data.id}`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          body: fd,
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData?.message || "Update failed");
+      }
+
+      const result = await res.json();
+
+      onUpdate(result.data);
+
+      setEditMode(false);
+      setShowModal(false);
+
+      setAlert({
+        type: "success",
+        message: "Business details updated successfully!",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
+
+    } catch (err: any) {
+      console.error("Update failed", err);
+
+      setAlert({
+        type: "error",
+        message: err.message || "Failed to update business details",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
+    }
+  };
+
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-sm relative">
@@ -278,13 +346,13 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
         </div>
 
       </div>
-      {message && (
-        <div
-          className={`fixed top-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded shadow-md text-white z-50 animate-fade-in ${message.type === "success" ? "bg-green-600" : "bg-red-600"
-            }`}
-        >
-          {message.text}
-        </div>
+
+      {alert && (
+        <Aleart
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
       )}
 
 
@@ -464,7 +532,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                   {
                     label: "",
                     value: (
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {/* BD Status */}
                         <div className="flex flex-col">
                           <span className="text-xs font-medium">BD Status</span>
@@ -509,14 +577,16 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                               className="border rounded text-xs px-2 py-1"
                             >
                               <option value="">Select</option>
-                              <option value="PENDING">PENDING</option>
-                              <option value="APPROVED">APPROVED</option>
-                              <option value="REJECTED">REJECTED</option>
+                              <option value="FEASIBILITY PENDING">FEASIBILITY PENDING</option>
+                              <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
+                              <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
                             </select>
                           ) : (
                             <span className="text-xs font-semibold">
-                              {renderValue(formData.feasibility_status)}
-                            </span>
+                                {renderValue(data.feasibility_status)
+                                  ? `FEASIBILITY ${data.feasibility_status}`
+                                  : "-"}
+                              </span>
                           )}
                         </div>
 
@@ -536,6 +606,20 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                               {renderValue(formData.feasibility_comments)}
                             </span>
                           )}
+                        </div>
+                        {/* Final BD Status */}
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">Final BD Status</span>
+                          <span className="text-xs font-semibold">
+                            {renderValue(formData.finalbd_status)}
+                          </span>
+                        </div>
+                        {/* Final BD Comments */}
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">Final BD Comments</span>
+                          <span className="text-xs font-semibold">
+                            {renderValue(formData.finalbd_comment)}
+                          </span>
                         </div>
 
                       </div>
@@ -674,80 +758,10 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                 </button>
                 <button
                   className="px-4 py-1 bg-blue-600 text-white rounded text-sm"
-                  onClick={async () => {
-                    try {
-                      const fd = new FormData();
-
-                      Object.entries(formData).forEach(([key, value]) => {
-                        if (key === "attachments") return;
-                        if (value !== undefined && value !== null) {
-                          fd.append(key, value.toString());
-                        }
-                      });
-
-                      if (formData.attachments) {
-                        const attachmentsArray = Array.isArray(formData.attachments)
-                          ? formData.attachments
-                          : [formData.attachments];
-
-                        attachmentsArray.forEach((file: any) => {
-                          if (file instanceof File) fd.append("attachments", file);
-                          else fd.append("attachments", JSON.stringify(file));
-                        });
-                      }
-
-                    //  const token = localStorage.getItem("token"); // or wherever you store it
-
-// const res = await fetch(
-//   `${import.meta.env.VITE_BACKEND_URL}/api/business-development/${data.id}`,
-//   {
-//     method: "PATCH",
-//     headers: {
-//       Authorization: `Bearer ${token}`,
-//     },
-//     body: fd,
-//   }
-                      // );
-                      const res = await fetch(
-  `${import.meta.env.VITE_BACKEND_URL}/api/business-development/${data.id}`,
-  {
-    method: "PATCH",
-    credentials: "include", // ✅ required for HTTP-only cookies
-    body: fd,               // ✅ FormData (do NOT set Content-Type manually)
-  }
-);
-
-if (!res.ok) {
-  const errorData = await res.json().catch(() => ({}));
-  throw new Error(errorData?.message || "Update failed");
-}
-
-const result = await res.json();
-
-onUpdate(result.data);
-setEditMode(false);
-setShowModal(false);
-
-setMessage({
-  text: "Business details updated successfully!",
-  type: "success",
-});
-                      setTimeout(() => setMessage(null), 3000);
-} catch (err: any) {
-                      console.error("Update failed", err);
-                      setMessage({
-                        text: err.message || "Failed to update business details",
-                        type: "error",
-                      });
-                      setTimeout(() => setMessage(null), 3000);
-                    }
-                  }}
-
-
+                  onClick={handleSave}
                 >
                   Save
                 </button>
-
 
               </div>
             )}

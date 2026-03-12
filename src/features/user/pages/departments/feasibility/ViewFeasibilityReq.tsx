@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
 import { AuthContext } from "../../../../../context/AuthContext";
+import Alert from "../../../components/Aleartmessage";
 
 type Props = {
   filter: string;
@@ -112,6 +113,11 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   const [loading, setLoading] = useState(true);
   const [newStatus, setNewStatus] = useState("");
   const [newComment, setNewComment] = useState("");
+
+  const [alert, setAlert] = useState<{
+  type: "success" | "error";
+  message: string;
+} | null>(null);
 
   // const fetchPRs = async () => {
   //   setLoading(true);
@@ -319,48 +325,58 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   };
 
   const handleSave = async () => {
-    if (!activePR) return;
+  if (!activePR) return;
 
-    try {
-      let updatedPRData = { ...activePR };
+  try {
+    let updatedPRData = { ...activePR };
 
-      // ✅ If new status selected, append it
-      if (newStatus) {
-        updatedPRData = {
-          ...updatedPRData,
-          department_statuses: [
-            ...(updatedPRData.department_statuses || []),
-            {
-              department_status: newStatus,
-              department_comment: newComment,
-              status_updated_by: user?.id || "",
-              updated_at: new Date().toISOString(),
-            },
-          ],
-        };
-      }
-
-      const savedPR = await savePR(updatedPRData);
-
-      // ✅ Update PR list
-      setPrs((prev) =>
-        prev.map((pr) =>
-          pr.id === savedPR.id ? savedPR : pr
-        )
-      );
-
-      // ✅ Reset form
-      setNewStatus("");
-      setNewComment("");
-
-      // ✅ CLOSE MODAL IMMEDIATELY
-      setActivePR(null);
-      setEditMode(false);
-
-    } catch (err) {
-      console.error("Save error:", err);
+    if (newStatus) {
+      updatedPRData = {
+        ...updatedPRData,
+        department_statuses: [
+          ...(updatedPRData.department_statuses || []),
+          {
+            department_status: newStatus,
+            department_comment: newComment,
+            status_updated_by: user?.id || "",
+            updated_at: new Date().toISOString(),
+          },
+        ],
+      };
     }
-  };
+
+    const savedPR = await savePR(updatedPRData);
+
+    setPrs((prev) =>
+      prev.map((pr) => (pr.id === savedPR.id ? savedPR : pr))
+    );
+
+    setNewStatus("");
+    setNewComment("");
+
+    setActivePR(null);
+    setEditMode(false);
+
+    // ✅ SUCCESS ALERT
+    setAlert({
+      type: "success",
+      message: "PR updated successfully!",
+    });
+
+    setTimeout(() => setAlert(null), 3000);
+
+  } catch (err) {
+    console.error("Save error:", err);
+
+    // ❌ ERROR ALERT
+    setAlert({
+      type: "error",
+      message: "Failed to update PR.",
+    });
+
+    setTimeout(() => setAlert(null), 3000);
+  }
+};
 
   const formatDateForInput = (date: string) => {
     if (!date) return "";
@@ -395,6 +411,13 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
   return (
     <>
+      {alert && (
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
       {/* PR Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {prs.map((pr) => {

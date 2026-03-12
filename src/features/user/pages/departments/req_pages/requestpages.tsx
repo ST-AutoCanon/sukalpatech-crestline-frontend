@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
+import Aleart from "../../../components/Aleartmessage";
 
 type Props = {
   filter: string;
@@ -107,7 +108,10 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
   const [vendorMap, setVendorMap] = useState<Record<string, string>>({});
   const [departmentMap, setDepartmentMap] = useState<Record<string, string>>({});
-  const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [alert, setAlert] = useState<{
+  type: "success" | "error";
+  message: string;
+} | null>(null);
 
 
 
@@ -361,25 +365,30 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   };
 
   const handleSave = async () => {
-    if (!activePR) return;
+  if (!activePR) return;
 
-    try {
-      await savePR(activePR);
+  try {
+    await savePR(activePR);
 
-      setEditMode(false);
-      setActivePR(null);   // ✅ CLOSE MODAL IMMEDIATELY
+    setEditMode(false);
+    setActivePR(null); // close modal
 
-      fetchPRs();          // refresh list
+    fetchPRs(); // refresh list
 
-      setMessage({ text: "PR updated successfully!", type: "success" });
-      setTimeout(() => setMessage(null), 3000);
-    } catch (err) {
-      console.error("Save failed", err);
-      setMessage({ text: "Failed to update PR.", type: "error" });
-      setTimeout(() => setMessage(null), 3000);
-    }
-  };
+    setAlert({
+      type: "success",
+      message: "PR updated successfully!",
+    });
 
+  } catch (err) {
+    console.error("Save failed", err);
+
+    setAlert({
+      type: "error",
+      message: "Failed to update PR.",
+    });
+  }
+};
   const formatDateForInput = (date: string) => {
     if (!date) return "";
     const d = new Date(date);
@@ -390,14 +399,14 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
   return (
     <>
-      {message && (
-        <div
-          className={`fixed top-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded shadow-md text-white z-50 animate-fade-in ${message.type === "success" ? "bg-green-600" : "bg-red-600"
-            }`}
-        >
-          {message.text}
-        </div>
-      )}
+      {alert && (
+                <Aleart
+                  type={alert.type}
+                  message={alert.message}
+                  onClose={() => setAlert(null)}
+                />
+              )}
+      
 
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

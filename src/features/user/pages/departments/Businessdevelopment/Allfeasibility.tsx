@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { api } from "../../../api/businessApi";
+import ALeart from "../../../components/Aleartmessage";
 
 interface FeasibilityCardProps {
   data: any;
@@ -16,10 +17,13 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   if (!data) return null;
 
   const [showModal, setShowModal] = useState(false);
-  const [message, setMessage] = useState<{
-  text: string;
-  type: "success" | "error";
-} | null>(null);
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+
+
 
   // Feasibility states
   const [feasibility_status, setFeasibilityStatus] = useState(
@@ -77,82 +81,90 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
 
   // Handle Feasibility update
   const handleFeasibilityUpdate = async () => {
-  try {
-    // Get token from localStorage (or wherever you store it)
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      alert("You are not logged in");
-      return;
-    }
+      if (!token) {
+        setAlert({
+          type: "error",
+          message: "You are not logged in",
+        });
+        setTimeout(() => setAlert(null), 3000);
+        return;
+      }
 
-    // API call with Authorization header
-    const res = await api.patch(
-      `/business-development/feasibility/${data.id}/review`,
-      {
-        feasibility_status,
-        feasibility_comments,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`, // ✅ send JWT
+      const res = await api.patch(
+        `/business-development/feasibility/${data.id}/review`,
+        {
+          feasibility_status,
+          feasibility_comments,
         },
-      }
-    );
+        {
+          withCredentials: true,   // 🔥 VERY IMPORTANT
+        }
+      );
+      onUpdate(res.data.data);
 
-    // Update parent state
-    onUpdate(res.data.data);
+      setAlert({
+        type: "success",
+        message: "Feasibility updated successfully!",
+      });
 
-    setMessage({
-      text: "Feasibility updated successfully!",
-      type: "success",
-    });
+      setTimeout(() => {
+        setAlert(null);
+        setShowModal(false);
+      }, 1500);
 
-    setTimeout(() => {
-      setMessage(null);
-      setShowModal(false);
-    }, 1500);
-    setShowModal(false);
-  } catch (err) {
-    console.error("Failed to update feasibility", err);
-    alert("Failed to update feasibility");
-  }
-};
+    } catch (err) {
+      console.error("Failed to update feasibility", err);
 
+      setAlert({
+        type: "error",
+        message: "Failed to update feasibility",
+      });
 
+      setTimeout(() => setAlert(null), 3000);
+    }
+  };
   // Handle BD team update
- const handleBdUpdate = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await api.patch(
-      `/business-development/${data.id}/bd-update`,
-      {
-        bd_status: finalStatus,
-        bd_comments: finalComments,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` }, // ✅ send token
-      }
-    );
-    onUpdate(res.data.data);
-
-    setMessage({
-      text: "Business development updated successfully!",
-      type: "success",
-    });
-
-    setTimeout(() => {
-      setMessage(null);
-      setShowModal(false);
-    }, 1500);
-    setShowModal(false);
-  } catch (err) {
-    console.error("Failed to update BD info", err);
-    alert("Failed to update BD info");
-  }
-};
+  const handleBdUpdate = async () => {
+    try {
 
 
+      const res = await api.patch(
+        `/business-development/${data.id}/bd-update`,
+        {
+          stage: "FINAL",   // 🔥 Change to "FINAL" when doing final update
+          status: finalStatus,
+          comment: finalComments,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      onUpdate(res.data.data);
+
+      setAlert({
+        type: "success",
+        message: "Business development updated successfully!",
+      });
+
+      setTimeout(() => {
+        setAlert(null);
+        setShowModal(false);
+      }, 1500);
+
+    } catch (err) {
+      console.error("Failed to update BD info", err);
+
+      setAlert({
+        type: "error",
+        message: "Failed to update BD info",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
+    }
+  };
   const renderCheckbox = (checked: boolean, label: string) => {
     return (
       <label className="flex items-center gap-2 text-xs font-semibold">
@@ -198,6 +210,13 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-sm relative">
+      {alert && (
+        <ALeart
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
       <h2 className="text-purple-600 font-semibold text-sm mb-2 truncate">
         BR ID:{data.id}
       </h2>
@@ -223,15 +242,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
         </button>
       </div>
 
-      {message && (
-  <div
-    className={`fixed top-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded shadow-md text-white z-[9999] ${
-      message.type === "success" ? "bg-green-600" : "bg-red-600"
-    }`}
-  >
-    {message.text}
-  </div>
-)}
+
 
       {/* Modal */}
       {showModal && (
@@ -392,7 +403,9 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                             </select>
                           ) : (
                             <div className="h-[38px] flex items-center font-semibold text-black">
-                              {renderValue(data.feasibility_status)}
+                              {renderValue(data.feasibility_status)
+                                ? `FEASIBILITY ${data.feasibility_status}`
+                                : "-"}
                             </div>
                           )}
                         </div>
@@ -412,11 +425,27 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                             </div>
                           )}
                         </div>
+                        {/* Final BD Status */}
+                        <div>
+                          <span className="text-gray-600 text-xs">Final BD Status</span>
+                          <div className="font-semibold text-black">
+                            {renderValue(data.finalbd_status)}
+                          </div>
+                        </div>
+
+                        {/* Final BD Comments */}
+                        <div>
+                          <span className="text-gray-600 text-xs">Final BD Comments</span>
+                          <div className="font-semibold text-black">
+                            {renderValue(data.finalbd_comment)}
+                          </div>
+                        </div>
                       </div>
                     ),
                   },
                 ],
               },
+
 
               {
                 title: "Declaration",

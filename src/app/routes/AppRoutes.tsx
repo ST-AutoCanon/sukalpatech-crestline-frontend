@@ -17,7 +17,9 @@ import EmployeeUpdate from "../../features/admin/pages/EmployeeUpdate";
 import CreateOrganisation from "../../features/superadmin/pages/organisations/CreateOrganisation";
 
 import UpdatedFeasibilityPage from "../../features/user/pages/departments/Businessdevelopment/UpdatedFeasibilitypage";
-
+import ThreeWheelerPage from "../../features/user/pages/departments/ThreeWheeler/ThreeWheelerPage";
+import Foodbusiness from "../../features/user/pages/departments/FoodBusiness/FoodBusiness";
+import TwoWheelerHome from "../../features/user/pages/departments/TwoWheeler/TwoWheelerHome";
 /* =========================
    Lazy Loaded Departments
 ========================= */
@@ -38,6 +40,7 @@ const componentMap: Record<string, React.LazyExoticComponent<any>> = {
     () =>
       import("../../features/user/pages/departments/Businessdevelopment/BusinessdevelopmentHome"),
   ),
+  
 };
 
 /* =========================
@@ -113,6 +116,32 @@ export default function AppRoutes() {
           }
         />
       </Route>
+      <Route
+  path="bd2/2w"
+  element={
+    <Suspense fallback={<div>Loading 2W...</div>}>
+      <TwoWheelerHome />
+    </Suspense>
+  }
+/>
+
+<Route
+  path="bd2/3w"
+  element={
+    <Suspense fallback={<div>Loading 3W...</div>}>
+      <ThreeWheelerPage />
+    </Suspense>
+  }
+/>
+
+<Route
+  path="bd2/food"
+  element={
+    <Suspense fallback={<div>Loading Food...</div>}>
+      <Foodbusiness />
+    </Suspense>
+  }
+/>
 
       {/* Admin Routes */}
       <Route
@@ -139,6 +168,9 @@ export default function AppRoutes() {
       >
         <Route index element={<DashboardHome />} />
         <Route path="create_organisation" element={<CreateOrganisation />} />
+
+         {/* Business Development Pages */}
+       
       </Route>
 
       {/* Default Redirect */}

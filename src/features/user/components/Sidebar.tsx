@@ -7,6 +7,7 @@ import {
   Building2,
   BarChart3,
   Menu,
+  Bike, Car, UtensilsCrossed
 } from "lucide-react";
 import crestlineLogo from "../../../assets/crestlinetech_black_1.png";
 import crestlinelogo from "../../../assets/crestline_logo.jpeg";
@@ -34,11 +35,14 @@ export default function Sidebar({
   const isActive = (path: string) => location.pathname === path;
 
   const departmentIcons: Record<string, JSX.Element> = {
-    feasibility: <Building2 size={22} />,
-    procurement: <ShoppingCart size={22} />,
-    finance: <Wallet size={22} />,
-    bd: <BarChart3 size={22} />,
-  };
+  feasibility: <Building2 size={22} />,
+  procurement: <ShoppingCart size={22} />,
+  finance: <Wallet size={22} />,
+  bd: <BarChart3 size={22} />,
+  two_wheeler: <Bike size={22} />,
+  three_wheeler: <Car size={22} />,
+  foodbusiness: <UtensilsCrossed size={22} />,
+};
 
   return (
     <>
@@ -73,34 +77,31 @@ export default function Sidebar({
         <nav className="flex-1">
           <ul className="space-y-3">
             {departments.map((dept) => {
-              const key = apiNameToKey[dept.name.toLowerCase()];
-              if (!key) return null;
+  const key = apiNameToKey[dept.name.toLowerCase()];
+  if (!key) return null;
 
-              const route = deptRoutes[key];
-              const active = isActive(route);
+  const route = deptRoutes[key];
+  const active = isActive(route);
 
-              return (
-                <li key={dept.id}>
-                  <div
-                    onMouseEnter={() => setSidebarOpen(true)}
-                    className="group"
-                  >
-                    <Link
-                      to={route}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-        ${active
-                          ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
-                          : "text-gray-700 hover:bg-gray-100"}
-      `}
-                    >
-                      {departmentIcons[key]}
-                      {sidebarOpen && <span>{dept.name}</span>}
-                    </Link>
-                  </div>
-                </li>
-
-              );
-            })}
+  return (
+    <li key={dept.id}>
+      <Link
+        to={route}
+        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+        ${
+          active
+            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+            : "text-gray-700 hover:bg-gray-100"
+        }`}
+      >
+        {departmentIcons[dept.name.toLowerCase()] || (
+          <Building2 size={22} />
+        )}
+        {sidebarOpen && <span>{dept.name}</span>}
+      </Link>
+    </li>
+  );
+})}
           </ul>
         </nav>
       </aside>

@@ -328,6 +328,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Aleart from "../../../../components/Aleartmessage";
 
 const EditableRating = ({
   value,
@@ -372,7 +373,11 @@ const AllVendors: React.FC = () => {
   const [vendors, setVendors] = useState<any[]>([]);
   const [activeVendor, setActiveVendor] = useState<any | null>(null);
   const [formData, setFormData] = useState<any>({});
-  const [message, setMessage] = useState<string | null>(null);
+
+  const [alert, setAlert] = useState<{
+      type: "success" | "error";
+      message: string;
+    } | null>(null);
 
   /* ---------- Fetch Vendors ---------- */
   useEffect(() => {
@@ -400,49 +405,53 @@ const AllVendors: React.FC = () => {
   };
 
   /* ---------- Update Vendor ---------- */
-  const updateVendor = async () => {
-    try {
-      await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors/${formData.vendor_id}`,
-        formData,
-        {
-          withCredentials: true,
-        },
-      );
+ const updateVendor = async () => {
+  try {
+    await axios.put(
+      `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors/${formData.vendor_id}`,
+      formData,
+      { withCredentials: true }
+    );
 
-      // update UI list
-      setVendors((prev) =>
-        prev.map((v) =>
-          v.vendor_id === formData.vendor_id ? formData : v,
-        ),
-      );
+    setVendors((prev) =>
+      prev.map((v) =>
+        v.vendor_id === formData.vendor_id ? formData : v
+      )
+    );
 
-      setActiveVendor(null);
+    setActiveVendor(null);
 
-      // ✅ Show success message
-      setMessage("Vendor updated successfully ✅");
+    setAlert({
+      type: "success",
+      message: "Vendor updated successfully!",
+    });
 
-      // auto hide after 3 seconds
-      setTimeout(() => {
-        setMessage(null);
-      }, 3000);
+    setTimeout(() => {
+      setAlert(null);
+    }, 3000);
 
-    } catch (error) {
-      console.error("Update failed", error);
-      setMessage("Failed to update vendor ❌");
+  } catch (error) {
+    console.error("Update failed", error);
 
-      setTimeout(() => {
-        setMessage(null);
-      }, 3000);
-    }
-  };
+    setAlert({
+      type: "error",
+      message: "Failed to update vendor",
+    });
+
+    setTimeout(() => {
+      setAlert(null);
+    }, 3000);
+  }
+};
   return (
     <div className="px-4 sm:px-8 py-6">
-      {message && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded shadow-md text-white z-50 animate-fade-in bg-green-600">
-          {message}
-        </div>
-      )}
+      {alert && (
+      <Aleart
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert(null)}
+      />
+    )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {vendors.map((v) => (
           <div

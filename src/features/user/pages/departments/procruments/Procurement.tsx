@@ -325,8 +325,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
       onCreated();
 
       setTimeout(() => {
+         setAlert(null);
         onClose();
-      }, 2000);
+      }, 3000);
     } catch (err) {
       console.error(err);
 
@@ -339,6 +340,15 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
 
   return (
+
+    <>
+    {alert && (
+      <Aleart
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert(null)}
+      />
+    )}
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
       <div className="w-full max-w-7xl bg-white text-gray-900 rounded-xl flex flex-col max-h-[95vh] overflow-visible">
         {/* HEADER */}
@@ -353,14 +363,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
             ×
           </button>
         </div>
-        {alert && (
-          <Aleart
-            type={alert.type}
-            message={alert.message}
-            onClose={() => setAlert(null)}
-          />
-        )}
-
+        
         {/* FORM AREA */}
         <div className="p-6 pt-20  sm:pt-6 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
           {/* PR INFO */}
@@ -657,5 +660,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
       </div>
     </div>
+  
+  </>
   );
 }
