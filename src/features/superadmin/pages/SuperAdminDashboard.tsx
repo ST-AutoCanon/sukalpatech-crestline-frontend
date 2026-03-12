@@ -59,9 +59,6 @@ import Sidebar from "../components/Sidebar";
 import TopNav from "../components/TopNav";
 import OrganisationHome from "./organisations/OrganisationHome";
 import UpdateOrganisation from "./organisations/UpdateOrganisation";
-import TwoWheelerPage from "./Businessdev/TwoWheelerPage";
-import ThreeWheelerPage from "./Businessdev/ThreeWheelerPage";
-import Foodbusiness from "./Businessdev/Foodbusiness";
 
 export default function SuperAdminDashboard() {
   const { pathname } = useLocation();
@@ -72,9 +69,6 @@ export default function SuperAdminDashboard() {
     "/super_admin/create_organisation": "Create Organisation",
     "/super_admin/manage_organisation": "Manage Organisation",
 
-    "/business/TwoWheelerpage": "Two Wheeler",
-    "/business/ThreeWheelerpage": "Three Wheeler",
-    "/business/Foodbusiness": "Food Industry",
   };
 
   let activePage = "Dashboard";
@@ -114,9 +108,6 @@ export default function SuperAdminDashboard() {
     "Create Organisation": <OrganisationHome />,
     "Manage Organisation": <UpdateOrganisation />,
 
-    "Two Wheeler": <TwoWheelerPage />,
-    "Three Wheeler": <ThreeWheelerPage />,
-    "Food Industry": <Foodbusiness />,
   };
 
   return (
