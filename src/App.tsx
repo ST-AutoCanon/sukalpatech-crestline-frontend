@@ -14,7 +14,7 @@ import EmployeeDashboardHome from "./features/user/pages/EmployeeDashboardHome";
 
 import DepartmentPage from "./features/admin/pages/Department";
 import EmployeeUpdate from "./features/admin/pages/EmployeeUpdate";
-import CreateOrganisation from "./features/superadmin/pages/organisations/CreateOrganisation";
+// import CreateOrganisation from "./features/superadmin/pages/organisations/CreateOrganisation";
 import OrganisationHome from "./features/superadmin/pages/organisations/OrganisationHome";
 
 import TwoWheelerHome from "./features/user/pages/departments/TwoWheeler/TwoWheelerHome";
@@ -23,7 +23,7 @@ import FoodBusinessHome from "./features/user/pages/departments/FoodBusiness/Foo
 
 import ManagerDashboard from "./features/manager/pages/ManagerDashboard";
 import ManagerDashboardHome from "./features/manager/pages/ManagerHome";
-import EngineeringDesignPage from "./features/manager/pages/manager/EngineeringDesignPage";
+import EngineeringDesignPage from "./features/manager/pages/engineeringDesign/EngineeringDesignHome";
 import StoreMaterialsPage from "./features/manager/pages/manager/StoresMaterialsPage";
 import FabricationPage from "./features/manager/pages/manager/FabricationStructurePage";
 import QualityControlPage from "./features/manager/pages/manager/QualityControlPage";
