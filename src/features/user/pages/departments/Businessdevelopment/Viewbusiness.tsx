@@ -720,18 +720,9 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
 
                         <div className="flex flex-col">
                           <span className="text-xs font-medium">Created At</span>
-                          {editMode ? (
-                            <input
-                              type="date"
-                              value={toDateInputValue(formData.created_at)}
-                              onChange={(e) => handleChange("created_at", e.target.value)}
-                              className="border rounded text-xs px-2 py-1"
-                            />
-                          ) : (
-                            <span className="text-xs font-semibold">
-                              {formatDate(formData.created_at)}
-                            </span>
-                          )}
+                          <span className="text-xs font-semibold">
+                            {formatDate(formData.created_at)}
+                          </span>
                         </div>
 
 
