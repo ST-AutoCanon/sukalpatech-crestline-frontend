@@ -28,6 +28,7 @@ type VendorAttachment = {
   file_path: string;
   uploaded_by: number;
   uploaded_at: string;
+  fileObject?: File | null;
 };
 
 type Vendor = {
@@ -175,6 +176,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       .then((data) => {
         const departments = data?.data || [];
         const map: Record<string, string> = {};
+        console.log("departments", departments);
 
         departments.forEach((d: any) => {
           map[String(d.department_id)] = d.name;
@@ -233,11 +235,25 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
       const data = await res.json();
 
-      const prsData = (data?.data || []).map((pr: PR) => ({
-        ...pr,
-        items: pr.items || [],
-        department_statuses: pr.department_statuses || [],
-      }));
+      // const prsData = (data?.data || []).map((pr: PR) => ({
+      //   ...pr,
+      //   items: pr.items || [],
+      //   department_statuses: pr.department_statuses || [],
+      // }));
+
+      const prsData = (data?.data || []).map((pr: PR) => {
+        // 🔥 convert department NAME → ID
+        const deptEntry = Object.entries(departmentMap).find(
+          ([_, name]) => name === pr.department
+        );
+
+        return {
+          ...pr,
+          department: deptEntry ? deptEntry[0] : String(pr.department), // ✅ FIX
+          items: pr.items || [],
+          department_statuses: pr.department_statuses || [],
+        };
+      });
 
       setPrs(prsData);
     } catch (err) {
@@ -249,9 +265,15 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   };
 
 
+  // useEffect(() => {
+  //   fetchPRs();
+  // }, [filter, search, refreshKey]);
+
   useEffect(() => {
-    fetchPRs();
-  }, [filter, search, refreshKey]);
+    if (Object.keys(departmentMap).length > 0) {
+      fetchPRs(); // ✅ only after departments loaded
+    }
+  }, [filter, search, refreshKey, departmentMap]);
 
   const isEditable = (pr: PR) => {
     if (filter !== "PR Raised") return false;
@@ -339,61 +361,140 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
         }
       );
 
-      for (const vendor of item.vendors) {
-        await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/attachments`,
-          {
-            method: "PUT",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ attachments: vendor.attachments || [] }),
-          }
-        );
+      // for (const vendor of item.vendors) {
+      //   await fetch(
+      //     `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/attachments`,
+      //     {
+      //       method: "PUT",
+      //       credentials: "include",
+      //       headers: { "Content-Type": "application/json" },
+      //       body: JSON.stringify({ attachments: vendor.attachments || [] }),
+      //     }
+      //   );
 
-        await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/comments`,
-          {
-            method: "PUT",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ comments: vendor.comments || [] }),
+      //   await fetch(
+      //     `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/comments`,
+      //     {
+      //       method: "PUT",
+      //       credentials: "include",
+      //       headers: { "Content-Type": "application/json" },
+      //       body: JSON.stringify({ comments: vendor.comments || [] }),
+      //     }
+      //   );
+      // }
+
+
+      for (const vendor of item.vendors) {
+        const attachment = vendor.attachments?.[0];
+
+        // ✅ Only proceed if a NEW file is selected
+        if (!attachment || !attachment.fileObject) continue;
+
+        const formData = new FormData();
+        formData.append("file", attachment.fileObject); // must match multer field
+
+        try {
+          const res = await fetch(
+            `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/vendors/${vendor.id}/attachments`,
+            {
+              method: "PUT",
+              credentials: "include",
+              body: formData, // ❗ don't set headers
+            },
+          );
+
+          if (!res.ok) {
+            throw new Error(`Upload failed for vendor ${vendor.id}`);
           }
-        );
+
+          // ✅ Clear fileObject after successful upload (VERY IMPORTANT)
+          attachment.fileObject = null;
+        } catch (err) {
+          console.error("❌ Attachment upload error:", err);
+        }
       }
     }
 
     return updatedFullPR;
   };
 
-  const handleSave = async () => {
-    if (!activePR) return;
+  // const handleSave = async () => {
+  //   if (!activePR) return;
 
-    try {
-      await savePR(activePR);
+  //   try {
+  //     await savePR(activePR);
 
-      setEditMode(false);
-      setActivePR(null); // close modal
+  //     setEditMode(false);
+  //     setActivePR(null); // close modal
 
-      fetchPRs(); // refresh list
+  //     fetchPRs(); // refresh list
 
-      setAlert({
-        type: "success",
-        message: "PR updated successfully!",
-      });
+  //     setAlert({
+  //       type: "success",
+  //       message: "PR updated successfully!",
+  //     });
 
-    } catch (err) {
-      console.error("Save failed", err);
+  //   } catch (err) {
+  //     console.error("Save failed", err);
 
-      setAlert({
-        type: "error",
-        message: "Failed to update PR.",
-      });
+  //     setAlert({
+  //       type: "error",
+  //       message: "Failed to update PR.",
+  //     });
+  //   }
+  // };
+  // const formatDateForInput = (date: string) => {
+  //   if (!date) return "";
+  //   return new Date(date).toISOString().split("T")[0];
+  // };
+
+ const handleSave = async () => {
+  if (!activePR) return;
+
+  try {
+    let formattedDate = "";
+
+    if (activePR.required_date) {
+      if (activePR.required_date.includes("T")) {
+        // already ISO → strip time completely
+        formattedDate = activePR.required_date.split("T")[0];
+      } else {
+        // already YYYY-MM-DD → keep as is
+        formattedDate = activePR.required_date;
+      }
     }
-  };
-  const formatDateForInput = (date: string) => {
-    if (!date) return "";
-    return new Date(date).toISOString().split("T")[0];
-  };
+
+    const normalizedPR: PR = {
+      ...activePR,
+      required_date: formattedDate, // ✅ ALWAYS YYYY-MM-DD
+    };
+
+    await savePR(normalizedPR);
+
+    setEditMode(false);
+    setActivePR(null);
+    fetchPRs();
+
+    setAlert({
+      type: "success",
+      message: "PR updated successfully!",
+    });
+
+  } catch (err) {
+    console.error("Save failed", err);
+
+    setAlert({
+      type: "error",
+      message: "Failed to update PR.",
+    });
+  }
+};
+ const formatDateForInput = (date: string) => {
+  if (!date) return "";
+
+  // ✅ ALWAYS strip time part directly
+  return date.split("T")[0];
+};
 
   return (
     <>
@@ -429,7 +530,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 <div className="flex justify-between"><span className="text-gray-400">Priority</span><span className="font-medium text-gray-700">{pr.priority}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Status</span><span className="font-medium text-gray-700">{status}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Department</span><span className="font-medium text-gray-700 truncate">{departmentMap[String(pr.department)] ?? pr.department}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Delivery Date</span><span className="font-medium text-gray-700">{new Date(pr.required_date).toISOString().split("T")[0]}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Delivery Date</span><span className="font-medium text-gray-700">{pr.required_date?.split("T")[0]}</span></div>
               </div>
 
               <div className="mt-3 flex gap-4">
@@ -524,15 +625,21 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 <div>
                   <div className="text-gray-900"> Delivery Date</div>
                   <input
-                    type="date"
-                    value={formatDateForInput(activePR.required_date)}
-                    disabled={!editMode}
-                    onChange={(e) =>
-                      setActivePR({ ...activePR, required_date: e.target.value })
-                    }
-                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
-                      }`}
-                  />
+  type="date"
+  value={
+    activePR.required_date
+      ? activePR.required_date.split("T")[0]
+      : ""
+  }
+  disabled={!editMode}
+  onChange={(e) =>
+    setActivePR({ ...activePR, required_date: e.target.value })
+  }
+  className={`bg-white border rounded px-2 py-1 w-full ${
+    editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
+  }`}
+/>
+
 
 
                 </div>
@@ -540,10 +647,29 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 <div>
                   <div className="text-gray-900">Department</div>
                   {editMode ? (
+                    //                     <select
+                    //                       // value={String(activePR.department ?? "")}
+                    //                       value={
+                    //   activePR?.department
+                    //     ? String(activePR.department)
+                    //     : ""
+                    // }
+                    //                       onChange={(e) =>
+                    //                         setActivePR({ ...activePR, department: String(e.target.value) })
+                    //                       }
+                    //                       className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
+                    //                     >
                     <select
-                      value={String(activePR.department ?? "")}
+                      value={
+                        departmentMap[String(activePR?.department)]
+                          ? String(activePR.department)
+                          : ""
+                      }
                       onChange={(e) =>
-                        setActivePR({ ...activePR, department: String(e.target.value) })
+                        setActivePR({
+                          ...activePR,
+                          department: e.target.value,
+                        })
                       }
                       className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
                     >
@@ -627,7 +753,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   )}
 
 
-                  <input
+                  {/* <input
                     type="date"
                     value={formatDateForInput(activePR.required_date)}
                     disabled={!editMode}
@@ -636,12 +762,32 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                     }
                     className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
                       }`}
-                  />
+                  /> */}
+                  <input
+  type="date"
+  value={
+    activePR.required_date
+      ? activePR.required_date.split("T")[0]
+      : ""
+  }
+  disabled={!editMode}
+  onChange={(e) =>
+    setActivePR({ ...activePR, required_date: e.target.value })
+  }
+  className={`bg-white border rounded px-2 py-1 w-full ${
+    editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
+  }`}
+/>
 
 
                   {editMode ? (
                     <select
-                      value={String(activePR.department ?? "")}
+                      // value={String(activePR.department ?? "")}
+                      value={
+                        activePR?.department
+                          ? String(activePR.department)
+                          : ""
+                      }
                       onChange={(e) =>
                         setActivePR({ ...activePR, department: e.target.value })
                       }
@@ -854,25 +1000,31 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                       : "bg-gray-100 text-gray-600"
                                       }`}
                                   >
-                                    <span
-                                      className="truncate w-full block text-blue-600 underline cursor-pointer"
-                                      onClick={() => {
-                                        const file = vendor.attachments?.[0];
-
-                                        if (!file) return;
-
-                                        const url =
-                                          file.file_path?.startsWith("blob:")
-                                            ? file.file_path // preview
-                                            : `${import.meta.env.VITE_BACKEND_URL}${file.file_path}`;
-
-                                        window.open(url, "_blank");
-                                      }}
-                                    >
+                                    {/* <span className="truncate w-full block">
                                       {vendor.attachments?.[0]?.file_name || "No file uploaded"}
-                                    </span>
+                                    </span> */}
+                                    {(() => {
+                                      const validAttachment = vendor.attachments?.find(
+                                        (att: any) => att.file_path && att.file_path.trim() !== ""
+                                      );
 
-                                    {editMode && (
+                                      return validAttachment ? (
+                                        <a
+                                          href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 underline text-sm"
+                                        >
+                                          View File
+                                        </a>
+                                      ) : (
+                                        <span className="text-gray-400 text-sm">No file</span>
+                                      );
+                                    })()}
+
+
+
+                                    {/* {editMode && (
                                       <input
                                         type="file"
                                         className="hidden"
@@ -897,6 +1049,45 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                           };
 
                                           setActivePR({ ...activePR, items: updatedItems });
+                                        }}
+                                      />
+                                    )} */}
+
+                                    {editMode && (
+                                      <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (!file || !activePR) return;
+
+                                          const updatedItems = [
+                                            ...activePR.items,
+                                          ];
+
+                                          updatedItems[itemIndex].vendors[
+                                            vendorIndex
+                                          ] = {
+                                            ...updatedItems[itemIndex].vendors[
+                                            vendorIndex
+                                            ],
+                                            attachments: [
+                                              {
+                                                id: Date.now(),
+                                                file_name: file.name,
+                                                file_path: "", // ✅ keep empty (backend will fill later)
+                                                uploaded_by: 0,
+                                                uploaded_at:
+                                                  new Date().toISOString(),
+                                                fileObject: file, // ✅ IMPORTANT
+                                              },
+                                            ],
+                                          };
+
+                                          setActivePR({
+                                            ...activePR,
+                                            items: updatedItems,
+                                          });
                                         }}
                                       />
                                     )}
@@ -1086,7 +1277,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                         : "bg-gray-100 text-gray-600"
                                         }`}
                                     >
-                                      <span
+                                      {/* <span
                                         className="truncate w-full block text-blue-600 underline cursor-pointer"
                                         onClick={() => {
                                           if (!vendor.attachments?.[0]) return;
@@ -1110,7 +1301,26 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                         }}
                                       >
                                         {vendor.attachments?.[0]?.file_name || "No file uploaded"}
-                                      </span>
+                                      </span> */}
+                                       {(() => {
+                                      const validAttachment = vendor.attachments?.find(
+                                        (att: any) => att.file_path && att.file_path.trim() !== ""
+                                      );
+
+                                      return validAttachment ? (
+                                        <a
+                                          href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 underline text-sm"
+                                        >
+                                          View File
+                                        </a>
+                                      ) : (
+                                        <span className="text-gray-400 text-sm">No file</span>
+                                      );
+                                    })()}
+
 
                                       {editMode && (
                                         <input

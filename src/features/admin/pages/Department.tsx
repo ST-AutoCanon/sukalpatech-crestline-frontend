@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import AssignDepartmentModal from "../components/AssignDepartmentModal";
 import PermissionModal from "../components/PermissionModal";
+import Alert from "../../../components/Aleartmessage";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
@@ -18,6 +19,10 @@ export default function DepartmentPage() {
   const [selectedDept, setSelectedDept] = useState<any>(null);
   const [modal, setModal] = useState<"assign" | "edit" | null>(null);
   const [selectedEmpId, setSelectedEmpId] = useState<number | null>(null);
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   /* ================= FETCH DEPARTMENTS ================= */
   const fetchDepartments = async () => {
@@ -103,19 +108,51 @@ export default function DepartmentPage() {
   };
 
   /* ================= UNASSIGN ================= */
-  const deleteDept = async (employeeId: number, deptId: number) => {
-    await fetch(
-      `${API_URL}/api/departments/employee/${employeeId}/unassign-department`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ department_id: deptId }),
-      },
-    );
+  // const deleteDept = async (employeeId: number, deptId: number) => {
+  //   await fetch(
+  //     `${API_URL}/api/departments/employee/${employeeId}/unassign-department`,
+  //     {
+  //       method: "POST",
+  //       credentials: "include",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ department_id: deptId }),
+  //     },
+  //   );
 
-    await fetchEmployeesByDept(deptId);
-    await fetchAllEmployees();
+  //   await fetchEmployeesByDept(deptId);
+  //   await fetchAllEmployees();
+  // };
+
+  const deleteDept = async (employeeId: number, deptId: number) => {
+    try {
+      await fetch(
+        `${API_URL}/api/departments/employee/${employeeId}/unassign-department`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ department_id: deptId }),
+        }
+      );
+
+      await fetchEmployeesByDept(deptId);
+      await fetchAllEmployees();
+
+      // ✅ SUCCESS ALERT
+      setAlert({
+        type: "success",
+        message: "Employee unassigned successfully!",
+      });
+
+    } catch (err) {
+      console.error(err);
+
+      // ❌ ERROR ALERT
+      setAlert({
+        type: "error",
+        message: "Failed to unassign employee.",
+      });
+    }
   };
 
   /* ================= INITIAL LOAD ================= */
@@ -130,8 +167,16 @@ export default function DepartmentPage() {
   };
 
   return (
+
     // <div className="min-h-screen bg-gray-50 p-4 md:p-8">
     <div className="w-full h-full bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c]">
+      {alert && (
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
       <div className="max-w-6xl mx-auto bg-white rounded-xl shadow p-4 md:p-6">
         {!selectedDept && (
           <>

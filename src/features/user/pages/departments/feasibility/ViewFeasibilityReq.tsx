@@ -483,8 +483,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 {isEditable(pr) && (
                   <button
                     className={`text-sm font-semibold ${isFeasibilityDone(pr)
-                        ? "text-blue-600 hover:underline"
-                        : "text-gray-400 cursor-not-allowed"
+                      ? "text-blue-600 hover:underline"
+                      : "text-gray-400 cursor-not-allowed"
                       }`}
                     disabled={!isFeasibilityDone(pr)}
                     onClick={(e) => {
@@ -859,10 +859,28 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                   )}
                                 </label> */}
 
-                                <label className="border rounded px-2 py-1 w-full text-sm flex items-center bg-gray-100 text-gray-600 cursor-not-allowed  truncate overflow-hidden whitespace-nowrap">
+                                {/* <label className="border rounded px-2 py-1 w-full text-sm flex items-center bg-gray-100 text-gray-600 cursor-not-allowed  truncate overflow-hidden whitespace-nowrap">
                                   {vendor.attachments?.[0]?.file_name || "No file uploaded"}
                                 </label>
+ */}
+                                {(() => {
+                                  const validAttachment = vendor.attachments?.find(
+                                    (att: any) => att.file_path && att.file_path.trim() !== ""
+                                  );
 
+                                  return validAttachment ? (
+                                    <a
+                                      href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 underline text-sm"
+                                    >
+                                      View File
+                                    </a>
+                                  ) : (
+                                    <span className="text-gray-400 text-sm">No file</span>
+                                  );
+                                })()}
 
 
                                 <input
@@ -1007,9 +1025,26 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                     vendor.vendor_id,
                                   ],
                                   [
-                                    "Upload Quotation",
-                                    vendor.attachments?.[0]?.file_name || "-",
-                                  ],
+  "Upload Quotation",
+  (() => {
+    const validAttachment = vendor.attachments?.find(
+      (att: any) => att.file_path && att.file_path.trim() !== ""
+    );
+
+    return validAttachment ? (
+      <a
+        href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 underline"
+      >
+        View File
+      </a>
+    ) : (
+      "No file"
+    );
+  })(),
+],
                                   ["Unit Price", vendor.unit_price ?? "-"],
                                   ["Total Price", vendor.total_price ?? "-"],
                                   [
@@ -1031,11 +1066,17 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                     <span className="text-gray-500 text-xs">
                                       {label}
                                     </span>
-                                    <input
-                                      readOnly
-                                      value={value}
-                                      className="bg-white border rounded px-2 py-1 w-full"
-                                    />
+                                   {label === "Upload Quotation" ? (
+  <div className="bg-white border rounded px-2 py-1 w-full text-sm">
+    {value}
+  </div>
+) : (
+  <input
+    readOnly
+    value={value as string}
+    className="bg-white border rounded px-2 py-1 w-full"
+  />
+)}
                                   </div>
                                 ))}
                               </div>

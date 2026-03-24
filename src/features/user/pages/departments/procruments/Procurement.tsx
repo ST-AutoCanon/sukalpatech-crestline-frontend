@@ -537,7 +537,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     {/* Upload */}
                     <div>
                       <label className="text-xs text-gray-600">
-                        Upload Quotation<span className="text-red-500">*</span>
+                        Upload Quotation
                       </label>
 
                       <input
@@ -664,3 +664,5 @@ export default function NewProcurementPage({ onClose, onCreated }) {
   </>
   );
 }
+
+
