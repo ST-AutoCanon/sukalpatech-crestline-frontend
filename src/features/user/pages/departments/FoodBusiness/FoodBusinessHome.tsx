@@ -2,7 +2,7 @@
 import { useState } from "react";
 import FoodBusinessList from "./Foodlist";
 import FoodBusinessPage from "./FoodBusiness";
-import UpdatedFoodRequests from "./UpdatedFeasibilityPage"; // create this like 3W
+import UpdatedFoodRequests from "./UpdatedfeasibilityPage"; // create this like 3W
 
 const FoodBusinessHome = () => {
   const [showModal, setShowModal] = useState(false);
