@@ -190,11 +190,12 @@ export default function CategoryLimitPage() {
     null,
   );
   const [loading, setLoading] = useState(false);
+  const [isExisting, setIsExisting] = useState(false);
 
   const [alert, setAlert] = useState<{
-  type: "success" | "error";
-  message: string;
-} | null>(null);
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   /* ================= FETCH CURRENT LIMITS ================= */
   const fetchLimits = async () => {
@@ -204,13 +205,16 @@ export default function CategoryLimitPage() {
       });
 
       const limitsData = res.data?.data?.data; // correct path
-
       if (limitsData) {
-        setLimits({
-          high: Number(limitsData.high),
-          medium: Number(limitsData.medium),
-          low: Number(limitsData.low),
-        });
+        const high = Number(limitsData.high);
+        const medium = Number(limitsData.medium);
+        const low = Number(limitsData.low);
+
+        setLimits({ high, medium, low });
+
+        // ✅ KEY FIX
+        const isAllZero = high === 0 && medium === 0 && low === 0;
+        setIsExisting(!isAllZero); // false if first time
       }
     } catch (err) {
       console.error("Failed to fetch category limits", err);
@@ -223,146 +227,154 @@ export default function CategoryLimitPage() {
 
   /* ================= UPDATE ================= */
   const handleUpdate = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const payload = {
-      high:
-        newLimits.high !== undefined ? Number(newLimits.high) : limits.high,
+      const payload = {
+        high:
+          newLimits.high !== undefined ? Number(newLimits.high) : limits.high,
 
-      medium:
-        newLimits.medium !== undefined
-          ? Number(newLimits.medium)
-          : limits.medium,
+        medium:
+          newLimits.medium !== undefined
+            ? Number(newLimits.medium)
+            : limits.medium,
 
-      low:
-        newLimits.low !== undefined ? Number(newLimits.low) : limits.low,
-    };
+        low:
+          newLimits.low !== undefined ? Number(newLimits.low) : limits.low,
+      };
 
-    const res = await axios.put(
-      `${ADMIN_API_BASE}/category-limits/update`,
-      payload,
-      { withCredentials: true }
-    );
+      const res = await axios.put(
+        `${ADMIN_API_BASE}/category-limits/update`,
+        payload,
+        { withCredentials: true }
+      );
 
-    setUpdatedLimits(res.data.data);
+      setUpdatedLimits(res.data.data);
 
-    setAlert({
-      type: "success",
-      message: "Category limits updated successfully ✅",
-    });
+      setAlert({
+        type: "success",
+        message: "Category limits updated successfully ✅",
+      });
 
-    setNewLimits({});
-    await fetchLimits();
+      setNewLimits({});
+      await fetchLimits();
 
-  } catch (err: any) {
-    setAlert({
-      type: "error",
-      message:
-        err.response?.data?.message || "Failed to update category limits ❌",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err: any) {
+      setAlert({
+        type: "error",
+        message:
+          err.response?.data?.message || "Failed to update category limits ❌",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
-    {alert && (
-      <Alert
-        type={alert.type}
-        message={alert.message}
-        onClose={() => setAlert(null)}
-      />
-    )}
-    <div className="min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] text-white p-4 sm:p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* ================= PAGE TITLE ================= */}
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">
-          Category Limits
-        </h1>
+      {alert && (
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
+      <div className="min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] text-white p-4 sm:p-8 overflow-y-auto">
+        <div className="max-w-4xl mx-auto pb-20">
+          {/* ================= PAGE TITLE ================= */}
+          <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">
+            Category Limits
+          </h1>
 
-        {/* ================= CURRENT LIMITS ================= */}
-        <div className="bg-white text-black rounded-2xl shadow-md p-5 sm:p-6 mb-6 mt-8">
-          <h2 className="font-semibold text-lg mb-4">Current Limits</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-            <div className="bg-gray-100 p-4 rounded-xl">
-              <div className="font-semibold">High</div>
-              <div>{limits.high}</div>
-            </div>
-            <div className="bg-gray-100 p-4 rounded-xl">
-              <div className="font-semibold">Medium</div>
-              <div>{limits.medium}</div>
-            </div>
-            <div className="bg-gray-100 p-4 rounded-xl">
-              <div className="font-semibold">Low</div>
-              <div>{limits.low}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* ================= NEW LIMITS INPUT ================= */}
-        <div className="bg-white text-black rounded-2xl shadow-md p-5 sm:p-6 mb-6">
-          <h2 className="font-semibold text-lg mb-4">Add / Update Limits</h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-            {["high", "medium", "low"].map((level) => (
-              <div key={level}>
-                <label className="block mb-1 capitalize">{level}</label>
-                <input
-                  type="number"
-                  min={0}
-                  placeholder={`Enter ${level} limit`}
-                  className="border p-2.5 rounded-xl w-full"
-                  value={newLimits[level as keyof CategoryLimits] ?? ""}
-                  onChange={(e) =>
-                    setNewLimits({
-                      ...newLimits,
-                      [level]:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={handleUpdate}
-              disabled={loading}
-              className="w-full sm:w-auto bg-green-600 text-white px-6 py-2.5 rounded-xl hover:opacity-90 transition"
-            >
-              {loading ? "Updating..." : "Update"}
-            </button>
-
-            <button
-              onClick={() => setNewLimits({})}
-              className="w-full sm:w-auto bg-gray-300 text-black px-6 py-2.5 rounded-xl hover:opacity-90 transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-
-        {/* ================= UPDATED LIMITS ================= */}
-        {updatedLimits && (
-          <div className="bg-white text-black rounded-2xl shadow-md p-5 sm:p-6">
-            <h2 className="font-semibold text-lg mb-4">Updated Limits</h2>
+          {/* ================= CURRENT LIMITS ================= */}
+          <div className="bg-white text-black rounded-2xl shadow-md p-5 sm:p-6 mb-6 mt-8">
+            <h2 className="font-semibold text-lg mb-4">Current Limits</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+              <div className="bg-gray-100 p-4 rounded-xl">
+                <div className="font-semibold">High</div>
+                <div>{limits.high}</div>
+              </div>
+              <div className="bg-gray-100 p-4 rounded-xl">
+                <div className="font-semibold">Medium</div>
+                <div>{limits.medium}</div>
+              </div>
+              <div className="bg-gray-100 p-4 rounded-xl">
+                <div className="font-semibold">Low</div>
+                <div>{limits.low}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* ================= NEW LIMITS INPUT ================= */}
+          <div className="bg-white text-black rounded-2xl shadow-md p-5 sm:p-6 mb-6">
+            <h2 className="font-semibold text-lg mb-4">
+              {isExisting ? "Update Limits" : "Add Limits"}
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
               {["high", "medium", "low"].map((level) => (
-                <div key={level} className="bg-gray-100 p-4 rounded-xl">
-                  <div className="font-semibold capitalize">{level}</div>
-                  <div>{updatedLimits[level as keyof CategoryLimits]}</div>
+                <div key={level}>
+                  <label className="block mb-1 capitalize">{level}</label>
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder={`Enter ${level} limit`}
+                    className="border p-2.5 rounded-xl w-full"
+                    value={newLimits[level as keyof CategoryLimits] ?? ""}
+                    onChange={(e) =>
+                      setNewLimits({
+                        ...newLimits,
+                        [level]:
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
+                      })
+                    }
+                  />
                 </div>
               ))}
             </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleUpdate}
+                disabled={loading}
+                className="w-full sm:w-auto bg-green-600 text-white px-6 py-2.5 rounded-xl hover:opacity-90 transition"
+              >
+                {loading
+                  ? isExisting
+                    ? "Updating..."
+                    : "Adding..."
+                  : isExisting
+                    ? "Update"
+                    : "Add"}
+              </button>
+
+              <button
+                onClick={() => setNewLimits({})}
+                className="w-full sm:w-auto bg-gray-300 text-black px-6 py-2.5 rounded-xl hover:opacity-90 transition"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* ================= UPDATED LIMITS ================= */}
+          {updatedLimits && (
+            <div className="bg-white text-black rounded-2xl shadow-md p-5 sm:p-6">
+              <h2 className="font-semibold text-lg mb-4">Updated Limits</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                {["high", "medium", "low"].map((level) => (
+                  <div key={level} className="bg-gray-100 p-4 rounded-xl">
+                    <div className="font-semibold capitalize">{level}</div>
+                    <div>{updatedLimits[level as keyof CategoryLimits]}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 }

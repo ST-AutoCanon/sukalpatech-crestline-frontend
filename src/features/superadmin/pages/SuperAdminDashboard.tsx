@@ -79,15 +79,7 @@ export default function SuperAdminDashboard() {
   else if (pathname.includes("manage_organisation")) {
     activePage = "Manage Organisation";
   }
-  else if (pathname.includes("TwoWheelerpage")) {
-    activePage = "Two Wheeler";
-  }
-  else if (pathname.includes("ThreeWheelerpage")) {
-    activePage = "Three Wheeler";
-  }
-  else if (pathname.includes("Foodbusiness")) {
-    activePage = "Food Industry";
-  }
+ 
 
 
   const pageComponents: Record<string, JSX.Element> = {

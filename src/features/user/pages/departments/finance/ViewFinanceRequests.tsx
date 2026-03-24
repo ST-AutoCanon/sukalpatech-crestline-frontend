@@ -20,7 +20,7 @@ interface VendorComment {
 interface Vendor {
   id: number;
   vendor_id: number;
-  status?: string;
+  status: string;
   unit_price?: number;
   total_price?: number;
   comments?: VendorComment[];
@@ -220,46 +220,46 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
   //   setRequests(res.data.data || []);
   // };
 
-const fetchApprovedRequests = async () => {
-  let url = "";
+  const fetchApprovedRequests = async () => {
+    let url = "";
 
-  // Fetch all PRs
-  url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
+    // Fetch all PRs
+    url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
-  const res = await axios.get(url, {
-    withCredentials: true,
-  });
-
-  let data: FinancePR[] = res.data.data || [];
-
-  if (status === "PENDING") {
-    data = data.filter((pr) =>
-      pr.department_statuses?.some((s) =>
-        s.department_status?.toUpperCase().includes("PENDING")
-      )
-    );
-  }
-
-  if (status === "REJECTED") {
-    data = data.filter((pr) =>
-      pr.department_statuses?.some((s) =>
-        s.department_status?.toUpperCase().includes("REJECTED")
-      )
-    );
-  }
-
-  if (status === "APPROVED") {
-    data = data.filter((pr) => {
-      const latestStatus =
-        pr.department_statuses?.[pr.department_statuses.length - 1]
-          ?.department_status;
-
-      return latestStatus === "STORE APPROVED";
+    const res = await axios.get(url, {
+      withCredentials: true,
     });
-  }
 
-  setRequests(data);
-};
+    let data: FinancePR[] = res.data.data || [];
+
+    if (status === "PENDING") {
+      data = data.filter((pr) =>
+        pr.department_statuses?.some((s) =>
+          s.department_status?.toUpperCase().includes("PENDING")
+        )
+      );
+    }
+
+    if (status === "REJECTED") {
+      data = data.filter((pr) =>
+        pr.department_statuses?.some((s) =>
+          s.department_status?.toUpperCase().includes("REJECTED")
+        )
+      );
+    }
+
+    if (status === "APPROVED") {
+      data = data.filter((pr) => {
+        const latestStatus =
+          pr.department_statuses?.[pr.department_statuses.length - 1]
+            ?.department_status;
+
+        return latestStatus === "STORE APPROVED";
+      });
+    }
+
+    setRequests(data);
+  };
 
   useEffect(() => {
     fetchApprovedRequests();
@@ -305,30 +305,43 @@ const fetchApprovedRequests = async () => {
               PR ID: {pr.id}
             </h2>
 
-            {/* BODY */}
-            <div className="flex-1 space-y-3 text-sm">
-              <div className="flex gap-8">
-                <span className="w-24 text-gray-500">Department :</span>
-                <span className="font-medium text-gray-600 truncate">
+            <div className="space-y-1 text-sm flex-1">
+              {/* Description */}
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-400 shrink-0">Description</span>
+                <span className="font-medium text-gray-700 max-w-[65%] overflow-hidden text-ellipsis whitespace-nowrap">
+                  {pr.description || "-"}
+                </span>
+              </div>
+
+              {/* Priority */}
+              <div className="flex justify-between">
+                <span className="text-gray-400">Priority</span>
+                <span className="font-medium text-gray-700">
+                  {pr.priority || "-"}
+                </span>
+              </div>
+
+
+              {/* Department */}
+              <div className="flex justify-between">
+                <span className="text-gray-400">Department</span>
+                <span className="font-medium text-gray-700 truncate">
                   {departmentMap[String(pr.department)] ?? pr.department ?? "-"}
-                </span>              </div>
-
-              <div className="flex gap-8">
-                <span className="w-24 text-gray-500">Priority :</span>
-                <span className="font-medium text-gray-600 truncate">{pr.priority || "-"}</span>
+                </span>
               </div>
+              
 
-              <div className="flex gap-8">
-                <span className="w-24 text-gray-500">Required :</span>
-                <span className="font-medium text-gray-600">{formatDate(pr.required_date)}</span>
-              </div>
-
-              <div className="flex gap-8">
-                <span className="w-24 text-gray-500">Description :</span>
-                <span className="font-medium text-gray-600 line-clamp-2">{pr.description || "-"}</span>
+              {/* Delivery Date */}
+              <div className="flex justify-between">
+                <span className="text-gray-400">Delivery Date</span>
+                <span className="font-medium text-gray-700">
+                  {pr.required_date
+                    ? new Date(pr.required_date).toLocaleDateString()
+                    : "-"}
+                </span>
               </div>
             </div>
-
 
             {/* FOOTER */}
             <span className="text-blue-600 text-sm font-semibold mt-4">
@@ -347,7 +360,7 @@ const fetchApprovedRequests = async () => {
               View PR-{selectedPR.id} info
             </h2>
             <button
-              className="absolute -top-1 -right-1 text-2xl text-gray-600 hover:text-gray-800"
+              className="absolute top-2 right-2 text-2xl text-gray-600 hover:text-gray-800"
               onClick={() => setModalOpen(false)}
             >
               ×
@@ -530,7 +543,7 @@ const fetchApprovedRequests = async () => {
             )}
 
 
-     {/* FINANCE PAYMENT DETAILS */}
+            {/* FINANCE PAYMENT DETAILS */}
             {selectedPR.finance_payment_details && (
               <div className="border border-gray-200 rounded p-4 mb-4">
                 <h3 className="font-semibold mb-3 text-purple-600">
@@ -553,21 +566,21 @@ const fetchApprovedRequests = async () => {
                   {/* ✅ Show Percentage ONLY if PARTIAL */}
                   {selectedPR.finance_payment_details.payment_stage ===
                     "PARTIAL" && (
-                    <div>
-                      <label className="text-xs font-medium">
-                        Partial Percentage
-                      </label>
-                      <input
-                        readOnly
-                        value={
-                          selectedPR.finance_payment_details.partial_percentage
-                            ? `${selectedPR.finance_payment_details.partial_percentage}%`
-                            : "0%"
-                        }
-                        className="border p-2 rounded w-full bg-white"
-                      />
-                    </div>
-                  )}
+                      <div>
+                        <label className="text-xs font-medium">
+                          Partial Percentage
+                        </label>
+                        <input
+                          readOnly
+                          value={
+                            selectedPR.finance_payment_details.partial_percentage
+                              ? `${selectedPR.finance_payment_details.partial_percentage}%`
+                              : "0%"
+                          }
+                          className="border p-2 rounded w-full bg-white"
+                        />
+                      </div>
+                    )}
 
                   {/* Final Completed */}
                   <div>
@@ -631,8 +644,8 @@ const fetchApprovedRequests = async () => {
                       value={
                         selectedPR.order_details.order_placed_at
                           ? new Date(
-                              selectedPR.order_details.order_placed_at,
-                            ).toLocaleDateString()
+                            selectedPR.order_details.order_placed_at,
+                          ).toLocaleDateString()
                           : ""
                       }
                       className="border p-2 rounded w-full bg-white"
@@ -649,8 +662,8 @@ const fetchApprovedRequests = async () => {
                       value={
                         selectedPR.order_details.expected_delivery_date
                           ? new Date(
-                              selectedPR.order_details.expected_delivery_date,
-                            ).toLocaleDateString()
+                            selectedPR.order_details.expected_delivery_date,
+                          ).toLocaleDateString()
                           : ""
                       }
                       className="border p-2 rounded w-full bg-white"
@@ -734,20 +747,20 @@ const fetchApprovedRequests = async () => {
                   {/* Partial Quantity (only if applicable) */}
                   {selectedPR.store_receiving_details.quantity_status ===
                     "PARTIAL" && (
-                    <div>
-                      <label className="text-xs font-medium">
-                        Partial Quantity
-                      </label>
-                      <input
-                        readOnly
-                        value={
-                          selectedPR.store_receiving_details.partial_quantity ??
-                          0
-                        }
-                        className="border p-2 rounded w-full bg-white"
-                      />
-                    </div>
-                  )}
+                      <div>
+                        <label className="text-xs font-medium">
+                          Partial Quantity
+                        </label>
+                        <input
+                          readOnly
+                          value={
+                            selectedPR.store_receiving_details.partial_quantity ??
+                            0
+                          }
+                          className="border p-2 rounded w-full bg-white"
+                        />
+                      </div>
+                    )}
 
                   {/* Rejection Reason (if exists) */}
                   {selectedPR.store_receiving_details.rejection_reason && (
@@ -789,7 +802,7 @@ const fetchApprovedRequests = async () => {
                 </div>
               </div>
             )}
-            
+
             {/* STATUS SECTION */}
             <div className="flex justify-end mb-2">
               <button

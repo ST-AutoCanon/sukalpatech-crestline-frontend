@@ -60,8 +60,8 @@ interface BusinessCardProps {
     attachments: any[];
     feasibility_status?: string;
     feasibility_comments?: string;
-    finalbd_status:string;
-    finalbd_comment:string;
+    finalbd_status: string;
+    finalbd_comment: string;
   };
   onUpdate: (updatedData: any) => void;
 }
@@ -188,11 +188,17 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
 
   const toDateInputValue = (date: string | null | undefined) => {
     if (!date) return "";
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return "";
-    return d.toISOString().split("T")[0];
-  };
 
+    const d = new Date(date);
+
+    if (isNaN(d.getTime())) return "";
+
+    // ✅ Fix timezone shift
+    const offset = d.getTimezoneOffset();
+    const localDate = new Date(d.getTime() - offset * 60 * 1000);
+
+    return localDate.toISOString().split("T")[0];
+  };
 
   const renderValue = (value: any) =>
     value === null || value === undefined || value === ""
@@ -497,6 +503,31 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                                 <span
                                   key={idx}
                                   className="text-xs text-blue-600 underline cursor-pointer"
+                                  onClick={() => {
+                                    if (!file) return;
+
+                                    let url = "";
+
+                                    // ✅ If preview (new upload)
+                                    if (file.file_path?.startsWith("blob:")) {
+                                      url = file.file_path;
+                                    }
+                                    // ✅ If backend path exists
+                                    else if (file.file_path) {
+                                      url = `${import.meta.env.VITE_BACKEND_URL}${file.file_path}`;
+                                    }
+                                    // ✅ fallback (OLD DATA)
+                                    else if (file.filename) {
+                                      url = `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${file.filename}`;
+                                    }
+
+                                    if (!url) {
+                                      console.error("Invalid file URL", file);
+                                      return;
+                                    }
+
+                                    window.open(url, "_blank");
+                                  }}
                                 >
                                   {fileName}
                                 </span>
@@ -533,6 +564,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                     label: "",
                     value: (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
                         {/* BD Status */}
                         <div className="flex flex-col">
                           <span className="text-xs font-medium">BD Status</span>
@@ -547,7 +579,9 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                               <option value="APPROVED">APPROVED</option>
                             </select>
                           ) : (
-                            <span className="text-xs font-semibold">{formData.bd_status}</span>
+                            <span className="text-xs font-semibold">
+                              {renderValue(formData.bd_status)}
+                            </span>
                           )}
                         </div>
 
@@ -566,61 +600,43 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium">Feasibility Status</span>
-                          {editMode ? (
-                            <select
-                              value={formData.feasibility_status || ""}
-                              onChange={(e) =>
-                                handleChange("feasibility_status", e.target.value)
-                              }
-                              className="border rounded text-xs px-2 py-1"
-                            >
-                              <option value="">Select</option>
-                              <option value="FEASIBILITY PENDING">FEASIBILITY PENDING</option>
-                              <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
-                              <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
-                            </select>
-                          ) : (
-                            <span className="text-xs font-semibold">
-                                {renderValue(data.feasibility_status)
-                                  ? `FEASIBILITY ${data.feasibility_status}`
-                                  : "-"}
-                              </span>
-                          )}
-                        </div>
 
-                        {/* Feasibility Comments */}
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium">Feasibility Comments</span>
-                          {editMode ? (
-                            <textarea
-                              value={formData.feasibility_comments || ""}
-                              onChange={(e) =>
-                                handleChange("feasibility_comments", e.target.value)
-                              }
-                              className="border rounded text-xs px-2 py-1"
-                            />
-                          ) : (
-                            <span className="text-xs font-semibold">
-                              {renderValue(formData.feasibility_comments)}
-                            </span>
-                          )}
-                        </div>
-                        {/* Final BD Status */}
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium">Final BD Status</span>
-                          <span className="text-xs font-semibold">
-                            {renderValue(formData.finalbd_status)}
-                          </span>
-                        </div>
-                        {/* Final BD Comments */}
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium">Final BD Comments</span>
-                          <span className="text-xs font-semibold">
-                            {renderValue(formData.finalbd_comment)}
-                          </span>
-                        </div>
+                        {/* ❌ Hide in edit mode */}
+                        {!editMode && (
+                          <>
+                            {/* Feasibility Status */}
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium">Feasibility Status</span>
+                              <span className="text-xs font-semibold">
+                                {renderValue(formData.feasibility_status)}
+                              </span>
+                            </div>
+
+                            {/* Feasibility Comments */}
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium">Feasibility Comments</span>
+                              <span className="text-xs font-semibold">
+                                {renderValue(formData.feasibility_comments)}
+                              </span>
+                            </div>
+
+                            {/* Final BD Status */}
+                            {/* <div className="flex flex-col">
+                              <span className="text-xs font-medium">Final BD Status</span>
+                              <span className="text-xs font-semibold">
+                                {renderValue(formData.finalbd_status)}
+                              </span>
+                            </div> */}
+
+                            {/* Final BD Comments */}
+                            {/* <div className="flex flex-col">
+                              <span className="text-xs font-medium">Final BD Comments</span>
+                              <span className="text-xs font-semibold">
+                                {renderValue(formData.finalbd_comment)}
+                              </span>
+                            </div> */}
+                          </>
+                        )}
 
                       </div>
                     ),

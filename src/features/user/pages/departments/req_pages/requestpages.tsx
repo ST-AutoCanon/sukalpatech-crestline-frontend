@@ -109,9 +109,10 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   const [vendorMap, setVendorMap] = useState<Record<string, string>>({});
   const [departmentMap, setDepartmentMap] = useState<Record<string, string>>({});
   const [alert, setAlert] = useState<{
-  type: "success" | "error";
-  message: string;
-} | null>(null);
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
 
 
 
@@ -365,48 +366,45 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   };
 
   const handleSave = async () => {
-  if (!activePR) return;
+    if (!activePR) return;
 
-  try {
-    await savePR(activePR);
+    try {
+      await savePR(activePR);
 
-    setEditMode(false);
-    setActivePR(null); // close modal
+      setEditMode(false);
+      setActivePR(null); // close modal
 
-    fetchPRs(); // refresh list
+      fetchPRs(); // refresh list
 
-    setAlert({
-      type: "success",
-      message: "PR updated successfully!",
-    });
+      setAlert({
+        type: "success",
+        message: "PR updated successfully!",
+      });
 
-  } catch (err) {
-    console.error("Save failed", err);
+    } catch (err) {
+      console.error("Save failed", err);
 
-    setAlert({
-      type: "error",
-      message: "Failed to update PR.",
-    });
-  }
-};
+      setAlert({
+        type: "error",
+        message: "Failed to update PR.",
+      });
+    }
+  };
   const formatDateForInput = (date: string) => {
     if (!date) return "";
-    const d = new Date(date);
-    const offset = d.getTimezoneOffset();
-    const localDate = new Date(d.getTime() - offset * 60 * 1000);
-    return localDate.toISOString().split("T")[0];
+    return new Date(date).toISOString().split("T")[0];
   };
 
   return (
     <>
       {alert && (
-                <Aleart
-                  type={alert.type}
-                  message={alert.message}
-                  onClose={() => setAlert(null)}
-                />
-              )}
-      
+        <Aleart
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
+
 
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -431,7 +429,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 <div className="flex justify-between"><span className="text-gray-400">Priority</span><span className="font-medium text-gray-700">{pr.priority}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Status</span><span className="font-medium text-gray-700">{status}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Department</span><span className="font-medium text-gray-700 truncate">{departmentMap[String(pr.department)] ?? pr.department}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Delivery Date</span><span className="font-medium text-gray-700">{new Date(pr.required_date).toLocaleDateString()}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Delivery Date</span><span className="font-medium text-gray-700">{new Date(pr.required_date).toISOString().split("T")[0]}</span></div>
               </div>
 
               <div className="mt-3 flex gap-4">
@@ -452,7 +450,11 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditMode(true);
-                      setActivePR(pr);
+
+                      setActivePR({
+                        ...pr,
+                        department: pr.department ? String(pr.department) : "",
+                      });
                     }}
                   >
                     Edit
@@ -505,9 +507,9 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       <option value="" disabled>
                         Select Priority
                       </option>
-                      <option value="LOW">LOW</option>
-                      <option value="MEDIUM">MEDIUM</option>
-                      <option value="HIGH">HIGH</option>
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
                     </select>
                   ) : (
                     <input
@@ -541,15 +543,16 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                     <select
                       value={String(activePR.department ?? "")}
                       onChange={(e) =>
-                        setActivePR({ ...activePR, department: e.target.value })
+                        setActivePR({ ...activePR, department: String(e.target.value) })
                       }
                       className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
                     >
                       <option value="" disabled>
                         Select Department
                       </option>
+
                       {Object.entries(departmentMap).map(([id, name]) => (
-                        <option key={id} value={id}>
+                        <option key={id} value={String(id)}>
                           {name}
                         </option>
                       ))}
@@ -611,9 +614,9 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       <option value="" disabled>
                         Select Priority
                       </option>
-                      <option value="LOW">LOW</option>
-                      <option value="MEDIUM">MEDIUM</option>
-                      <option value="HIGH">HIGH</option>
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
                     </select>
                   ) : (
                     <input
@@ -851,7 +854,21 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                       : "bg-gray-100 text-gray-600"
                                       }`}
                                   >
-                                    <span className="truncate w-full block">
+                                    <span
+                                      className="truncate w-full block text-blue-600 underline cursor-pointer"
+                                      onClick={() => {
+                                        const file = vendor.attachments?.[0];
+
+                                        if (!file) return;
+
+                                        const url =
+                                          file.file_path?.startsWith("blob:")
+                                            ? file.file_path // preview
+                                            : `${import.meta.env.VITE_BACKEND_URL}${file.file_path}`;
+
+                                        window.open(url, "_blank");
+                                      }}
+                                    >
                                       {vendor.attachments?.[0]?.file_name || "No file uploaded"}
                                     </span>
 
@@ -1065,11 +1082,33 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
                                     <label
                                       className={`w-full border rounded px-2 py-1 text-sm flex items-center overflow-hidden ${editMode
-                                          ? "cursor-pointer border-blue-400 bg-white"
-                                          : "bg-gray-100 text-gray-600"
+                                        ? "cursor-pointer border-blue-400 bg-white"
+                                        : "bg-gray-100 text-gray-600"
                                         }`}
                                     >
-                                      <span className="truncate w-full block">
+                                      <span
+                                        className="truncate w-full block text-blue-600 underline cursor-pointer"
+                                        onClick={() => {
+                                          if (!vendor.attachments?.[0]) return;
+
+                                          const file = vendor.attachments[0];
+
+                                          let fileUrl = "";
+
+                                          // ✅ If new file (local preview)
+                                          if (file.fileObject) {
+                                            fileUrl = URL.createObjectURL(file.fileObject);
+                                          }
+                                          // ✅ If saved file (from backend)
+                                          else if (file.file_path) {
+                                            fileUrl = `${import.meta.env.VITE_BACKEND_URL}/uploads/${file.file_path}`;
+                                          }
+
+                                          if (fileUrl) {
+                                            window.open(fileUrl, "_blank");
+                                          }
+                                        }}
+                                      >
                                         {vendor.attachments?.[0]?.file_name || "No file uploaded"}
                                       </span>
 
@@ -1247,8 +1286,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 ))}
               </div>
             )}
-            
-     {/* FINANCE PAYMENT DETAILS */}
+
+            {/* FINANCE PAYMENT DETAILS */}
             {activePR.finance_payment_details && (
               <div className="border border-gray-200 rounded p-4 mb-4">
                 <h3 className="font-semibold mb-3 text-purple-600">
@@ -1271,21 +1310,21 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   {/* ✅ Show Percentage ONLY if PARTIAL */}
                   {activePR.finance_payment_details.payment_stage ===
                     "PARTIAL" && (
-                    <div>
-                      <label className="text-xs font-medium">
-                        Partial Percentage
-                      </label>
-                      <input
-                        readOnly
-                        value={
-                          activePR.finance_payment_details.partial_percentage
-                            ? `${activePR.finance_payment_details.partial_percentage}%`
-                            : "0%"
-                        }
-                        className="border p-2 rounded w-full bg-white"
-                      />
-                    </div>
-                  )}
+                      <div>
+                        <label className="text-xs font-medium">
+                          Partial Percentage
+                        </label>
+                        <input
+                          readOnly
+                          value={
+                            activePR.finance_payment_details.partial_percentage
+                              ? `${activePR.finance_payment_details.partial_percentage}%`
+                              : "0%"
+                          }
+                          className="border p-2 rounded w-full bg-white"
+                        />
+                      </div>
+                    )}
 
                   {/* Final Completed */}
                   <div>
@@ -1333,7 +1372,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 )}
               </div>
             )}
-            
+
             {/* PR ORDER DETAILS */}
             {activePR.order_details && (
               <div className="border border-gray-200 rounded p-4 mb-4">
@@ -1350,8 +1389,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       value={
                         activePR.order_details.order_placed_at
                           ? new Date(
-                              activePR.order_details.order_placed_at,
-                            ).toLocaleDateString()
+                            activePR.order_details.order_placed_at,
+                          ).toLocaleDateString()
                           : ""
                       }
                       className="border p-2 rounded w-full bg-white"
@@ -1368,8 +1407,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       value={
                         activePR.order_details.expected_delivery_date
                           ? new Date(
-                              activePR.order_details.expected_delivery_date,
-                            ).toLocaleDateString()
+                            activePR.order_details.expected_delivery_date,
+                          ).toLocaleDateString()
                           : ""
                       }
                       className="border p-2 rounded w-full bg-white"
@@ -1453,20 +1492,20 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   {/* Partial Quantity (only if applicable) */}
                   {activePR.store_receiving_details.quantity_status ===
                     "PARTIAL" && (
-                    <div>
-                      <label className="text-xs font-medium">
-                        Partial Quantity
-                      </label>
-                      <input
-                        readOnly
-                        value={
-                          activePR.store_receiving_details.partial_quantity ??
-                          0
-                        }
-                        className="border p-2 rounded w-full bg-white"
-                      />
-                    </div>
-                  )}
+                      <div>
+                        <label className="text-xs font-medium">
+                          Partial Quantity
+                        </label>
+                        <input
+                          readOnly
+                          value={
+                            activePR.store_receiving_details.partial_quantity ??
+                            0
+                          }
+                          className="border p-2 rounded w-full bg-white"
+                        />
+                      </div>
+                    )}
 
                   {/* Rejection Reason (if exists) */}
                   {activePR.store_receiving_details.rejection_reason && (
@@ -1574,7 +1613,11 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   onClick={(e) => {
                     e.stopPropagation();
                     setEditMode(true);
-                    setActivePR({ ...pr });  // ✅ clone properly
+
+                    setActivePR({
+                      ...pr,
+                      department: pr.department ? String(pr.department) : "",
+                    });
                   }}
                 >
                   Cancel

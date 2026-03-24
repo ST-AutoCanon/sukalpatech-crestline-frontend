@@ -385,8 +385,8 @@ const CreateOrganisation = () => {
         />
       )}
 
-      <div className="min-h-screen flex flex-col bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-6 lg:p-8">
-        <div className="flex-1 w-full max-w-4xl mx-auto">
+<div className="min-h-screen flex flex-col bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          <div className="flex-1 w-full max-w-4xl mx-auto">
           {/* Card */}
           <div className="bg-white rounded-2xl shadow-md p-5 sm:p-8">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">
@@ -396,7 +396,7 @@ const CreateOrganisation = () => {
               Register a new organisation and assign an administrator.
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-6 mt-3">
+            <form onSubmit={handleSubmit} className="space-y-6 mt-3 pb-8">
               {/* Organisation Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>

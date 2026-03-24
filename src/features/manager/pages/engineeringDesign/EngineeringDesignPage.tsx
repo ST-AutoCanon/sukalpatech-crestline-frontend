@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../../../context/AuthContext";
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
 // Real project ID from DB
 const PROJECT_ID = 1;

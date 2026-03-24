@@ -279,7 +279,7 @@ const AllVendors: React.FC = () => {
       : {};
 
   return (
-    <div className="px-4 sm:px-8 py-6">
+    <div className="px-4 sm:px-8 py-6 pb-15">
       {/* VENDOR GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {vendors.map((v) => (

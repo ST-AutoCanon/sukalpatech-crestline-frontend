@@ -4,7 +4,7 @@ import { Menu, Bell } from "lucide-react";
 import avatarimage from "../../../assets/avatar.jpg";
 import { io } from "socket.io-client";
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5002";
 
 const socket = io(BACKEND_URL, {
   withCredentials: true,

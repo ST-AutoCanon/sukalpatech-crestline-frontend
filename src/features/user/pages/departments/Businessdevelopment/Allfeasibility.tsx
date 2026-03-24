@@ -127,24 +127,61 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
     }
   };
   // Handle BD team update
+  // const handleBdUpdate = async () => {
+  //   try {
+
+
+  //     const res = await api.patch(
+  //       `/business-development/${data.id}/bd-update`,
+  //       {
+  //         stage: "FINAL",   // 🔥 Change to "FINAL" when doing final update
+  //         status: finalStatus,
+  //         comment: finalComments,
+  //       },
+  //       {
+  //         withCredentials: true,
+  //       }
+  //     );
+  //     onUpdate(res.data.data);
+
+  //     setAlert({
+  //       type: "success",
+  //       message: "Business development updated successfully!",
+  //     });
+
+  //     setTimeout(() => {
+  //       setAlert(null);
+  //       setShowModal(false);
+  //     }, 1500);
+
+  //   } catch (err) {
+  //     console.error("Failed to update BD info", err);
+
+  //     setAlert({
+  //       type: "error",
+  //       message: "Failed to update BD info",
+  //     });
+
+  //     setTimeout(() => setAlert(null), 3000);
+  //   }
+  // };
+
   const handleBdUpdate = async () => {
-    try {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await api.patch(
+      `/business-development/${data.id}/bd-update`,
+      {
+        bd_status: finalStatus,
+        bd_comments: finalComments,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` }, // ✅ send token
+      }
+    );
+    onUpdate(res.data.data);
 
-
-      const res = await api.patch(
-        `/business-development/${data.id}/bd-update`,
-        {
-          stage: "FINAL",   // 🔥 Change to "FINAL" when doing final update
-          status: finalStatus,
-          comment: finalComments,
-        },
-        {
-          withCredentials: true,
-        }
-      );
-      onUpdate(res.data.data);
-
-      setAlert({
+     setAlert({
         type: "success",
         message: "Business development updated successfully!",
       });
@@ -426,20 +463,20 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                           )}
                         </div>
                         {/* Final BD Status */}
-                        <div>
+                        {/* <div>
                           <span className="text-gray-600 text-xs">Final BD Status</span>
                           <div className="font-semibold text-black">
                             {renderValue(data.finalbd_status)}
                           </div>
-                        </div>
+                        </div> */}
 
                         {/* Final BD Comments */}
-                        <div>
+                        {/* <div>
                           <span className="text-gray-600 text-xs">Final BD Comments</span>
                           <div className="font-semibold text-black">
                             {renderValue(data.finalbd_comment)}
                           </div>
-                        </div>
+                        </div> */}
                       </div>
                     ),
                   },

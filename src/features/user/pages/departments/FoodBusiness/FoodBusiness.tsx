@@ -22,6 +22,8 @@ const initialFormData = {
   packaging_type: "",
   shelf_life: "",
   storage_condition: "",
+  business_status: "",
+  comment: "",
 };
 
 const FoodBusinessPage: React.FC<FoodBusinessPageProps> = ({ onClose, onSuccess }) => {
@@ -126,6 +128,37 @@ const FoodBusinessPage: React.FC<FoodBusinessPageProps> = ({ onClose, onSuccess 
                 <input name="packaging_type" value={formData.packaging_type} onChange={handleChange} placeholder="Packaging Type" className="border rounded-lg p-3" />
                 <input name="shelf_life" value={formData.shelf_life} onChange={handleChange} placeholder="Shelf Life" className="border rounded-lg p-3" />
                 <input name="storage_condition" value={formData.storage_condition} onChange={handleChange} placeholder="Storage Condition" className="border rounded-lg p-3" />
+              </div>
+
+              {/* Status & Comment */}
+              <h3 className="text-md sm:text-lg font-semibold text-gray-800">
+                Business Review
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Status Dropdown */}
+                <select
+                  name="business_status"
+                  value={formData.business_status}
+                  onChange={(e) =>
+                    setFormData({ ...formData, business_status: e.target.value })
+                  }
+                  className="border rounded-lg p-3"
+                >
+                  <option value="">Select Status</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="APPROVED">Approved</option>
+                  <option value="REJECTED">Rejected</option>
+                </select>
+
+                {/* Comment Input */}
+                <input
+                  name="comment"
+                  value={formData.comment}
+                  onChange={handleChange}
+                  placeholder="Comment"
+                  className="border rounded-lg p-3"
+                />
               </div>
 
               <div>

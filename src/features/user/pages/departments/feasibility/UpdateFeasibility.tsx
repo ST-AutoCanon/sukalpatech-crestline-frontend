@@ -448,7 +448,7 @@ export default function SubmittedRequestsPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm font-semibold">
-                          Description:
+                          Item Name:
                         </span>
                         <span className="bg-white border rounded px-2 py-1 flex-1 ml-3">
                           {item.item_name}
@@ -474,7 +474,7 @@ export default function SubmittedRequestsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium w-24 shrink-0">
-                          Description
+                          Item Name
                         </span>
                         <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
                           {item.item_name}

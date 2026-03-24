@@ -444,7 +444,7 @@ const AllVendors: React.FC = () => {
   }
 };
   return (
-    <div className="px-4 sm:px-8 py-6">
+    <div className="px-4 sm:px-8 py-6 pb-15">
       {alert && (
       <Aleart
         type={alert.type}

@@ -1,10 +1,11 @@
-// src/pages/businessDevFood/FoodBusinessHome.tsx
-import { useState } from "react";
-import FoodBusinessList from "./Foodlist";
-import FoodBusinessPage from "./FoodBusiness";
-import UpdatedFoodRequests from "./UpdatedFeasibilityPage"; // create this like 3W
+// src/pages/businessDevGold/GoldBusinessHome.tsx
 
-const FoodBusinessHome = () => {
+import { useState } from "react";
+import GoldBusinessList from "./goldbusinesslist";
+import GoldBusinessPage from "./goldbusinesspage";
+import UpdatedGoldRequests from "./updatedfeasibilitypage"; // like UpdatedFoodRequests
+
+const GoldBusinessHome = () => {
   const [showModal, setShowModal] = useState(false);
   const [refreshList, setRefreshList] = useState(false);
   const [showUpdatedRequests, setShowUpdatedRequests] = useState(false);
@@ -15,10 +16,10 @@ const FoodBusinessHome = () => {
 
   const handleSuccess = () => setRefreshList((prev) => !prev);
 
-  // 👉 SHOW UPDATED REQUEST PAGE
+  /* 👉 SHOW UPDATED REQUEST PAGE */
   if (showUpdatedRequests) {
     return (
-      <UpdatedFoodRequests
+      <UpdatedGoldRequests
         onBack={() => setShowUpdatedRequests(false)}
       />
     );
@@ -30,7 +31,7 @@ const FoodBusinessHome = () => {
       {/* HEADER */}
       <div className="flex justify-between mb-6">
         <button className="bg-white text-purple-700 px-4 py-2 rounded-full">
-          Food Business Requests
+          Gold Business Requests
         </button>
 
         <div className="flex gap-2">
@@ -68,7 +69,7 @@ const FoodBusinessHome = () => {
       </div>
 
       {/* LIST */}
-      <FoodBusinessList
+      <GoldBusinessList
         refresh={refreshList}
         filter={
           activeFilter === "All PR"
@@ -81,6 +82,7 @@ const FoodBusinessHome = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex justify-center p-4">
           <div className="bg-white rounded-xl w-full max-w-3xl p-6 relative">
+            
             <button
               onClick={() => setShowModal(false)}
               className="absolute top-3 right-3 text-xl"
@@ -88,7 +90,7 @@ const FoodBusinessHome = () => {
               ×
             </button>
 
-            <FoodBusinessPage
+            <GoldBusinessPage
               onClose={() => setShowModal(false)}
               onSuccess={() => {
                 handleSuccess();
@@ -102,4 +104,4 @@ const FoodBusinessHome = () => {
   );
 };
 
-export default FoodBusinessHome;
+export default GoldBusinessHome;

@@ -20,6 +20,8 @@ import OrganisationHome from "./features/superadmin/pages/organisations/Organisa
 import TwoWheelerHome from "./features/user/pages/departments/TwoWheeler/TwoWheelerHome";
 import ThreeWheelerHome from "./features/user/pages/departments/ThreeWheeler/ThreeWheelerHome";
 import FoodBusinessHome from "./features/user/pages/departments/FoodBusiness/FoodBusinessHome";
+import GoldBusinessHome from "./features/user/pages/departments/gold_business/goldbusinessHome";
+
 
 import ManagerDashboard from "./features/manager/pages/ManagerDashboard";
 import ManagerDashboardHome from "./features/manager/pages/ManagerHome";
@@ -154,6 +156,15 @@ export default function AppRoutes() {
     </Suspense>
   }
 />
+<Route
+  path="bd2/gold"
+  element={
+    <Suspense fallback={<div>Loading gold Business...</div>}>
+      <GoldBusinessHome />
+    </Suspense>
+  }
+/>
+  
       </Route>
 
       {/* Manager Routes */}

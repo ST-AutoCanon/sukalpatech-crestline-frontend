@@ -146,7 +146,9 @@ export default function EmployeeDashboard() {
   two_wheeler: "two_wheeler",
   three_wheeler: "three_wheeler",
 
-  foodbusiness: "food_business",
+  
+  food_business: "food_business",
+  gold_business: "gold_business",
 };
 
  const deptRoutes: Record<string, string> = {
@@ -157,7 +159,8 @@ export default function EmployeeDashboard() {
 
   two_wheeler: "/employee/bd2/2w",
   three_wheeler: "/employee/bd2/3w",
-  food_business: "/employee/bd2/food", // ✅ FIX
+    food_business: "/employee/bd2/food", // ✅ FIX
+   gold_business: "/employee/bd2/gold",
 };
   const departmentNames: Record<string, string> = {
     "/employee/procurement": "Procurement",
@@ -166,10 +169,10 @@ export default function EmployeeDashboard() {
     "/employee/bd": "Business Development",
    
   "/employee/bd2/2w": "Two Wheeler",
-  "/employee/bd2/3w": "Three Wheeler",
+ "/employee/bd2/3w": "Three Wheeler",
   "/employee/bd2/food": "Food Business",
+   "/employee/bd2/gold": "Gold Business", 
 };
-
   if (!user) return <h3 className="p-6 text-lg">Loading user...</h3>;
   if (loading) return <h3 className="p-6 text-lg">Loading dashboard...</h3>;
 
