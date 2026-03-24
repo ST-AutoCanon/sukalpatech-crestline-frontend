@@ -198,7 +198,7 @@ const UpdateOrganisation = () => {
               Update Organisation
             </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6 pb-8">
               {/* Select Organisation */}
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">

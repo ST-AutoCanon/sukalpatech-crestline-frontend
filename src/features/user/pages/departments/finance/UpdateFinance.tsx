@@ -79,13 +79,13 @@ export default function SubmittedFinanceRequestsPage() {
     message: string;
   } | null>(null);
 
-const [finance, setFinance] = useState({
-  paymentType: "",
-  partialPercentage: "",
-  finalCompleted: "",
-  paymentProof: null,
-  comment: "",
-});
+  const [finance, setFinance] = useState({
+    paymentType: "",
+    partialPercentage: "",
+    finalCompleted: "",
+    paymentProof: null,
+    comment: "",
+  });
 
   const FINANCE_STATUS_OPTIONS = [
     "FINANCE APPROVED",
@@ -130,35 +130,35 @@ const [finance, setFinance] = useState({
     return new Date(date).toLocaleDateString("en-GB");
   };
 
-  
+
 
   const fetchApprovedRequests = async () => {
-  try {
-    const res = await axios.get(
-      `${API_BASE}/approved-finance-requests`,
-      { withCredentials: true }
-    );
-
-    const allPRs = res.data.data || [];
-
-    // ✅ Remove PRs already approved by Finance
-    const filteredPRs = allPRs.filter((pr: FinancePR) => {
-      const hasFinanceApproved = pr.department_statuses?.some(
-        (status) =>
-          status.department_status === "FINANCE APPROVED"
+    try {
+      const res = await axios.get(
+        `${API_BASE}/approved-finance-requests`,
+        { withCredentials: true }
       );
 
-      return !hasFinanceApproved;
-    });
+      const allPRs = res.data.data || [];
 
-    setRequests(filteredPRs);
+      // ✅ Remove PRs already approved by Finance
+      const filteredPRs = allPRs.filter((pr: FinancePR) => {
+        const hasFinanceApproved = pr.department_statuses?.some(
+          (status) =>
+            status.department_status === "FINANCE APPROVED"
+        );
 
-  } catch (err) {
-    console.error("Error fetching approved finance requests:", err);
-  }
-};
+        return !hasFinanceApproved;
+      });
 
-  
+      setRequests(filteredPRs);
+
+    } catch (err) {
+      console.error("Error fetching approved finance requests:", err);
+    }
+  };
+
+
 
 
   useEffect(() => {
@@ -230,7 +230,7 @@ const [finance, setFinance] = useState({
   // };
 
 
-    const submitUpdate = async () => {
+  const submitUpdate = async () => {
     if (!selectedPR || !newStatus) {
       setAlert({ type: "error", message: "Please select finance status" });
       setTimeout(() => setAlert(null), 2000);
@@ -472,13 +472,31 @@ const [finance, setFinance] = useState({
                               />
 
                               {/* 2️⃣ Upload Quotation */}
-                              <input
+                              {/* <input
                                 type="text"
                                 value={vendor.attachments?.[0]?.file_name || ""}
                                 readOnly
                                 className="bg-white border rounded px-2 py-1 text-sm"
-                              />
+                              /> */}
+                              {/* 2️⃣ Upload Quotation */}
+                              {(() => {
+                                const validAttachment = vendor.attachments?.find(
+                                  (att: any) => att.file_path && att.file_path.trim() !== ""
+                                );
 
+                                return validAttachment ? (
+                                  <a
+                                    href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline text-sm"
+                                  >
+                                    View File
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">No file</span>
+                                );
+                              })()}
                               {/* 3️⃣ Unit Price */}
                               <input
                                 readOnly
@@ -534,112 +552,112 @@ const [finance, setFinance] = useState({
             )}
 
 
-           
-            
+
+
             {/* ================= FINANCE SECTION ================= */}
-<div className="border border-gray-200 rounded p-4 mb-4">
-  <h3 className="font-semibold mb-4 text-purple-600">
-    Finance Payment Update
-  </h3>
+            <div className="border border-gray-200 rounded p-4 mb-4">
+              <h3 className="font-semibold mb-4 text-purple-600">
+                Finance Payment Update
+              </h3>
 
-  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
 
-    {/* Payment Type */}
-    <div>
-      <label className="text-xs font-medium">Payment Type</label>
-      <select
-        value={finance.paymentType}
-        onChange={(e) =>
-          setFinance({ ...finance, paymentType: e.target.value })
-        }
-        className="border p-2 rounded w-full bg-white"
-      >
-        <option value="">Select Payment Type</option>
-        <option value="ADVANCE">Advance</option>
-        <option value="FINAL">Final</option>
-        <option value="PARTIAL">Partial</option>
-      </select>
-    </div>
+                {/* Payment Type */}
+                <div>
+                  <label className="text-xs font-medium">Payment Type</label>
+                  <select
+                    value={finance.paymentType}
+                    onChange={(e) =>
+                      setFinance({ ...finance, paymentType: e.target.value })
+                    }
+                    className="border p-2 rounded w-full bg-white"
+                  >
+                    <option value="">Select Payment Type</option>
+                    <option value="ADVANCE">Advance</option>
+                    <option value="FINAL">Final</option>
+                    <option value="PARTIAL">Partial</option>
+                  </select>
+                </div>
 
-    {/* Partial Percentage (Only if PARTIAL selected) */}
-    {finance.paymentType === "PARTIAL" && (
-      <div>
-        <label className="text-xs font-medium">
-          Partial Payment Percentage
-        </label>
-        <select
-          value={finance.partialPercentage}
-          onChange={(e) =>
-            setFinance({
-              ...finance,
-              partialPercentage: e.target.value,
-            })
-          }
-          className="border p-2 rounded w-full bg-white"
-        >
-          <option value="">Select Percentage</option>
-          {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((p) => (
-            <option key={p} value={p}>
-              {p}%
-            </option>
-          ))}
-        </select>
-      </div>
-    )}
+                {/* Partial Percentage (Only if PARTIAL selected) */}
+                {finance.paymentType === "PARTIAL" && (
+                  <div>
+                    <label className="text-xs font-medium">
+                      Partial Payment Percentage
+                    </label>
+                    <select
+                      value={finance.partialPercentage}
+                      onChange={(e) =>
+                        setFinance({
+                          ...finance,
+                          partialPercentage: e.target.value,
+                        })
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    >
+                      <option value="">Select Percentage</option>
+                      {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((p) => (
+                        <option key={p} value={p}>
+                          {p}%
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
-    {/* Final Payment Completed */}
-    <div>
-      <label className="text-xs font-medium">
-        Final Payment Completed
-      </label>
-      <select
-        value={finance.finalCompleted}
-        onChange={(e) =>
-          setFinance({ ...finance, finalCompleted: e.target.value })
-        }
-        className="border p-2 rounded w-full bg-white"
-      >
-        <option value="">Select</option>
-        <option value="YES">Yes</option>
-        <option value="NO">No</option>
-      </select>
-    </div>
+                {/* Final Payment Completed */}
+                <div>
+                  <label className="text-xs font-medium">
+                    Final Payment Completed
+                  </label>
+                  <select
+                    value={finance.finalCompleted}
+                    onChange={(e) =>
+                      setFinance({ ...finance, finalCompleted: e.target.value })
+                    }
+                    className="border p-2 rounded w-full bg-white"
+                  >
+                    <option value="">Select</option>
+                    <option value="YES">Yes</option>
+                    <option value="NO">No</option>
+                  </select>
+                </div>
 
-    {/* Payment Proof Upload */}
-    <div className="sm:col-span-3">
-      <label className="text-xs font-medium">
-        Upload Payment Proof
-      </label>
-      <input
-        type="file"
-        onChange={(e) =>
-          setFinance({
-            ...finance,
-            paymentProof: e.target.files?.[0],
-          })
-        }
-        className="border p-2 rounded w-full bg-white"
-      />
-    </div>
+                {/* Payment Proof Upload */}
+                <div className="sm:col-span-3">
+                  <label className="text-xs font-medium">
+                    Upload Payment Proof
+                  </label>
+                  <input
+                    type="file"
+                    onChange={(e) =>
+                      setFinance({
+                        ...finance,
+                        paymentProof: e.target.files?.[0],
+                      })
+                    }
+                    className="border p-2 rounded w-full bg-white"
+                  />
+                </div>
 
-    {/* Finance Comment */}
-    <div className="sm:col-span-3">
-      <label className="text-xs font-medium">
-        Finance Comment
-      </label>
-      <input
-        type="text"
-        placeholder="Enter finance comment"
-        value={finance.comment}
-        onChange={(e) =>
-          setFinance({ ...finance, comment: e.target.value })
-        }
-        className="border p-2 rounded w-full bg-white"
-      />
-    </div>
+                {/* Finance Comment */}
+                <div className="sm:col-span-3">
+                  <label className="text-xs font-medium">
+                    Finance Comment
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter finance comment"
+                    value={finance.comment}
+                    onChange={(e) =>
+                      setFinance({ ...finance, comment: e.target.value })
+                    }
+                    className="border p-2 rounded w-full bg-white"
+                  />
+                </div>
 
-  </div>
-</div>
+              </div>
+            </div>
 
             {/* STATUS SECTION */}
             <div className="flex justify-end mb-2">

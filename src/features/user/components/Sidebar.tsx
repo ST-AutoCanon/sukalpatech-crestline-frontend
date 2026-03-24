@@ -7,7 +7,8 @@ import {
   Building2,
   BarChart3,
   Menu,
-  Bike, Car, UtensilsCrossed
+  Bike, Car, UtensilsCrossed,
+  Gem
 } from "lucide-react";
 import crestlineLogo from "../../../assets/crestlinetech_black_1.png";
 import crestlinelogo from "../../../assets/crestline_logo.jpeg";
@@ -41,8 +42,9 @@ export default function Sidebar({
   bd: <BarChart3 size={22} />,
   two_wheeler: <Bike size={22} />,
   three_wheeler: <Car size={22} />,
-  foodbusiness: <UtensilsCrossed size={22} />,
-};
+   food_business: <UtensilsCrossed size={22} />,
+  gold_business:<Gem size={22}/>,
+  }
 
   return (
     <>

@@ -365,12 +365,12 @@ export default function NewProcurementPage({ onClose, onCreated }) {
         </div>
         
         {/* FORM AREA */}
-        <div className="p-6 pt-20  sm:pt-6 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
           {/* PR INFO */}
           <div className="bg-gray-100 rounded-xl p-4 overflow-x-auto">
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
               <div>
-                <label className="text-sm text-gray-600">Description</label>
+                <label className="text-sm text-gray-600">Description <span className="text-red-500">*</span></label>
                 <input
                   name="description"
                   placeholder="Add description"
@@ -379,7 +379,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                 />
               </div>
               <div>
-                <label className="text-sm text-gray-600">Priority</label>
+                <label className="text-sm text-gray-600">Priority<span className="text-red-500">*</span></label>
                 <select
                   name="priority"
                   defaultValue=""
@@ -395,7 +395,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                 </select>
               </div>
               <div>
-                <label className="text-sm text-gray-600">Delivery Date</label>
+                <label className="text-sm text-gray-600">Delivery Date <span className="text-red-500">*</span></label>
                 <input
                   type="date"
                   name="required_date"
@@ -406,7 +406,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">Department</label>
+                <label className="text-sm text-gray-600">Department<span className="text-red-500">*</span></label>
                 {/* <select name="department" className="w-full border rounded-lg p-2 mt-1 bg-white" onChange={handlePRChange}>
                   <option value="">Select</option>
                   {departments.map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
@@ -425,7 +425,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                 </select>
               </div>
               <div>
-                <label className="text-sm text-gray-600">Remarks</label>
+                <label className="text-sm text-gray-600">Remarks<span className="text-red-500">*</span></label>
                 <input
                   name="remarks"
                   placeholder="Add remarks"
@@ -462,7 +462,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
               <div className="bg-gray-200 rounded-lg p-3 overflow-x-auto">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-semibold">Item Code</span>
+                    <span className="text-sm font-semibold">Item Code<span className="text-red-500">*</span></span>
                     <input
                       className="flex-1 border rounded-lg px-2 py-1"
                       onChange={(e) =>
@@ -471,7 +471,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     />
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-semibold">Item Name</span>
+                    <span className="text-sm font-semibold">Item Name<span className="text-red-500">*</span></span>
                     <input
                       className="flex-1 border rounded-lg px-2 py-1"
                       onChange={(e) =>
@@ -480,7 +480,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     />
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-semibold">Quantity</span>
+                    <span className="text-sm font-semibold">Quantity<span className="text-red-500">*</span></span>
 
                     <input
                       type="number"
@@ -518,7 +518,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   >
                     {/* Vendor */}
                     <div>
-                      <label className="text-xs text-gray-600">Vendor</label>
+                      <label className="text-xs text-gray-600">Vendor<span className="text-red-500">*</span></label>
                       <select
                         className="w-full max-w-full p-2 border rounded mt-1 relative z-20 bg-white"
                         onChange={(e) =>
@@ -559,7 +559,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     </div>
                     {/* Unit Price */}
                     <div>
-                      <label className="text-xs text-gray-600">Unit Price</label>
+                      <label className="text-xs text-gray-600">Unit Price<span className="text-red-500">*</span></label>
                       <input
                         type="number"
                         min={0}
@@ -587,7 +587,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     {/* Total Price */}
                     <div>
                       <label className="text-xs text-gray-600">
-                        Total Price
+                        Total Price<span className="text-red-500">*</span>
                       </label>
                       <input
                         className="w-full p-2 border rounded mt-1 bg-gray-100"
@@ -599,7 +599,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     {/* Validity */}
                     <div>
                       <label className="text-xs text-gray-600">
-                        Quotation Validity
+                        Quotation Validity<span className="text-red-500">*</span>
                       </label>
                       <input
                         type="date"
@@ -613,7 +613,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
                     {/* Comments */}
                     <div>
-                      <label className="text-xs text-gray-600">Comments</label>
+                      <label className="text-xs text-gray-600">Comments<span className="text-red-500">*</span></label>
                       <input
                         className="w-full p-2 border rounded mt-1"
                         onChange={(e) => handleComment(i, vi, e.target.value)}
@@ -664,3 +664,5 @@ export default function NewProcurementPage({ onClose, onCreated }) {
   </>
   );
 }
+
+

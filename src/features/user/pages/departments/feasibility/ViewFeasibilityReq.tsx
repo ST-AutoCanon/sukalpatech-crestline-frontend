@@ -97,7 +97,7 @@ type PR = {
   department_statuses: DepartmentStatus[];
   items: Item[];
 
-    finance_payment_details?: FinancePaymentDetails | null;
+  finance_payment_details?: FinancePaymentDetails | null;
   order_details?: PROrderDetails;
   store_receiving_details?: StoreReceivingDetails | null;
 };
@@ -115,9 +115,9 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   const [newComment, setNewComment] = useState("");
 
   const [alert, setAlert] = useState<{
-  type: "success" | "error";
-  message: string;
-} | null>(null);
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // const fetchPRs = async () => {
   //   setLoading(true);
@@ -325,58 +325,58 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   };
 
   const handleSave = async () => {
-  if (!activePR) return;
+    if (!activePR) return;
 
-  try {
-    let updatedPRData = { ...activePR };
+    try {
+      let updatedPRData = { ...activePR };
 
-    if (newStatus) {
-      updatedPRData = {
-        ...updatedPRData,
-        department_statuses: [
-          ...(updatedPRData.department_statuses || []),
-          {
-            department_status: newStatus,
-            department_comment: newComment,
-            status_updated_by: user?.id || "",
-            updated_at: new Date().toISOString(),
-          },
-        ],
-      };
+      if (newStatus) {
+        updatedPRData = {
+          ...updatedPRData,
+          department_statuses: [
+            ...(updatedPRData.department_statuses || []),
+            {
+              department_status: newStatus,
+              department_comment: newComment,
+              status_updated_by: user?.id || "",
+              updated_at: new Date().toISOString(),
+            },
+          ],
+        };
+      }
+
+      const savedPR = await savePR(updatedPRData);
+
+      setPrs((prev) =>
+        prev.map((pr) => (pr.id === savedPR.id ? savedPR : pr))
+      );
+
+      setNewStatus("");
+      setNewComment("");
+
+      setActivePR(null);
+      setEditMode(false);
+
+      // ✅ SUCCESS ALERT
+      setAlert({
+        type: "success",
+        message: "PR updated successfully!",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
+
+    } catch (err) {
+      console.error("Save error:", err);
+
+      // ❌ ERROR ALERT
+      setAlert({
+        type: "error",
+        message: "Failed to update PR.",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
     }
-
-    const savedPR = await savePR(updatedPRData);
-
-    setPrs((prev) =>
-      prev.map((pr) => (pr.id === savedPR.id ? savedPR : pr))
-    );
-
-    setNewStatus("");
-    setNewComment("");
-
-    setActivePR(null);
-    setEditMode(false);
-
-    // ✅ SUCCESS ALERT
-    setAlert({
-      type: "success",
-      message: "PR updated successfully!",
-    });
-
-    setTimeout(() => setAlert(null), 3000);
-
-  } catch (err) {
-    console.error("Save error:", err);
-
-    // ❌ ERROR ALERT
-    setAlert({
-      type: "error",
-      message: "Failed to update PR.",
-    });
-
-    setTimeout(() => setAlert(null), 3000);
-  }
-};
+  };
 
   const formatDateForInput = (date: string) => {
     if (!date) return "";
@@ -409,6 +409,31 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
     return true;
   };
 
+  const getLatestFeasibilityStatus = (pr) => {
+    const statuses = pr.department_statuses || [];
+
+    const feasibility = [...statuses]
+      .reverse()
+      .find((s) =>
+        s.department_status?.toUpperCase().includes("FEASIBILITY")
+      );
+
+    return feasibility?.department_status?.trim() || null;
+  };
+
+  const isFeasibilityDone = (pr) => {
+    const status = getLatestFeasibilityStatus(pr);
+
+    if (!status) return false;
+
+    const normalized = status.trim().toUpperCase();
+
+    return (
+      normalized === "FEASIBILITY APPROVED" ||
+      normalized === "FEASIBILITY REJECTED" ||
+      normalized === "FEASIBILITY PENDING"
+    );
+  };
   return (
     <>
       {alert && (
@@ -455,12 +480,16 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 >
                   More Info
                 </button>
-
                 {isEditable(pr) && (
                   <button
-                    className="text-sm font-semibold text-blue-600 hover:underline"
+                    className={`text-sm font-semibold ${isFeasibilityDone(pr)
+                      ? "text-blue-600 hover:underline"
+                      : "text-gray-400 cursor-not-allowed"
+                      }`}
+                    disabled={!isFeasibilityDone(pr)}
                     onClick={(e) => {
                       e.stopPropagation();
+                      if (!isFeasibilityDone(pr)) return; // extra safety
                       setEditMode(true);
                       setActivePR(pr);
                     }}
@@ -830,10 +859,28 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                   )}
                                 </label> */}
 
-                                <label className="border rounded px-2 py-1 w-full text-sm flex items-center bg-gray-100 text-gray-600 cursor-not-allowed  truncate overflow-hidden whitespace-nowrap">
+                                {/* <label className="border rounded px-2 py-1 w-full text-sm flex items-center bg-gray-100 text-gray-600 cursor-not-allowed  truncate overflow-hidden whitespace-nowrap">
                                   {vendor.attachments?.[0]?.file_name || "No file uploaded"}
                                 </label>
+ */}
+                                {(() => {
+                                  const validAttachment = vendor.attachments?.find(
+                                    (att: any) => att.file_path && att.file_path.trim() !== ""
+                                  );
 
+                                  return validAttachment ? (
+                                    <a
+                                      href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 underline text-sm"
+                                    >
+                                      View File
+                                    </a>
+                                  ) : (
+                                    <span className="text-gray-400 text-sm">No file</span>
+                                  );
+                                })()}
 
 
                                 <input
@@ -978,9 +1025,26 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                     vendor.vendor_id,
                                   ],
                                   [
-                                    "Upload Quotation",
-                                    vendor.attachments?.[0]?.file_name || "-",
-                                  ],
+  "Upload Quotation",
+  (() => {
+    const validAttachment = vendor.attachments?.find(
+      (att: any) => att.file_path && att.file_path.trim() !== ""
+    );
+
+    return validAttachment ? (
+      <a
+        href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 underline"
+      >
+        View File
+      </a>
+    ) : (
+      "No file"
+    );
+  })(),
+],
                                   ["Unit Price", vendor.unit_price ?? "-"],
                                   ["Total Price", vendor.total_price ?? "-"],
                                   [
@@ -1002,11 +1066,17 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                     <span className="text-gray-500 text-xs">
                                       {label}
                                     </span>
-                                    <input
-                                      readOnly
-                                      value={value}
-                                      className="bg-white border rounded px-2 py-1 w-full"
-                                    />
+                                   {label === "Upload Quotation" ? (
+  <div className="bg-white border rounded px-2 py-1 w-full text-sm">
+    {value}
+  </div>
+) : (
+  <input
+    readOnly
+    value={value as string}
+    className="bg-white border rounded px-2 py-1 w-full"
+  />
+)}
                                   </div>
                                 ))}
                               </div>
@@ -1021,7 +1091,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
             )}
 
 
- {/* FINANCE PAYMENT DETAILS */}
+            {/* FINANCE PAYMENT DETAILS */}
             {activePR.finance_payment_details && (
               <div className="border border-gray-200 rounded p-4 mb-4">
                 <h3 className="font-semibold mb-3 text-purple-600">
@@ -1044,21 +1114,21 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   {/* ✅ Show Percentage ONLY if PARTIAL */}
                   {activePR.finance_payment_details.payment_stage ===
                     "PARTIAL" && (
-                    <div>
-                      <label className="text-xs font-medium">
-                        Partial Percentage
-                      </label>
-                      <input
-                        readOnly
-                        value={
-                          activePR.finance_payment_details.partial_percentage
-                            ? `${activePR.finance_payment_details.partial_percentage}%`
-                            : "0%"
-                        }
-                        className="border p-2 rounded w-full bg-white"
-                      />
-                    </div>
-                  )}
+                      <div>
+                        <label className="text-xs font-medium">
+                          Partial Percentage
+                        </label>
+                        <input
+                          readOnly
+                          value={
+                            activePR.finance_payment_details.partial_percentage
+                              ? `${activePR.finance_payment_details.partial_percentage}%`
+                              : "0%"
+                          }
+                          className="border p-2 rounded w-full bg-white"
+                        />
+                      </div>
+                    )}
 
                   {/* Final Completed */}
                   <div>
@@ -1106,7 +1176,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 )}
               </div>
             )}
-            
+
             {/* PR ORDER DETAILS */}
             {activePR.order_details && (
               <div className="border border-gray-200 rounded p-4 mb-4">
@@ -1123,8 +1193,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       value={
                         activePR.order_details.order_placed_at
                           ? new Date(
-                              activePR.order_details.order_placed_at,
-                            ).toLocaleDateString()
+                            activePR.order_details.order_placed_at,
+                          ).toLocaleDateString()
                           : ""
                       }
                       className="border p-2 rounded w-full bg-white"
@@ -1141,8 +1211,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       value={
                         activePR.order_details.expected_delivery_date
                           ? new Date(
-                              activePR.order_details.expected_delivery_date,
-                            ).toLocaleDateString()
+                            activePR.order_details.expected_delivery_date,
+                          ).toLocaleDateString()
                           : ""
                       }
                       className="border p-2 rounded w-full bg-white"
@@ -1226,20 +1296,20 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   {/* Partial Quantity (only if applicable) */}
                   {activePR.store_receiving_details.quantity_status ===
                     "PARTIAL" && (
-                    <div>
-                      <label className="text-xs font-medium">
-                        Partial Quantity
-                      </label>
-                      <input
-                        readOnly
-                        value={
-                          activePR.store_receiving_details.partial_quantity ??
-                          0
-                        }
-                        className="border p-2 rounded w-full bg-white"
-                      />
-                    </div>
-                  )}
+                      <div>
+                        <label className="text-xs font-medium">
+                          Partial Quantity
+                        </label>
+                        <input
+                          readOnly
+                          value={
+                            activePR.store_receiving_details.partial_quantity ??
+                            0
+                          }
+                          className="border p-2 rounded w-full bg-white"
+                        />
+                      </div>
+                    )}
 
                   {/* Rejection Reason (if exists) */}
                   {activePR.store_receiving_details.rejection_reason && (

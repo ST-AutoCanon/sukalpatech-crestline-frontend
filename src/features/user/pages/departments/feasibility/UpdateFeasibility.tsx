@@ -448,7 +448,7 @@ export default function SubmittedRequestsPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm font-semibold">
-                          Description:
+                          Item Name:
                         </span>
                         <span className="bg-white border rounded px-2 py-1 flex-1 ml-3">
                           {item.item_name}
@@ -474,7 +474,7 @@ export default function SubmittedRequestsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium w-24 shrink-0">
-                          Description
+                          Item Name
                         </span>
                         <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
                           {item.item_name}
@@ -523,12 +523,31 @@ export default function SubmittedRequestsPage() {
                               <span className="text-xs font-medium text-gray-600 mb-1">
                                 Upload Quotation
                               </span>
-                              <input
+                              {/* <input
                                 readOnly
                                 value={vendor.attachments?.[0]?.file_name || ""}
                                 placeholder="No attachment"
                                 className="border rounded px-2 py-1 bg-white"
-                              />
+                              /> */}
+
+                              {(() => {
+                                const validAttachment = vendor.attachments?.find(
+                                  (att: any) => att.file_path && att.file_path.trim() !== ""
+                                );
+
+                                return validAttachment ? (
+                                  <a
+                                    href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline text-sm"
+                                  >
+                                    View File
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">No file</span>
+                                );
+                              })()}
                             </div>
 
                             {/* Unit Price */}
@@ -661,12 +680,30 @@ export default function SubmittedRequestsPage() {
                             <span className="text-xs font-medium text-gray-600 mb-1">
                               Upload Quotation
                             </span>
-                            <input
+                            {/* <input
                               readOnly
                               value={vendor.attachments?.[0]?.file_name || ""}
                               placeholder="No attachment"
                               className="border rounded px-2 py-1 w-full"
-                            />
+                            /> */}
+                            {(() => {
+                                const validAttachment = vendor.attachments?.find(
+                                  (att: any) => att.file_path && att.file_path.trim() !== ""
+                                );
+
+                                return validAttachment ? (
+                                  <a
+                                    href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline text-sm"
+                                  >
+                                    View File
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">No file</span>
+                                );
+                              })()}
                           </div>
 
                           {/* Unit Price */}

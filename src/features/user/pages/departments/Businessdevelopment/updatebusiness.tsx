@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, memo } from "react";
 import { api } from "../../../api/businessApi";
 import axios from "axios";
+import Alert from "../../../components/Aleartmessage";
 
 interface Request {
   id: number;
@@ -106,6 +107,10 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
   const [departments, setDepartments] = useState<any[]>([]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [form, setForm] = useState<any>({ ...initialForm });
+  const [alert, setAlert] = useState<{
+  type: "success" | "error";
+  message: string;
+} | null>(null);
 
 
   const [expandedSections, setExpandedSections] = useState<{
@@ -189,56 +194,6 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
   //   fetchRequests();
   // };
 
-
-  const handleSubmit = async (e: any, bdId?: number) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-
-    Object.keys(form).forEach((key) => {
-      if (key === "attachments") {
-        form.attachments.forEach((file: File) => {
-          formData.append("attachments", file);
-        });
-      } else {
-        formData.append(key, form[key]);
-      }
-    });
-
-    try {
-      if (bdId) {
-        await api.patch(
-          `/business-development/${bdId}/submit`,
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-        alert("BD info updated successfully!");
-      } else {
-        await api.post(
-          "/business-development",
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-        alert("Request created successfully!");
-      }
-      setForm({ ...initialForm });
-
-
-
-
-      // ✅ refresh list
-      fetchRequests();
-
-      // ✅ CLOSE MODAL AUTOMATICALLY
-      onSuccess();
-      onClose();
-
-    } catch (err) {
-      console.error("Failed to submit BD info", err);
-      alert("Failed to submit BD info");
-    }
-  };
-
   useEffect(() => {
     setExpandedSections({
       businessRequest: true,
@@ -247,8 +202,75 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
 
 
+  const handleSubmit = async (e: any, bdId?: number) => {
+  e.preventDefault();
+
+  const formData = new FormData();
+
+  Object.keys(form).forEach((key) => {
+    if (key === "attachments") {
+      form.attachments.forEach((file: File) => {
+        formData.append("attachments", file);
+      });
+    } else {
+      formData.append(key, form[key]);
+    }
+  });
+
+  try {
+    if (bdId) {
+      await api.patch(
+        `/business-development/${bdId}/submit`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      setAlert({
+        type: "success",
+        message: "BD info updated successfully!",
+      });
+    } else {
+      await api.post(
+        "/business-development",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      setAlert({
+        type: "success",
+        message: "Request created successfully!",
+      });
+    }
+
+    setForm({ ...initialForm });
+    fetchRequests();
+
+    // ✅ Delay closing so alert is visible
+    setTimeout(() => {
+      onSuccess();
+      onClose();
+    }, 1500); // adjust time if needed
+
+  } catch (err) {
+    console.error("Failed to submit BD info", err);
+
+    setAlert({
+      type: "error",
+      message: "Failed to submit BD info",
+    });
+  }
+};
+
+
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/30 p-2 sm:p-4">
+      {alert && (
+  <Alert
+    type={alert.type}
+    message={alert.message}
+    onClose={() => setAlert(null)}
+  />
+)}
       <div className=" w-full
   sm:max-w-7xl
   bg-white
@@ -286,7 +308,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Description</label>
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Description <span className="text-red-500">*</span></label>
                   <input
                     name="description"
                     value={form.description}
@@ -296,7 +318,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                 </div>
 
                 <div>
-                  <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Priority</label>
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Priority<span className="text-red-500">*</span></label>
                   <select
                     name="priority"
                     value={form.priority}
@@ -311,7 +333,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                 </div>
 
                 <div>
-                  <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Required Date</label>
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Required Date <span className="text-red-500">*</span></label>
                   <input
                     type="date"
                     name="required_date"
@@ -322,7 +344,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                   />
                 </div>
                 <div>
-                  <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Requested By Person</label>
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Requested By Person<span className="text-red-500">*</span></label>
                   <input
                     name="requested_by_person"
                     value={form.requested_by_person}
@@ -338,7 +360,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
               toggle={toggleSection}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Applicant Name</label>
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Applicant Name <span className="text-red-500">*</span></label>
                   <input name="applicant_name" value={form.applicant_name} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
                 <div>
@@ -702,8 +724,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
       </div>
     </div>
-  );
-
+  )
 };
 
 export default TestBusinessDev;

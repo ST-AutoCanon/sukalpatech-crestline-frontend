@@ -18,7 +18,7 @@ interface ThreeWheelerModalProps {
 
 
 const ThreeWheelerPage: React.FC<ThreeWheelerModalProps> = ({ onClose, onSuccess }) => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     company_name: "",
@@ -32,6 +32,8 @@ const ThreeWheelerPage: React.FC<ThreeWheelerModalProps> = ({ onClose, onSuccess
     engine_capacity: "",
     fuel_type: "",
     load_capacity: "",
+    business_status: "",
+    comment: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -46,7 +48,9 @@ const ThreeWheelerPage: React.FC<ThreeWheelerModalProps> = ({ onClose, onSuccess
     }
   }, [navigate]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -96,8 +100,10 @@ const ThreeWheelerPage: React.FC<ThreeWheelerModalProps> = ({ onClose, onSuccess
           engine_capacity: "",
           fuel_type: "",
           load_capacity: "",
+          business_status: "",
+          comment: "",
         });
-      // Close modal after 1.5 seconds
+        // Close modal after 1.5 seconds
         setTimeout(() => {
           setAlert(null);
           onSuccess(); // trigger parent refresh
@@ -248,6 +254,34 @@ const ThreeWheelerPage: React.FC<ThreeWheelerModalProps> = ({ onClose, onSuccess
                   value={formData.load_capacity}
                   onChange={handleChange}
                   placeholder="Load Capacity"
+                  className="rounded-lg border border-gray-300 px-3 py-2"
+                />
+
+              </div>
+
+              <h3 className="text-md sm:text-lg font-semibold text-gray-800 mt-4">
+                Business Review
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+
+                <select
+                  name="business_status"
+                  value={formData.business_status}
+                  onChange={handleChange}
+                  className="rounded-lg border border-gray-300 px-3 py-2"
+                >
+                  <option value="">Select Status</option>
+                  <option value="APPROVED">APPROVED</option>
+                  <option value="PENDING">PENDING</option>
+                  <option value="REJECTED">REJECTED</option>
+                </select>
+
+                <textarea
+                  name="comment"
+                  value={formData.comment}
+                  onChange={handleChange}
+                  placeholder="Comment"
                   className="rounded-lg border border-gray-300 px-3 py-2"
                 />
 

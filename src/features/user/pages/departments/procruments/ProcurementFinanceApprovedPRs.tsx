@@ -518,12 +518,32 @@ const submitUpdate = async () => {
                             />
 
                             {/* Attachments */}
-                            <input
+                            {/* <input
                               type="text"
                               value={vendor.attachments?.[0]?.file_name || ""}
                               readOnly
                               className="bg-white border rounded px-2 py-1 text-sm"
-                            />
+                            /> */}
+                              {(() => {
+                                      const validAttachment = vendor.attachments?.find(
+                                        (att: any) => att.file_path && att.file_path.trim() !== ""
+                                      );
+
+                                      return validAttachment ? (
+                                        <a
+                                          href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 underline text-sm"
+                                        >
+                                          View File
+                                        </a>
+                                      ) : (
+                                        <span className="text-gray-400 text-sm">No file</span>
+                                      );
+                                    })()}
+
+                            
 
                             {/* PR comment */}
                             <input
