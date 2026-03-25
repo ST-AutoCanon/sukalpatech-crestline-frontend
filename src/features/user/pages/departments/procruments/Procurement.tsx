@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../../../../context/AuthContext";
-import { Upload } from "lucide-react";
+import { Upload, Trash } from "lucide-react";
 import Aleart from "../../../components/Aleartmessage";
 
 interface attachments {
@@ -325,7 +325,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
       onCreated();
 
       setTimeout(() => {
-         setAlert(null);
+        setAlert(null);
         onClose();
       }, 3000);
     } catch (err) {
@@ -342,326 +342,329 @@ export default function NewProcurementPage({ onClose, onCreated }) {
   return (
 
     <>
-    {alert && (
-      <Aleart
-        type={alert.type}
-        message={alert.message}
-        onClose={() => setAlert(null)}
-      />
-    )}
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
-      <div className="w-full max-w-7xl bg-white text-gray-900 rounded-xl flex flex-col max-h-[95vh] overflow-visible">
-        {/* HEADER */}
-        <div className="flex justify-between items-center px-6 py-4 border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-semibold text-purple-600">
-            New Procurement Request
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-xl font-bold hover:text-red-600"
-          >
-            ×
-          </button>
-        </div>
-        
-        {/* FORM AREA */}
-        <div className="p-4 sm:p-6 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
-          {/* PR INFO */}
-          <div className="bg-gray-100 rounded-xl p-4 overflow-x-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-              <div>
-                <label className="text-sm text-gray-600">Description <span className="text-red-500">*</span></label>
-                <input
-                  name="description"
-                  placeholder="Add description"
-                  className="w-full border rounded-lg p-2 mt-1"
-                  onChange={handlePRChange}
-                />
-              </div>
-              <div>
-                <label className="text-sm text-gray-600">Priority<span className="text-red-500">*</span></label>
-                <select
-                  name="priority"
-                  defaultValue=""
-                  className="w-full border rounded-lg p-2 mt-1 bg-white"
-                  onChange={handlePRChange}
-                >
-                  <option value="" disabled>
-                    Select Status
-                  </option>
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-sm text-gray-600">Delivery Date <span className="text-red-500">*</span></label>
-                <input
-                  type="date"
-                  name="required_date"
-                  className="w-full border rounded-lg p-2 mt-1"
-                  min={new Date().toISOString().split("T")[0]} // disables past dates
-                  onChange={handlePRChange}
-                />
-              </div>
+      {alert && (
+        <Aleart
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
+        <div className="w-full max-w-7xl bg-white text-gray-900 rounded-xl flex flex-col max-h-[95vh] overflow-visible">
+          {/* HEADER */}
+          <div className="flex justify-between items-center px-6 py-4 border-gray-200 sticky top-0 bg-white z-10">
+            <h2 className="text-xl font-semibold text-purple-600">
+              New Procurement Request
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-xl font-bold hover:text-red-600"
+            >
+              ×
+            </button>
+          </div>
 
-              <div>
-                <label className="text-sm text-gray-600">Department<span className="text-red-500">*</span></label>
-                {/* <select name="department" className="w-full border rounded-lg p-2 mt-1 bg-white" onChange={handlePRChange}>
+          {/* FORM AREA */}
+          <div className="p-4 sm:p-6 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
+            {/* PR INFO */}
+            <div className="bg-gray-100 rounded-xl p-4 overflow-x-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+                <div>
+                  <label className="text-sm text-gray-600">Description <span className="text-red-500">*</span></label>
+                  <input
+                    name="description"
+                    placeholder="Add description"
+                    className="w-full border rounded-lg p-2 mt-1"
+                    onChange={handlePRChange}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-600">Priority<span className="text-red-500">*</span></label>
+                  <select
+                    name="priority"
+                    defaultValue=""
+                    className="w-full border rounded-lg p-2 mt-1 bg-white"
+                    onChange={handlePRChange}
+                  >
+                    <option value="" disabled>
+                      Select Status
+                    </option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-600">Delivery Date <span className="text-red-500">*</span></label>
+                  <input
+                    type="date"
+                    name="required_date"
+                    className="w-full border rounded-lg p-2 mt-1"
+                    min={new Date().toISOString().split("T")[0]} // disables past dates
+                    onChange={handlePRChange}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-600">Department<span className="text-red-500">*</span></label>
+                  {/* <select name="department" className="w-full border rounded-lg p-2 mt-1 bg-white" onChange={handlePRChange}>
                   <option value="">Select</option>
                   {departments.map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
                 </select> */}
-                <select
-                  name="department"
-                  className="w-full border rounded-lg p-2 mt-1 bg-white"
-                  onChange={handlePRChange}
-                >
-                  <option value="">Select</option>
-                  {departments.map((d) => (
-                    <option key={d.department_name} value={d.department_name}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-sm text-gray-600">Remarks<span className="text-red-500">*</span></label>
-                <input
-                  name="remarks"
-                  placeholder="Add remarks"
-                  className="w-full border rounded-lg p-2 mt-1"
-                  onChange={handlePRChange}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ADD ITEM BUTTON */}
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={addItem}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white"
-            >
-              + Add Item
-            </button>
-
-            {prData.items.length > 1 && (
-              <button
-                onClick={() => removeItem(prData.items.length - 1)}
-                className="px-4 py-2 rounded-lg bg-red-600 text-white"
-              >
-                Remove Item
-              </button>
-            )}
-          </div>
-
-          {/* ITEMS */}
-          {prData.items.map((item, i) => (
-            <div key={i} className="bg-gray-100 rounded-xl p-4 space-y-4">
-              {/* ITEM HEADER */}
-              <div className="bg-gray-200 rounded-lg p-3 overflow-x-auto">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-semibold">Item Code<span className="text-red-500">*</span></span>
-                    <input
-                      className="flex-1 border rounded-lg px-2 py-1"
-                      onChange={(e) =>
-                        handleItemChange(i, "item_code", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-semibold">Item Name<span className="text-red-500">*</span></span>
-                    <input
-                      className="flex-1 border rounded-lg px-2 py-1"
-                      onChange={(e) =>
-                        handleItemChange(i, "item_name", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-semibold">Quantity<span className="text-red-500">*</span></span>
-
-                    <input
-                      type="number"
-                      min={1}
-                      className="w-full sm:w-28 border rounded-lg px-2 py-1"
-                      onKeyDown={(e) => {
-                        // Block invalid keys
-                        if (["e", "E", "+", "-", "."].includes(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
-                      onChange={(e) => {
-                        const value = e.target.value;
-
-                        // Allow only numbers ≥ 1
-                        if (/^[1-9]\d*$/.test(value)) {
-                          handleItemChange(i, "quantity_required", Number(value));
-                        } else if (value === "") {
-                          // Allow clearing input
-                          handleItemChange(i, "quantity_required", "");
-                        }
-                      }}
-                    />
-                  </div>
-
+                  <select
+                    name="department"
+                    className="w-full border rounded-lg p-2 mt-1 bg-white"
+                    onChange={handlePRChange}
+                  >
+                    <option value="">Select</option>
+                    {departments.map((d) => (
+                      <option key={d.department_name} value={d.department_name}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-600">Remarks<span className="text-red-500">*</span></label>
+                  <input
+                    name="remarks"
+                    placeholder="Add remarks"
+                    className="w-full border rounded-lg p-2 mt-1"
+                    onChange={handlePRChange}
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* VENDORS */}
-              <div className="overflow-x-auto space-y-2">
-                {item.vendors.map((vendor, vi) => (
-                  <div
-                    key={vi}
-                    className="grid grid-cols-1 sm:grid-cols-8 gap-2 sm:gap-3 items-end"
-                  >
-                    {/* Vendor */}
-                    <div>
-                      <label className="text-xs text-gray-600">Vendor<span className="text-red-500">*</span></label>
-                      <select
-                        className="w-full max-w-full p-2 border rounded mt-1 relative z-20 bg-white"
-                        onChange={(e) =>
-                          handleVendorChange(i, vi, "vendor_id", e.target.value)
-                        }
-                      >
-                        <option value="">Select</option>
-                        {vendorList.map((v) => (
-                          <option key={v.vendor_id} value={v.vendor_id}>
-                            {v.vendor_name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+            {/* ADD ITEM BUTTON */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={addItem}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+              >
+                + Add Item
+              </button>
 
-                    {/* Upload */}
-                    <div>
-                      <label className="text-xs text-gray-600">
-                        Upload Quotation
-                      </label>
+              {prData.items.length > 1 && (
+                <button
+                  onClick={() => removeItem(prData.items.length - 1)}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white"
+                >
+                  Remove Item
+                </button>
+              )}
+            </div>
 
+            {/* ITEMS */}
+            {prData.items.map((item, i) => (
+              <div key={i} className="bg-gray-100 rounded-xl p-4 space-y-4">
+                {/* ITEM HEADER */}
+                <div className="bg-gray-200 rounded-lg p-3 overflow-x-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-semibold">Item Code<span className="text-red-500">*</span></span>
                       <input
-                        type="file"
-                        id={`file-${i}-${vi}`}
-                        className="hidden"
-                        multiple
-                        onChange={(e) => handleFileUpload(i, vi, e.target.files)}
+                        className="flex-1 border rounded-lg px-2 py-1"
+                        onChange={(e) =>
+                          handleItemChange(i, "item_code", e.target.value)
+                        }
                       />
-
-                      <label
-                        htmlFor={`file-${i}-${vi}`}
-                        className="block w-full p-2 mt-1 border rounded bg-white cursor-pointer text-sm text-gray-500 truncate"
-                      >
-                        {vendorFiles[`${i}-${vi}`]?.length > 0
-                          ? vendorFiles[`${i}-${vi}`].map((f) => f.file.name).join(", ")
-                          : "Choose File"}
-                      </label>
                     </div>
-                    {/* Unit Price */}
-                    <div>
-                      <label className="text-xs text-gray-600">Unit Price<span className="text-red-500">*</span></label>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-semibold">Item Name<span className="text-red-500">*</span></span>
+                      <input
+                        className="flex-1 border rounded-lg px-2 py-1"
+                        onChange={(e) =>
+                          handleItemChange(i, "item_name", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-semibold">Quantity<span className="text-red-500">*</span></span>
+
                       <input
                         type="number"
-                        min={0}
-                        step={1}
-                        inputMode="numeric"
-                        className="w-full p-2 border rounded mt-1"
+                        min={1}
+                        className="w-full sm:w-28 border rounded-lg px-2 py-1"
+                        onKeyDown={(e) => {
+                          // Block invalid keys
+                          if (["e", "E", "+", "-", "."].includes(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
                         onChange={(e) => {
                           const value = e.target.value;
 
-                          // block negative numbers
-                          if (value === "" || Number(value) < 0) return;
-
-                          handleVendorChange(i, vi, "unit_price", value);
-                        }}
-                        onKeyDown={(e) => {
-                          // block '-', '+', 'e', 'E'
-                          if (["-", "+", "e", "E"].includes(e.key)) {
-                            e.preventDefault();
+                          // Allow only numbers ≥ 1
+                          if (/^[1-9]\d*$/.test(value)) {
+                            handleItemChange(i, "quantity_required", Number(value));
+                          } else if (value === "") {
+                            // Allow clearing input
+                            handleItemChange(i, "quantity_required", "");
                           }
                         }}
                       />
                     </div>
 
-
-                    {/* Total Price */}
-                    <div>
-                      <label className="text-xs text-gray-600">
-                        Total Price<span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        className="w-full p-2 border rounded mt-1 bg-gray-100"
-                        value={vendor.total_price || ""}
-                        readOnly
-                      />
-                    </div>
-
-                    {/* Validity */}
-                    <div>
-                      <label className="text-xs text-gray-600">
-                        Quotation Validity<span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="date"
-                       className="w-full p-2 pr-2 lg:pr-2 border rounded mt-1"
-                        min={new Date().toISOString().split("T")[0]}
-                        onChange={(e) =>
-                          handleVendorChange(i, vi, "quotation_validity_date", e.target.value)
-                        }
-                      />
-                    </div>
-
-                    {/* Comments */}
-                    <div>
-                      <label className="text-xs text-gray-600">Comments<span className="text-red-500">*</span></label>
-                      <input
-                        className="w-full p-2 border rounded mt-1"
-                        onChange={(e) => handleComment(i, vi, e.target.value)}
-                      />
-                    </div>
-
-                    {/* 🗑 REMOVE VENDOR */}
-                    <div className="flex items-end justify-end">
-                      <button
-                        onClick={() => removeVendor(i, vi)}
-                        className="px-3 py-2 rounded-lg bg-red-600 text-white"
-                        title="Remove Vendor"
-                      >
-                        🗑
-                      </button>
-                    </div>
                   </div>
-                ))}
+                </div>
 
-                {/* ADD VENDOR BUTTON - RIGHT */}
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => addVendor(i)}
-                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                  >
-                    + Add Vendor
-                  </button>
+                {/* VENDORS */}
+                <div className="overflow-x-auto space-y-2">
+                  {item.vendors.map((vendor, vi) => (
+                    <div
+                      key={vi}
+                      className="grid grid-cols-1 sm:grid-cols-8 gap-2 sm:gap-3 items-end"
+                    >
+                      {/* Vendor */}
+                      <div>
+                        <label className="text-xs text-gray-600">Vendor<span className="text-red-500">*</span></label>
+                        <select
+                          className="w-full max-w-full p-2 border rounded mt-1 relative z-20 bg-white"
+                          onChange={(e) =>
+                            handleVendorChange(i, vi, "vendor_id", e.target.value)
+                          }
+                        >
+                          <option value="">Select</option>
+                          {vendorList.map((v) => (
+                            <option key={v.vendor_id} value={v.vendor_id}>
+                              {v.vendor_name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Upload */}
+                      <div>
+                        <label className="text-xs text-gray-600">
+                          Upload Quotation
+                        </label>
+
+                        <input
+                          type="file"
+                          id={`file-${i}-${vi}`}
+                          className="hidden"
+                          multiple
+                          onChange={(e) => handleFileUpload(i, vi, e.target.files)}
+                        />
+
+                        <label
+                          htmlFor={`file-${i}-${vi}`}
+                          className="block w-full p-2 mt-1 border rounded bg-white cursor-pointer text-sm text-gray-500 truncate"
+                        >
+                          {vendorFiles[`${i}-${vi}`]?.length > 0
+                            ? vendorFiles[`${i}-${vi}`].map((f) => f.file.name).join(", ")
+                            : "Choose File"}
+                        </label>
+                      </div>
+                      {/* Unit Price */}
+                      <div>
+                        <label className="text-xs text-gray-600">Unit Price<span className="text-red-500">*</span></label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={1}
+                          inputMode="numeric"
+                          className="w-full p-2 border rounded mt-1"
+                          onChange={(e) => {
+                            const value = e.target.value;
+
+                            // block negative numbers
+                            if (value === "" || Number(value) < 0) return;
+
+                            handleVendorChange(i, vi, "unit_price", value);
+                          }}
+                          onKeyDown={(e) => {
+                            // block '-', '+', 'e', 'E'
+                            if (["-", "+", "e", "E"].includes(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                      </div>
+
+
+                      {/* Total Price */}
+                      <div>
+                        <label className="text-xs text-gray-600">
+                          Total Price<span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          className="w-full p-2 border rounded mt-1 bg-gray-100"
+                          value={vendor.total_price || ""}
+                          readOnly
+                        />
+                      </div>
+
+                      {/* Validity */}
+                      <div>
+                        <label className="text-xs text-gray-600">
+                          Quotation Validity<span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          className="w-full p-2 pr-2 lg:pr-2 border rounded mt-1"
+                          min={new Date().toISOString().split("T")[0]}
+                          onChange={(e) =>
+                            handleVendorChange(i, vi, "quotation_validity_date", e.target.value)
+                          }
+                        />
+                      </div>
+
+                      {/* Comments */}
+                      <div className="flex items-end gap-3 w-full">
+                        {/* Comments */}
+                        <div className="flex-1">
+                          <label className="text-xs text-gray-600">
+                            Comments<span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            className="w-full p-2 border rounded mt-1"
+                            onChange={(e) => handleComment(i, vi, e.target.value)}
+                          />
+                        </div>
+
+                        {/* Delete Icon */}
+                        <button
+                          onClick={() => removeVendor(i, vi)}
+                          className="mb-[2px] text-gray-500 hover:text-red-500 transition"
+                          title="Remove Vendor"
+                        >
+                          <Trash size={29} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* ADD VENDOR BUTTON - RIGHT */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => addVendor(i)}
+                      className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                    >
+                      + Add Vendor
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
 
-          ))}
+            ))}
+          </div>
+
+
+
+          {/* SUBMIT BUTTON - sticky bottom right */}
+          <div className="flex justify-end p-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
+            <button onClick={submitPR} className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white flex items-center gap-2">
+              <Upload size={16} /> Submit PR
+            </button>
+          </div>
+
         </div>
-
-
-
-        {/* SUBMIT BUTTON - sticky bottom right */}
-        <div className="flex justify-end p-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
-          <button onClick={submitPR} className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white flex items-center gap-2">
-            <Upload size={16} /> Submit PR
-          </button>
-        </div>
-
       </div>
-    </div>
-  
-  </>
+
+    </>
   );
 }
 

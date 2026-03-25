@@ -68,21 +68,38 @@ export default function DepartmentPage() {
     deptId: number,
     permission: string,
   ) => {
-    await fetch(
-      `${API_URL}/api/departments/employee/${employeeId}/assign-department`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          department_id: deptId,
-          permission,
-        }),
-      },
-    );
+    try {
+      await fetch(
+        `${API_URL}/api/departments/employee/${employeeId}/assign-department`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            department_id: deptId,
+            permission,
+          }),
+        },
+      );
 
-    await fetchEmployeesByDept(deptId);
-    await fetchAllEmployees();
+      await fetchEmployeesByDept(deptId);
+      await fetchAllEmployees();
+
+      // ✅ SUCCESS ALERT (same as unassign)
+      setAlert({
+        type: "success",
+        message: "Employee assigned successfully!",
+      });
+
+    } catch (err) {
+      console.error(err);
+
+      // ❌ ERROR ALERT
+      setAlert({
+        type: "error",
+        message: "Failed to assign employee.",
+      });
+    }
   };
 
   /* ================= UPDATE PERMISSION ================= */
@@ -244,9 +261,15 @@ export default function DepartmentPage() {
 
                         <button
                           className="bg-red-600 px-3 py-1 text-white text-sm rounded"
-                          onClick={() =>
-                            deleteDept(emp.id, selectedDept.department_id)
-                          }
+                          onClick={() => {
+                            const confirmDelete = window.confirm(
+                              "Are you sure you want to unassign this employee?"
+                            );
+
+                            if (!confirmDelete) return;
+
+                            deleteDept(emp.id, selectedDept.department_id);
+                          }}
                         >
                           Unassign
                         </button>
