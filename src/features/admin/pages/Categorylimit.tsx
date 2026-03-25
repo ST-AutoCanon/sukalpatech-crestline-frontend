@@ -226,49 +226,105 @@ export default function CategoryLimitPage() {
   }, []);
 
   /* ================= UPDATE ================= */
+  // const handleUpdate = async () => {
+  //   try {
+  //     setLoading(true);
+
+  //     const payload = {
+  //       high:
+  //         newLimits.high !== undefined ? Number(newLimits.high) : limits.high,
+
+  //       medium:
+  //         newLimits.medium !== undefined
+  //           ? Number(newLimits.medium)
+  //           : limits.medium,
+
+  //       low:
+  //         newLimits.low !== undefined ? Number(newLimits.low) : limits.low,
+  //     };
+
+  //     const res = await axios.put(
+  //       `${ADMIN_API_BASE}/category-limits/update`,
+  //       payload,
+  //       { withCredentials: true }
+  //     );
+
+  //     setUpdatedLimits(res.data.data);
+
+  //     setAlert({
+  //       type: "success",
+  //       message: "Category limits updated successfully ✅",
+  //     });
+
+  //     setNewLimits({});
+  //     await fetchLimits();
+
+  //   } catch (err: any) {
+  //     setAlert({
+  //       type: "error",
+  //       message:
+  //         err.response?.data?.message || "Failed to update category limits ❌",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const handleUpdate = async () => {
-    try {
-      setLoading(true);
+  // ❗ VALIDATION: check if user entered at least one value
+  if (
+    newLimits.high === undefined &&
+    newLimits.medium === undefined &&
+    newLimits.low === undefined
+  ) {
+    setAlert({
+      type: "error",
+      message: "Please enter at least one limit before submitting ❗",
+    });
+    return;
+  }
 
-      const payload = {
-        high:
-          newLimits.high !== undefined ? Number(newLimits.high) : limits.high,
+  try {
+    setLoading(true);
 
-        medium:
-          newLimits.medium !== undefined
-            ? Number(newLimits.medium)
-            : limits.medium,
+    const payload = {
+      high:
+        newLimits.high !== undefined ? Number(newLimits.high) : limits.high,
 
-        low:
-          newLimits.low !== undefined ? Number(newLimits.low) : limits.low,
-      };
+      medium:
+        newLimits.medium !== undefined
+          ? Number(newLimits.medium)
+          : limits.medium,
 
-      const res = await axios.put(
-        `${ADMIN_API_BASE}/category-limits/update`,
-        payload,
-        { withCredentials: true }
-      );
+      low:
+        newLimits.low !== undefined ? Number(newLimits.low) : limits.low,
+    };
 
-      setUpdatedLimits(res.data.data);
+    const res = await axios.put(
+      `${ADMIN_API_BASE}/category-limits/update`,
+      payload,
+      { withCredentials: true }
+    );
 
-      setAlert({
-        type: "success",
-        message: "Category limits updated successfully ✅",
-      });
+    setUpdatedLimits(res.data.data);
 
-      setNewLimits({});
-      await fetchLimits();
+    setAlert({
+      type: "success",
+      message: "Category limits updated successfully ✅",
+    });
 
-    } catch (err: any) {
-      setAlert({
-        type: "error",
-        message:
-          err.response?.data?.message || "Failed to update category limits ❌",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    setNewLimits({});
+    await fetchLimits();
+
+  } catch (err: any) {
+    setAlert({
+      type: "error",
+      message:
+        err.response?.data?.message || "Failed to update category limits ❌",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <>
