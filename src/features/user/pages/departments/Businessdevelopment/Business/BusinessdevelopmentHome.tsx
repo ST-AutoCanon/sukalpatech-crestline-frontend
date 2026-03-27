@@ -1,6 +1,6 @@
 import { useState } from "react";
-import BusinessList from "../Businessdevelopment/Businessdevelopmentpage";
-import CreateBusinessModal from "../Businessdevelopment/updatebusiness";
+import BusinessList from "./Businessdevelopmentpage";
+import CreateBusinessModal from "./CreateBusinessPage";
 import { useNavigate } from "react-router-dom";
 
 
@@ -118,8 +118,8 @@ const BusinessDevelopmentHome = () => {
               handleModalSuccess();
               setShowModal(false);
             }}
-          />  
-          </div>
+          />
+        </div>
       </div>
     </div>
 

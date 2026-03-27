@@ -330,7 +330,12 @@ export default function SubmittedFinanceRequestsPage() {
               {[
                 ["Department", pr.department],
                 ["Priority", pr.priority],
-                ["Required", formatDate(pr.required_date)],
+                [
+                  "Required",
+                  pr.required_date
+                    ? new Date(pr.required_date).toLocaleDateString("en-US")
+                    : "-"
+                ],
                 ["Description", pr.description],
               ].map(([label, value], idx) => (
                 <div key={idx} className="flex justify-between">
@@ -373,7 +378,9 @@ export default function SubmittedFinanceRequestsPage() {
                   ["Priority", selectedPR.priority],
                   [
                     "Delivery Date",
-                    formatDate(selectedPR.required_date),
+                    selectedPR.required_date
+                      ? new Date(selectedPR.required_date).toLocaleDateString("en-US")
+                      : "-",
                   ],
                   ["Department", selectedPR.department],
                   ["Remarks", selectedPR.remarks],
@@ -479,24 +486,70 @@ export default function SubmittedFinanceRequestsPage() {
                                 className="bg-white border rounded px-2 py-1 text-sm"
                               /> */}
                               {/* 2️⃣ Upload Quotation */}
-                              {(() => {
-                                const validAttachment = vendor.attachments?.find(
-                                  (att: any) => att.file_path && att.file_path.trim() !== ""
-                                );
+                              <div className="w-full">
+                                {(() => {
+                                  const attachment = vendor.attachments?.[0];
 
-                                return validAttachment ? (
-                                  <a
-                                    href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 underline text-sm"
-                                  >
-                                    View File
-                                  </a>
-                                ) : (
-                                  <span className="text-gray-400 text-sm">No file</span>
-                                );
-                              })()}
+                                  // ✅ EDIT MODE
+                                  // if (editMode) {
+                                  //   return (
+                                  //     <label className="w-full border border-blue-400 rounded px-2 py-1 bg-white cursor-pointer block">
+                                  //       <span className="block truncate text-sm text-gray-700">
+                                  //         {attachment?.file_name || "Upload File"}
+                                  //       </span>
+
+                                  //       <input
+                                  //         type="file"
+                                  //         className="hidden"
+                                  //         onChange={(e) => {
+                                  //           const file = e.target.files?.[0];
+                                  //           if (!file) return;
+
+                                  //           const updatedItems = [...activePR.items];
+
+                                  //           updatedItems[itemIndex].vendors[vendorIndex] = {
+                                  //             ...updatedItems[itemIndex].vendors[vendorIndex],
+                                  //             attachments: [
+                                  //               {
+                                  //                 id: Date.now(),
+                                  //                 file_name: file.name,
+                                  //                 file_path: "",
+                                  //                 uploaded_by: 0,
+                                  //                 uploaded_at: new Date().toISOString(),
+                                  //                 fileObject: file,
+                                  //               },
+                                  //             ],
+                                  //           };
+
+                                  //           setActivePR({ ...activePR, items: updatedItems });
+                                  //         }}
+                                  //       />
+                                  //     </label>
+                                  //   );
+                                  // }
+
+                                  // ✅ VIEW MODE
+                                  const validAttachment =
+                                    attachment?.file_path && attachment.file_path.trim() !== "";
+
+                                  return (
+                                    <div className="w-full border rounded px-2 py-1 bg-gray-100">
+                                      {validAttachment ? (
+                                        <a
+                                          href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${attachment.file_path}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 underline text-sm block truncate"
+                                        >
+                                          {attachment.file_name}
+                                        </a>
+                                      ) : (
+                                        <span className="text-gray-400 text-sm">No file</span>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
                               {/* 3️⃣ Unit Price */}
                               <input
                                 readOnly

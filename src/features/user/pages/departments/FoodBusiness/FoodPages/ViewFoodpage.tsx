@@ -1,4 +1,4 @@
-// // src/pages/TwoWheeler/TwoWheelerCard.tsx
+// // src/pages/businessDevFood/FoodBusinessCard.tsx
 // import React, { useEffect, useState } from "react";
 // import Alert from "../../../components/Aleartmessage";
 // import { api } from "../../../api/businessApi";
@@ -13,9 +13,11 @@
 //     project_title: string;
 //     expected_quantity: string;
 //     estimated_budget: string;
-//     vehicle_model: string;
-//     motor_capacity: string;
-//     battery_type: string;
+//     product_category: string;
+//     product_name: string;
+//     packaging_type: string;
+//     shelf_life: string;
+//     storage_condition: string;
 //     business_status: string;
 //     comment: string;
 //     feasibility_status: string;
@@ -27,13 +29,15 @@
 //   onUpdate?: (updated: any) => void;
 // }
 
-// const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate }) => {
+// const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate }) => {
 //   const [showModal, setShowModal] = useState(false);
 //   const [feasibilityStatus, setFeasibilityStatus] = useState("");
 //   const [comments, setComments] = useState("");
 
-//   // Alert state
-//   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+//   const [alert, setAlert] = useState<{
+//     type: "success" | "error";
+//     message: string;
+//   } | null>(null);
 
 //   useEffect(() => {
 //     if (showModal) {
@@ -44,10 +48,10 @@
 
 //   const render = (v: any) => (v ? v : "-");
 
-//   const updateFeasibility3W = async () => {
+//   const updateFeasibilityFood = async () => {
 //     try {
 //       const res = await api.patch(
-//         `/business-development/3w/review`,
+//         `/business-development/food/review`, // ✅ FOOD API
 //         {
 //           id: data.id,
 //           feasibility_status: feasibilityStatus,
@@ -58,12 +62,21 @@
 
 //       onUpdate?.(res.data.data);
 
-//       setAlert({ type: "success", message: "Feasibility updated successfully!" });
+//       setAlert({
+//         type: "success",
+//         message: "Feasibility updated successfully!",
+//       });
+
 //       setTimeout(() => setAlert(null), 2000);
 //       setShowModal(false);
 //     } catch (err) {
-//       console.error("3W Feasibility Update Error:", err);
-//       setAlert({ type: "error", message: "Failed to update feasibility" });
+//       console.error("Food Feasibility Update Error:", err);
+
+//       setAlert({
+//         type: "error",
+//         message: "Failed to update feasibility",
+//       });
+
 //       setTimeout(() => setAlert(null), 2000);
 //     }
 //   };
@@ -76,23 +89,28 @@
 //     ["Project Title", data.project_title],
 //     ["Expected Quantity", data.expected_quantity],
 //     ["Estimated Budget", data.estimated_budget],
-//     ["Vehicle Model", data.vehicle_model],
+
+//     ["Product Category", data.product_category],
+//     ["Product Name", data.product_name],
+//     ["Packaging Type", data.packaging_type],
+//     ["Shelf Life", data.shelf_life],
+//     ["Storage Condition", data.storage_condition],
+
 //     ["Business Status", data.business_status],
 //     ["Comment", data.comment],
-
 //   ];
 
 //   return (
 //     <div className="bg-white rounded-xl shadow p-4 text-gray-900">
-
 //       {/* Alert */}
 //       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
 //       <h3 className="text-purple-700 font-semibold">
-//         3W Request ID: {data.id}
+//         Food Request ID: {data.id}
 //       </h3>
 
-//       {fields.slice(0, 12).map(([label, value]) => (
+//       {/* Preview fields */}
+//       {fields.slice(0, 8).map(([label, value]) => (
 //         <p key={label} className="text-sm mb-1">
 //           <strong>{label}:</strong> {render(value)}
 //         </p>
@@ -105,6 +123,7 @@
 //         {mode === "update" ? "Update Feasibility" : "More Info"}
 //       </button>
 
+//       {/* MODAL */}
 //       {showModal && (
 //         <div
 //           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
@@ -122,35 +141,47 @@
 //             </button>
 
 //             <h2 className="text-lg font-semibold mb-4">
-//               3W Request Details
+//               Food Request Details
 //             </h2>
 
-//             {/* Show all fields including feasibility & final */}
+//             {/* All fields */}
 //             {fields.map(([label, value]) => (
 //               <p key={label} className="text-sm mb-1">
 //                 <strong>{label}:</strong> {render(value)}
 //               </p>
 //             ))}
 
-//             {/* Update section for update mode */}
+//             {/* UPDATE MODE */}
 //             {mode === "update" && (
 //               <div className="mt-4 space-y-3">
 //                 <div>
-//                   <label className="block text-sm font-semibold">Feasibility Status</label>
+//                   <label className="block text-sm font-semibold">
+//                     Feasibility Status
+//                   </label>
 //                   <select
 //                     value={feasibilityStatus}
-//                     onChange={(e) => setFeasibilityStatus(e.target.value)}
+//                     onChange={(e) =>
+//                       setFeasibilityStatus(e.target.value)
+//                     }
 //                     className="w-full border rounded p-2"
 //                   >
 //                     <option value="">Select</option>
-//                     <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
-//                     <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
-//                     <option value="FEASIBILITY PENDING">FEASIBILITY PENDING</option>
+//                     <option value="FEASIBILITY APPROVED">
+//                       FEASIBILITY APPROVED
+//                     </option>
+//                     <option value="FEASIBILITY REJECTED">
+//                       FEASIBILITY REJECTED
+//                     </option>
+//                     <option value="FEASIBILITY PENDING">
+//                       FEASIBILITY PENDING
+//                     </option>
 //                   </select>
 //                 </div>
 
 //                 <div>
-//                   <label className="block text-sm font-semibold">Comments</label>
+//                   <label className="block text-sm font-semibold">
+//                     Comments
+//                   </label>
 //                   <textarea
 //                     value={comments}
 //                     onChange={(e) => setComments(e.target.value)}
@@ -159,7 +190,7 @@
 //                 </div>
 
 //                 <button
-//                   onClick={updateFeasibility3W}
+//                   onClick={updateFeasibilityFood}
 //                   className="bg-purple-700 text-white px-4 py-2 rounded"
 //                 >
 //                   Update
@@ -173,11 +204,13 @@
 //   );
 // };
 
-// export default ThreeWheelerCard;
+// export default FoodBusinessCard;
+
+// src/pages/businessDevFood/FoodBusinessCard.tsx
 
 import React, { useEffect, useState } from "react";
-import Alert from "../../../components/Aleartmessage";
-import { api } from "../../../api/businessApi";
+import Alert from "../../../../components/Aleartmessage";
+import { api } from "../../../../api/businessApi";
 
 interface Props {
   data: {
@@ -189,33 +222,30 @@ interface Props {
     project_title: string;
     expected_quantity: string;
     estimated_budget: string;
-    vehicle_model: string;
-    engine_capacity: string;
-    fuel_type: string;
-    load_capacity: string;
+    product_category: string;
+    product_name: string;
+    packaging_type: string;
+    shelf_life: string;
+    storage_condition: string;
     business_status: string;
     comment: string;
     feasibility_status: string;
     comments: string;
-    final_status?: string;
-    final_comment?: string;
+    final_status: string;
+    final_comment: string;
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
-   cardIndex: number; 
+  cardIndex: number; 
 }
 
-const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) => {
+const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) => {
   const [showModal, setShowModal] = useState(false);
   const [feasibilityStatus, setFeasibilityStatus] = useState("");
   const [comments, setComments] = useState("");
+  const [alert, setAlert] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...data });
-
-  const [alert, setAlert] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
 
   useEffect(() => {
     if (showModal) {
@@ -227,67 +257,63 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
   const render = (v: any) => (v ? v : "-");
 
- const updateFeasibility3W = async () => {
-  try {
-    const res = await api.patch(
-      `/business-development/3w/update/${data.id}`,
-      {
-        ...formData,
-        feasibility_status: feasibilityStatus,   // ✅ ADD THIS
-        comments: comments,                      // ✅ ADD THIS
-      },
-      { withCredentials: true }
-    );
+  const updateFood = async () => {
+    try {
+     const res = await api.patch(
+  `/business-development/food/update/${data.id}`,
+  {
+    ...formData,
+    feasibility_status: feasibilityStatus,
+    comments: comments,
+  },
+  { withCredentials: true }
+);
 
-    const updated = res.data.data;
+      onUpdate?.(res.data.data);
 
-    // Update parent state
-    onUpdate?.(updated);
+      setAlert({
+        type: "success",
+        message: "Food request updated successfully!",
+      });
 
-    // Update local state
-    setFormData({ ...updated });
-    setFeasibilityStatus(updated.feasibility_status || "");
-    setComments(updated.comments || "");
+      setTimeout(() => setAlert(null), 2000);
+      setShowModal(false);
+      setEditMode(false);
+    } catch (err) {
+      console.error("Food Update Error:", err);
 
-    setAlert({
-      type: "success",
-      message: "3W Request updated successfully!",
-    });
+      setAlert({
+        type: "error",
+        message: "Failed to update food request",
+      });
 
-    setTimeout(() => setAlert(null), 2000);
-    setShowModal(false);
-    setEditMode(false);
-  } catch (err) {
-    console.error("3W Update Error:", err);
+      setTimeout(() => setAlert(null), 2000);
+    }
+  };
 
-    setAlert({
-      type: "error",
-      message: "Failed to update 3W Request",
-    });
-
-    setTimeout(() => setAlert(null), 2000);
-  }
-};
-
+  // ✅ Only 5 fields like 2W
   const cardFields = [
-    ["Company Name", data.company_name],
     ["Contact Person", data.contact_person],
+    ["Company Name", data.company_name],
     ["Phone", data.phone],
     ["Project Title", data.project_title],
-    ["Vehicle Model", data.vehicle_model],
+    ["Product Name", data.product_name],
   ];
 
   return (
     <div className="bg-white rounded-xl shadow p-4 w-full sm:w-[340px] m-2 flex flex-col justify-between">
+
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
+      {/* HEADER */}
       <h3 className="text-purple-700 font-semibold text-sm mb-3">
-        3W ID:  {cardIndex + 1} 
+        FOOD ID:  {cardIndex+1}
       </h3>
 
-      <div className="space-y-2 flex-1">
+      {/* CARD FIELDS */}
+      <div className="flex flex-col gap-1">
         {cardFields.map(([label, value]) => (
-          <div className="flex text-sm">
+          <div key={label} className="flex text-sm">
             <span className="w-36 text-gray-500">{label}:</span>
             <span className="text-gray-900 font-medium truncate">
               {render(value)}
@@ -296,6 +322,7 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
         ))}
       </div>
 
+      {/* BUTTON */}
       <div className="mt-3 flex justify-between items-center">
         <button
           onClick={() => {
@@ -330,9 +357,10 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
             className="bg-white w-full h-full sm:h-auto sm:max-h-[95vh] sm:max-w-4xl rounded-none sm:rounded-2xl overflow-y-auto p-4 sm:p-8 flex flex-col gap-6 relative"
             onClick={(e) => e.stopPropagation()}
           >
+
             {/* HEADER */}
             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
-              3W-{data.id} Full Info
+              FOOD-{data.id} Full Info
             </h2>
 
             {/* ================= SECTIONS ================= */}
@@ -355,12 +383,13 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
                 ],
               },
               {
-                title: "Vehicle Details",
+                title: "Product Details",
                 fields: [
-                  ["Vehicle Model", data.vehicle_model],
-                  ["Engine Capacity", data.engine_capacity],
-                  ["Fuel Type", data.fuel_type],
-                  ["Load Capacity", data.load_capacity],
+                  ["Product Category", data.product_category],
+                  ["Product Name", data.product_name],
+                  ["Packaging Type", data.packaging_type],
+                  ["Shelf Life", data.shelf_life],
+                  ["Storage Condition", data.storage_condition],
                 ],
               },
               {
@@ -407,7 +436,7 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
                                 [key]: e.target.value,
                               }))
                             }
-                            className="bg-white border rounded px-2 py-1 text-xs text-gray-900"///////////////here added
+                            className="bg-white border rounded px-2 py-1 text-xs"
                           />
                         ) : (
                           <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-gray-900">
@@ -431,15 +460,13 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs text-gray-900">
+                      <label className="text-xs text-gray-600">
                         Feasibility Status
                       </label>
                       <select
                         value={feasibilityStatus}
-                        onChange={(e) =>
-                          setFeasibilityStatus(e.target.value)
-                        }
-                        className="w-full p-2 border rounded text-xs text-gray-900"
+                        onChange={(e) => setFeasibilityStatus(e.target.value)}
+                        className="w-full p-2 border rounded text-xs text-gray-900 bg-white"
                       >
                         <option value="">Select</option>
                         <option value="FEASIBILITY APPROVED">
@@ -455,13 +482,13 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
                     </div>
 
                     <div>
-                      <label className="text-xs text-gray-900">
+                      <label className="text-xs text-gray-600">
                         Comments
                       </label>
                       <textarea
                         value={comments}
                         onChange={(e) => setComments(e.target.value)}
-                        className="w-full p-2 border rounded text-xs text-gray-900"
+                        className="w-full p-2 border rounded text-xs text-gray-900 bg-white"
                       />
                     </div>
                   </div>
@@ -469,7 +496,7 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
                 <div className="flex justify-end">
                   <button
-                    onClick={updateFeasibility3W}
+                    onClick={updateFood}
                     className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
                   >
                     Update Feasibility
@@ -480,7 +507,7 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
             {editMode && (
               <div className="flex justify-end">
                 <button
-                  onClick={updateFeasibility3W}
+                  onClick={updateFood}
                   className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
                 >
                   Save
@@ -502,4 +529,4 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
   );
 };
 
-export default ThreeWheelerCard;
+export default FoodBusinessCard;

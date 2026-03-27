@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { api } from "../../../api/businessApi";
+import { api } from "../../../../api/businessApi";
 import FeasibilityCard from "./Allfeasibility";
 import { useNavigate } from "react-router-dom";
 
@@ -13,29 +13,29 @@ const UpdatedFeasibilityPage = () => {
     fetchPRs();
   }, []);
 
-//   const fetchPRs = async () => {
-//   try {
-//     const token = localStorage.getItem("token");
+  //   const fetchPRs = async () => {
+  //   try {
+  //     const token = localStorage.getItem("token");
 
-//     const res = await api.get("/business-development", {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       },
-//     });
+  //     const res = await api.get("/business-development", {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
 
-//     const updatedPrs = res.data.data.filter(
-//       (pr: any) => pr.feasibility_status
-//     );
+  //     const updatedPrs = res.data.data.filter(
+  //       (pr: any) => pr.feasibility_status
+  //     );
 
-//     setPrs(updatedPrs);
-//   } catch (err) {
-//     console.error("Failed to fetch PRs", err);
-//   }
-// };
+  //     setPrs(updatedPrs);
+  //   } catch (err) {
+  //     console.error("Failed to fetch PRs", err);
+  //   }
+  // };
 
 
   // Update a PR in state after BD update or Feasibility update
-  
+
   const fetchPRs = async () => {
     try {
       const res = await api.get("/business-development");
@@ -58,11 +58,11 @@ const UpdatedFeasibilityPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-6 pt-12">
       <button
-  onClick={() => navigate(-1)}
-  className="text-white font-bold text-4xl mr-10"
->
-  ←
-</button>
+        onClick={() => navigate(-1)}
+        className="text-white font-bold text-4xl mr-10"
+      >
+        ←
+      </button>
 
 
       <button
@@ -79,17 +79,17 @@ const UpdatedFeasibilityPage = () => {
       >
         Updated Business BR
       </button>
-      
+
 
       <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
-        {prs.map((pr) => (
+        {prs.map((pr, index) => (  // <-- add index here
           <FeasibilityCard
             key={pr.id}
             data={pr}
             mode="bd-update"
             onUpdate={handleUpdate}
+            cardIndex={index}   // <-- now this works
           />
-
         ))}
       </div>
     </div>

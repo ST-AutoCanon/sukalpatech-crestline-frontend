@@ -3,20 +3,19 @@ import axios from "axios";
 import Alert from "../../../components/Aleartmessage";
 import { useNavigate } from "react-router-dom";
 
-type ApiResponse<T = any> = {
-  success: boolean;
-  message: string;
-  data?: T;
-};
-
-interface TwoWheelerModalProps {
+interface Props {
   onClose: () => void;
   onSuccess: () => void;
 }
 
-
-const TwoWheelerPage: React.FC<TwoWheelerModalProps> = ({ onClose, onSuccess }) => {
+export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
   const navigate = useNavigate();
+
+  const [openSection, setOpenSection] = useState("business");
+
+  const toggleSection = (section: string) => {
+    setOpenSection(openSection === section ? "" : section);
+  };
 
   const [formData, setFormData] = useState({
     company_name: "",
@@ -34,48 +33,22 @@ const TwoWheelerPage: React.FC<TwoWheelerModalProps> = ({ onClose, onSuccess }) 
   });
 
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [alert, setAlert] = useState<any>(null);
   const [editId, setEditId] = useState<number | null>(null);
-  const [businessList, setBusinessList] = useState<any[]>([]);
 
-  const fetchBusinesses = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        "http://localhost:5004/api/business-development/2w/list",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
-      );
-
-      if (res.data.success) {
-        setBusinessList(res.data.data);
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  };
-  // Check if user is logged in
   useEffect(() => {
     const token = localStorage.getItem("token");
-
     if (!token) {
-      window.alert("Please login first!");
+      alert("Please login first!");
       navigate("/login");
-    } else {
-      fetchBusinesses();
     }
-  }, [navigate]);
+  }, []);
 
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setAlert(null);
 
@@ -92,7 +65,6 @@ const TwoWheelerPage: React.FC<TwoWheelerModalProps> = ({ onClose, onSuccess }) 
       let res;
 
       if (editId) {
-        // UPDATE API
         res = await axios.put(
           `http://localhost:5004/api/business-development/2w/${editId}`,
           payload,
@@ -100,30 +72,27 @@ const TwoWheelerPage: React.FC<TwoWheelerModalProps> = ({ onClose, onSuccess }) 
             headers: {
               Authorization: `Bearer ${token}`,
             },
-            withCredentials: true,
+            withCredentials: true, // ✅ ADD THIS
           }
         );
       } else {
-        // CREATE API
-        res = await axios.post(
-          "http://localhost:5004/api/business-development/2w/create",
-          payload,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            withCredentials: true,
-          }
-        );
-      }
+  res = await axios.post(
+    `http://localhost:5004/api/business-development/2w/create`,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    }
+  );
+}
 
       if (res.data.success) {
         setAlert({
           type: "success",
-          message: editId ? "Business Updated ✅" : "Business Created ✅",
+          message: editId ? "Updated ✅" : "Created ✅",
         });
-
-        fetchBusinesses();
 
         setFormData({
           company_name: "",
@@ -136,238 +105,222 @@ const TwoWheelerPage: React.FC<TwoWheelerModalProps> = ({ onClose, onSuccess }) 
           vehicle_model: "",
           motor_capacity: "",
           battery_type: "",
-           business_status: "",
-    comment: "",
+          business_status: "",
+          comment: "",
         });
 
         setEditId(null);
 
-        // Delay modal close to let user see the alert
-        if (!editId) {
-          setTimeout(() => {
-            onSuccess(); // close modal and refresh list
-          }, 1500); // 1.5 seconds delay
-        }
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
       }
-    } catch (error: any) {
+    } catch (err: any) {
       setAlert({
         type: "error",
-        message: error.response?.data?.message || "Server error",
+        message: err.response?.data?.message || "Error",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = (item: any) => {
-    setEditId(item.id);
-
-    setFormData({
-      company_name: item.company_name || "",
-      contact_person: item.contact_person || "",
-      phone: item.phone || "",
-      email: item.email || "",
-      project_title: item.project_title || "",
-      expected_quantity: item.expected_quantity || "",
-      estimated_budget: item.estimated_budget || "",
-      vehicle_model: item.vehicle_model || "",
-      motor_capacity: item.motor_capacity || "",
-      battery_type: item.battery_type || "",
-       business_status: "",
-    comment: "",
-    });
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleDelete = async (id: number) => {
-    const confirmDelete = window.confirm("Delete this business?");
-    if (!confirmDelete) return;
-
-    const token = localStorage.getItem("token");
-
-    try {
-      const res = await axios.delete(
-        `http://localhost:5004/api/business-development/2w/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
-      );
-
-      if (res.data.success) {
-        setAlert({ type: "success", message: "Business Deleted 🗑️" });
-        fetchBusinesses();
-      }
-    } catch (error) {
-      setAlert({ type: "error", message: "Delete failed" });
-    }
-  };
   return (
     <>
-      {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
-      <div className="min-h-screen flex flex-col bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-6 lg:p-8">
-        <div className="flex-1 w-full max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-md p-5 sm:p-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">
-              2 Wheeler Business Development
-            </h2>
-            <p className="text-gray-500 mb-6 text-sm sm:text-base">
-              Fill in the project and vehicle details to create a new business development record.
-            </p>
+      {alert && (
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
 
-            <form onSubmit={handleSubmit} className="space-y-6 mt-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+      {/* BACKDROP */}
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-                <input
-                  type="text"
-                  name="company_name"
-                  value={formData.company_name}
-                  onChange={handleChange}
-                  placeholder="Company Name"
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
-                  required
-                />
-                <input
-                  type="text"
-                  name="contact_person"
-                  value={formData.contact_person}
-                  onChange={handleChange}
-                  placeholder="Contact Person"
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
-                  required
-                />
-                <input
-                  type="text"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="Phone"
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
-                  required
-                />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Email"
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
-                />
-              </div>
+        {/* MODAL */}
+        <div className="bg-white w-full max-w-5xl rounded-2xl shadow-lg relative max-h-[95vh] overflow-y-auto">
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <input
-                  type="text"
-                  name="project_title"
-                  value={formData.project_title}
-                  onChange={handleChange}
-                  placeholder="Project Title"
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
-                />
-                <input
-                  type="text"
-                  name="expected_quantity"
-                  value={formData.expected_quantity}
-                  onChange={handleChange}
-                  placeholder="Expected Quantity"
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
-                />
-                <input
-                  type="text"
-                  name="estimated_budget"
-                  value={formData.estimated_budget}
-                  onChange={handleChange}
-                  placeholder="Estimated Budget"
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
-                />
-              </div>
-
-              <h3 className="text-md sm:text-lg font-semibold text-gray-800 mb-3 mt-4">
-                Vehicle Details
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <input
-                  type="text"
-                  name="vehicle_model"
-                  value={formData.vehicle_model}
-                  onChange={handleChange}
-                  placeholder="Vehicle Model"
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
-                />
-                <input
-                  type="text"
-                  name="motor_capacity"
-                  value={formData.motor_capacity}
-                  onChange={handleChange}
-                  placeholder="Motor Capacity"
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
-                />
-                <input
-                  type="text"
-                  name="battery_type"
-                  value={formData.battery_type}
-                  onChange={handleChange}
-                  placeholder="Battery Type"
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
-                />
-              </div>
-
-               <h3 className="text-md sm:text-lg font-semibold text-gray-800 mt-4">
-                Business Review
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
-                <select
-                  name="business_status"
-                  value={formData.business_status}
-                  onChange={handleChange}
-                  className="rounded-lg border border-gray-300 px-3 py-2"
-                >
-                  <option value="">Select Status</option>
-                  <option value="APPROVED">APPROVED</option>
-                  <option value="PENDING">PENDING</option>
-                  <option value="REJECTED">REJECTED</option>
-                </select>
-
-                <textarea
-                  name="comment"
-                  value={formData.comment}
-                  onChange={handleChange}
-                  placeholder="Comment"
-                  className="rounded-lg border border-gray-300 px-3 py-2"
-                />
-
-              </div>
-
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 font-semibold"
-                >
-                  {loading
-                    ? editId
-                      ? "Updating..."
-                      : "Creating..."
-                    : editId
-                      ? "Update Business"
-                      : "Save"}
-                </button>
-              </div>
-            </form>
-
-
+          {/* HEADER */}
+          <div className="flex justify-between items-center p-5 ">
+            <h1 className="text-xl font-semibold text-purple-700">
+              New 2W Business Request
+            </h1>
+            <button onClick={onClose} className="text-gray-500 text-lg">✕</button>
           </div>
-        </div>
 
+          <form onSubmit={handleSubmit} className="p-5 space-y-5">
+
+            {/* ================= BUSINESS DETAILS ================= */}
+            <div className="bg-gray-100 rounded-xl p-4">
+              <div
+                className="flex justify-between items-center cursor-pointer"
+                onClick={() => toggleSection("business")}
+              >
+                <h2 className="font-medium">Business Details</h2>
+                <span className="text-xl font-bold px-2">
+                  {openSection === "business" ? "−" : "+"}
+                </span>
+              </div>
+
+              {openSection === "business" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+
+                  <input
+                    name="company_name"
+                    value={formData.company_name}
+                    onChange={handleChange}
+                    placeholder="Company Name"
+                    className="bg-white border rounded-lg p-2"
+                  />
+
+                  <input
+                    name="contact_person"
+                    value={formData.contact_person}
+                    onChange={handleChange}
+                    placeholder="Contact Person"
+                    className="bg-white border rounded-lg p-2"
+                  />
+
+                  <input
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="Phone"
+                    className="bg-white border rounded-lg p-2"
+                  />
+
+                  <input
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Email"
+                    className="bg-white border rounded-lg p-2"
+                  />
+
+                  <input
+                    name="project_title"
+                    value={formData.project_title}
+                    onChange={handleChange}
+                    placeholder="Project Title"
+                    className="bg-white border rounded-lg p-2"
+                  />
+
+                  <input
+                    name="expected_quantity"
+                    value={formData.expected_quantity}
+                    onChange={handleChange}
+                    placeholder="Expected Quantity"
+                    className="bg-white border rounded-lg p-2"
+                  />
+
+                  <input
+                    name="estimated_budget"
+                    value={formData.estimated_budget}
+                    onChange={handleChange}
+                    placeholder="Estimated Budget"
+                    className="bg-white border rounded-lg p-2"
+                  />
+
+                </div>
+              )}
+            </div>
+
+            {/* ================= VEHICLE DETAILS ================= */}
+            <div className="bg-gray-100 rounded-xl p-4">
+              <div
+                className="flex justify-between items-center cursor-pointer"
+                onClick={() => toggleSection("vehicle")}
+              >
+                <h2 className="font-medium">Vehicle Details</h2>
+                <span className="text-xl font-bold px-2">
+                  {openSection === "business" ? "−" : "+"}
+                </span>
+              </div>
+
+              {openSection === "vehicle" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+
+                  <input
+                    name="vehicle_model"
+                    value={formData.vehicle_model}
+                    onChange={handleChange}
+                    placeholder="Vehicle Model"
+                    className="bg-white border rounded-lg p-2"
+                  />
+
+                  <input
+                    name="motor_capacity"
+                    value={formData.motor_capacity}
+                    onChange={handleChange}
+                    placeholder="Motor Capacity"
+                    className="bg-white border rounded-lg p-2"
+                  />
+
+                  <input
+                    name="battery_type"
+                    value={formData.battery_type}
+                    onChange={handleChange}
+                    placeholder="Battery Type"
+                    className="bg-white border rounded-lg p-2"
+                  />
+
+                </div>
+              )}
+            </div>
+
+            {/* ================= BUSINESS REVIEW ================= */}
+            <div className="bg-gray-100 rounded-xl p-4">
+              <div
+                className="flex justify-between items-center cursor-pointer"
+                onClick={() => toggleSection("review")}
+              >
+                <h2 className="font-medium">Business Review</h2>
+                <span className="text-xl font-bold px-2">
+                  {openSection === "business" ? "−" : "+"}
+                </span>
+              </div>
+
+              {openSection === "review" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+
+                  <select
+                    name="business_status"
+                    value={formData.business_status}
+                    onChange={handleChange}
+                    className="bg-white border rounded-lg p-2"
+                  >
+                    <option value="">Select Status</option>
+                    <option value="APPROVED">APPROVED</option>
+                    <option value="PENDING">PENDING</option>
+                    <option value="REJECTED">REJECTED</option>
+                  </select>
+
+                  <textarea
+                    name="comment"
+                    value={formData.comment}
+                    onChange={handleChange}
+                    placeholder="Comment"
+                    className="bg-white border rounded-lg p-2"
+                  />
+
+                </div>
+              )}
+            </div>
+
+            {/* ================= SUBMIT ================= */}
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                className="bg-purple-600 text-white px-6 py-2 rounded-lg"
+              >
+                {loading ? "Saving..." : "Submit"}
+              </button>
+            </div>
+
+          </form>
+        </div>
       </div>
     </>
   );
-};
-
-export default TwoWheelerPage;
+}   

@@ -1,41 +1,34 @@
-
+// // src/pages/businessDevFood/FoodBusinessPage.tsx
 // import { useState, useEffect } from "react";
 // import axios from "axios";
 // import Alert from "../../../components/Aleartmessage";
 // import { useNavigate } from "react-router-dom";
 
-// type ApiResponse<T = any> = {
-//   success: boolean;
-//   message: string;
-//   data?: T;
-// };
-
-
-// interface ThreeWheelerModalProps {
-//   onClose: () => void;
-//   onSuccess: () => void;
+// interface FoodBusinessPageProps {
+//   onClose?: () => void;     // Close the modal
+//   onSuccess?: () => void;   // Refresh parent list
 // }
 
+// const initialFormData = {
+//   company_name: "",
+//   contact_person: "",
+//   phone: "",
+//   email: "",
+//   project_title: "",
+//   expected_quantity: "",
+//   estimated_budget: "",
+//   product_category: "",
+//   product_name: "",
+//   packaging_type: "",
+//   shelf_life: "",
+//   storage_condition: "",
+//   business_status: "",
+//   comment: "",
+// };
 
-// const ThreeWheelerPage: React.FC<ThreeWheelerModalProps> = ({ onClose, onSuccess }) => {
+// const FoodBusinessPage: React.FC<FoodBusinessPageProps> = ({ onClose, onSuccess }) => {
 //   const navigate = useNavigate();
-
-//   const [formData, setFormData] = useState({
-//     company_name: "",
-//     contact_person: "",
-//     phone: "",
-//     email: "",
-//     project_title: "",
-//     expected_quantity: "",
-//     estimated_budget: "",
-//     vehicle_model: "",
-//     engine_capacity: "",
-//     fuel_type: "",
-//     load_capacity: "",
-//     business_status: "",
-//     comment: "",
-//   });
-
+//   const [formData, setFormData] = useState(initialFormData);
 //   const [loading, setLoading] = useState(false);
 //   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -48,9 +41,7 @@
 //     }
 //   }, [navigate]);
 
-//   const handleChange = (
-//     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-//   ) => {
+//   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 //     setFormData({ ...formData, [e.target.name]: e.target.value });
 //   };
 
@@ -59,22 +50,17 @@
 //     setAlert(null);
 
 //     if (!formData.company_name || !formData.contact_person || !formData.phone) {
-//       setAlert({ type: "error", message: "Please fill all required fields." });
+//       setAlert({ type: "error", message: "Please fill required fields" });
 //       return;
 //     }
 
 //     try {
 //       setLoading(true);
-
-//       const payload = {
-//         ...formData,
-//         industry_type: "3W",
-//       };
-
+//       const payload = { ...formData, industry_type: "FOOD" };
 //       const token = localStorage.getItem("token");
 
 //       const res = await axios.post(
-//         "http://localhost:5004/api/business-development/3w/create",
+//         "http://localhost:5004/api/business-development/food/create",
 //         payload,
 //         {
 //           withCredentials: true,
@@ -86,34 +72,18 @@
 //       );
 
 //       if (res.data.success) {
-//         setAlert({ type: "success", message: "3W Business Created ✅" });
+//         setAlert({ type: "success", message: "Food Business Created Successfully ✅" });
+//         setFormData(initialFormData);
 
-//         setFormData({
-//           company_name: "",
-//           contact_person: "",
-//           phone: "",
-//           email: "",
-//           project_title: "",
-//           expected_quantity: "",
-//           estimated_budget: "",
-//           vehicle_model: "",
-//           engine_capacity: "",
-//           fuel_type: "",
-//           load_capacity: "",
-//           business_status: "",
-//           comment: "",
-//         });
-//         // Close modal after 1.5 seconds
+//         // Call parent callbacks
 //         setTimeout(() => {
-//           setAlert(null);
-//           onSuccess(); // trigger parent refresh
-//           onClose();   // close modal
-//         }, 1500);
+//           if (onClose) onClose();
+//         }, 1500); // 1.5s delay to show alert
 //       } else {
 //         setAlert({ type: "error", message: res.data.message || "Failed to save" });
 //       }
 //     } catch (error: any) {
-//       console.error("API ERROR:", error);
+//       console.error(error);
 //       setAlert({ type: "error", message: error.response?.data?.message || "Server Error" });
 //     } finally {
 //       setLoading(false);
@@ -122,182 +92,80 @@
 
 //   return (
 //     <>
-//       {alert && (
-//         <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />
-//       )}
+//       {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
 
 //       <div className="min-h-screen flex flex-col bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-6 lg:p-8">
 //         <div className="flex-1 w-full max-w-4xl mx-auto">
 //           <div className="bg-white rounded-2xl shadow-md p-5 sm:p-8">
-
 //             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">
-//               3 Wheeler Business Development
+//               Food Industry Business Development
 //             </h2>
-
 //             <p className="text-gray-500 mb-6 text-sm sm:text-base">
-//               Fill in the project and vehicle details to create a new 3W business development record.
+//               Create a new food product business development request.
 //             </p>
 
-//             <form onSubmit={handleSubmit} className="space-y-6 mt-3">
-
+//             <form onSubmit={handleSubmit} className="space-y-6">
 //               {/* Company Info */}
-//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
-//                 <input
-//                   type="text"
-//                   name="company_name"
-//                   value={formData.company_name}
-//                   onChange={handleChange}
-//                   placeholder="Company Name"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                   required
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="contact_person"
-//                   value={formData.contact_person}
-//                   onChange={handleChange}
-//                   placeholder="Contact Person"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                   required
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="phone"
-//                   value={formData.phone}
-//                   onChange={handleChange}
-//                   placeholder="Phone"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                   required
-//                 />
-
-//                 <input
-//                   type="email"
-//                   name="email"
-//                   value={formData.email}
-//                   onChange={handleChange}
-//                   placeholder="Email"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
+//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+//                 <input name="company_name" value={formData.company_name} onChange={handleChange} placeholder="Company Name" className="border rounded-lg p-3" required />
+//                 <input name="contact_person" value={formData.contact_person} onChange={handleChange} placeholder="Contact Person" className="border rounded-lg p-3" required />
+//                 <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" className="border rounded-lg p-3" required />
+//                 <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="border rounded-lg p-3" />
 //               </div>
 
 //               {/* Project Details */}
-//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
-//                 <input
-//                   type="text"
-//                   name="project_title"
-//                   value={formData.project_title}
-//                   onChange={handleChange}
-//                   placeholder="Project Title"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="expected_quantity"
-//                   value={formData.expected_quantity}
-//                   onChange={handleChange}
-//                   placeholder="Expected Quantity"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="estimated_budget"
-//                   value={formData.estimated_budget}
-//                   onChange={handleChange}
-//                   placeholder="Estimated Budget"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
+//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+//                 <input name="project_title" value={formData.project_title} onChange={handleChange} placeholder="Project Title" className="border rounded-lg p-3" />
+//                 <input name="expected_quantity" value={formData.expected_quantity} onChange={handleChange} placeholder="Expected Quantity" className="border rounded-lg p-3" />
+//                 <input name="estimated_budget" value={formData.estimated_budget} onChange={handleChange} placeholder="Estimated Budget" className="border rounded-lg p-3" />
 //               </div>
 
-//               {/* Vehicle Details */}
-//               <h3 className="text-md sm:text-lg font-semibold text-gray-800 mt-4">
-//                 Vehicle Details
-//               </h3>
-
-//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
-//                 <input
-//                   type="text"
-//                   name="vehicle_model"
-//                   value={formData.vehicle_model}
-//                   onChange={handleChange}
-//                   placeholder="Vehicle Model"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="engine_capacity"
-//                   value={formData.engine_capacity}
-//                   onChange={handleChange}
-//                   placeholder="Engine Capacity"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="fuel_type"
-//                   value={formData.fuel_type}
-//                   onChange={handleChange}
-//                   placeholder="Fuel Type"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="load_capacity"
-//                   value={formData.load_capacity}
-//                   onChange={handleChange}
-//                   placeholder="Load Capacity"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
+//               {/* Product Details */}
+//               <h3 className="text-md sm:text-lg font-semibold text-gray-800">Product Details</h3>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+//                 <input name="product_category" value={formData.product_category} onChange={handleChange} placeholder="Product Category" className="border rounded-lg p-3" />
+//                 <input name="product_name" value={formData.product_name} onChange={handleChange} placeholder="Product Name" className="border rounded-lg p-3" />
+//                 <input name="packaging_type" value={formData.packaging_type} onChange={handleChange} placeholder="Packaging Type" className="border rounded-lg p-3" />
+//                 <input name="shelf_life" value={formData.shelf_life} onChange={handleChange} placeholder="Shelf Life" className="border rounded-lg p-3" />
+//                 <input name="storage_condition" value={formData.storage_condition} onChange={handleChange} placeholder="Storage Condition" className="border rounded-lg p-3" />
 //               </div>
 
-//               <h3 className="text-md sm:text-lg font-semibold text-gray-800 mt-4">
+//               {/* Status & Comment */}
+//               <h3 className="text-md sm:text-lg font-semibold text-gray-800">
 //                 Business Review
 //               </h3>
 
-//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
+//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+//                 {/* Status Dropdown */}
 //                 <select
 //                   name="business_status"
 //                   value={formData.business_status}
-//                   onChange={handleChange}
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
+//                   onChange={(e) =>
+//                     setFormData({ ...formData, business_status: e.target.value })
+//                   }
+//                   className="border rounded-lg p-3"
 //                 >
 //                   <option value="">Select Status</option>
-//                   <option value="APPROVED">APPROVED</option>
-//                   <option value="PENDING">PENDING</option>
-//                   <option value="REJECTED">REJECTED</option>
+//                   <option value="PENDING">Pending</option>
+//                   <option value="APPROVED">Approved</option>
+//                   <option value="REJECTED">Rejected</option>
 //                 </select>
 
-//                 <textarea
+//                 {/* Comment Input */}
+//                 <input
 //                   name="comment"
 //                   value={formData.comment}
 //                   onChange={handleChange}
 //                   placeholder="Comment"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
+//                   className="border rounded-lg p-3"
 //                 />
-
 //               </div>
 
-//               {/* Submit */}
 //               <div>
-//                 <button
-//                   type="submit"
-//                   disabled={loading}
-//                   className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 font-semibold hover:opacity-90 disabled:opacity-50"
-//                 >
+//                 <button type="submit" disabled={loading} className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 font-semibold hover:opacity-90 disabled:opacity-50">
 //                   {loading ? "Creating Business..." : "Save"}
 //                 </button>
 //               </div>
-
 //             </form>
 //           </div>
 //         </div>
@@ -306,12 +174,13 @@
 //   );
 // };
 
-// export default ThreeWheelerPage;
+// export default FoodBusinessPage;
 
 
+// src/pages/businessDevFood/FoodBusinessPage.tsx
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Alert from "../../../components/Aleartmessage";
+import Alert from "../../../../components/Aleartmessage";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
@@ -319,7 +188,7 @@ interface Props {
   onSuccess: () => void;
 }
 
-export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
+export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
   const navigate = useNavigate();
 
   const [openSection, setOpenSection] = useState("business");
@@ -336,10 +205,11 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
     project_title: "",
     expected_quantity: "",
     estimated_budget: "",
-    vehicle_model: "",
-    engine_capacity: "",
-    fuel_type: "",
-    load_capacity: "",
+    product_category: "",
+    product_name: "",
+    packaging_type: "",
+    shelf_life: "",
+    storage_condition: "",
     business_status: "",
     comment: "",
   });
@@ -370,14 +240,16 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
 
       const payload = {
         ...formData,
-        industry_type: "3W",
+        industry_type: "FOOD",
       };
 
       const res = await axios.post(
-        `http://localhost:5004/api/business-development/3w/create`,
+        `http://localhost:5004/api/business-development/food/create`,
         payload,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           withCredentials: true,
         }
       );
@@ -385,7 +257,7 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
       if (res.data.success) {
         setAlert({
           type: "success",
-          message: "3W Created ✅",
+          message: "Food Business Created ✅",
         });
 
         setFormData({
@@ -396,10 +268,11 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
           project_title: "",
           expected_quantity: "",
           estimated_budget: "",
-          vehicle_model: "",
-          engine_capacity: "",
-          fuel_type: "",
-          load_capacity: "",
+          product_category: "",
+          product_name: "",
+          packaging_type: "",
+          shelf_life: "",
+          storage_condition: "",
           business_status: "",
           comment: "",
         });
@@ -437,7 +310,7 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
           {/* HEADER */}
           <div className="flex justify-between items-center p-5">
             <h1 className="text-xl font-semibold text-purple-700">
-              New 3W Business Request
+              New Food Business Request
             </h1>
             <button onClick={onClose} className="text-gray-500 text-lg">✕</button>
           </div>
@@ -451,7 +324,7 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
                 onClick={() => toggleSection("business")}
               >
                 <h2 className="font-medium">Business Details</h2>
-                <span className="text-xl font-bold px-2">
+                <span className="text-xl font-bold">
                   {openSection === "business" ? "−" : "+"}
                 </span>
               </div>
@@ -463,6 +336,7 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
                   <input name="contact_person" value={formData.contact_person} onChange={handleChange} placeholder="Contact Person" className="bg-white border rounded-lg p-2" />
                   <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" className="bg-white border rounded-lg p-2" />
                   <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="bg-white border rounded-lg p-2" />
+
                   <input name="project_title" value={formData.project_title} onChange={handleChange} placeholder="Project Title" className="bg-white border rounded-lg p-2" />
                   <input name="expected_quantity" value={formData.expected_quantity} onChange={handleChange} placeholder="Expected Quantity" className="bg-white border rounded-lg p-2" />
                   <input name="estimated_budget" value={formData.estimated_budget} onChange={handleChange} placeholder="Estimated Budget" className="bg-white border rounded-lg p-2" />
@@ -471,25 +345,26 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
               )}
             </div>
 
-            {/* ================= VEHICLE DETAILS ================= */}
+            {/* ================= PRODUCT DETAILS ================= */}
             <div className="bg-gray-100 rounded-xl p-4">
               <div
                 className="flex justify-between items-center cursor-pointer"
-                onClick={() => toggleSection("vehicle")}
+                onClick={() => toggleSection("product")}
               >
-                <h2 className="font-medium">Vehicle Details</h2>
-                <span className="text-xl font-bold px-2">
-                  {openSection === "vehicle" ? "−" : "+"}
+                <h2 className="font-medium">Product Details</h2>
+                <span className="text-xl font-bold">
+                  {openSection === "product" ? "−" : "+"}
                 </span>
               </div>
 
-              {openSection === "vehicle" && (
+              {openSection === "product" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
 
-                  <input name="vehicle_model" value={formData.vehicle_model} onChange={handleChange} placeholder="Vehicle Model" className="bg-white border rounded-lg p-2" />
-                  <input name="engine_capacity" value={formData.engine_capacity} onChange={handleChange} placeholder="Engine Capacity" className="bg-white border rounded-lg p-2" />
-                  <input name="fuel_type" value={formData.fuel_type} onChange={handleChange} placeholder="Fuel Type" className="bg-white border rounded-lg p-2" />
-                  <input name="load_capacity" value={formData.load_capacity} onChange={handleChange} placeholder="Load Capacity" className="bg-white border rounded-lg p-2" />
+                  <input name="product_category" value={formData.product_category} onChange={handleChange} placeholder="Product Category" className="bg-white border rounded-lg p-2" />
+                  <input name="product_name" value={formData.product_name} onChange={handleChange} placeholder="Product Name" className="bg-white border rounded-lg p-2" />
+                  <input name="packaging_type" value={formData.packaging_type} onChange={handleChange} placeholder="Packaging Type" className="bg-white border rounded-lg p-2" />
+                  <input name="shelf_life" value={formData.shelf_life} onChange={handleChange} placeholder="Shelf Life" className="bg-white border rounded-lg p-2" />
+                  <input name="storage_condition" value={formData.storage_condition} onChange={handleChange} placeholder="Storage Condition" className="bg-white border rounded-lg p-2" />
 
                 </div>
               )}
@@ -502,7 +377,7 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
                 onClick={() => toggleSection("review")}
               >
                 <h2 className="font-medium">Business Review</h2>
-                <span className="text-xl font-bold px-2">
+                <span className="text-xl font-bold">
                   {openSection === "review" ? "−" : "+"}
                 </span>
               </div>

@@ -1,7 +1,7 @@
 // UpdatedThreeWheelerRequests.tsx
 import React, { useEffect, useState } from "react";
-import FoodBusiness from "./FoodBusinessCard"; // <-- import your card component here
-import { api } from "../../../api/businessApi";
+import FoodBusiness from "../FoodPages/FoodBusinessCard"; // <-- import your card component here
+import { api } from "../../../../api/businessApi";
 
 interface Props {
   onBack: () => void;
@@ -50,14 +50,15 @@ const UpdatedFoodRequests: React.FC<Props> = ({ onBack }) => {
       ) : data.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8 space-y-4">
           {data
-            ?.filter((item) => item && item.id) // ✅ remove bad items
-            .map((item) => (
+            ?.filter((item) => item && item.id)
+            .map((item, index) => (   // ✅ add index here
               <FoodBusiness
                 key={item.id}
                 data={item}
                 mode="update"
+                cardIndex={index}   // ✅ pass index
                 onUpdate={(updatedItem) => {
-                  if (!updatedItem?.id) return; // ✅ safety
+                  if (!updatedItem?.id) return;
 
                   setData((prev) =>
                     prev.map((pr) =>

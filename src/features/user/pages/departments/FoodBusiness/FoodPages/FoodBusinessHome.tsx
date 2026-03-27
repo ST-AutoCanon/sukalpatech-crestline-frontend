@@ -1,8 +1,8 @@
 // src/pages/businessDevFood/FoodBusinessHome.tsx
 import { useState } from "react";
 import FoodBusinessList from "./Foodlist";
-import FoodBusinessPage from "./FoodBusiness";
-import UpdatedFoodRequests from "./UpdatedfeasibilityPage"; // create this like 3W
+import FoodBusinessPage from "./CraeteFoodBusiness";
+import UpdatedFoodRequests from "../FeasibilityPages/UpdatedfeasibilityPage"; // create this like 3W
 
 
 

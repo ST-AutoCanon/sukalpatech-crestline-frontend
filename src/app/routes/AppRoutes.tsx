@@ -16,7 +16,7 @@ import DepartmentPage from "../../features/admin/pages/Department";
 import EmployeeUpdate from "../../features/admin/pages/EmployeeUpdate";
 import CreateOrganisation from "../../features/superadmin/pages/organisations/CreateOrganisation";
 
-import UpdatedFeasibilityPage from "../../features/user/pages/departments/Businessdevelopment/UpdatedFeasibilitypage";
+import UpdatedFeasibilityPage from "../../features/user/pages/departments/Businessdevelopment/Feasibility/UpdatedFeasibilitypage";
 import ThreeWheelerPage from "../../features/user/pages/departments/ThreeWheeler/ThreeWheelerPage";
 import Foodbusiness from "../../features/user/pages/departments/FoodBusiness/FoodBusiness";
 import TwoWheelerHome from "../../features/user/pages/departments/TwoWheeler/TwoWheelerHome";

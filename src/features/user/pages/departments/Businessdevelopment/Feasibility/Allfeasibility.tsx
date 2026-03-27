@@ -1,18 +1,20 @@
 import React, { useState } from "react";
-import { api } from "../../../api/businessApi";
-import ALeart from "../../../components/Aleartmessage";
+import { api } from "../../../../api/businessApi";
+import ALeart from "../../../../components/Aleartmessage";
 
 interface FeasibilityCardProps {
   data: any;
   mode: "all" | "update" | "bd-update";
+  cardIndex: number;
   onUpdate: (updated: any) => void;
+
 }
 
 
 const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   data,
   mode,
-  onUpdate,
+  onUpdate, cardIndex
 }) => {
   if (!data) return null;
 
@@ -72,27 +74,27 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
     { label: "State Transport Norms", key: "state_transport_norms" },
   ];
 
+  // const formatDate = (date: string | null | undefined) => {
+  //   if (!date) return "-";
+  //   const d = new Date(date);
+  //   if (isNaN(d.getTime())) return "-";
+  //   return d.toLocaleDateString("en-GB");
+  // };
   const formatDate = (date: string | null | undefined) => {
-    if (!date) return "-";
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return "-";
-    return d.toLocaleDateString("en-GB");
-  };
+  if (!date) return "-";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "-";
+
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${month}/${day}/${year}`; // MM/DD/YYYY
+};
 
   // Handle Feasibility update
   const handleFeasibilityUpdate = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setAlert({
-          type: "error",
-          message: "You are not logged in",
-        });
-        setTimeout(() => setAlert(null), 3000);
-        return;
-      }
-
       const res = await api.patch(
         `/business-development/feasibility/${data.id}/review`,
         {
@@ -167,21 +169,21 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   // };
 
   const handleBdUpdate = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await api.patch(
-      `/business-development/${data.id}/bd-update`,
-      {
-        bd_status: finalStatus,
-        bd_comments: finalComments,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` }, // ✅ send token
-      }
-    );
-    onUpdate(res.data.data);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await api.patch(
+        `/business-development/${data.id}/bd-update`,
+        {
+          bd_status: finalStatus,
+          bd_comments: finalComments,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }, // ✅ send token
+        }
+      );
+      onUpdate(res.data.data);
 
-     setAlert({
+      setAlert({
         type: "success",
         message: "Business development updated successfully!",
       });
@@ -255,7 +257,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
         />
       )}
       <h2 className="text-purple-600 font-semibold text-sm mb-2 truncate">
-        BR ID:{data.id}
+        BR ID: {cardIndex + 1}
       </h2>
 
       <div className="flex flex-col gap-0.5">

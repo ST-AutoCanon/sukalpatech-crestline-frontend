@@ -365,7 +365,12 @@ export default function SubmittedRequestsPage() {
               {[
                 ["Department", departmentMap[String(pr.department)] ?? pr.department],
                 ["Priority", pr.priority],
-                ["Required", formatDate(pr.required_date)],
+                [
+                  "Required",
+                  pr.required_date
+                    ? new Date(pr.required_date).toLocaleDateString("en-US")
+                    : "-"
+                ],
                 ["Description", pr.description],
               ].map(([label, value], i) => (
                 <div key={i} className="flex justify-between">
@@ -397,7 +402,9 @@ export default function SubmittedRequestsPage() {
                   ["Priority", selectedPR.priority],
                   [
                     "Delivery Date",
-                    formatDate(selectedPR.required_date),
+                    selectedPR.required_date
+                      ? new Date(selectedPR.required_date).toLocaleDateString("en-US")
+                      : "-",
                   ],
                   [
                     "Department",
@@ -540,12 +547,17 @@ export default function SubmittedRequestsPage() {
                                     href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-blue-600 underline text-sm"
+                                    className="border rounded px-2 py-1 bg-white text-blue-600 truncate block"
+                                    title={validAttachment.file_name}
                                   >
-                                    View File
+                                    {validAttachment.file_name || validAttachment.file_path}
                                   </a>
                                 ) : (
-                                  <span className="text-gray-400 text-sm">No file</span>
+                                  <input
+                                    readOnly
+                                    value="No file"
+                                    className="border rounded px-2 py-1 bg-gray-100 text-gray-400"
+                                  />
                                 );
                               })()}
                             </div>
@@ -687,23 +699,28 @@ export default function SubmittedRequestsPage() {
                               className="border rounded px-2 py-1 w-full"
                             /> */}
                             {(() => {
-                                const validAttachment = vendor.attachments?.find(
-                                  (att: any) => att.file_path && att.file_path.trim() !== ""
-                                );
+                              const validAttachment = vendor.attachments?.find(
+                                (att: any) => att.file_path && att.file_path.trim() !== ""
+                              );
 
-                                return validAttachment ? (
-                                  <a
-                                    href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 underline text-sm"
-                                  >
-                                    View File
-                                  </a>
-                                ) : (
-                                  <span className="text-gray-400 text-sm">No file</span>
-                                );
-                              })()}
+                              return validAttachment ? (
+                                <a
+                                  href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="border rounded px-2 py-1 bg-white text-blue-600 truncate block"
+                                  title={validAttachment.file_name}
+                                >
+                                  {validAttachment.file_name || validAttachment.file_path}
+                                </a>
+                              ) : (
+                                <input
+                                  readOnly
+                                  value="No file"
+                                  className="border rounded px-2 py-1 bg-gray-100 text-gray-400"
+                                />
+                              );
+                            })()}
                           </div>
 
                           {/* Unit Price */}

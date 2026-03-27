@@ -11,8 +11,8 @@ import {
   Gem
 } from "lucide-react";
 import crestlineLogo from "../../../assets/crestlinetech_black_1.png";
-import crestlinelogo from "../../../assets/crestline_logo.jpeg";
-
+// import crestlinelogo from "../../../assets/crestline_logo.jpeg";
+import avatar from "../../../assets/avatar.jpg";
 interface SidebarProps {
   departments: any[];
   apiNameToKey: Record<string, string>;
@@ -63,7 +63,7 @@ export default function Sidebar({
         {/* Logo */}
         <div className="flex justify-center mb-6 transition-all duration-300">
           <img
-            src={sidebarOpen ? crestlineLogo : crestlinelogo}
+            src={sidebarOpen ? avatar : avatar}
             alt="Crestline Tech"
             className={`object-contain transition-all duration-300
       ${sidebarOpen ? "h-14" : "h-10"}

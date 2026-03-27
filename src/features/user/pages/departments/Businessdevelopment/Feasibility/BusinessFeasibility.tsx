@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { api } from "../../../api/businessApi";
+import { api } from "../../../../api/businessApi";
 import FeasibilityCard from "./Allfeasibility";
 
 const FeasibilityPage = () => {
@@ -42,10 +42,11 @@ const FeasibilityPage = () => {
 
       {/* CARD GRID — ALWAYS SHOWN */}
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
-        {prs.map((pr) => (
+        {prs.map((pr, index) => (  // <-- add index here
           <FeasibilityCard
             key={pr.id}
             data={pr}
+            cardIndex={index}   // <-- now this works
             mode={activeTab}
             onUpdate={handleUpdateSuccess}
           />

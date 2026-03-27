@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { api } from "../../../api/businessApi";
-import ViewFood from "./ViewFoodpage"; // Card component for 2W BRs
-import FoodBusinessHome from "./FoodBusinessHome"; // Modal form for creating 2W BRs
+import { api } from "../../../../api/businessApi";
+import ViewFood from "../FoodPages/ViewFoodpage"; // Card component for 2W BRs
+import FoodBusinessHome from "../FoodPages/FoodBusinessHome"; // Modal form for creating 2W BRs
 
 const TwoWheelerFeasibility: React.FC = () => {
   const [prs, setPrs] = useState<any[]>([]);
@@ -71,12 +71,13 @@ const TwoWheelerFeasibility: React.FC = () => {
         <p className="text-white">No 3W business requests found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {prs.map((pr) => (
+          {prs.map((pr,i) => (
             <ViewFood
               key={pr.id}
               data={pr}
               mode={activeTab}
               onUpdate={handleUpdateSuccess}
+              cardIndex={i}
             />
           ))}
         </div>

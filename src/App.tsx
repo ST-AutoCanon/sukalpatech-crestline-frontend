@@ -19,7 +19,7 @@ import OrganisationHome from "./features/superadmin/pages/organisations/Organisa
 
 import TwoWheelerHome from "./features/user/pages/departments/TwoWheeler/TwoWheelerHome";
 import ThreeWheelerHome from "./features/user/pages/departments/ThreeWheeler/ThreeWheelerHome";
-import FoodBusinessHome from "./features/user/pages/departments/FoodBusiness/FoodBusinessHome";
+import FoodBusinessHome from "./features/user/pages/departments/FoodBusiness/FoodPages/FoodBusinessHome";
 import GoldBusinessHome from "./features/user/pages/departments/gold_business/goldbusinessHome";
 
 
@@ -30,7 +30,7 @@ import StoreMaterialsPage from "./features/manager/pages/manager/StoresMaterials
 import FabricationPage from "./features/manager/pages/manager/FabricationStructurePage";
 import QualityControlPage from "./features/manager/pages/manager/QualityControlPage";
 
-import UpdatedFeasibilityPage from "./features/user/pages/departments/Businessdevelopment/UpdatedFeasibilitypage";
+import UpdatedFeasibilityPage from "./features/user/pages/departments/Businessdevelopment/Feasibility/UpdatedFeasibilitypage";
 import Home from "./pages/Home";
 import CategoryLimitPage from "./features/admin/pages/Categorylimit";
 
@@ -52,7 +52,7 @@ const componentMap: Record<string, React.LazyExoticComponent<any>> = {
   ),
   BD: React.lazy(
     () =>
-      import("./features/user/pages/departments/Businessdevelopment/BusinessdevelopmentHome"),
+      import("./features/user/pages/departments/Businessdevelopment/Business/BusinessdevelopmentHome"),
   ),
 };
 
