@@ -6,7 +6,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 // Real project ID from DB
 const PROJECT_ID = 1;
 
-export default function EngineeringDesignPage() {
+export default function FabricationStructurePage() {
   const { user } = useContext(AuthContext);
   const [deptId, setDeptId] = useState<number | null>(null);
   const [alert, setAlert] = useState<{
@@ -26,13 +26,15 @@ export default function EngineeringDesignPage() {
             credentials: "include",
           },
         );
+
         const data = await res.json();
-        console.log("department name in eng desing is :", data);
+
         if (!data.success) return;
 
         const dept = data.data.find(
-          (d: any) => d.name === "engineering_design",
+          (d: any) => d.name === "fabrication_structure",
         );
+
         setDeptId(dept?.department_id || null);
       } catch (err) {
         console.error("Error fetching department ID:", err);
@@ -74,6 +76,7 @@ export default function EngineeringDesignPage() {
       );
 
       const bdData = await bdResponse.json().catch(() => ({}));
+
       if (!bdResponse.ok) {
         console.error("BD Update Failed:", bdData);
         setAlert({
@@ -82,6 +85,7 @@ export default function EngineeringDesignPage() {
         });
         return;
       }
+
       console.log("✅ BD updated:", bdData);
 
       // 2️⃣ Send notification dynamically
@@ -92,18 +96,16 @@ export default function EngineeringDesignPage() {
         body: JSON.stringify({
           title: "Project Completed",
           message:
-            "Engineering & Design department completed the project and moved to next department",
+            "Fabrication Structure department completed the project and moved to next department",
           type: "PROJECT_MOVED",
           related_bd_id: PROJECT_ID,
-          recipient_department_id: deptId, // dynamically fetched department
-          // Optionally, you can also send to a role or specific user:
-          // recipient_role: "manager",
-          // recipient_id: 54,
-          metadata: { department: "Engineering & Design" },
+          recipient_department_id: deptId,
+          metadata: { department: "Fabrication Structure" },
         }),
       });
 
       const notifData = await notifResponse.json().catch(() => ({}));
+
       if (!notifResponse.ok) {
         console.error("Notification Failed:", notifData);
         setAlert({
@@ -129,44 +131,43 @@ export default function EngineeringDesignPage() {
 
   return (
     <div className="w-full min-h-[80vh] p-6">
-      {alert && (
-        <Alert
-          type={alert.type}
-          message={alert.message}
-          onClose={() => setAlert(null)}
-        />
+            {alert && (
+              <Alert
+                type={alert.type}
+                message={alert.message}
+                onClose={() => setAlert(null)}
+              />
       )}
+      
       <div className="bg-white rounded-2xl shadow-md p-6">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          Engineering & Design
+          Fabrication Structure
         </h2>
 
         <p className="text-gray-600 mb-6">
-          Manage engineering drawings, design approvals, and technical
-          documentation.
+          Manage fabrication work, structural assembly, welding operations, and
+          material preparation workflows.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-gray-50 p-5 rounded-xl border">
-            <h3 className="font-semibold text-gray-700 mb-2">Drawings</h3>
+            <h3 className="font-semibold text-gray-700 mb-2">Cutting</h3>
             <p className="text-sm text-gray-500">
-              Upload and manage engineering drawings.
+              Manage material cutting plans and execution.
             </p>
           </div>
 
           <div className="bg-gray-50 p-5 rounded-xl border">
-            <h3 className="font-semibold text-gray-700 mb-2">
-              Design Approvals
-            </h3>
+            <h3 className="font-semibold text-gray-700 mb-2">Welding</h3>
             <p className="text-sm text-gray-500">
-              Review and approve design submissions.
+              Track welding processes and joint inspections.
             </p>
           </div>
 
           <div className="bg-gray-50 p-5 rounded-xl border">
-            <h3 className="font-semibold text-gray-700 mb-2">Documentation</h3>
+            <h3 className="font-semibold text-gray-700 mb-2">Assembly</h3>
             <p className="text-sm text-gray-500">
-              Manage technical documentation and revisions.
+              Manage structural assembly and alignment processes.
             </p>
           </div>
         </div>
@@ -177,7 +178,7 @@ export default function EngineeringDesignPage() {
             className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
             disabled={!deptId}
           >
-            {deptId ? "Mark Project as Completed" : "Loading Department..."}
+            {deptId ? "Mark Fabrication as Completed" : "Loading Department..."}
           </button>
         </div>
       </div>

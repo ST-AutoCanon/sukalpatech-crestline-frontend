@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import EngineeringDesignPage from "./EngineeringDesignPage";
+import EngineeringDesignPage from "./QualityControlPage";
 import ProjectsPage from "./ProjectsPage"; // 🔥 adjust path if needed
 import UpdateProjectsPage from "./updateProject"; // 🔥 adjust path if needed
 

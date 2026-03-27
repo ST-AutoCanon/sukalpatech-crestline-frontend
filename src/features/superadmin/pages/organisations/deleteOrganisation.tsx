@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Alert from "../../../../components/Aleartmessage";
+import { X } from "lucide-react"; 
 
 type Organisation = {
   id: number;
@@ -19,6 +20,7 @@ const DeleteOrganisation = () => {
 
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<{
@@ -52,9 +54,6 @@ const DeleteOrganisation = () => {
       return;
     }
 
-    if (!window.confirm("Are you sure you want to delete this organisation?"))
-      return;
-
     try {
       setLoading(true);
 
@@ -73,12 +72,10 @@ const DeleteOrganisation = () => {
       });
 
       if (res.data.success) {
-        // Remove deleted org from dropdown
         setOrganisations((prev) =>
           prev.filter((org) => org.id !== selectedOrgId),
         );
         setSelectedOrgId(null);
-        setTimeout(() => setAlert(null), 4000);
       }
     } catch (err: any) {
       setAlert({
@@ -93,6 +90,7 @@ const DeleteOrganisation = () => {
 
   return (
     <>
+      {/* ALERT */}
       {alert && (
         <Alert
           type={alert.type}
@@ -101,6 +99,47 @@ const DeleteOrganisation = () => {
         />
       )}
 
+      {/* CONFIRM MODAL */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40">
+          <div className="w-[360px] bg-white rounded-lg shadow-lg border border-gray-200">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 bg-red-500 text-white">
+              <span className="font-semibold">Confirm Delete</span>
+              <button onClick={() => setShowConfirm(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 text-sm text-gray-700">
+              Are you sure you want to delete this organisation?
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-2 px-4 pb-4">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-3 py-1 bg-gray-200 rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowConfirm(false);
+                  handleDelete();
+                }}
+                className="px-3 py-1 bg-red-600 text-white rounded"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MAIN UI */}
       <div className="min-h-screen flex flex-col bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-6 lg:p-8">
         <div className="flex-1 w-full max-w-4xl mx-auto">
           <div className="w-full max-w-5xl mx-auto bg-white shadow-lg rounded-2xl p-6 sm:p-8">
@@ -114,10 +153,15 @@ const DeleteOrganisation = () => {
                 <label className="block text-gray-700 font-semibold mb-2">
                   Select Organisation
                 </label>
+
                 <select
                   className="w-full border rounded-xl px-4 py-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-400 outline-none"
                   value={selectedOrgId ?? ""}
-                  onChange={(e) => setSelectedOrgId(Number(e.target.value))}
+                  onChange={(e) =>
+                    setSelectedOrgId(
+                      e.target.value ? Number(e.target.value) : null,
+                    )
+                  }
                 >
                   <option value="">-- Select --</option>
                   {organisations.map((org) => (
@@ -132,7 +176,7 @@ const DeleteOrganisation = () => {
               <button
                 type="button"
                 disabled={!selectedOrgId || loading}
-                onClick={handleDelete}
+                onClick={() => setShowConfirm(true)}
                 className="w-full rounded-xl bg-red-600 text-white py-3 font-semibold hover:opacity-90 transition disabled:opacity-50"
               >
                 {loading ? "Deleting..." : "Delete Organisation"}

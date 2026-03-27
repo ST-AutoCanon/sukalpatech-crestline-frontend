@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import React, { Suspense } from "react";
 
 import AuthLayout from "./components/layout/AuthLayout";
-import Login from "./features/auth/pages/Login";
 import { useAuth } from "./features/auth/hooks/useAuth";
 
 import AdminDashboard from "./features/admin/pages/AdminDashboard";
@@ -14,7 +13,6 @@ import EmployeeDashboardHome from "./features/user/pages/EmployeeDashboardHome";
 
 import DepartmentPage from "./features/admin/pages/Department";
 import EmployeeUpdate from "./features/admin/pages/EmployeeUpdate";
-// import CreateOrganisation from "./features/superadmin/pages/organisations/CreateOrganisation";
 import OrganisationHome from "./features/superadmin/pages/organisations/OrganisationHome";
 
 import TwoWheelerHome from "./features/user/pages/departments/TwoWheeler/TwoWheelerHome";
@@ -26,9 +24,9 @@ import GoldBusinessHome from "./features/user/pages/departments/gold_business/go
 import ManagerDashboard from "./features/manager/pages/ManagerDashboard";
 import ManagerDashboardHome from "./features/manager/pages/ManagerHome";
 import EngineeringDesignPage from "./features/manager/pages/engineeringDesign/EngineeringDesignHome";
-import StoreMaterialsPage from "./features/manager/pages/manager/StoresMaterialsPage";
-import FabricationPage from "./features/manager/pages/manager/FabricationStructurePage";
-import QualityControlPage from "./features/manager/pages/manager/QualityControlPage";
+import StoreMaterialsPage from "./features/manager/pages/storeMaterials/StoreMaterialsHome";
+import FabricationPage from "./features/manager/pages/fabrication/FabricationHome";
+import QualityControlPage from "./features/manager/pages/qualityControl/QualityControlHome";
 
 import UpdatedFeasibilityPage from "./features/user/pages/departments/Businessdevelopment/Feasibility/UpdatedFeasibilitypage";
 import Home from "./pages/Home";
