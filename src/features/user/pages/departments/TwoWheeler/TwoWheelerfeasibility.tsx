@@ -71,12 +71,13 @@ const TwoWheelerFeasibility: React.FC = () => {
         <p className="text-white">No 2W business requests found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {prs.map((pr) => (
+          {prs.map((pr,i) => (
             <ViewTwoWheeler
               key={pr.id}
               data={pr}
               mode={activeTab}
               onUpdate={handleUpdateSuccess}
+              cardIndex={i}
             />
           ))}
         </div>

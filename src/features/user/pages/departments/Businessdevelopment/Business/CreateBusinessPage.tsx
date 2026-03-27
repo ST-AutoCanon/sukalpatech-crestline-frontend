@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, memo } from "react";
-import { api } from "../../../api/businessApi";
+import { api } from "../../../../api/businessApi";
 import axios from "axios";
-import Alert from "../../../components/Aleartmessage";
+import Alert from "../../../../components/Aleartmessage";
 
 interface Request {
   id: number;
@@ -108,9 +108,9 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [form, setForm] = useState<any>({ ...initialForm });
   const [alert, setAlert] = useState<{
-  type: "success" | "error";
-  message: string;
-} | null>(null);
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
 
   const [expandedSections, setExpandedSections] = useState<{
@@ -203,74 +203,74 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
 
   const handleSubmit = async (e: any, bdId?: number) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const formData = new FormData();
+    const formData = new FormData();
 
-  Object.keys(form).forEach((key) => {
-    if (key === "attachments") {
-      form.attachments.forEach((file: File) => {
-        formData.append("attachments", file);
-      });
-    } else {
-      formData.append(key, form[key]);
-    }
-  });
-
-  try {
-    if (bdId) {
-      await api.patch(
-        `/business-development/${bdId}/submit`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      setAlert({
-        type: "success",
-        message: "BD info updated successfully!",
-      });
-    } else {
-      await api.post(
-        "/business-development",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      setAlert({
-        type: "success",
-        message: "Request created successfully!",
-      });
-    }
-
-    setForm({ ...initialForm });
-    fetchRequests();
-
-    // ✅ Delay closing so alert is visible
-    setTimeout(() => {
-      onSuccess();
-      onClose();
-    }, 1500); // adjust time if needed
-
-  } catch (err) {
-    console.error("Failed to submit BD info", err);
-
-    setAlert({
-      type: "error",
-      message: "Failed to submit BD info",
+    Object.keys(form).forEach((key) => {
+      if (key === "attachments") {
+        form.attachments.forEach((file: File) => {
+          formData.append("attachments", file);
+        });
+      } else {
+        formData.append(key, form[key]);
+      }
     });
-  }
-};
+
+    try {
+      if (bdId) {
+        await api.patch(
+          `/business-development/${bdId}/submit`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        setAlert({
+          type: "success",
+          message: "BD info updated successfully!",
+        });
+      } else {
+        await api.post(
+          "/business-development",
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        setAlert({
+          type: "success",
+          message: "Request created successfully!",
+        });
+      }
+
+      setForm({ ...initialForm });
+      fetchRequests();
+
+      // ✅ Delay closing so alert is visible
+      setTimeout(() => {
+        onSuccess();
+        onClose();
+      }, 1500); // adjust time if needed
+
+    } catch (err) {
+      console.error("Failed to submit BD info", err);
+
+      setAlert({
+        type: "error",
+        message: "Failed to submit BD info",
+      });
+    }
+  };
 
 
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/30 p-2 sm:p-4">
       {alert && (
-  <Alert
-    type={alert.type}
-    message={alert.message}
-    onClose={() => setAlert(null)}
-  />
-)}
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
       <div className=" w-full
   sm:max-w-7xl
   bg-white

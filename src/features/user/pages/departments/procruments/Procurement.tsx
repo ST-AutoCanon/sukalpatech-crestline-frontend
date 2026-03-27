@@ -550,11 +550,15 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
                         <label
                           htmlFor={`file-${i}-${vi}`}
-                          className="block w-full p-2 mt-1 border rounded bg-white cursor-pointer text-sm text-gray-500 truncate"
+                          className="w-full p-2 border rounded mt-1 bg-white cursor-pointer text-sm text-gray-700 flex items-center justify-between"
                         >
-                          {vendorFiles[`${i}-${vi}`]?.length > 0
-                            ? vendorFiles[`${i}-${vi}`].map((f) => f.file.name).join(", ")
-                            : "Choose File"}
+                          <span className="truncate">
+                            {vendorFiles[`${i}-${vi}`]?.length > 0
+                              ? vendorFiles[`${i}-${vi}`].map((f) => f.file.name).join(", ")
+                              : "Choose file"}
+                          </span>
+
+                          <Upload size={16} className="text-gray-400" />
                         </label>
                       </div>
                       {/* Unit Price */}
@@ -597,20 +601,19 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                       </div>
 
                       {/* Validity */}
-                      <div>
+                      <div className="sm:col-span-2">
                         <label className="text-xs text-gray-600">
                           Quotation Validity<span className="text-red-500">*</span>
                         </label>
                         <input
                           type="date"
-                          className="w-full p-2 pr-2 lg:pr-2 border rounded mt-1"
+                          className="w-full p-2 border rounded mt-1"
                           min={new Date().toISOString().split("T")[0]}
                           onChange={(e) =>
                             handleVendorChange(i, vi, "quotation_validity_date", e.target.value)
                           }
                         />
                       </div>
-
                       {/* Comments */}
                       <div className="flex items-end gap-3 w-full">
                         {/* Comments */}

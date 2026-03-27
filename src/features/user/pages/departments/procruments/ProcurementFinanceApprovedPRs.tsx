@@ -1,4 +1,4 @@
-import { useState, useEffect,useContext, type ReactNode,useMemo } from "react";
+import { useState, useEffect, useContext, type ReactNode, useMemo } from "react";
 import axios from "axios";
 import { AuthContext } from "../../../../../context/AuthContext";
 import Aleart from "../../../components/Aleartmessage";
@@ -73,7 +73,7 @@ interface ProcurementPR {
 /* ================= COMPONENT ================= */
 
 export default function SubmittedFinanceRequestsPage() {
-    const { user, token } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement`;
 
   const [requests, setRequests] = useState<ProcurementPR[]>([]);
@@ -87,13 +87,13 @@ export default function SubmittedFinanceRequestsPage() {
   const [newComment, setNewComment] = useState("");
 
   const [orderDetails, setOrderDetails] = useState({
-  orderPlaced: "",
-  expectedDeliveryDate: "",
-  file: null as File | null,
-  transportMode: "",
-  inHouseType: "",
-  vendorAddress: "",
-});
+    orderPlaced: "",
+    expectedDeliveryDate: "",
+    file: null as File | null,
+    transportMode: "",
+    inHouseType: "",
+    vendorAddress: "",
+  });
 
   const PR_STATUS_OPTIONS = [
     "PR APPROVED",
@@ -143,32 +143,32 @@ export default function SubmittedFinanceRequestsPage() {
     return new Date(date).toLocaleDateString("en-GB");
   };
 
-const fetchApprovedRequests = async () => {
-  const res = await axios.get(
-    `${API_BASE}/finance-approved-pr-requests`,
-    { withCredentials: true }, // ✅ send cookie
-  );
+  const fetchApprovedRequests = async () => {
+    const res = await axios.get(
+      `${API_BASE}/finance-approved-pr-requests`,
+      { withCredentials: true }, // ✅ send cookie
+    );
 
-  setRequests(res.data.data || []);
-};
+    setRequests(res.data.data || []);
+  };
 
 
 
-useEffect(() => {
+  useEffect(() => {
 
-  fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-    credentials: "include", // ✅ send cookie
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      const map: Record<string, string> = {};
-      (data?.data || []).forEach((v: any) => {
-        map[String(v.vendor_id)] = v.vendor_name;
-      });
-      setVendorMap(map);
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+      credentials: "include", // ✅ send cookie
     })
-    .catch((err) => console.error("Vendor fetch error:", err));
-}, []);
+      .then((res) => res.json())
+      .then((data) => {
+        const map: Record<string, string> = {};
+        (data?.data || []).forEach((v: any) => {
+          map[String(v.vendor_id)] = v.vendor_name;
+        });
+        setVendorMap(map);
+      })
+      .catch((err) => console.error("Vendor fetch error:", err));
+  }, []);
 
   useEffect(() => {
     fetchApprovedRequests();
@@ -221,110 +221,110 @@ useEffect(() => {
   // };
 
 
-//   const submitUpdate = async () => {
-//     if (!selectedPR || !newStatus) {
-//       setAlert({
-//         type: "error",
-//         message: "Please select procurement PR status",
-//       });
-//       return;
-//     }
+  //   const submitUpdate = async () => {
+  //     if (!selectedPR || !newStatus) {
+  //       setAlert({
+  //         type: "error",
+  //         message: "Please select procurement PR status",
+  //       });
+  //       return;
+  //     }
 
-//     const token = localStorage.getItem("token");
+  //     const token = localStorage.getItem("token");
 
-//     const payload = {
-//       department_statuses: [
-//         {
-//           department_status: newStatus,
-//           department_comment: newComment,
-//           status_updated_by: user.first_name,
-//           updated_at: new Date().toISOString(),
-//         },
-//       ],
-//       items: updateData.items,
-//     };
+  //     const payload = {
+  //       department_statuses: [
+  //         {
+  //           department_status: newStatus,
+  //           department_comment: newComment,
+  //           status_updated_by: user.first_name,
+  //           updated_at: new Date().toISOString(),
+  //         },
+  //       ],
+  //       items: updateData.items,
+  //     };
 
-// await axios.put(
-//   `${API_BASE}/pr-requests/${selectedPR.id}`,
-//   payload,
-//   { withCredentials: true }, // ✅ send cookie
-// );
+  // await axios.put(
+  //   `${API_BASE}/pr-requests/${selectedPR.id}`,
+  //   payload,
+  //   { withCredentials: true }, // ✅ send cookie
+  // );
 
-//     setAlert({
-//       type: "success",
-//       message: "Procurement PR Updated",
-//     });
+  //     setAlert({
+  //       type: "success",
+  //       message: "Procurement PR Updated",
+  //     });
 
-//     setTimeout(() => {
-//       setModalOpen(false);
-//       setAlert(null);
-//     }, 2000);
+  //     setTimeout(() => {
+  //       setModalOpen(false);
+  //       setAlert(null);
+  //     }, 2000);
 
-//     fetchApprovedRequests();
-//   };
+  //     fetchApprovedRequests();
+  //   };
 
 
-const submitUpdate = async () => {
-  if (!selectedPR || !newStatus) {
-    setAlert({
-      type: "error",
-      message: "Please select procurement PR status",
+  const submitUpdate = async () => {
+    if (!selectedPR || !newStatus) {
+      setAlert({
+        type: "error",
+        message: "Please select procurement PR status",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+
+    // 🔹 department status
+    formData.append(
+      "department_statuses",
+      JSON.stringify([
+        {
+          department_status: newStatus,
+          department_comment: newComment,
+          status_updated_by: user.first_name,
+          updated_at: new Date().toISOString(),
+        },
+      ]),
+    );
+
+    // 🔹 order details
+    formData.append(
+      "order_details",
+      JSON.stringify({
+        order_status:
+          orderDetails.orderPlaced === "YES"
+            ? "PLACED"
+            : orderDetails.orderPlaced === "NO"
+              ? "NOT_PLACED"
+              : null,
+        expected_delivery_date: orderDetails.expectedDeliveryDate,
+        transport_mode: orderDetails.transportMode,
+        in_house_type: orderDetails.inHouseType,
+        vendor_address: orderDetails.vendorAddress,
+      }),
+    );
+
+    // 🔹 file
+    if (orderDetails.file) {
+      formData.append("order_file", orderDetails.file);
+    }
+
+    await axios.put(`${API_BASE}/pr-requests/${selectedPR.id}`, formData, {
+      withCredentials: true,
     });
-    return;
-  }
 
-  const formData = new FormData();
+    setAlert({
+      type: "success",
+      message: "Procurement PR Updated",
+    });
+    setTimeout(() => {
+      setAlert(null); // remove alert
+      setModalOpen(false); // close modal (if needed)
+    }, 1500); // 1.5 seconds
 
-  // 🔹 department status
-  formData.append(
-    "department_statuses",
-    JSON.stringify([
-      {
-        department_status: newStatus,
-        department_comment: newComment,
-        status_updated_by: user.first_name,
-        updated_at: new Date().toISOString(),
-      },
-    ]),
-  );
-
-  // 🔹 order details
-  formData.append(
-    "order_details",
-    JSON.stringify({
-      order_status:
-        orderDetails.orderPlaced === "YES"
-          ? "PLACED"
-          : orderDetails.orderPlaced === "NO"
-            ? "NOT_PLACED"
-            : null,
-      expected_delivery_date: orderDetails.expectedDeliveryDate,
-      transport_mode: orderDetails.transportMode,
-      in_house_type: orderDetails.inHouseType,
-      vendor_address: orderDetails.vendorAddress,
-    }),
-  );
-
-  // 🔹 file
-  if (orderDetails.file) {
-    formData.append("order_file", orderDetails.file);
-  }
-
-  await axios.put(`${API_BASE}/pr-requests/${selectedPR.id}`, formData, {
-    withCredentials: true,
-  });
-
-  setAlert({
-    type: "success",
-    message: "Procurement PR Updated",
-  });
-  setTimeout(() => {
-    setAlert(null); // remove alert
-    setModalOpen(false); // close modal (if needed)
-  }, 1500); // 1.5 seconds
-
-  fetchApprovedRequests();
-};
+    fetchApprovedRequests();
+  };
 
   return (
     <div className="p-4 sm:p-6 text-black">
@@ -344,7 +344,12 @@ const submitUpdate = async () => {
               {[
                 ["Department", pr.department],
                 ["Priority", pr.priority],
-                ["Required", formatDate(pr.required_date)],
+                [
+                  "Required",
+                  pr.required_date
+                    ? new Date(pr.required_date).toLocaleDateString("en-US")
+                    : "-"
+                ],
                 ["Description", pr.description],
               ].map(([label, value], idx) => (
                 <div key={idx} className="flex justify-between">
@@ -393,7 +398,9 @@ const submitUpdate = async () => {
                   ["Priority", selectedPR.priority],
                   [
                     "Delivery Date",
-                    formatDate(selectedPR.required_date),
+                    selectedPR.required_date
+                      ? new Date(selectedPR.required_date).toLocaleDateString("en-US")
+                      : "-",
                   ],
                   ["Department", selectedPR.department],
                   ["Remarks", selectedPR.remarks],
@@ -462,7 +469,7 @@ const submitUpdate = async () => {
                         <div>Unit Price</div>
                         <div>Total Price</div>
                         <div>Validity</div>
-                        <div>Attachments</div>
+                        <div>Upload Quotation</div>
                         <div>PR comment</div>
                         <div>Feasibility comment</div>
                         <div>status</div>
@@ -478,96 +485,142 @@ const submitUpdate = async () => {
                           const feasibilityComment =
                             vendor.comments?.[vendor.comments.length - 1]?.comment || "";
 
-                        return (
-                          <div
-                            key={vi}
-                            className="grid grid-cols-8 gap-2 min-w-[700px] mb-2 text-sm"
-                          >
-                            {/* Vendor Name */}
-                            <input
-                              readOnly
-                              value={vendorMap[String(vendor.vendor_id)] || "-"}
-                              className="bg-white border rounded px-2 py-1 w-full text-xs sm:text-sm"
-                            />
+                          return (
+                            <div
+                              key={vi}
+                              className="grid grid-cols-8 gap-2 min-w-[700px] mb-2 text-sm"
+                            >
+                              {/* Vendor Name */}
+                              <input
+                                readOnly
+                                value={vendorMap[String(vendor.vendor_id)] || "-"}
+                                className="bg-white border rounded px-2 py-1 w-full text-xs sm:text-sm"
+                              />
 
-                            {/* Unit Price */}
-                            <input
-                              readOnly
-                              value={vendor.unit_price ?? ""}
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
+                              {/* Unit Price */}
+                              <input
+                                readOnly
+                                value={vendor.unit_price ?? ""}
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
 
-                            {/* Total Price */}
-                            <input
-                              readOnly
-                              value={vendor.total_price ?? ""}
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
+                              {/* Total Price */}
+                              <input
+                                readOnly
+                                value={vendor.total_price ?? ""}
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
 
-                            {/* Quotation Validity */}
-                            <input
-                              readOnly
-                              value={
-                                vendor.quotation_validity_date
-                                  ? new Date(
+                              {/* Quotation Validity */}
+                              <input
+                                readOnly
+                                value={
+                                  vendor.quotation_validity_date
+                                    ? new Date(
                                       vendor.quotation_validity_date
                                     ).toLocaleDateString()
-                                  : ""
-                              }
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
+                                    : ""
+                                }
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
 
-                            {/* Attachments */}
-                            {/* <input
+                              {/* Attachments */}
+                              {/* <input
                               type="text"
                               value={vendor.attachments?.[0]?.file_name || ""}
                               readOnly
                               className="bg-white border rounded px-2 py-1 text-sm"
                             /> */}
-                              {(() => {
-                                      const validAttachment = vendor.attachments?.find(
-                                        (att: any) => att.file_path && att.file_path.trim() !== ""
-                                      );
+                              <div className="w-full">
+                                {(() => {
+                                  const attachment = vendor.attachments?.[0];
 
-                                      return validAttachment ? (
+                                  // ✅ EDIT MODE
+                                  // if (editMode) {
+                                  //   return (
+                                  //     <label className="w-full border border-blue-400 rounded px-2 py-1 bg-white cursor-pointer block">
+                                  //       <span className="block truncate text-sm text-gray-700">
+                                  //         {attachment?.file_name || "Upload File"}
+                                  //       </span>
+
+                                  //       <input
+                                  //         type="file"
+                                  //         className="hidden"
+                                  //         onChange={(e) => {
+                                  //           const file = e.target.files?.[0];
+                                  //           if (!file) return;
+
+                                  //           const updatedItems = [...activePR.items];
+
+                                  //           updatedItems[itemIndex].vendors[vendorIndex] = {
+                                  //             ...updatedItems[itemIndex].vendors[vendorIndex],
+                                  //             attachments: [
+                                  //               {
+                                  //                 id: Date.now(),
+                                  //                 file_name: file.name,
+                                  //                 file_path: "",
+                                  //                 uploaded_by: 0,
+                                  //                 uploaded_at: new Date().toISOString(),
+                                  //                 fileObject: file,
+                                  //               },
+                                  //             ],
+                                  //           };
+
+                                  //           setActivePR({ ...activePR, items: updatedItems });
+                                  //         }}
+                                  //       />
+                                  //     </label>
+                                  //   );
+                                  // }
+
+                                  // ✅ VIEW MODE
+                                  const validAttachment =
+                                    attachment?.file_path && attachment.file_path.trim() !== "";
+
+                                  return (
+                                    <div className="w-full border rounded px-2 py-1 bg-gray-100">
+                                      {validAttachment ? (
                                         <a
-                                          href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
+                                          href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${attachment.file_path}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="text-blue-600 underline text-sm"
+                                          className="text-blue-600 underline text-sm block truncate"
                                         >
-                                          View File
+                                          {attachment.file_name}
                                         </a>
                                       ) : (
                                         <span className="text-gray-400 text-sm">No file</span>
-                                      );
-                                    })()}
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
 
-                            
 
-                            {/* PR comment */}
-                            <input
-                              readOnly
-                              value={vendor.comments?.[0]?.comment || ""}
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
 
-                            {/* Feasibility Comment (latest by commented_by = 2) */}
-                            <input
-                              readOnly
-                              value={feasibilityComment}
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
+                              {/* PR comment */}
+                              <input
+                                readOnly
+                                value={vendor.comments?.[0]?.comment || ""}
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
 
-                            {/* Status */}
-                            <input
-                              readOnly
-                              value={vendor.status || ""}
-                              className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                            />
-                          </div>
-                        );
-                      })}
+                              {/* Feasibility Comment (latest by commented_by = 2) */}
+                              <input
+                                readOnly
+                                value={feasibilityComment}
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
+
+                              {/* Status */}
+                              <input
+                                readOnly
+                                value={vendor.status || ""}
+                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+                              />
+                            </div>
+                          );
+                        })}
                     </div>
                   </div>
                 ))}
@@ -599,21 +652,21 @@ const submitUpdate = async () => {
                   {/* ✅ Show Percentage ONLY if PARTIAL */}
                   {selectedPR.finance_payment_details.payment_stage ===
                     "PARTIAL" && (
-                    <div>
-                      <label className="text-xs font-medium">
-                        Partial Percentage
-                      </label>
-                      <input
-                        readOnly
-                        value={
-                          selectedPR.finance_payment_details.partial_percentage
-                            ? `${selectedPR.finance_payment_details.partial_percentage}%`
-                            : "0%"
-                        }
-                        className="border p-2 rounded w-full bg-white"
-                      />
-                    </div>
-                  )}
+                      <div>
+                        <label className="text-xs font-medium">
+                          Partial Percentage
+                        </label>
+                        <input
+                          readOnly
+                          value={
+                            selectedPR.finance_payment_details.partial_percentage
+                              ? `${selectedPR.finance_payment_details.partial_percentage}%`
+                              : "0%"
+                          }
+                          className="border p-2 rounded w-full bg-white"
+                        />
+                      </div>
+                    )}
 
                   {/* Final Completed */}
                   <div>
@@ -661,7 +714,7 @@ const submitUpdate = async () => {
                 )}
               </div>
             )}
-            
+
 
             {/* ================= ORDER DETAILS SECTION ================= */}
 
@@ -826,7 +879,7 @@ const submitUpdate = async () => {
                   </div>
                 )}
             </div>
-            
+
             {/* STATUS SECTION */}
             <div className="flex justify-end mb-2">
               <button
@@ -855,7 +908,7 @@ const submitUpdate = async () => {
                         </p>
                       </div>
                       <div className="flex gap-4 text-sm text-gray-600 mt-1 sm:mt-0">
-                       
+
                         {s.status_updated_by ?? "—"} •{" "}
                         <span>
                           {s.updated_at
@@ -889,7 +942,7 @@ const submitUpdate = async () => {
                   </div>
 
                   <div className="flex justify-end mt-4">
-                   <button
+                    <button
                       onClick={submitUpdate}
                       className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                     >

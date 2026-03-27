@@ -1,10 +1,10 @@
 
 import React, { useState } from "react";
 import FeasibilityPage from "./FeasibilityPage";
-import Feasibility from "../Businessdevelopment/BusinessFeasibility";
+import Feasibility from "../Businessdevelopment/Feasibility/BusinessFeasibility";
 import TwoWheelerFeasibility from "../TwoWheeler/TwoWheelerfeasibility";
 import ThreeWheelerFeasibility from "../ThreeWheeler/ThreeWheelerfeasibility";
-import FoodBusinessFeasibility from "../FoodBusiness/FoodBusinessfeasibility";
+import FoodBusinessFeasibility from "../FoodBusiness/FeasibilityPages/FoodBusinessfeasibility";
 import GoldBusinessFeasibility from "../gold_business/goldbusinessfeasibility";
 import OthersPage from "./others/others";
 

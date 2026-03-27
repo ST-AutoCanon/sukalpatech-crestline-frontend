@@ -1,4 +1,374 @@
-// src/pages/TwoWheeler/TwoWheelerCard.tsx
+// import React, { useEffect, useState } from "react";
+// import Alert from "../../../components/Aleartmessage";
+// import { api } from "../../../api/businessApi";
+
+// interface Props {
+//   data: {
+//     id: number;
+//     company_name: string;
+//     contact_person: string;
+//     phone: string;
+//     email: string;
+//     project_title: string;
+//     expected_quantity: string;
+//     estimated_budget: string;
+//     vehicle_model: string;
+//     motor_capacity: string;
+//     battery_type: string;
+//     business_status: string;
+//     comment: string;
+//     feasibility_status: string;
+//     comments: string;
+//     final_status: string;
+//     final_comment: string;
+//   };
+//   mode?: "all" | "update";
+//   onUpdate?: (updated: any) => void;
+// }
+
+// const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate }) => {
+//   const [showModal, setShowModal] = useState(false);
+//   const [editMode, setEditMode] = useState(false); // track if modal is editable
+//   const [formData, setFormData] = useState({ ...data }); // editable copy of data
+//   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+//   const [feasibilityStatus, setFeasibilityStatus] = useState("");
+//   const [comments, setComments] = useState("");
+
+//   useEffect(() => {
+//     if (showModal) {
+//       setFormData({ ...data });
+
+//       // ✅ ADD THIS
+//       setFeasibilityStatus(data.feasibility_status || "");
+//       setComments(data.comments || "");
+//     }
+//   }, [showModal, data]);
+
+//   const render = (v: any) => (v ? v : "-");
+
+//   // const update2W = async () => {
+//   //   try {
+//   //     const res = await api.patch(
+//   //       `/business-development/2w/review`,
+//   //       { ...formData },
+//   //       { withCredentials: true }
+//   //     );
+//   //     onUpdate?.(res.data.data);
+//   //     setAlert({ type: "success", message: "2W Request updated successfully!" });
+//   //     setTimeout(() => setAlert(null), 2000);
+//   //     setShowModal(false);
+//   //     setEditMode(false);
+//   //   } catch (err) {
+//   //     console.error("2W Update Error:", err);
+//   //     setAlert({ type: "error", message: "Failed to update 2W Request" });
+//   //     setTimeout(() => setAlert(null), 2000);
+//   //   }
+//   // };
+
+//   const update2W = async () => {
+//   try {
+//     const res = await api.patch(
+//       `/business-development/2w/update/${data.id}`, // ✅ FIXED
+//       formData,
+//       { withCredentials: true }
+//     );
+
+//     // ✅ update UI instantly
+//     onUpdate?.(res.data.data);
+
+//     setAlert({
+//       type: "success",
+//       message: "2W Request updated successfully!",
+//     });
+
+//     setTimeout(() => setAlert(null), 2000);
+
+//     setShowModal(false);
+//     setEditMode(false);
+//   } catch (err) {
+//     console.error("2W Update Error:", err);
+
+//     setAlert({
+//       type: "error",
+//       message: "Failed to update 2W Request",
+//     });
+
+//     setTimeout(() => setAlert(null), 2000);
+//   }
+// };
+
+//   const allFields: [string, keyof typeof data][] = [
+//     ["Contact Person", "contact_person"],
+//     ["Company Name", "company_name"],
+//     ["Phone", "phone"],
+//     ["Project Title", "project_title"],
+//     ["Vehicle Model", "vehicle_model"],
+//     ["Expected Quantity", "expected_quantity"],
+//     ["Email", "email"],
+//     ["Estimated Budget", "estimated_budget"],
+//     ["Motor Capacity", "motor_capacity"],
+//     ["Battery Type", "battery_type"],
+//     ["Business Status", "business_status"],
+//     ["Comment", "comment"],
+//     ["Feasibility Status", "feasibility_status"],
+//     ["Comments", "comments"],
+
+//     // ✅ Only show final fields in non-update mode
+//     ...(mode !== "update"
+//       ? [
+//         ["Final Status", "final_status"] as [string, keyof typeof data],
+//         ["Final Comment", "final_comment"] as [string, keyof typeof data],
+//       ]
+//       : []),
+//   ];
+
+//   const cardFields = allFields.slice(0, 5);
+
+//   return (
+//     <div className="bg-white rounded-xl shadow p-4 text-gray-900 w-full sm:w-[300px] m-2 flex flex-col justify-between">
+//       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
+
+//       <h3 className="text-purple-700 font-semibold text-sm mb-3">2W ID: {data.id}</h3>
+
+//       <div className="space-y-2 flex-1">
+//         {cardFields.map(([label, key]) => (
+//           <div key={label} className="flex justify-between text-sm">
+//             <span className="text-gray-500">{label}:</span>
+//            <span className="font-medium text-gray-900">{render(formData[key])}</span>
+//           </div>
+//         ))}
+//       </div>
+
+//       <div className="mt-3 flex justify-between items-center">
+//         <button
+//           onClick={() => {
+//             setEditMode(false);
+//             setShowModal(true);
+//           }}
+//           className="text-blue-700 font-semibold text-sm"
+//         >
+//           {mode === "update" ? "Update Feasibility" : "More info"}
+//         </button>
+
+//         {/* ❌ Hide edit in update mode */}
+//         {mode !== "update" && (
+//           <button
+//             onClick={() => {
+//               setEditMode(true);
+//               setShowModal(true);
+//             }}
+//             className="text-blue-700 font-semibold text-sm"
+//           >
+//             Edit
+//           </button>
+//         )}
+//       </div>
+
+//       {/* Modal */}
+//       {showModal && (
+//   <div
+//     className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-2 sm:p-4"
+//     onClick={() => {
+//       setShowModal(false);
+//       setEditMode(false);
+//     }}
+//   >
+//     <div
+//       className="bg-white w-full h-full sm:h-auto sm:max-h-[95vh] sm:max-w-4xl rounded-none sm:rounded-2xl overflow-y-auto p-4 sm:p-8 relative flex flex-col gap-6"
+//       onClick={(e) => e.stopPropagation()}
+//     >
+//       {/* HEADER */}
+//       <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
+//         2W-{data.id} Full Info
+//       </h2>
+
+//       {/* ================= SECTIONS ================= */}
+
+//       {[
+//         {
+//           title: "Company Details",
+//           fields: [
+//             { label: "Company Name", value: data.company_name },
+//             { label: "Contact Person", value: data.contact_person },
+//             { label: "Phone", value: data.phone },
+//             { label: "Email", value: data.email },
+//           ],
+//         },
+//         {
+//           title: "Project Details",
+//           fields: [
+//             { label: "Project Title", value: data.project_title },
+//             { label: "Expected Quantity", value: data.expected_quantity },
+//             { label: "Estimated Budget", value: data.estimated_budget },
+//           ],
+//         },
+//         {
+//           title: "Vehicle Details",
+//           fields: [
+//             { label: "Vehicle Model", value: data.vehicle_model },
+//             { label: "Motor Capacity", value: data.motor_capacity },
+//             { label: "Battery Type", value: data.battery_type },
+//           ],
+//         },
+//         {
+//           title: "Current Status",
+//           fields: [
+//             { label: "Business Status", value: data.business_status },
+//             { label: "Comment", value: data.comment },
+//             { label: "Feasibility Status", value: data.feasibility_status },
+//             { label: "Feasibility Comments", value: data.comments },
+
+//             ...(mode !== "update"
+//               ? [
+//                   { label: "Final Status", value: data.final_status },
+//                   { label: "Final Comment", value: data.final_comment },
+//                 ]
+//               : []),
+//           ],
+//         },
+//       ].map((section) => (
+//         <div
+//           key={section.title}
+//           className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3"
+//         >
+//           <h3 className="text-gray-900 text-sm font-semibold">
+//             {section.title}
+//           </h3>
+
+//           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+//             {section.fields.map((f) => (
+//               <div key={f.label} className="flex flex-col">
+//                 <span className="text-gray-600 text-xs font-medium">
+//                   {f.label}
+//                 </span>
+
+//                 {/* EDIT MODE */}
+//                 {editMode ? (
+//                   <input
+//                     type="text"
+//                     value={formData[f.label.toLowerCase().replace(/ /g, "_")] || ""}
+//                     onChange={(e) =>
+//                       setFormData((prev) => ({
+//                         ...prev,
+//                         [f.label.toLowerCase().replace(/ /g, "_")]: e.target.value,
+//                       }))
+//                     }
+//                     className="bg-white border rounded px-2 py-1 text-xs"
+//                   />
+//                 ) : (
+//                   <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">
+//                     {f.value || "-"}
+//                   </span>
+//                 )}
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       ))}
+
+//       {/* ================= FEASIBILITY UPDATE ================= */}
+//       {mode === "update" && (
+//                    <>
+//                      <div className="bg-gray-100 p-5 rounded-xl">
+//                        <h3 className="text-sm font-bold mb-3 text-gray-900">
+//                          Feasibility Update
+//                        </h3>
+
+//                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+//                          <select
+//                            value={feasibilityStatus}
+//                            onChange={(e) =>
+//                              setFeasibilityStatus(e.target.value)
+//                            }
+//                            className="border p-2 rounded text-xs text-gray-900"
+//                          >
+//                            <option value="">Select</option>
+//                            <option value="FEASIBILITY APPROVED">
+//                              FEASIBILITY APPROVED
+//                            </option>
+//                            <option value="FEASIBILITY REJECTED">
+//                              FEASIBILITY REJECTED
+//                            </option>
+//                            <option value="FEASIBILITY PENDING">
+//                              FEASIBILITY PENDING
+//                            </option>
+//                          </select>
+
+//                          <textarea
+//                            value={comments}
+//                            onChange={(e) => setComments(e.target.value)}
+//                            className="border p-2 rounded text-xs text-gray-900"
+//                          />
+//                        </div>
+//                      </div>
+
+//                      <div className="flex justify-end">
+//                        <button
+//                          onClick={async () => {
+//                            try {
+//                              const res = await api.patch(
+//                                `/business-development/2w/review`,
+//                                {
+//                                  id: data.id,
+//                                  feasibility_status: feasibilityStatus,
+//                                  comments: comments,
+//                                }
+//                              );
+
+//                              onUpdate?.(res.data.data);
+
+//                              setAlert({
+//                                type: "success",
+//                                message: "Feasibility updated!",
+//                              });
+
+//                              setShowModal(false);
+//                            } catch {
+//                              setAlert({
+//                                type: "error",
+//                                message: "Update failed",
+//                              });
+//                            }
+//                          }}
+//                          className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
+//                        >
+//                          Update Feasibility
+//                        </button>
+//                      </div>
+//                    </>
+//                  )}
+
+//       {/* EDIT SAVE */}
+//       {editMode && (
+//         <div className="flex justify-end">
+//           <button
+//             onClick={update2W}
+//             className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
+//           >
+//             Save
+//           </button>
+//         </div>
+//       )}
+
+//       {/* CLOSE */}
+//       <button
+//         onClick={() => {
+//           setShowModal(false);
+//           setEditMode(false);
+//         }}
+//         className="absolute top-3 right-4 text-xl text-gray-900"
+//       >
+//         ×
+//       </button>
+//     </div>
+//   </div>
+// )}
+//     </div>
+//   );
+// };
+
+// export default TwoWheelerCard;
+
 import React, { useEffect, useState } from "react";
 import Alert from "../../../components/Aleartmessage";
 import { api } from "../../../api/businessApi";
@@ -25,18 +395,21 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
+   cardIndex: number; 
 }
 
-const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate }) => {
+const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) => {
   const [showModal, setShowModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({ ...data });
+  const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [feasibilityStatus, setFeasibilityStatus] = useState("");
   const [comments, setComments] = useState("");
 
-  // Alert state
-  const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
-
+  // Sync formData and feasibility fields whenever modal opens or data changes
   useEffect(() => {
     if (showModal) {
+      setFormData({ ...data });
       setFeasibilityStatus(data.feasibility_status || "");
       setComments(data.comments || "");
     }
@@ -44,130 +417,244 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate }) => {
 
   const render = (v: any) => (v ? v : "-");
 
-  const updateFeasibility2W = async () => {
+  const update2W = async () => {
     try {
       const res = await api.patch(
-        `/business-development/2w/review`,
-        {
-          id: data.id,
-          feasibility_status: feasibilityStatus,
-          comments: comments,
-        },
+        `/business-development/2w/update/${data.id}`,
+        formData,
         { withCredentials: true }
       );
 
+      setFormData(res.data.data); // update local state instantly
       onUpdate?.(res.data.data);
 
-      setAlert({ type: "success", message: "Feasibility updated successfully!" });
+      setAlert({ type: "success", message: "2W Request updated successfully!" });
       setTimeout(() => setAlert(null), 2000);
+
       setShowModal(false);
+      setEditMode(false);
     } catch (err) {
-      console.error("2W Feasibility Update Error:", err);
-      setAlert({ type: "error", message: "Failed to update feasibility" });
+      console.error("2W Update Error:", err);
+      setAlert({ type: "error", message: "Failed to update 2W Request" });
       setTimeout(() => setAlert(null), 2000);
     }
   };
 
-  const fields = [
-    ["Company Name", data.company_name],
-    ["Contact Person", data.contact_person],
-    ["Phone", data.phone],
-    ["Email", data.email],
-    ["Project Title", data.project_title],
-    ["Expected Quantity", data.expected_quantity],
-    ["Estimated Budget", data.estimated_budget],
-    ["Vehicle Model", data.vehicle_model],
-    ["Motor Capacity", data.motor_capacity],
-    ["Battery Type", data.battery_type],
-    ["Business Status", data.business_status],
-    ["Comment", data.comment],
-   
+  const allFields: [string, keyof typeof data][] = [
+    ["Contact Person", "contact_person"],
+    ["Company Name", "company_name"],
+    ["Phone", "phone"],
+    ["Project Title", "project_title"],
+    ["Vehicle Model", "vehicle_model"],
+    ["Expected Quantity", "expected_quantity"],
+    ["Email", "email"],
+    ["Estimated Budget", "estimated_budget"],
+    ["Motor Capacity", "motor_capacity"],
+    ["Battery Type", "battery_type"],
+    ["Business Status", "business_status"],
+    ["Comment", "comment"],
+    ["Feasibility Status", "feasibility_status"],
+    ["Comments", "comments"],
+    ...(mode !== "update"
+      ? [
+        ["Final Status", "final_status"] as [string, keyof typeof data],
+        ["Final Comment", "final_comment"] as [string, keyof typeof data],
+      ]
+      : []),
   ];
 
-  return (
-    <div className="bg-white rounded-xl shadow p-4 text-gray-900">
+  const cardFields = allFields.slice(0, 5);
 
-      {/* Alert */}
+  return (
+    <div className="bg-white rounded-xl shadow p-4 text-gray-900 w-full sm:w-[300px] m-2 flex flex-col justify-between">
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
-      <h3 className="text-purple-700 font-semibold">
-        2W Request ID: {data.id}
-      </h3>
+<h3 className="text-purple-700 font-semibold text-sm mb-3">
+  2W ID: {cardIndex + 1}  {/* index from map function */}
+</h3>
+      <div className="space-y-2 flex-1">
+        {cardFields.map(([label, key]) => (
+          <div key={label} className="flex justify-between text-sm">
+            <span className="text-gray-500">{label}:</span>
+            <span className="font-medium text-gray-900">{render(formData[key])}</span>
+          </div>
+        ))}
+      </div>
 
-      {fields.slice(0, 12).map(([label, value]) => (
-        <p key={label} className="text-sm mb-1">
-          <strong>{label}:</strong> {render(value)}
-        </p>
-      ))}
+      <div className="mt-3 flex justify-between items-center">
+        <button
+          onClick={() => {
+            setEditMode(false);
+            setShowModal(true);
+          }}
+          className="text-blue-700 font-semibold text-sm"
+        >
+          {mode === "update" ? "Update Feasibility" : "More info"}
+        </button>
 
-      <button
-        onClick={() => setShowModal(true)}
-        className="mt-2 text-blue-600 underline text-xs"
-      >
-        {mode === "update" ? "Update Feasibility" : "More Info"}
-      </button>
+        {mode !== "update" && !formData.feasibility_status && (
+          <button
+            onClick={() => {
+              setEditMode(true);
+              setShowModal(true);
+            }}
+            className="text-blue-700 font-semibold text-sm"
+          >
+            Edit
+          </button>
+        )}
+      </div>
 
+      {/* Modal */}
       {showModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowModal(false)}
+          className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-2 sm:p-4"
+          onClick={() => {
+            setShowModal(false);
+            setEditMode(false);
+          }}
         >
           <div
-            className="bg-white text-gray-900 rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6 relative"
+            className="bg-white w-full h-full sm:h-auto sm:max-h-[95vh] sm:max-w-4xl rounded-none sm:rounded-2xl overflow-y-auto p-4 sm:p-8 relative flex flex-col gap-6"
             onClick={(e) => e.stopPropagation()}
           >
+            <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
+              2W-{formData.id} Full Info
+            </h2>
+
+            {[{
+              title: "Company Details",
+              fields: [
+                { label: "Company Name", key: "company_name" },
+                { label: "Contact Person", key: "contact_person" },
+                { label: "Phone", key: "phone" },
+                { label: "Email", key: "email" },
+              ],
+            }, {
+              title: "Project Details",
+              fields: [
+                { label: "Project Title", key: "project_title" },
+                { label: "Expected Quantity", key: "expected_quantity" },
+                { label: "Estimated Budget", key: "estimated_budget" },
+              ],
+            }, {
+              title: "Vehicle Details",
+              fields: [
+                { label: "Vehicle Model", key: "vehicle_model" },
+                { label: "Motor Capacity", key: "motor_capacity" },
+                { label: "Battery Type", key: "battery_type" },
+              ],
+            }, {
+              title: "Current Status",
+              fields: [
+                { label: "Business Status", key: "business_status" },
+                { label: "Comment", key: "comment" },
+                { label: "Feasibility Status", key: "feasibility_status" },
+                { label: "Feasibility Comments", key: "comments" },
+                ...(mode !== "update"
+                  ? [
+                    { label: "Final Status", key: "final_status" },
+                    { label: "Final Comment", key: "final_comment" },
+                  ]
+                  : []),
+              ],
+            }].map((section) => (
+              <div key={section.title} className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3">
+                <h3 className="text-gray-900 text-sm font-semibold">{section.title}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {section.fields.map((f) => (
+                    <div key={f.label} className="flex flex-col">
+                      <span className="text-gray-600 text-xs font-medium">{f.label}</span>
+                      {editMode ? (
+                        <input
+                          value={formData[f.key] || ""}
+                          onChange={(e) =>
+                            setFormData((prev) => ({ ...prev, [f.key]: e.target.value }))
+                          }
+                          className="border rounded px-2 py-1 text-xs"
+                        />
+                      ) : (
+                        <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">
+                          {render(formData[f.key])}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {/* FEASIBILITY UPDATE */}
+            {mode === "update" && (
+              <>
+                <div className="bg-gray-100 p-5 rounded-xl">
+                  <h3 className="text-sm font-bold mb-3 text-gray-900">Feasibility Update</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <select
+                      value={feasibilityStatus}
+                      onChange={(e) => setFeasibilityStatus(e.target.value)}
+                      className="border p-2 rounded text-xs text-gray-900"
+                    >
+                      <option value="">Select</option>
+                      <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
+                      <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
+                      <option value="FEASIBILITY PENDING">FEASIBILITY PENDING</option>
+                    </select>
+
+                    <textarea
+                      value={comments}
+                      onChange={(e) => setComments(e.target.value)}
+                      className="border p-2 rounded text-xs text-gray-900"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await api.patch(`/business-development/2w/review`, {
+                          id: data.id,
+                          feasibility_status: feasibilityStatus,
+                          comments: comments,
+                        });
+
+                        // ✅ Update local state immediately
+                        setFormData((prev) => ({
+                          ...prev,
+                          feasibility_status: res.data.data.feasibility_status,
+                          comments: res.data.data.comments,
+                        }));
+
+                        onUpdate?.(res.data.data);
+
+                        setAlert({ type: "success", message: "Feasibility updated!" });
+                        setShowModal(false);
+                      } catch {
+                        setAlert({ type: "error", message: "Update failed" });
+                      }
+                    }}
+                    className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
+                  >
+                    Update Feasibility
+                  </button>
+                </div>
+              </>
+            )}
+
+            {editMode && (
+              <div className="flex justify-end">
+                <button onClick={update2W} className="bg-purple-700 text-white px-5 py-2 rounded text-sm">Save</button>
+              </div>
+            )}
+
+            {/* CLOSE */}
             <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3 text-xl font-bold"
+              onClick={() => { setShowModal(false); setEditMode(false); }}
+              className="absolute top-3 right-4 text-xl text-gray-900"
             >
               ×
             </button>
-
-            <h2 className="text-lg font-semibold mb-4">
-              2W Request Details
-            </h2>
-
-            {/* Show all fields including feasibility & final */}
-            {fields.map(([label, value]) => (
-              <p key={label} className="text-sm mb-1">
-                <strong>{label}:</strong> {render(value)}
-              </p>
-            ))}
-
-            {/* Update section for update mode */}
-            {mode === "update" && (
-              <div className="mt-4 space-y-3">
-                <div>
-                  <label className="block text-sm font-semibold">Feasibility Status</label>
-                  <select
-                    value={feasibilityStatus}
-                    onChange={(e) => setFeasibilityStatus(e.target.value)}
-                    className="w-full border rounded p-2"
-                  >
-                    <option value="">Select</option>
-                    <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
-                    <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
-                    <option value="FEASIBILITY PENDING">FEASIBILITY PENDING</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold">Comments</label>
-                  <textarea
-                    value={comments}
-                    onChange={(e) => setComments(e.target.value)}
-                    className="w-full border rounded p-2"
-                  />
-                </div>
-
-                <button
-                  onClick={updateFeasibility2W}
-                  className="bg-purple-700 text-white px-4 py-2 rounded"
-                >
-                  Update
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}

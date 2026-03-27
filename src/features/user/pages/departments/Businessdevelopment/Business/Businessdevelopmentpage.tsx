@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../../../api/businessApi";
+import { api } from "../../../../api/businessApi";
 import BusinessCard from "./Viewbusiness";
 
 interface BusinessListProps {
@@ -28,49 +28,48 @@ const BusinessList = ({ refresh, filter }: BusinessListProps) => {
   // };
 
   const fetchRequests = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    console.log("Selected Filter:", filter);
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Selected Filter:", filter);
 
-    let url = "/business-development";
+      let url = "/business-development";
 
-     // 🔥 Map COMPLETED → APPROVED
-    let statusToSend = filter;
+      // 🔥 Map COMPLETED → APPROVED
+      let statusToSend = filter;
 
-    if (filter === "COMPLETED") {
-      statusToSend = "APPROVED";
+      if (filter === "COMPLETED") {
+        statusToSend = "APPROVED";
+      }
+      if (statusToSend && statusToSend !== "ALL") {
+        url += `?status=${statusToSend}`;
+      }
+
+      const res = await api.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setRequests(res.data.data);
+
+    } catch (error) {
+      console.error("Error fetching requests:", error);
     }
-    if (statusToSend && statusToSend !== "ALL") {
-      url += `?status=${statusToSend}`;
-    }
-
-    const res = await api.get(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    setRequests(res.data.data);
-
-  } catch (error) {
-    console.error("Error fetching requests:", error);
-  }
-};
+  };
   useEffect(() => {
     fetchRequests();
   }, [refresh, filter]); // ✅ VERY IMPORTANT
 
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {requests.map((req) => (
+      {requests.map((req, index) => (
         <BusinessCard
           key={req.id}
           data={req}
+          cardIndex={index} // ✅ passed here
           onUpdate={(updated) => {
             setRequests((prev) =>
-              prev.map((r) =>
-                r.id === updated.id ? updated : r
-              )
+              prev.map((r) => (r.id === updated.id ? updated : r))
             );
           }}
         />

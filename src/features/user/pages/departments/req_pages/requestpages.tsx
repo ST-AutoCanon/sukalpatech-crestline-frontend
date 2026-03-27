@@ -448,53 +448,53 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   //   return new Date(date).toISOString().split("T")[0];
   // };
 
- const handleSave = async () => {
-  if (!activePR) return;
+  const handleSave = async () => {
+    if (!activePR) return;
 
-  try {
-    let formattedDate = "";
+    try {
+      let formattedDate = "";
 
-    if (activePR.required_date) {
-      if (activePR.required_date.includes("T")) {
-        // already ISO → strip time completely
-        formattedDate = activePR.required_date.split("T")[0];
-      } else {
-        // already YYYY-MM-DD → keep as is
-        formattedDate = activePR.required_date;
+      if (activePR.required_date) {
+        if (activePR.required_date.includes("T")) {
+          // already ISO → strip time completely
+          formattedDate = activePR.required_date.split("T")[0];
+        } else {
+          // already YYYY-MM-DD → keep as is
+          formattedDate = activePR.required_date;
+        }
       }
+
+      const normalizedPR: PR = {
+        ...activePR,
+        required_date: formattedDate, // ✅ ALWAYS YYYY-MM-DD
+      };
+
+      await savePR(normalizedPR);
+
+      setEditMode(false);
+      setActivePR(null);
+      fetchPRs();
+
+      setAlert({
+        type: "success",
+        message: "PR updated successfully!",
+      });
+
+    } catch (err) {
+      console.error("Save failed", err);
+
+      setAlert({
+        type: "error",
+        message: "Failed to update PR.",
+      });
     }
+  };
+  const formatDateForInput = (date: string) => {
+    if (!date) return "";
 
-    const normalizedPR: PR = {
-      ...activePR,
-      required_date: formattedDate, // ✅ ALWAYS YYYY-MM-DD
-    };
-
-    await savePR(normalizedPR);
-
-    setEditMode(false);
-    setActivePR(null);
-    fetchPRs();
-
-    setAlert({
-      type: "success",
-      message: "PR updated successfully!",
-    });
-
-  } catch (err) {
-    console.error("Save failed", err);
-
-    setAlert({
-      type: "error",
-      message: "Failed to update PR.",
-    });
-  }
-};
- const formatDateForInput = (date: string) => {
-  if (!date) return "";
-
-  // ✅ ALWAYS strip time part directly
-  return date.split("T")[0];
-};
+    // ✅ ALWAYS strip time part directly
+    return date.split("T")[0];
+  };
 
   return (
     <>
@@ -530,7 +530,14 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 <div className="flex justify-between"><span className="text-gray-400">Priority</span><span className="font-medium text-gray-700">{pr.priority}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Status</span><span className="font-medium text-gray-700">{status}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Department</span><span className="font-medium text-gray-700 truncate">{departmentMap[String(pr.department)] ?? pr.department}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Delivery Date</span><span className="font-medium text-gray-700">{pr.required_date?.split("T")[0]}</span></div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Delivery Date</span>
+                  <span className="font-medium text-gray-700">
+                    {pr.required_date
+                      ? new Date(pr.required_date).toLocaleDateString("en-US")
+                      : "-"}
+                  </span>
+                </div>
               </div>
 
               <div className="mt-3 flex gap-4">
@@ -573,7 +580,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
           <div className="bg-white w-full max-w-5xl md:max-w-7xl rounded-xl shadow-xl p-4 md:p-6 text-black flex flex-col">
             <div className="flex justify-between items-center mb-4 md:mb-6">
               <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-                View PR-{activePR.id} info
+                {editMode ? `Edit PR-${activePR.id} info` : `View PR-${activePR.id} info`}
               </h2>
               <button onClick={() => setActivePR(null)} className="text-gray-500 hover:text-gray-700"><X size={24} /></button>
             </div>
@@ -625,20 +632,19 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                 <div>
                   <div className="text-gray-900"> Delivery Date</div>
                   <input
-  type="date"
-  value={
-    activePR.required_date
-      ? activePR.required_date.split("T")[0]
-      : ""
-  }
-  disabled={!editMode}
-  onChange={(e) =>
-    setActivePR({ ...activePR, required_date: e.target.value })
-  }
-  className={`bg-white border rounded px-2 py-1 w-full ${
-    editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
-  }`}
-/>
+                    type="date"
+                    value={
+                      activePR.required_date
+                        ? activePR.required_date.split("T")[0]
+                        : ""
+                    }
+                    disabled={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, required_date: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
+                      }`}
+                  />
 
 
 
@@ -764,20 +770,19 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       }`}
                   /> */}
                   <input
-  type="date"
-  value={
-    activePR.required_date
-      ? activePR.required_date.split("T")[0]
-      : ""
-  }
-  disabled={!editMode}
-  onChange={(e) =>
-    setActivePR({ ...activePR, required_date: e.target.value })
-  }
-  className={`bg-white border rounded px-2 py-1 w-full ${
-    editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
-  }`}
-/>
+                    type="date"
+                    value={
+                      activePR.required_date
+                        ? activePR.required_date.split("T")[0]
+                        : ""
+                    }
+                    disabled={!editMode}
+                    onChange={(e) =>
+                      setActivePR({ ...activePR, required_date: e.target.value })
+                    }
+                    className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : "bg-gray-100 cursor-not-allowed"
+                      }`}
+                  />
 
 
                   {editMode ? (
@@ -994,105 +999,70 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                     />
                                   )}
 
-                                  <label
-                                    className={`border rounded px-2 py-1 w-full text-sm flex items-center overflow-hidden ${editMode
-                                      ? "cursor-pointer border-blue-400 bg-white"
-                                      : "bg-gray-100 text-gray-600"
-                                      }`}
-                                  >
-                                    {/* <span className="truncate w-full block">
-                                      {vendor.attachments?.[0]?.file_name || "No file uploaded"}
-                                    </span> */}
+                                  <div className="w-full">
                                     {(() => {
-                                      const validAttachment = vendor.attachments?.find(
-                                        (att: any) => att.file_path && att.file_path.trim() !== ""
-                                      );
+                                      const attachment = vendor.attachments?.[0];
 
-                                      return validAttachment ? (
-                                        <a
-                                          href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 underline text-sm"
-                                        >
-                                          View File
-                                        </a>
-                                      ) : (
-                                        <span className="text-gray-400 text-sm">No file</span>
+                                      // ✅ EDIT MODE
+                                      if (editMode) {
+                                        return (
+                                          <label className="w-full border border-blue-400 rounded px-2 py-1 bg-white cursor-pointer block">
+                                            <span className="block truncate text-sm text-gray-700">
+                                              {attachment?.file_name || "Upload File"}
+                                            </span>
+
+                                            <input
+                                              type="file"
+                                              className="hidden"
+                                              onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+
+                                                const updatedItems = [...activePR.items];
+
+                                                updatedItems[itemIndex].vendors[vendorIndex] = {
+                                                  ...updatedItems[itemIndex].vendors[vendorIndex],
+                                                  attachments: [
+                                                    {
+                                                      id: Date.now(),
+                                                      file_name: file.name,
+                                                      file_path: "",
+                                                      uploaded_by: 0,
+                                                      uploaded_at: new Date().toISOString(),
+                                                      fileObject: file,
+                                                    },
+                                                  ],
+                                                };
+
+                                                setActivePR({ ...activePR, items: updatedItems });
+                                              }}
+                                            />
+                                          </label>
+                                        );
+                                      }
+
+                                      // ✅ VIEW MODE
+                                      const validAttachment =
+                                        attachment?.file_path && attachment.file_path.trim() !== "";
+
+                                      return (
+                                        <div className="w-full border rounded px-2 py-1 bg-gray-100">
+                                          {validAttachment ? (
+                                            <a
+                                              href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${attachment.file_path}`}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-blue-600 underline text-sm block truncate"
+                                            >
+                                              {attachment.file_name}
+                                            </a>
+                                          ) : (
+                                            <span className="text-gray-400 text-sm">No file</span>
+                                          )}
+                                        </div>
                                       );
                                     })()}
-
-
-
-                                    {/* {editMode && (
-                                      <input
-                                        type="file"
-                                        className="hidden"
-                                        onChange={(e) => {
-                                          const file = e.target.files?.[0];
-                                          if (!file) return;
-
-                                          const updatedItems = [...activePR.items];
-
-                                          updatedItems[itemIndex].vendors[vendorIndex] = {
-                                            ...updatedItems[itemIndex].vendors[vendorIndex],
-                                            attachments: [
-                                              {
-                                                id: Date.now(),
-                                                file_name: file.name,
-                                                file_path: URL.createObjectURL(file), // ✅ show preview
-                                                uploaded_by: 0,
-                                                uploaded_at: new Date().toISOString(),
-                                                fileObject: file,
-                                              },
-                                            ],
-                                          };
-
-                                          setActivePR({ ...activePR, items: updatedItems });
-                                        }}
-                                      />
-                                    )} */}
-
-                                    {editMode && (
-                                      <input
-                                        type="file"
-                                        className="hidden"
-                                        onChange={(e) => {
-                                          const file = e.target.files?.[0];
-                                          if (!file || !activePR) return;
-
-                                          const updatedItems = [
-                                            ...activePR.items,
-                                          ];
-
-                                          updatedItems[itemIndex].vendors[
-                                            vendorIndex
-                                          ] = {
-                                            ...updatedItems[itemIndex].vendors[
-                                            vendorIndex
-                                            ],
-                                            attachments: [
-                                              {
-                                                id: Date.now(),
-                                                file_name: file.name,
-                                                file_path: "", // ✅ keep empty (backend will fill later)
-                                                uploaded_by: 0,
-                                                uploaded_at:
-                                                  new Date().toISOString(),
-                                                fileObject: file, // ✅ IMPORTANT
-                                              },
-                                            ],
-                                          };
-
-                                          setActivePR({
-                                            ...activePR,
-                                            items: updatedItems,
-                                          });
-                                        }}
-                                      />
-                                    )}
-                                  </label>
-
+                                  </div>
 
 
 
@@ -1271,86 +1241,70 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                       Upload Quotation
                                     </label>
 
-                                    <label
-                                      className={`w-full border rounded px-2 py-1 text-sm flex items-center overflow-hidden ${editMode
-                                        ? "cursor-pointer border-blue-400 bg-white"
-                                        : "bg-gray-100 text-gray-600"
-                                        }`}
-                                    >
-                                      {/* <span
-                                        className="truncate w-full block text-blue-600 underline cursor-pointer"
-                                        onClick={() => {
-                                          if (!vendor.attachments?.[0]) return;
+                                    <div className="w-full">
+                                      {(() => {
+                                        const attachment = vendor.attachments?.[0];
 
-                                          const file = vendor.attachments[0];
+                                        // ✅ EDIT MODE
+                                        if (editMode) {
+                                          return (
+                                            <label className="w-full border border-blue-400 rounded px-2 py-1 bg-white cursor-pointer block">
+                                              <span className="block truncate text-sm text-gray-700">
+                                                {attachment?.file_name || "Upload File"}
+                                              </span>
 
-                                          let fileUrl = "";
+                                              <input
+                                                type="file"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                  const file = e.target.files?.[0];
+                                                  if (!file) return;
 
-                                          // ✅ If new file (local preview)
-                                          if (file.fileObject) {
-                                            fileUrl = URL.createObjectURL(file.fileObject);
-                                          }
-                                          // ✅ If saved file (from backend)
-                                          else if (file.file_path) {
-                                            fileUrl = `${import.meta.env.VITE_BACKEND_URL}/uploads/${file.file_path}`;
-                                          }
+                                                  const updatedItems = [...activePR.items];
 
-                                          if (fileUrl) {
-                                            window.open(fileUrl, "_blank");
-                                          }
-                                        }}
-                                      >
-                                        {vendor.attachments?.[0]?.file_name || "No file uploaded"}
-                                      </span> */}
-                                       {(() => {
-                                      const validAttachment = vendor.attachments?.find(
-                                        (att: any) => att.file_path && att.file_path.trim() !== ""
-                                      );
+                                                  updatedItems[itemIndex].vendors[vendorIndex] = {
+                                                    ...updatedItems[itemIndex].vendors[vendorIndex],
+                                                    attachments: [
+                                                      {
+                                                        id: Date.now(),
+                                                        file_name: file.name,
+                                                        file_path: "",
+                                                        uploaded_by: 0,
+                                                        uploaded_at: new Date().toISOString(),
+                                                        fileObject: file,
+                                                      },
+                                                    ],
+                                                  };
 
-                                      return validAttachment ? (
-                                        <a
-                                          href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 underline text-sm"
-                                        >
-                                          View File
-                                        </a>
-                                      ) : (
-                                        <span className="text-gray-400 text-sm">No file</span>
-                                      );
-                                    })()}
+                                                  setActivePR({ ...activePR, items: updatedItems });
+                                                }}
+                                              />
+                                            </label>
+                                          );
+                                        }
 
+                                        // ✅ VIEW MODE
+                                        const validAttachment =
+                                          attachment?.file_path && attachment.file_path.trim() !== "";
 
-                                      {editMode && (
-                                        <input
-                                          type="file"
-                                          className="hidden"
-                                          onChange={(e) => {
-                                            const file = e.target.files?.[0];
-                                            if (!file) return;
-
-                                            const updatedItems = [...activePR.items];
-
-                                            updatedItems[itemIndex].vendors[vendorIndex] = {
-                                              ...updatedItems[itemIndex].vendors[vendorIndex],
-                                              attachments: [
-                                                {
-                                                  id: Date.now(),
-                                                  file_name: file.name,
-                                                  file_path: URL.createObjectURL(file),
-                                                  uploaded_by: 0,
-                                                  uploaded_at: new Date().toISOString(),
-                                                  fileObject: file,
-                                                },
-                                              ],
-                                            };
-
-                                            setActivePR({ ...activePR, items: updatedItems });
-                                          }}
-                                        />
-                                      )}
-                                    </label>
+                                        return (
+                                          <div className="w-full border rounded px-2 py-1 bg-gray-100">
+                                            {validAttachment ? (
+                                              <a
+                                                href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${attachment.file_path}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 underline text-sm block truncate"
+                                              >
+                                                {attachment.file_name}
+                                              </a>
+                                            ) : (
+                                              <span className="text-gray-400 text-sm">No file</span>
+                                            )}
+                                          </div>
+                                        );
+                                      })()}
+                                    </div>
                                   </div>
 
                                   {/* Unit Price */}

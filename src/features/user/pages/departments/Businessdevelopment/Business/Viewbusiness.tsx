@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Aleart from "../../../components/Aleartmessage";
+import Aleart from "../../../../components/Aleartmessage";
 
 interface BusinessCardProps {
   data: {
@@ -64,10 +64,11 @@ interface BusinessCardProps {
     finalbd_comment: string;
   };
   onUpdate: (updatedData: any) => void;
+  cardIndex: number; // ✅ add this
 }
 
 
-const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
+const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }) => {
   const attachments = Array.isArray(data.attachments) ? data.attachments : [];
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -79,7 +80,11 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
 
 
 
-
+  const STATUS_LABELS: Record<string, string> = {
+    "APPROVED": "FEASIBILITY APPROVED",
+    "PENDING": "FEASIBILITY PENDING",
+    "REJECTED": "FEASIBILITY REJECTED",
+  };
   const DROPDOWN_OPTIONS: Record<string, string[]> = {
     priority: ["LOW", "MEDIUM", "HIGH"],
     body_type: ["Mini Bus", "Sleeper", "Tourist", "School Bus", "City Bus", "staff Bus"],
@@ -200,25 +205,23 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
     return localDate.toISOString().split("T")[0];
   };
 
-  const renderValue = (value: any) =>
-    value === null || value === undefined || value === ""
-      ? "-"
-      : typeof value === "boolean"
-        ? value
-          ? "Yes"
-          : "No"
-        : value;
+  const renderValue = (value: any, key?: string) => {
+    if (value === null || value === undefined || value === "") return "-";
 
-  useEffect(() => {
-    setFormData(data);
-  }, [data]);
+    if (typeof value === "boolean") return value ? "Yes" : "No";
 
+    // Map feasibility_status to label
+    if (key === "feasibility_status" && STATUS_LABELS[value]) {
+      return STATUS_LABELS[value];
+    }
+
+    return value;
+  };
   const mainFields = [
     { label: "Description", key: "description" },
     { label: "Priority", key: "priority" },
     { label: "Applicant", key: "applicant_name" },
     { label: "Contact Person", key: "contact_person" },
-    { label: "Requested By", key: "requested_by_person" },
     { label: "Mobile Number", key: "mobile_number" },
   ];
 
@@ -241,12 +244,23 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
     { label: "State Transport Norms", key: "state_transport_norms" },
   ];
 
+  // const formatDate = (date: string | null | undefined) => {
+  //   if (!date) return "-";
+  //   const d = new Date(date);
+  //   if (isNaN(d.getTime())) return "-";
+  //   return d.toLocaleDateString("en-GB");
+  // };
   const formatDate = (date: string | null | undefined) => {
-    if (!date) return "-";
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return "-";
-    return d.toLocaleDateString("en-GB");
-  };
+  if (!date) return "-";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "-";
+
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${month}/${day}/${year}`; // MM/DD/YYYY
+};
   const canEdit = !data.feasibility_status;
 
   const handleSave = async () => {
@@ -255,8 +269,14 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
 
       Object.entries(formData).forEach(([key, value]) => {
         if (key === "attachments") return;
+
         if (value !== undefined && value !== null) {
-          fd.append(key, value.toString());
+          // Send numbers as numbers
+          if (typeof value === "number") {
+            fd.append(key, value.toString());   // numbers safely converted
+          } else {
+            fd.append(key, value.toString());
+          }
         }
       });
 
@@ -314,18 +334,18 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-sm relative">
-      <h2 className="text-purple-600 font-semibold text-lg mb-2 truncate">BR ID:{data.id}</h2>
-
+      <h2 className="text-purple-600 font-semibold text-lg mb-2 truncate">
+        BR ID: {cardIndex + 1}
+      </h2>
       <div className="flex flex-col gap-1">
         {mainFields.map((item) => (
-          <div key={item.key} className="flex">
-            <span className="w-50 font-normal text-gray-400">{item.label}:</span>
-            <span className="font-medium text-gray-700 max-w-[65%] overflow-hidden text-ellipsis whitespace-nowrap">
+          <div key={item.key} className="flex justify-between items-center">
+            <span className="text-gray-400 font-medium shrink-0 w-32 truncate">{item.label}</span>
+            <span className="font-medium text-gray-700 text-sm text-right truncate w-2/3">
               {renderValue(data[item.key as keyof typeof data])}
             </span>
           </div>
         ))}
-
         <div className="flex gap-3 mt-2">
           <button
             onClick={() => {
@@ -384,8 +404,12 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
           >
 
 
-            <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium mb-4">BR-{data.id} Full Info</h2>
-
+            <h2
+              className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 
+             bg-clip-text text-transparent text-2xl font-medium mb-4"
+            >
+              {editMode ? `Edit BR-${cardIndex + 1} Full info` : `View BR-${cardIndex + 1} Full info`}
+            </h2>
             {/* Map all sections */}
             {[
               {
@@ -608,7 +632,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                             <div className="flex flex-col">
                               <span className="text-xs font-medium">Feasibility Status</span>
                               <span className="text-xs font-semibold">
-                                {renderValue(formData.feasibility_status)}
+                                {renderValue(formData.feasibility_status, "feasibility_status")}
                               </span>
                             </div>
 

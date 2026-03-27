@@ -513,52 +513,64 @@ const fetchHierarchy = async () => {
       </div>
 
       {/* Search Bar */}
-      <div className="flex justify-end mt-10 mb-6">
-        <div className="flex items-center gap-3">
-          <input
-            type="text"
-            placeholder="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-96 px-4 py-2 rounded-lg bg-white text-black placeholder-gray-500 shadow"
-          />
-          <button
-            onClick={() =>{}}
-            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-medium shadow hover:opacity-90"
-          >
-            🔍 Search
-          </button>
-        </div>
+<div className="bg-white/10 backdrop-blur-md rounded-xl p-4 sm:p-6 w-full max-w-6xl mx-auto mt-8 shadow-lg border border-white/20 text-black">      <h1 className="text-xl font-semibold text-white mb-6">Search Item</h1>
+
+      {/* Search Bar */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="p-2 rounded-lg w-full bg-white text-black placeholder-gray-500 shadow"
+        />
+        <button
+          onClick={handleSearch} // Add your search logic here
+          className="px-6 py-2 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-lg text-white font-semibold shadow-lg hover:opacity-90 w-full sm:w-auto"
+        >
+          🔍 Search
+        </button>
       </div>
 
       {/* Table */}
-      <div className="bg-white mt-4 rounded overflow-x-auto">
-        <table className="w-full text-black">
+      <div className="overflow-x-auto">
+        <table className="bg-white w-full text-left border-collapse rounded-lg">
           <thead>
-            <tr>
-              <th className="p-2 border">SI</th>
-              <th className="p-2 border">Root</th>
-              <th className="p-2 border">Category</th>
-              <th className="p-2 border">Product</th>
-              <th className="p-2 border">Variant</th>
-              <th className="p-2 border">Sub Variant</th>
+            <tr className="bg-gray-100">
+              <th className="p-3 border">SI</th>
+              <th className="p-3 border">Root</th>
+              <th className="p-3 border">Category</th>
+              <th className="p-3 border">Product</th>
+              <th className="p-3 border">Variant</th>
+              <th className="p-3 border">Sub Variant</th>
             </tr>
           </thead>
-         <tbody>
-  {filteredData.map((r, i) => (
-    <tr key={i} className="hover:bg-gray-100">
-      <td className="p-2 border">{i + 1}</td>
-      <td className="p-2 border">{r.root_name || "-"}</td>
-      <td className="p-2 border">{r.category_name || "-"}</td>
-      <td className="p-2 border">{r.product_name || "-"}</td>
-      <td className="p-2 border">{r.variant_name || "-"}</td>
-      <td className="p-2 border">{r.sub_variant_name || "-"}</td>
-    </tr>
-  ))}
-</tbody>
-
+          <tbody>
+            {filteredData.length > 0 ? (
+              filteredData.map((r, i) => (
+                <tr
+                  key={i}
+                  className="hover:bg-white/20 transition duration-200 ease-in-out cursor-pointer"
+                >
+                  <td className="p-3 border">{i + 1}</td>
+                  <td className="p-3 border">{r.root_name || "-"}</td>
+                  <td className="p-3 border">{r.category_name || "-"}</td>
+                  <td className="p-3 border">{r.product_name || "-"}</td>
+                  <td className="p-3 border">{r.variant_name || "-"}</td>
+                  <td className="p-3 border">{r.sub_variant_name || "-"}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={6} className="text-center p-4 text-gray-400">
+                  No records found
+                </td>
+              </tr>
+            )}
+          </tbody>
         </table>
       </div>
+    </div>
     </div>
   );
 }
