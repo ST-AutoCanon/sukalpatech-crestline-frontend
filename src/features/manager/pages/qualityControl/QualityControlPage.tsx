@@ -6,7 +6,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 // Real project ID from DB
 const PROJECT_ID = 1;
 
-export default function EngineeringDesignPage() {
+export default function QualityControlPage() {
   const { user } = useContext(AuthContext);
   const [deptId, setDeptId] = useState<number | null>(null);
   const [alert, setAlert] = useState<{
@@ -26,13 +26,13 @@ export default function EngineeringDesignPage() {
             credentials: "include",
           },
         );
+
         const data = await res.json();
-        console.log("department name in eng desing is :", data);
+
         if (!data.success) return;
 
-        const dept = data.data.find(
-          (d: any) => d.name === "engineering_design",
-        );
+        const dept = data.data.find((d: any) => d.name === "quality_control");
+
         setDeptId(dept?.department_id || null);
       } catch (err) {
         console.error("Error fetching department ID:", err);
@@ -60,7 +60,7 @@ export default function EngineeringDesignPage() {
     }
 
     try {
-      console.log("Starting project completion...");
+      console.log("Starting QC completion...");
 
       // 1️⃣ Update BD status
       const bdResponse = await fetch(
@@ -74,6 +74,7 @@ export default function EngineeringDesignPage() {
       );
 
       const bdData = await bdResponse.json().catch(() => ({}));
+
       if (!bdResponse.ok) {
         console.error("BD Update Failed:", bdData);
         setAlert({
@@ -82,6 +83,7 @@ export default function EngineeringDesignPage() {
         });
         return;
       }
+
       console.log("✅ BD updated:", bdData);
 
       // 2️⃣ Send notification dynamically
@@ -90,20 +92,18 @@ export default function EngineeringDesignPage() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          title: "Project Completed",
+          title: "Quality Control Completed",
           message:
-            "Engineering & Design department completed the project and moved to next department",
+            "Quality Control department completed inspection and approved the project.",
           type: "PROJECT_MOVED",
           related_bd_id: PROJECT_ID,
-          recipient_department_id: deptId, // dynamically fetched department
-          // Optionally, you can also send to a role or specific user:
-          // recipient_role: "manager",
-          // recipient_id: 54,
-          metadata: { department: "Engineering & Design" },
+          recipient_department_id: deptId,
+          metadata: { department: "Quality Control" },
         }),
       });
 
       const notifData = await notifResponse.json().catch(() => ({}));
+
       if (!notifResponse.ok) {
         console.error("Notification Failed:", notifData);
         setAlert({
@@ -113,13 +113,13 @@ export default function EngineeringDesignPage() {
         return;
       }
 
-      console.log(`✅ Notification sent to department users:`, notifData);
+      console.log("✅ Notification sent:", notifData);
       setAlert({
         type: "success",
-        message: "Project completed and notification sent to department users!",
+        message: "QC completed and notification sent to department users!",
       });
     } catch (error) {
-      console.error("❌ Error completing project:", error);
+      console.error("❌ Error completing QC:", error);
       setAlert({
         type: "error",
         message: "Something went wrong",
@@ -129,44 +129,45 @@ export default function EngineeringDesignPage() {
 
   return (
     <div className="w-full min-h-[80vh] p-6">
-      {alert && (
-        <Alert
-          type={alert.type}
-          message={alert.message}
-          onClose={() => setAlert(null)}
-        />
+            {alert && (
+              <Alert
+                type={alert.type}
+                message={alert.message}
+                onClose={() => setAlert(null)}
+              />
       )}
+      
       <div className="bg-white rounded-2xl shadow-md p-6">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          Engineering & Design
+          Quality Control
         </h2>
 
         <p className="text-gray-600 mb-6">
-          Manage engineering drawings, design approvals, and technical
-          documentation.
+          Inspect materials, verify fabrication quality, and ensure compliance
+          with engineering standards.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-gray-50 p-5 rounded-xl border">
-            <h3 className="font-semibold text-gray-700 mb-2">Drawings</h3>
+            <h3 className="font-semibold text-gray-700 mb-2">Inspection</h3>
             <p className="text-sm text-gray-500">
-              Upload and manage engineering drawings.
+              Perform dimensional and visual inspections.
             </p>
           </div>
 
           <div className="bg-gray-50 p-5 rounded-xl border">
             <h3 className="font-semibold text-gray-700 mb-2">
-              Design Approvals
+              Testing Reports
             </h3>
             <p className="text-sm text-gray-500">
-              Review and approve design submissions.
+              Record material and structural test results.
             </p>
           </div>
 
           <div className="bg-gray-50 p-5 rounded-xl border">
-            <h3 className="font-semibold text-gray-700 mb-2">Documentation</h3>
+            <h3 className="font-semibold text-gray-700 mb-2">Approval</h3>
             <p className="text-sm text-gray-500">
-              Manage technical documentation and revisions.
+              Approve or reject based on quality standards.
             </p>
           </div>
         </div>
@@ -177,7 +178,7 @@ export default function EngineeringDesignPage() {
             className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
             disabled={!deptId}
           >
-            {deptId ? "Mark Project as Completed" : "Loading Department..."}
+            {deptId ? "Mark QC as Completed" : "Loading Department..."}
           </button>
         </div>
       </div>

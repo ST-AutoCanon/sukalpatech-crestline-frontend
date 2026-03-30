@@ -1,14 +1,18 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../../../context/AuthContext";
-
+import Alert from "../../../../components/Aleartmessage";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 
 // Real project ID from DB
 const PROJECT_ID = 1;
 
-export default function EngineeringDesignPage() {
+export default function StoreMaterialPage() {
   const { user } = useContext(AuthContext);
   const [deptId, setDeptId] = useState<number | null>(null);
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // 1️⃣ Fetch department ID dynamically based on department name
   useEffect(() => {
@@ -22,12 +26,13 @@ export default function EngineeringDesignPage() {
             credentials: "include",
           },
         );
+
         const data = await res.json();
+
         if (!data.success) return;
 
-        const dept = data.data.find(
-          (d: any) => d.name === "engineering_design",
-        );
+        const dept = data.data.find((d: any) => d.name === "stores_materials");
+
         setDeptId(dept?.department_id || null);
       } catch (err) {
         console.error("Error fetching department ID:", err);
@@ -39,17 +44,23 @@ export default function EngineeringDesignPage() {
 
   const handleCompleteProject = async () => {
     if (!user) {
-      alert("User not authenticated");
+      setAlert({
+        type: "error",
+        message: "User not authenticated",
+      });
       return;
     }
 
     if (!deptId) {
-      alert("Department not found for this org");
+      setAlert({
+        type: "error",
+        message: "Department not found for this org",
+      });
       return;
     }
 
     try {
-      console.log("Starting project completion...");
+      console.log("Starting Store Material completion...");
 
       // 1️⃣ Update BD status
       const bdResponse = await fetch(
@@ -63,11 +74,16 @@ export default function EngineeringDesignPage() {
       );
 
       const bdData = await bdResponse.json().catch(() => ({}));
+
       if (!bdResponse.ok) {
         console.error("BD Update Failed:", bdData);
-        alert(bdData.message || "Failed to update project");
+        setAlert({
+          type: "error",
+          message: bdData.message || "Failed to update project",
+        });
         return;
       }
+
       console.log("✅ BD updated:", bdData);
 
       // 2️⃣ Send notification dynamically
@@ -76,67 +92,81 @@ export default function EngineeringDesignPage() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          title: "Project Completed",
+          title: "Store Material Completed",
           message:
-            "Engineering & Design department completed the project and moved to next department",
+            "Store Material department updated inventory and completed material handling stage.",
           type: "PROJECT_MOVED",
           related_bd_id: PROJECT_ID,
-          recipient_department_id: deptId, // dynamically fetched department
-          // Optionally, you can also send to a role or specific user:
-          // recipient_role: "manager",
-          // recipient_id: 54,
-          metadata: { department: "Engineering & Design" },
+          recipient_department_id: deptId,
+          metadata: { department: "Store Material" },
         }),
       });
 
       const notifData = await notifResponse.json().catch(() => ({}));
+
       if (!notifResponse.ok) {
         console.error("Notification Failed:", notifData);
-        alert(notifData.message || "Failed to send notification");
+        setAlert({
+          type: "error",
+          message: notifData.message || "Failed to send notification",
+        });
         return;
       }
 
-      console.log(`✅ Notification sent to department users:`, notifData);
-      alert("Project completed and notification sent to department users!");
+      console.log("✅ Notification sent:", notifData);
+      setAlert({
+        type: "success",
+        message:
+          "Store Material stage and notification sent to department users!",
+      });
     } catch (error) {
-      console.error("❌ Error completing project:", error);
-      alert("Something went wrong");
+      console.error("❌ Error completing Store Material:", error);
+      setAlert({
+        type: "error",
+        message: "Something went wrong",
+      });
     }
   };
 
   return (
     <div className="w-full min-h-[80vh] p-6">
+            {alert && (
+              <Alert
+                type={alert.type}
+                message={alert.message}
+                onClose={() => setAlert(null)}
+              />
+      )}
+      
       <div className="bg-white rounded-2xl shadow-md p-6">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          Engineering & Design
+          Store Material
         </h2>
 
         <p className="text-gray-600 mb-6">
-          Manage engineering drawings, design approvals, and technical
-          documentation.
+          Manage inventory, track incoming/outgoing materials, and maintain
+          stock records for project execution.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-gray-50 p-5 rounded-xl border">
-            <h3 className="font-semibold text-gray-700 mb-2">Drawings</h3>
+            <h3 className="font-semibold text-gray-700 mb-2">Inventory</h3>
             <p className="text-sm text-gray-500">
-              Upload and manage engineering drawings.
+              Track and manage all stored materials.
             </p>
           </div>
 
           <div className="bg-gray-50 p-5 rounded-xl border">
-            <h3 className="font-semibold text-gray-700 mb-2">
-              Design Approvals
-            </h3>
+            <h3 className="font-semibold text-gray-700 mb-2">Issue Material</h3>
             <p className="text-sm text-gray-500">
-              Review and approve design submissions.
+              Record material issued to departments.
             </p>
           </div>
 
           <div className="bg-gray-50 p-5 rounded-xl border">
-            <h3 className="font-semibold text-gray-700 mb-2">Documentation</h3>
+            <h3 className="font-semibold text-gray-700 mb-2">Receiving</h3>
             <p className="text-sm text-gray-500">
-              Manage technical documentation and revisions.
+              Log incoming materials and deliveries.
             </p>
           </div>
         </div>
@@ -147,7 +177,7 @@ export default function EngineeringDesignPage() {
             className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
             disabled={!deptId}
           >
-            {deptId ? "Mark Project as Completed" : "Loading Department..."}
+            {deptId ? "Mark Store Completed" : "Loading Department..."}
           </button>
         </div>
       </div>
