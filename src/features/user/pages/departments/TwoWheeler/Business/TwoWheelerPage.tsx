@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Alert from "../../../components/Aleartmessage";
+import Alert from "../../../../components/Aleartmessage";
 import { useNavigate } from "react-router-dom";
 
 interface Props {

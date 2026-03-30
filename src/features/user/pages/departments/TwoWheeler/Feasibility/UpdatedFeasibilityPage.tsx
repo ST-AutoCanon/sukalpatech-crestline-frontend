@@ -1,7 +1,7 @@
 // UpdatedTwoWheelerRequests.tsx
 import React, { useEffect, useState } from "react";
-import TwoWheelerCard from "./TwoWheelerCard"; // <-- import your card component here
-import { api } from "../../../api/businessApi";
+import TwoWheelerCard from "../Business/TwoWheelerCard"; // <-- import your card component here
+import { api } from "../../../../api/businessApi";
 
 interface Props {
   onBack: () => void;
@@ -49,11 +49,12 @@ const UpdatedTwoWheelerRequests: React.FC<Props> = ({ onBack }) => {
         <p className="text-white">Loading...</p>
       ) : data.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8 space-y-4">
-          {data.map((item) => (
+          {data.map((item,index) => (
             <TwoWheelerCard
               key={item.id}
               data={item}
               mode="update"
+              cardIndex={index} 
               onUpdate={(updatedItem) => {
                 setData((prev) =>
                   prev.map((pr) => (pr.id === updatedItem.id ? updatedItem : pr))

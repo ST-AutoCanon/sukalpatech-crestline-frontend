@@ -36,17 +36,16 @@ const FeasibilityPage = () => {
           className={`px-4 py-2.5 rounded-xl font-semibold text-sm text-white border-none cursor-pointer ${activeTab === "update" ? "bg-purple-700" : "bg-purple-300"
             }`}
         >
-          + Update BR
+           Update BR
         </button>
       </div>
 
       {/* CARD GRID — ALWAYS SHOWN */}
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
-        {prs.map((pr, index) => (  // <-- add index here
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-5">
+        {prs.map((pr) => (  // <-- add index here
           <FeasibilityCard
             key={pr.id}
             data={pr}
-            cardIndex={index}   // <-- now this works
             mode={activeTab}
             onUpdate={handleUpdateSuccess}
           />

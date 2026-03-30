@@ -30,21 +30,20 @@ export default function TopNav({ departmentNames }: TopNavProps) {
   };
 
   return (
-    <header className="w-full bg-gradient-to-r bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] px-6 py-4 flex justify-between items-center">
-      {/* LEFT - PAGE / DEPARTMENT NAME */}
+<header className="w-full bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">      {/* LEFT - PAGE / DEPARTMENT NAME */}
       <h1 className="text-white text-2xl font-semibold">{getPageName()}</h1>
 
       {/* RIGHT - USER BOX */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         {/* USER INFO BADGE */}
-        <div className="flex items-center gap-3 border border-white/40 rounded-full px-4 py-2 text-white">
+       <div className="flex items-center gap-2 border border-white/40 rounded-full px-2 sm:px-4 py-1.5 sm:py-2 text-white">
           <img
             src={avatarimage}
             alt="avatar"
             className="h-9 w-9 rounded-full border border-white/50"
           />
 
-          <span className="text-sm font-medium">
+         <span className="text-xs sm:text-sm font-medium truncate max-w-[80px] sm:max-w-none">
             {user?.first_name ?? "User"}
           </span>
         </div>

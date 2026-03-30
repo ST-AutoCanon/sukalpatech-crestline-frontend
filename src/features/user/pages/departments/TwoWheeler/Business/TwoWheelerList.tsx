@@ -51,7 +51,7 @@
 // export default TwoWheelerList;
 
 import { useEffect, useState } from "react";
-import { api } from "../../../api/businessApi";
+import { api } from "../../../../api/businessApi";
 import ViewTwoWheeler from "./ViewTwoWheelerpage";
 
 interface Props {

@@ -196,6 +196,8 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
     return new Date(date).toLocaleDateString("en-GB"); // DD/MM/YYYY
   };
 
+  
+
   /* ================= API ================= */
   // const fetchApprovedRequests = async () => {
   //   const res = await axios.get(`${API_BASE}/approved-finance-requests`);
@@ -220,11 +222,17 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
   //   setRequests(res.data.data || []);
   // };
 
-  const fetchApprovedRequests = async () => {
-    let url = "";
+ const getLatestStatus = (pr: FinancePR) => {
+  return (
+    pr.department_statuses?.[
+      pr.department_statuses.length - 1
+    ]?.department_status?.toUpperCase() || ""
+  );
+};
 
-    // Fetch all PRs
-    url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
+const fetchApprovedRequests = async () => {
+  try {
+    const url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
     const res = await axios.get(url, {
       withCredentials: true,
@@ -232,35 +240,32 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
 
     let data: FinancePR[] = res.data.data || [];
 
-    if (status === "PENDING") {
-      data = data.filter((pr) =>
-        pr.department_statuses?.some((s) =>
-          s.department_status?.toUpperCase().includes("PENDING")
-        )
-      );
-    }
+    // ✅ Filter based on LATEST status only
+    data = data.filter((pr) => {
+      const latestStatus = getLatestStatus(pr);
 
-    if (status === "REJECTED") {
-      data = data.filter((pr) =>
-        pr.department_statuses?.some((s) =>
-          s.department_status?.toUpperCase().includes("REJECTED")
-        )
-      );
-    }
+      if (status === "PENDING") {
+        return latestStatus.includes("PENDING");
+      }
 
-    if (status === "APPROVED") {
-      data = data.filter((pr) => {
-        const latestStatus =
-          pr.department_statuses?.[pr.department_statuses.length - 1]
-            ?.department_status;
+      if (status === "REJECTED") {
+        return latestStatus.includes("REJECTED");
+      }
 
-        return latestStatus === "STORE APPROVED";
-      });
-    }
+      if (status === "APPROVED") {
+        return latestStatus.includes("APPROVED"); 
+        // or use === "STORE APPROVED" if strict needed
+      }
+
+      return true; // ALL
+    });
 
     setRequests(data);
-  };
-
+  } catch (err) {
+    console.error("Fetch Finance Requests Error:", err);
+    setRequests([]);
+  }
+};
   useEffect(() => {
     fetchApprovedRequests();
   }, [status]);

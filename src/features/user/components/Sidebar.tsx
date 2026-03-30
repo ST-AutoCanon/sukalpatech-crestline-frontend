@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import crestlineLogo from "../../../assets/crestlinetech_black_1.png";
 // import crestlinelogo from "../../../assets/crestline_logo.jpeg";
-import avatar from "../../../assets/avatar.jpg";
+import icon2 from "../../../assets/icon2.png"
+import icon1 from "../../../assets/icon1.png"
 interface SidebarProps {
   departments: any[];
   apiNameToKey: Record<string, string>;
@@ -63,10 +64,10 @@ export default function Sidebar({
         {/* Logo */}
         <div className="flex justify-center mb-6 transition-all duration-300">
           <img
-            src={sidebarOpen ? avatar : avatar}
+            src={sidebarOpen ? icon2 : icon1}
             alt="Crestline Tech"
             className={`object-contain transition-all duration-300
-      ${sidebarOpen ? "h-14" : "h-10"}
+      ${sidebarOpen ? "h-30 w-40" : "h-14 w-28"}
     `}
           />
         </div>
@@ -162,8 +163,8 @@ export default function Sidebar({
 
             <div className="flex justify-center mb-6">
               <img
-                src={crestlineLogo}
-                alt="Crestline Tech"
+                src={icon2}
+                alt="Flowracle"
                 className="h-14 object-contain"
               />
             </div>

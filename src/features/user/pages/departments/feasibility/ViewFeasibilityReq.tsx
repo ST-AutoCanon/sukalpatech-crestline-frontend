@@ -113,11 +113,25 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   const [loading, setLoading] = useState(true);
   const [newStatus, setNewStatus] = useState("");
   const [newComment, setNewComment] = useState("");
+  const [userMap, setUserMap] = useState<Record<string, string>>({});
 
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  const getLatestStatus = (pr: PR) => {
+  const statuses = pr.department_statuses || [];
+  return statuses[statuses.length - 1]?.department_status?.toUpperCase() || "";
+};
+
+const matchesFilter = (status: string, filter: string) => {
+  if (filter === "Pending") return status.includes("PENDING");
+  if (filter === "Rejected") return status.includes("REJECTED");
+  if (filter === "Completed") return status.includes("APPROVED");
+
+  return true; // for "All" or others
+};
 
   // const fetchPRs = async () => {
   //   setLoading(true);
@@ -182,7 +196,12 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
         department_statuses: pr.department_statuses || [],
       }));
 
-      setPrs(prsData);
+const filteredPRs = prsData.filter((pr) => {
+  const latestStatus = getLatestStatus(pr);
+  return matchesFilter(latestStatus, filter);
+});
+
+setPrs(filteredPRs);
     } catch (err) {
       console.error("Fetch PR error", err);
       setPrs([]);
@@ -324,60 +343,110 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
     return updatedPR;
   };
 
-  const handleSave = async () => {
-    if (!activePR) return;
+  // const handleSave = async () => {
+  //   if (!activePR) return;
 
-    try {
-      let updatedPRData = { ...activePR };
+  //   try {
+  //     let updatedPRData = { ...activePR };
 
-      if (newStatus) {
-        updatedPRData = {
-          ...updatedPRData,
-          department_statuses: [
-            ...(updatedPRData.department_statuses || []),
-            {
-              department_status: newStatus,
-              department_comment: newComment,
-              status_updated_by: user?.id || "",
-              updated_at: new Date().toISOString(),
-            },
-          ],
-        };
-      }
+  //     if (newStatus) {
+  //       updatedPRData = {
+  //         ...updatedPRData,
+  //         department_statuses: [
+  //           ...(updatedPRData.department_statuses || []),
+  //           {
+  //             department_status: newStatus,
+  //             department_comment: newComment,
+  //             status_updated_by: user?.id || "",
+  //             updated_at: new Date().toISOString(),
+  //           },
+  //         ],
+  //       };
+  //     }
 
-      const savedPR = await savePR(updatedPRData);
+  //     const savedPR = await savePR(updatedPRData);
 
-      setPrs((prev) =>
-        prev.map((pr) => (pr.id === savedPR.id ? savedPR : pr))
-      );
+  //     setPrs((prev) =>
+  //       prev.map((pr) => (pr.id === savedPR.id ? savedPR : pr))
+  //     );
 
-      setNewStatus("");
-      setNewComment("");
+  //     setNewStatus("");
+  //     setNewComment("");
 
-      setActivePR(null);
-      setEditMode(false);
+  //     setActivePR(null);
+  //     setEditMode(false);
 
-      // ✅ SUCCESS ALERT
-      setAlert({
-        type: "success",
-        message: "PR updated successfully!",
-      });
+  //     // ✅ SUCCESS ALERT
+  //     setAlert({
+  //       type: "success",
+  //       message: "PR updated successfully!",
+  //     });
 
-      setTimeout(() => setAlert(null), 3000);
+  //     setTimeout(() => setAlert(null), 3000);
 
-    } catch (err) {
-      console.error("Save error:", err);
+  //   } catch (err) {
+  //     console.error("Save error:", err);
 
-      // ❌ ERROR ALERT
-      setAlert({
-        type: "error",
-        message: "Failed to update PR.",
-      });
+  //     // ❌ ERROR ALERT
+  //     setAlert({
+  //       type: "error",
+  //       message: "Failed to update PR.",
+  //     });
 
-      setTimeout(() => setAlert(null), 3000);
+  //     setTimeout(() => setAlert(null), 3000);
+  //   }
+  // };
+
+const handleSave = async () => {
+  if (!activePR) return;
+
+  try {
+    let updatedPRData = { ...activePR };
+
+    if (newStatus) {
+      updatedPRData = {
+        ...updatedPRData,
+        department_statuses: [
+          ...(updatedPRData.department_statuses || []),
+          {
+            department_status: newStatus,
+            department_comment: newComment,
+            status_updated_by: user?.first_name || "User",
+            updated_at: new Date().toISOString(),
+          },
+        ],
+      };
     }
-  };
 
+    // ✅ Call API
+    await savePR(updatedPRData);
+
+    // ✅ Refetch based on current tab
+    await fetchPRs();
+
+    setNewStatus("");
+    setNewComment("");
+    setEditMode(false);
+    setActivePR(null);
+
+    setAlert({
+      type: "success",
+      message: "PR updated successfully!",
+    });
+
+    setTimeout(() => setAlert(null), 3000);
+
+  } catch (err) {
+    console.error("Save error:", err);
+
+    setAlert({
+      type: "error",
+      message: "Failed to update PR.",
+    });
+
+    setTimeout(() => setAlert(null), 3000);
+  }
+};
   const formatDateForInput = (date: string) => {
     if (!date) return "";
     const d = new Date(date);
@@ -509,7 +578,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
           <div className="bg-white w-full max-w-5xl md:max-w-7xl rounded-xl shadow-xl p-4 md:p-6 text-black flex flex-col">
             <div className="flex justify-between items-center mb-4 md:mb-6">
               <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-                View PR-{activePR.id} info
+                {editMode ? `Edit PR-${activePR.id} info` : `View PR-${activePR.id} info`}
               </h2>
               <button onClick={() => setActivePR(null)} className="text-gray-500 hover:text-gray-700"><X size={24} /></button>
             </div>

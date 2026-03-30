@@ -45,7 +45,7 @@ const StorePage: React.FC = () => {
           onClick={() => setSelectedTab("add")}
           className="bg-gradient-to-r from-sky-500 to-purple-500 text-white text-sm md:text-base font-medium px-3 md:px-4 py-2 rounded whitespace-nowrap w-full md:w-auto"
         >
-          + Update PR
+           Update PR
         </button>
 
       </div>

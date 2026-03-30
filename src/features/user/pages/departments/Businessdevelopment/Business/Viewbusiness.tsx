@@ -64,19 +64,20 @@ interface BusinessCardProps {
     finalbd_comment: string;
   };
   onUpdate: (updatedData: any) => void;
-  cardIndex: number; // ✅ add this
 }
 
 
-const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }) => {
+const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
   const attachments = Array.isArray(data.attachments) ? data.attachments : [];
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState(data);
+  const [originalData, setOriginalData] = useState(data);
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const INPUT_CLASS = "border border-blue-400 focus:border-blue-600 focus:ring focus:ring-blue-200 rounded px-2 py-1 text-sm";
 
 
 
@@ -117,7 +118,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
         <select
           value={formData[key] ?? ""}
           onChange={(e) => handleChange(key, e.target.value)}
-          className="border rounded px-2 py-1 text-xs"
+          className="border border-blue-400 focus:border-blue-600 focus:ring focus:ring-blue-200 rounded px-2 py-1 text-sm"
         >
           <option value="">Select</option>
           {DROPDOWN_OPTIONS[key as string].map((option) => (
@@ -139,7 +140,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
             : formData[key] ?? ""
         }
         onChange={(e) => handleChange(key, e.target.value)}
-        className="border rounded px-2 py-1 text-xs"
+        className="border border-blue-400 focus:border-blue-600 focus:ring focus:ring-blue-200 rounded px-2 py-1 text-sm"
       />
     );
   };
@@ -149,7 +150,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
     const checked = !!formData[key];
 
     return (
-      <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+      <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
         {/* Hidden native checkbox */}
         <input
           type="checkbox"
@@ -251,16 +252,16 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
   //   return d.toLocaleDateString("en-GB");
   // };
   const formatDate = (date: string | null | undefined) => {
-  if (!date) return "-";
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return "-";
+    if (!date) return "-";
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "-";
 
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const year = d.getFullYear();
 
-  return `${month}/${day}/${year}`; // MM/DD/YYYY
-};
+    return `${month}/${day}/${year}`; // MM/DD/YYYY
+  };
   const canEdit = !data.feasibility_status;
 
   const handleSave = async () => {
@@ -335,7 +336,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-sm relative">
       <h2 className="text-purple-600 font-semibold text-lg mb-2 truncate">
-        BR ID: {cardIndex + 1}
+        BR ID: {data.display_id || data.id}
       </h2>
       <div className="flex flex-col gap-1">
         {mainFields.map((item) => (
@@ -360,6 +361,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
           {canEdit && (
             <button
               onClick={() => {
+                setOriginalData(data);        // store fresh original
+                setFormData({ ...data });     // clone
                 setShowModal(true);
                 setEditMode(true);
               }}
@@ -408,7 +411,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
               className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 
              bg-clip-text text-transparent text-2xl font-medium mb-4"
             >
-              {editMode ? `Edit BR-${cardIndex + 1} Full info` : `View BR-${cardIndex + 1} Full info`}
+              {editMode ? `Edit BR-${data.display_id || data.id} Full info` : `View BR-${data.display_id || data.id} Full info`}
             </h2>
             {/* Map all sections */}
             {[
@@ -526,20 +529,22 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
                               return (
                                 <span
                                   key={idx}
-                                  className="text-xs text-blue-600 underline cursor-pointer"
+                                  className="text-sm text-blue-600 underline cursor-pointer"
                                   onClick={() => {
                                     if (!file) return;
 
                                     let url = "";
 
-                                    // ✅ If preview (new upload)
-                                    if (file.file_path?.startsWith("blob:")) {
-                                      url = file.file_path;
+                                    // ✅ NEW FILE (File object)
+                                    if (file instanceof File) {
+                                      url = URL.createObjectURL(file);
                                     }
-                                    // ✅ If backend path exists
+
+                                    // ✅ If backend file path exists
                                     else if (file.file_path) {
                                       url = `${import.meta.env.VITE_BACKEND_URL}${file.file_path}`;
                                     }
+
                                     // ✅ fallback (OLD DATA)
                                     else if (file.filename) {
                                       url = `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${file.filename}`;
@@ -559,7 +564,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
                             })}
                           </div>
                         ) : !editMode ? (
-                          <span className="text-xs text-gray-500">No files uploaded</span>
+                          <span className="text-sm text-gray-500">No files uploaded</span>
                         ) : null}
 
                         {/* NEW FILE PICKER */}
@@ -570,7 +575,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
                             onChange={(e) =>
                               handleChange("attachments", Array.from(e.target.files || []))
                             }
-                            className="text-xs"
+                            className={INPUT_CLASS}
                           />
                         )}
                       </div>
@@ -591,19 +596,19 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
 
                         {/* BD Status */}
                         <div className="flex flex-col">
-                          <span className="text-xs font-medium">BD Status</span>
+                          <span className="text-sm font-medium">BD Status</span>
                           {editMode ? (
                             <select
                               value={formData.bd_status}
                               onChange={(e) => handleChange("bd_status", e.target.value)}
-                              className="border rounded text-xs px-2 py-1"
+                              className={INPUT_CLASS}
                             >
                               <option value="PENDING">PENDING</option>
                               <option value="SUBMITTED">SUBMITTED</option>
                               <option value="APPROVED">APPROVED</option>
                             </select>
                           ) : (
-                            <span className="text-xs font-semibold">
+                            <span className="text-sm font-semibold">
                               {renderValue(formData.bd_status)}
                             </span>
                           )}
@@ -611,15 +616,16 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
 
                         {/* BD Comments */}
                         <div className="flex flex-col">
-                          <span className="text-xs font-medium">BD Comments</span>
+                          <span className="text-sm font-medium">BD Comments</span>
                           {editMode ? (
                             <textarea
                               value={formData.bd_comments || ""}
                               onChange={(e) => handleChange("bd_comments", e.target.value)}
-                              className="border rounded text-xs px-2 py-1"
+                              className={INPUT_CLASS}
+                              rows={1} // adjust height
                             />
                           ) : (
-                            <span className="text-xs font-semibold">
+                            <span className="text-sm font-semibold">
                               {renderValue(formData.bd_comments)}
                             </span>
                           )}
@@ -630,32 +636,32 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
                           <>
                             {/* Feasibility Status */}
                             <div className="flex flex-col">
-                              <span className="text-xs font-medium">Feasibility Status</span>
-                              <span className="text-xs font-semibold">
+                              <span className="text-sm font-medium">Feasibility Status</span>
+                              <span className="text-sm font-semibold">
                                 {renderValue(formData.feasibility_status, "feasibility_status")}
                               </span>
                             </div>
 
                             {/* Feasibility Comments */}
                             <div className="flex flex-col">
-                              <span className="text-xs font-medium">Feasibility Comments</span>
-                              <span className="text-xs font-semibold">
+                              <span className="text-sm font-medium">Feasibility Comments</span>
+                              <span className="text-sm font-semibold">
                                 {renderValue(formData.feasibility_comments)}
                               </span>
                             </div>
 
                             {/* Final BD Status */}
                             {/* <div className="flex flex-col">
-                              <span className="text-xs font-medium">Final BD Status</span>
-                              <span className="text-xs font-semibold">
+                              <span className="text-sm font-medium">Final BD Status</span>
+                              <span className="text-sm font-semibold">
                                 {renderValue(formData.finalbd_status)}
                               </span>
                             </div> */}
 
                             {/* Final BD Comments */}
                             {/* <div className="flex flex-col">
-                              <span className="text-xs font-medium">Final BD Comments</span>
-                              <span className="text-xs font-semibold">
+                              <span className="text-sm font-medium">Final BD Comments</span>
+                              <span className="text-sm font-semibold">
                                 {renderValue(formData.finalbd_comment)}
                               </span>
                             </div> */}
@@ -675,7 +681,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
                     value: (
                       <div className="grid grid-cols-5 gap-4">
                         <div className="flex flex-col">
-                          <span className="text-xs font-medium">Declaration Date</span>
+                          <span className="text-sm font-medium">Declaration Date</span>
                           {editMode ? (
                             <input
                               type="date"
@@ -683,34 +689,34 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
                               onChange={(e) =>
                                 handleChange("declaration_date", e.target.value)
                               }
-                              className="border rounded text-xs px-2 py-1"
+                              className={INPUT_CLASS}
                             />
 
                           ) : (
-                            <span className="text-xs font-semibold">
+                            <span className="text-sm font-semibold">
                               {formatDate(formData.declaration_date)}
                             </span>
                           )}
                         </div>
 
                         <div className="flex flex-col">
-                          <span className="text-xs font-medium">Place</span>
+                          <span className="text-sm font-medium">Place</span>
                           {editMode ? (
                             <input
                               type="text"
                               value={formData.place || ""}
                               onChange={(e) => handleChange("place", e.target.value)}
-                              className="border rounded text-xs px-2 py-1"
+                              className={INPUT_CLASS}
                             />
                           ) : (
-                            <span className="text-xs font-semibold">
+                            <span className="text-sm font-semibold">
                               {renderValue(formData.place)}
                             </span>
                           )}
                         </div>
 
                         <div className="flex flex-col">
-                          <span className="text-xs font-medium">Applicant Signature</span>
+                          <span className="text-sm font-medium">Applicant Signature</span>
                           {editMode ? (
                             <input
                               type="text"
@@ -718,33 +724,33 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
                               onChange={(e) =>
                                 handleChange("applicant_signature", e.target.value)
                               }
-                              className="border rounded text-xs px-2 py-1"
+                              className={INPUT_CLASS}
                             />
                           ) : (
-                            <span className="text-xs font-semibold">
+                            <span className="text-sm font-semibold">
                               {renderValue(formData.applicant_signature)}
                             </span>
                           )}
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-xs font-medium">Requested By</span>
+                          <span className="text-sm font-medium">Requested By</span>
                           {editMode ? (
                             <input
                               type="text"
                               value={formData.requested_by_person || ""}
                               onChange={(e) => handleChange("requested_by_person", e.target.value)}
-                              className="border rounded text-xs px-2 py-1"
+                              className={INPUT_CLASS}
                             />
                           ) : (
-                            <span className="text-xs font-semibold">
+                            <span className="text-sm font-semibold">
                               {renderValue(formData.requested_by_person)}
                             </span>
                           )}
                         </div>
 
                         <div className="flex flex-col">
-                          <span className="text-xs font-medium">Created At</span>
-                          <span className="text-xs font-semibold">
+                          <span className="text-sm font-medium">Created At</span>
+                          <span className="text-sm font-semibold">
                             {formatDate(formData.created_at)}
                           </span>
                         </div>
@@ -767,10 +773,14 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2">
                   {section.fields.map(f => (
                     <div key={f.label} className="flex flex-col">
-                      <span className="text-gray-600 text-xs font-medium">{f.label}</span>
-                      <div className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">
-                        {React.isValidElement(f.value) ? f.value : renderValue(f.value)}
-                      </div>
+                      <span className="text-gray-600 text-sm font-medium">{f.label}</span>
+                      {React.isValidElement(f.value) ? (
+                        f.value
+                      ) : (
+                        <div className="bg-white border rounded px-2 py-1 text-sm font-semibold text-black">
+                          {renderValue(f.value)}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -780,8 +790,9 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate, cardIndex }
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => {
-                    setFormData(data); // reset
-                    setEditMode(false);
+                    setFormData({ ...originalData }); // restore original data
+                    setEditMode(false);               // exit edit mode
+                    setShowModal(false);              // ✅ CLOSE MODAL
                   }}
                   className="px-4 py-1 border rounded text-sm"
                 >

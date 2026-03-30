@@ -15,8 +15,8 @@ import DepartmentPage from "./features/admin/pages/Department";
 import EmployeeUpdate from "./features/admin/pages/EmployeeUpdate";
 import OrganisationHome from "./features/superadmin/pages/organisations/OrganisationHome";
 
-import TwoWheelerHome from "./features/user/pages/departments/TwoWheeler/TwoWheelerHome";
-import ThreeWheelerHome from "./features/user/pages/departments/ThreeWheeler/ThreeWheelerHome";
+import TwoWheelerHome from "./features/user/pages/departments/TwoWheeler/Business/TwoWheelerHome";
+import ThreeWheelerHome from "./features/user/pages/departments/ThreeWheeler/Business/ThreeWheelerHome";
 import FoodBusinessHome from "./features/user/pages/departments/FoodBusiness/FoodPages/FoodBusinessHome";
 import GoldBusinessHome from "./features/user/pages/departments/gold_business/goldbusinessHome";
 

@@ -145,8 +145,8 @@
 // export default ThreeWheelerCard;
 
 import React, { useState } from "react";
-import { api } from "../../../api/businessApi";
-import Alert from "../../../components/Aleartmessage";
+import { api } from "../../../../api/businessApi";
+import Alert from "../../../../components/Aleartmessage";
 
 interface Props {
   data: any;

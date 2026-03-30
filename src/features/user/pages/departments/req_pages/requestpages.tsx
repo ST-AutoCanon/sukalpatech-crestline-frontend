@@ -109,10 +109,16 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
   const [vendorMap, setVendorMap] = useState<Record<string, string>>({});
   const [departmentMap, setDepartmentMap] = useState<Record<string, string>>({});
+  const [originalPR, setOriginalPR] = useState(null);
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  const getLatestStatus = (pr: PR) => {
+    const statuses = pr.department_statuses || [];
+    return statuses[statuses.length - 1]?.department_status?.toUpperCase() || "";
+  };
 
 
 
@@ -255,7 +261,17 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
         };
       });
 
-      setPrs(prsData);
+      const filteredPRs = prsData.filter((pr: PR) => {
+        const latestStatus = getLatestStatus(pr);
+
+        if (filter === "Pending") return latestStatus.includes("PENDING");
+        if (filter === "Rejected") return latestStatus.includes("REJECTED");
+        if (filter === "Completed") return latestStatus.includes("APPROVED");
+
+        return true;
+      });
+
+      setPrs(filteredPRs);
     } catch (err) {
       console.error("Fetch PR error", err);
       setPrs([]);
@@ -275,10 +291,29 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
     }
   }, [filter, search, refreshKey, departmentMap]);
 
+  // const isEditable = (pr: PR) => {
+  //   if (filter !== "PR Raised") return false;
+  //   const latestStatus = pr.department_statuses?.[pr.department_statuses.length - 1]?.department_status;
+  //   return latestStatus === "CREATED";
+  // };
   const isEditable = (pr: PR) => {
     if (filter !== "PR Raised") return false;
-    const latestStatus = pr.department_statuses?.[pr.department_statuses.length - 1]?.department_status;
-    return latestStatus === "CREATED";
+
+    const statuses = pr.department_statuses || [];
+
+    // ✅ If no status → allow edit (fresh PR)
+    if (statuses.length === 0) return true;
+
+    const latestStatus =
+      statuses[statuses.length - 1]?.department_status?.toUpperCase() || "";
+
+    // ✅ Allow if CREATED
+    if (latestStatus === "CREATED") return true;
+
+    // ✅ Allow if latest status is any kind of PENDING
+    if (latestStatus.includes("PENDING")) return true;
+
+    return false; // ❌ for APPROVED / REJECTED / COMPLETED
   };
 
   const toggleItemsSection = () => setShowItems((prev) => !prev);
@@ -558,6 +593,8 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditMode(true);
+
+                      setOriginalPR(pr); // ✅ store original data
 
                       setActivePR({
                         ...pr,
@@ -1776,12 +1813,11 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   className="px-4 py-2 rounded border border-gray-300"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setEditMode(true);
 
-                    setActivePR({
-                      ...pr,
-                      department: pr.department ? String(pr.department) : "",
-                    });
+                    setEditMode(false);
+
+                    setActivePR(null);        // ✅ CLOSE POPUP
+                    setOriginalPR(null);      // ✅ CLEAR BACKUP (important)
                   }}
                 >
                   Cancel

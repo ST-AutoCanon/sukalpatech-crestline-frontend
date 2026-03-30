@@ -1,9 +1,9 @@
 import { useState } from "react";
-import TwoWheelerList from "./TwoWheelerList";
-import TwoWheelerPage from "./TwoWheelerPage";
-import UpdatedTwoWheelerRequests from "./UpdatedFeasibilityPage"; // <- import the updated requests page
+import ThreeWheelerList from "../Business/ThreeWheelerlist";
+import ThreeWheelerPage from "./CreateThreeWheelerPage";
+import UpdatedThreeWheelerRequests from "../Feasibility/UpdatedFeasibilityPage"; // <- import the updated requests page
 
-const TwoWheelerHome = () => {
+const ThreeWheelerHome = () => {
   const [showModal, setShowModal] = useState(false);
   const [refreshList, setRefreshList] = useState(false);
   const [showUpdatedRequests, setShowUpdatedRequests] = useState(false);
@@ -17,7 +17,7 @@ const TwoWheelerHome = () => {
   // If "Updated Requests" is clicked, render the updated requests page
   if (showUpdatedRequests) {
     return (
-      <UpdatedTwoWheelerRequests
+      <UpdatedThreeWheelerRequests
         onBack={() => setShowUpdatedRequests(false)} // go back to main page
       />
     );
@@ -29,7 +29,7 @@ const TwoWheelerHome = () => {
       {/* HEADER */}
       <div className="flex justify-between mb-6">
         <button className="bg-white text-purple-700 px-4 py-2 rounded-full">
-          2W Business Requests
+          3W Business Requests
         </button>
       
         <div className="flex gap-2">
@@ -64,7 +64,7 @@ const TwoWheelerHome = () => {
       </div>
 
       {/* LIST */}
-      <TwoWheelerList
+      <ThreeWheelerList
         refresh={refreshList}
         filter={activeFilter === "All PR" ? "ALL" : activeFilter.toUpperCase()}
       />
@@ -79,7 +79,7 @@ const TwoWheelerHome = () => {
             >
               ×
             </button>
-            <TwoWheelerPage
+            <ThreeWheelerPage
               onClose={() => setShowModal(false)}
               onSuccess={() => {
                 handleSuccess();
@@ -93,4 +93,4 @@ const TwoWheelerHome = () => {
   );
 };
 
-export default TwoWheelerHome;
+export default ThreeWheelerHome;
