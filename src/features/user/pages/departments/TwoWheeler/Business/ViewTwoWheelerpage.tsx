@@ -370,8 +370,8 @@
 // export default TwoWheelerCard;
 
 import React, { useEffect, useState } from "react";
-import Alert from "../../../components/Aleartmessage";
-import { api } from "../../../api/businessApi";
+import Alert from "../../../../components/Aleartmessage";
+import { api } from "../../../../api/businessApi";
 
 interface Props {
   data: {

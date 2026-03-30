@@ -1,9 +1,9 @@
 import { useState } from "react";
-import ThreeWheelerList from "./ThreeWheelerlist";
-import ThreeWheelerPage from "./ThreeWheelerPage";
-import UpdatedThreeWheelerRequests from "./UpdatedFeasibilityPage"; // <- import the updated requests page
+import TwoWheelerList from "./TwoWheelerList";
+import TwoWheelerPage from "./TwoWheelerPage";
+import UpdatedTwoWheelerRequests from "../Feasibility/UpdatedFeasibilityPage"; // <- import the updated requests page
 
-const ThreeWheelerHome = () => {
+const TwoWheelerHome = () => {
   const [showModal, setShowModal] = useState(false);
   const [refreshList, setRefreshList] = useState(false);
   const [showUpdatedRequests, setShowUpdatedRequests] = useState(false);
@@ -17,7 +17,7 @@ const ThreeWheelerHome = () => {
   // If "Updated Requests" is clicked, render the updated requests page
   if (showUpdatedRequests) {
     return (
-      <UpdatedThreeWheelerRequests
+      <UpdatedTwoWheelerRequests
         onBack={() => setShowUpdatedRequests(false)} // go back to main page
       />
     );
@@ -29,7 +29,7 @@ const ThreeWheelerHome = () => {
       {/* HEADER */}
       <div className="flex justify-between mb-6">
         <button className="bg-white text-purple-700 px-4 py-2 rounded-full">
-          3W Business Requests
+          2W Business Requests
         </button>
       
         <div className="flex gap-2">
@@ -64,7 +64,7 @@ const ThreeWheelerHome = () => {
       </div>
 
       {/* LIST */}
-      <ThreeWheelerList
+      <TwoWheelerList
         refresh={refreshList}
         filter={activeFilter === "All PR" ? "ALL" : activeFilter.toUpperCase()}
       />
@@ -79,7 +79,7 @@ const ThreeWheelerHome = () => {
             >
               ×
             </button>
-            <ThreeWheelerPage
+            <TwoWheelerPage
               onClose={() => setShowModal(false)}
               onSuccess={() => {
                 handleSuccess();
@@ -93,4 +93,4 @@ const ThreeWheelerHome = () => {
   );
 };
 
-export default ThreeWheelerHome;
+export default TwoWheelerHome;

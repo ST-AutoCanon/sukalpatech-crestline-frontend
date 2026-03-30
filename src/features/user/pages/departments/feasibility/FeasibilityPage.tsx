@@ -128,7 +128,7 @@ const FeasibilityPage: React.FC = () => {
               }}
               className="w-full sm:w-auto px-4 py-2 rounded-xl text-sm font-semibold text-white bg-purple-600"
             >
-              + Update PR
+               Update PR
             </button>
 
 

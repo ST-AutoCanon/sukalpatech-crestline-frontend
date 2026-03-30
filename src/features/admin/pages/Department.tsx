@@ -217,13 +217,15 @@ export default function DepartmentPage() {
 
         {selectedDept && (
           <div className="mt-4">
-            <button
-              className="text-blue-600 mb-4 hover:underline"
-              onClick={() => setSelectedDept(null)}
-            >
-              ← Back
-            </button>
-
+            <div className="mb-4">
+              <span
+                className="cursor-pointer text-blue-600 hover:underline"
+                onClick={() => setSelectedDept(null)}
+              >
+                ←
+              </span>
+              <span className="ml-2 text-blue-600">Back</span>
+            </div>
             <h2 className="text-2xl md:text-3xl font-semibold mb-6">
               {selectedDept.name} — Employees
             </h2>
@@ -248,31 +250,33 @@ export default function DepartmentPage() {
                       <td className="p-3">
                         {emp.permission || "No Permission"}
                       </td>
-                      <td className="p-3 space-x-2">
-                        <button
-                          className="bg-yellow-500 px-3 py-1 text-white text-sm rounded"
-                          onClick={() => {
-                            setSelectedEmpId(emp.id);
-                            setModal("edit");
-                          }}
-                        >
-                          Edit
-                        </button>
+                      <td className="p-3">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <button
+                            className="bg-yellow-500 px-3 py-1 text-white text-sm rounded w-full sm:w-auto"
+                            onClick={() => {
+                              setSelectedEmpId(emp.id);
+                              setModal("edit");
+                            }}
+                          >
+                            Edit
+                          </button>
 
-                        <button
-                          className="bg-red-600 px-3 py-1 text-white text-sm rounded"
-                          onClick={() => {
-                            const confirmDelete = window.confirm(
-                              "Are you sure you want to unassign this employee?"
-                            );
+                          <button
+                            className="bg-red-600 px-3 py-1 text-white text-sm rounded w-full sm:w-auto"
+                            onClick={() => {
+                              const confirmDelete = window.confirm(
+                                "Are you sure you want to unassign this employee?"
+                              );
 
-                            if (!confirmDelete) return;
+                              if (!confirmDelete) return;
 
-                            deleteDept(emp.id, selectedDept.department_id);
-                          }}
-                        >
-                          Unassign
-                        </button>
+                              deleteDept(emp.id, selectedDept.department_id);
+                            }}
+                          >
+                            Unassign
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

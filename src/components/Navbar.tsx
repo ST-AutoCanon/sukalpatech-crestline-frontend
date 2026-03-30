@@ -69,8 +69,10 @@ export default function ResponsiveNavbar() {
         </div>
 
         {/* Mobile Menu */}
-        {isOpen && (
-          <div className="md:hidden bg-slate-900 px-4 pb-6 pt-4 space-y-4 animate-slideDown">
+        {/* {isOpen && (
+          <div className="md:hidden bg-slate-900 px-4 pb-6 pt-4 space-y-4 animate-slideDown"> */}
+          {isOpen && (
+  <div className="fixed top-16 left-0 w-full h-[calc(100vh-4rem)] bg-slate-900 z-40 px-4 py-6 space-y-4 animate-slideDown overflow-y-auto">
             {navLinks.map((link) => (
               <a
                 key={link.name}

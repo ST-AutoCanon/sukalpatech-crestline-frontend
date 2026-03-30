@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { api } from "../../../api/businessApi";
-import ViewTwoWheeler from "../TwoWheeler/ViewTwoWheelerpage"; // Card component for 2W BRs
-import TwoWheelerHome from "./TwoWheelerHome"; // Modal form for creating 2W BRs
+import { api } from "../../../../api/businessApi";
+import ViewTwoWheeler from "../Business/ViewTwoWheelerpage"; // Card component for 2W BRs
+import TwoWheelerHome from "../Business/TwoWheelerHome"; // Modal form for creating 2W BRs
 
 const TwoWheelerFeasibility: React.FC = () => {
   const [prs, setPrs] = useState<any[]>([]);

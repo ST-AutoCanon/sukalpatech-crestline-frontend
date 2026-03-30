@@ -1,7 +1,7 @@
 // UpdatedThreeWheelerRequests.tsx
 import React, { useEffect, useState } from "react";
-import ThreeWheelerCard from "./ThreeWheelerCard"; // <-- import your card component here
-import { api } from "../../../api/businessApi";
+import ThreeWheelerCard from "../Business/ThreeWheelerCard"; // <-- import your card component here
+import { api } from "../../../../api/businessApi";
 
 interface Props {
   onBack: () => void;
@@ -51,11 +51,12 @@ const UpdatedThreeWheelerRequests: React.FC<Props> = ({ onBack }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8 space-y-4">
           {data
             ?.filter((item) => item && item.id) // ✅ remove bad items
-            .map((item) => (
+            .map((item,index) => (
               <ThreeWheelerCard
                 key={item.id}
                 data={item}
                 mode="update"
+                cardIndex={index} 
                 onUpdate={(updatedItem) => {
                   if (!updatedItem?.id) return; // ✅ safety
 

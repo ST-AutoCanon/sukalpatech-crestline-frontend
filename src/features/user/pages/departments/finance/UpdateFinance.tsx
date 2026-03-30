@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useMemo, type ReactNode } from "react"
 import axios from "axios";
 import Alert from "../../../components/Aleartmessage";
 import { AuthContext } from "../../../../../context/AuthContext";
+import { Upload } from "lucide-react";
 
 /* ================= TYPES ================= */
 
@@ -678,19 +679,28 @@ export default function SubmittedFinanceRequestsPage() {
 
                 {/* Payment Proof Upload */}
                 <div className="sm:col-span-3">
-                  <label className="text-xs font-medium">
+                  <label className="text-xs font-medium block mb-1">
                     Upload Payment Proof
                   </label>
-                  <input
-                    type="file"
-                    onChange={(e) =>
-                      setFinance({
-                        ...finance,
-                        paymentProof: e.target.files?.[0],
-                      })
-                    }
-                    className="border p-2 rounded w-full bg-white"
-                  />
+
+                  <label className="flex items-center gap-2 border p-2 rounded w-full bg-white cursor-pointer hover:bg-gray-50">
+                    <Upload size={18} className="text-blue-600" />
+
+                    <span className="text-sm text-gray-700 truncate">
+                      {finance.paymentProof?.name || "Choose file"}
+                    </span>
+
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={(e) =>
+                        setFinance({
+                          ...finance,
+                          paymentProof: e.target.files?.[0],
+                        })
+                      }
+                    />
+                  </label>
                 </div>
 
                 {/* Finance Comment */}
