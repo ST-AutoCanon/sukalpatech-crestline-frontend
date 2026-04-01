@@ -265,10 +265,10 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
-   cardIndex: number; 
+  cardIndex: number;
 }
 
-const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) => {
+const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...data });
@@ -280,6 +280,14 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  const [editChanges, setEditChanges] = useState<Partial<typeof formData>>({});
+
+  // When editing any field, track the changes
+  const handleEditChange = (key: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    setEditChanges((prev) => ({ ...prev, [key]: value }));
+  };
 
   useEffect(() => {
     if (showModal) {
@@ -359,7 +367,7 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
       <h3 className="text-purple-700 font-semibold text-sm mb-3">
-        GOLD ID: {cardIndex+1}
+        GOLD ID: {cardIndex + 1}
       </h3>
 
       {/* CARD */}
@@ -480,17 +488,12 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
                       {editMode ? (
                         <input
                           value={formData[f.key] || ""}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              [f.key]: e.target.value,
-                            }))
-                          }
-                          className="border rounded px-2 py-1 text-xs text-gray-900"
+                          onChange={(e) => handleEditChange(f.key, e.target.value)}
+                          className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
                         />
                       ) : (
-                        <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-gray-900">
-                          {render(data[f.key])}
+                        <span className="bg-white border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900">
+                          {render(formData[f.key])}
                         </span>
                       )}
                     </div>
@@ -573,7 +576,24 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
             {/* EDIT SAVE */}
             {editMode && (
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                {/* Cancel Button */}
+                <button
+                  onClick={() => {
+                    // Reset only fields changed during this edit session
+                    const resetData = { ...formData };
+                    Object.keys(editChanges).forEach((key) => {
+                      resetData[key as keyof typeof resetData] = data[key as keyof typeof data];
+                    });
+                    setFormData(resetData);
+                    setEditChanges({}); // clear the session changes
+                  }}
+                  className="bg-white border border-gray-300 text-gray-800 px-5 py-2 rounded text-sm hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+
+                {/* Save Button */}
                 <button
                   onClick={updateGold}
                   className="bg-purple-700 text-white px-5 py-2 rounded text-sm"

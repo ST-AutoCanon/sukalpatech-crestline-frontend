@@ -196,7 +196,7 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
     return new Date(date).toLocaleDateString("en-GB"); // DD/MM/YYYY
   };
 
-  
+
 
   /* ================= API ================= */
   // const fetchApprovedRequests = async () => {
@@ -222,50 +222,50 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
   //   setRequests(res.data.data || []);
   // };
 
- const getLatestStatus = (pr: FinancePR) => {
-  return (
-    pr.department_statuses?.[
-      pr.department_statuses.length - 1
-    ]?.department_status?.toUpperCase() || ""
-  );
-};
+  const getLatestStatus = (pr: FinancePR) => {
+    return (
+      pr.department_statuses?.[
+        pr.department_statuses.length - 1
+      ]?.department_status?.toUpperCase() || ""
+    );
+  };
 
-const fetchApprovedRequests = async () => {
-  try {
-    const url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
+  const fetchApprovedRequests = async () => {
+    try {
+      const url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
-    const res = await axios.get(url, {
-      withCredentials: true,
-    });
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
 
-    let data: FinancePR[] = res.data.data || [];
+      let data: FinancePR[] = res.data.data || [];
 
-    // ✅ Filter based on LATEST status only
-    data = data.filter((pr) => {
-      const latestStatus = getLatestStatus(pr);
+      // ✅ Filter based on LATEST status only
+      data = data.filter((pr) => {
+        const latestStatus = getLatestStatus(pr);
 
-      if (status === "PENDING") {
-        return latestStatus.includes("PENDING");
-      }
+        if (status === "PENDING") {
+          return latestStatus.includes("PENDING");
+        }
 
-      if (status === "REJECTED") {
-        return latestStatus.includes("REJECTED");
-      }
+        if (status === "REJECTED") {
+          return latestStatus.includes("REJECTED");
+        }
 
-      if (status === "APPROVED") {
-        return latestStatus.includes("APPROVED"); 
-        // or use === "STORE APPROVED" if strict needed
-      }
+        if (status === "APPROVED") {
+          return latestStatus.includes("APPROVED");
+          // or use === "STORE APPROVED" if strict needed
+        }
 
-      return true; // ALL
-    });
+        return true; // ALL
+      });
 
-    setRequests(data);
-  } catch (err) {
-    console.error("Fetch Finance Requests Error:", err);
-    setRequests([]);
-  }
-};
+      setRequests(data);
+    } catch (err) {
+      console.error("Fetch Finance Requests Error:", err);
+      setRequests([]);
+    }
+  };
   useEffect(() => {
     fetchApprovedRequests();
   }, [status]);
@@ -295,8 +295,8 @@ const fetchApprovedRequests = async () => {
   sm:grid-cols-2
   md:grid-cols-3
   lg:grid-cols-4
-  gap-x-4
-  gap-y-8
+  gap-x-6
+  gap-y-7
 "
       >
         {requests.map((pr) => (
@@ -495,71 +495,38 @@ const fetchApprovedRequests = async () => {
                                 className="bg-white border rounded px-2 py-1 text-sm"
                               /> */}
                               {/* 2️⃣ Upload Quotation */}
-                              <div className="w-full">
+                              <div>
                                 {(() => {
-                                  const attachment = vendor.attachments?.[0];
+                                  const validAttachment = vendor.attachments?.find(
+                                    (att: any) =>
+                                      (att.file_path && att.file_path.trim() !== "") || att.fileObject
+                                  );
 
-                                  // ✅ EDIT MODE
-                                  // if (editMode) {
-                                  //   return (
-                                  //     <label className="w-full border border-blue-400 rounded px-2 py-1 bg-white cursor-pointer block">
-                                  //       <span className="block truncate text-sm text-gray-700">
-                                  //         {attachment?.file_name || "Upload File"}
-                                  //       </span>
+                                  if (!validAttachment) {
+                                    return (
+                                      <input
+                                        readOnly
+                                        value="No file"
+                                        className="border rounded px-2 py-1 bg-gray-100 text-xs sm:text-sm w-full"
+                                      />
+                                    );
+                                  }
 
-                                  //       <input
-                                  //         type="file"
-                                  //         className="hidden"
-                                  //         onChange={(e) => {
-                                  //           const file = e.target.files?.[0];
-                                  //           if (!file) return;
-
-                                  //           const updatedItems = [...activePR.items];
-
-                                  //           updatedItems[itemIndex].vendors[vendorIndex] = {
-                                  //             ...updatedItems[itemIndex].vendors[vendorIndex],
-                                  //             attachments: [
-                                  //               {
-                                  //                 id: Date.now(),
-                                  //                 file_name: file.name,
-                                  //                 file_path: "",
-                                  //                 uploaded_by: 0,
-                                  //                 uploaded_at: new Date().toISOString(),
-                                  //                 fileObject: file,
-                                  //               },
-                                  //             ],
-                                  //           };
-
-                                  //           setActivePR({ ...activePR, items: updatedItems });
-                                  //         }}
-                                  //       />
-                                  //     </label>
-                                  //   );
-                                  // }
-
-                                  // ✅ VIEW MODE
-                                  const validAttachment =
-                                    attachment?.file_path && attachment.file_path.trim() !== "";
+                                  // Determine file URL
+                                  const fileUrl = validAttachment.fileObject
+                                    ? validAttachment.file_path // local preview (URL.createObjectURL)
+                                    : `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`;
 
                                   return (
-                                    <div className="w-full border rounded px-2 py-1 bg-gray-100">
-                                      {validAttachment ? (
-                                        <a
-                                          href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${attachment.file_path}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 underline text-sm block truncate"
-                                        >
-                                          {attachment.file_name}
-                                        </a>
-                                      ) : (
-                                        <span className="text-gray-400 text-sm">No file</span>
-                                      )}
-                                    </div>
+                                    <input
+                                      type="text"
+                                      value={validAttachment.file_name || "View File"}
+                                      onClick={() => window.open(fileUrl, "_blank")}
+                                      className="border rounded px-2 py-1 bg-white text-xs sm:text-sm w-full cursor-pointer text-blue-600 underline"
+                                    />
                                   );
                                 })()}
                               </div>
-
                               {/* 3️⃣ Unit Price */}
                               <input
                                 readOnly

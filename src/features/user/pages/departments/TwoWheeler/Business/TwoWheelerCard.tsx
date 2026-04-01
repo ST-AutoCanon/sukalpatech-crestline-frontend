@@ -342,7 +342,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate,card
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow p-3 w-full sm:w-[360px] md:w-[400px] m-2 flex flex-col justify-between">
+    <div className="bg-white rounded-xl shadow p-3 w-full flex flex-col justify-between">
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
 <h3 className="text-purple-700 font-semibold text-sm mb-3">
@@ -350,7 +350,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate,card
 </h3>
       <div className="flex flex-col gap-1">
         {cardFields.map(([label, value]) => (
-          <div key={label} className="flex">
+          <div key={label} className="flex justify-between items-center">
             <span className="w-32 shrink-0 text-gray-400 text-sm">{label}:</span>
             <span className="font-medium text-gray-700 text-sm truncate">{render(value)}</span>
           </div>
@@ -359,7 +359,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate,card
 
       {mode === "update" && (
         <button onClick={openModal} className="mt-3 text-blue-600 underline text-sm self-start">
-          Update Final Status
+          Update 
         </button>
       )}
 

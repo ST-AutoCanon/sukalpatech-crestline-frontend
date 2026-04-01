@@ -97,7 +97,7 @@ const ThreeWheelerList = ({ refresh, filter }: Props) => {
   if (!requests.length) return <div className="text-white">No requests found.</div>;
 
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {requests.map((req,i) => (
         <ViewThreeWheeler key={req.id} data={req} cardIndex={i}  />
       ))}

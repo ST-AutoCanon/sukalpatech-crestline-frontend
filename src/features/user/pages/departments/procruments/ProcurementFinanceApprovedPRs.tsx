@@ -531,71 +531,38 @@ export default function SubmittedFinanceRequestsPage() {
                               readOnly
                               className="bg-white border rounded px-2 py-1 text-sm"
                             /> */}
-                              <div className="w-full">
+                              <div>
                                 {(() => {
-                                  const attachment = vendor.attachments?.[0];
+                                  const validAttachment = vendor.attachments?.find(
+                                    (att: any) =>
+                                      (att.file_path && att.file_path.trim() !== "") || att.fileObject
+                                  );
 
-                                  // ✅ EDIT MODE
-                                  // if (editMode) {
-                                  //   return (
-                                  //     <label className="w-full border border-blue-400 rounded px-2 py-1 bg-white cursor-pointer block">
-                                  //       <span className="block truncate text-sm text-gray-700">
-                                  //         {attachment?.file_name || "Upload File"}
-                                  //       </span>
+                                  if (!validAttachment) {
+                                    return (
+                                      <input
+                                        readOnly
+                                        value="No file"
+                                        className="border rounded px-2 py-1 bg-gray-100 text-xs sm:text-sm w-full"
+                                      />
+                                    );
+                                  }
 
-                                  //       <input
-                                  //         type="file"
-                                  //         className="hidden"
-                                  //         onChange={(e) => {
-                                  //           const file = e.target.files?.[0];
-                                  //           if (!file) return;
-
-                                  //           const updatedItems = [...activePR.items];
-
-                                  //           updatedItems[itemIndex].vendors[vendorIndex] = {
-                                  //             ...updatedItems[itemIndex].vendors[vendorIndex],
-                                  //             attachments: [
-                                  //               {
-                                  //                 id: Date.now(),
-                                  //                 file_name: file.name,
-                                  //                 file_path: "",
-                                  //                 uploaded_by: 0,
-                                  //                 uploaded_at: new Date().toISOString(),
-                                  //                 fileObject: file,
-                                  //               },
-                                  //             ],
-                                  //           };
-
-                                  //           setActivePR({ ...activePR, items: updatedItems });
-                                  //         }}
-                                  //       />
-                                  //     </label>
-                                  //   );
-                                  // }
-
-                                  // ✅ VIEW MODE
-                                  const validAttachment =
-                                    attachment?.file_path && attachment.file_path.trim() !== "";
+                                  // Determine file URL
+                                  const fileUrl = validAttachment.fileObject
+                                    ? validAttachment.file_path // local preview (URL.createObjectURL)
+                                    : `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`;
 
                                   return (
-                                    <div className="w-full border rounded px-2 py-1 bg-gray-100">
-                                      {validAttachment ? (
-                                        <a
-                                          href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${attachment.file_path}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 underline text-sm block truncate"
-                                        >
-                                          {attachment.file_name}
-                                        </a>
-                                      ) : (
-                                        <span className="text-gray-400 text-sm">No file</span>
-                                      )}
-                                    </div>
+                                    <input
+                                      type="text"
+                                      value={validAttachment.file_name || "View File"}
+                                      onClick={() => window.open(fileUrl, "_blank")}
+                                      className="border rounded px-2 py-1 bg-white text-xs sm:text-sm w-full cursor-pointer text-blue-600 underline"
+                                    />
                                   );
                                 })()}
                               </div>
-
 
 
                               {/* PR comment */}

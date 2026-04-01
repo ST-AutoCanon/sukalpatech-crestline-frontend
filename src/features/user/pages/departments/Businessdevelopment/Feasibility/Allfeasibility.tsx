@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { api } from "../../../../api/businessApi";
 import ALeart from "../../../../components/Aleartmessage";
+import { AuthContext } from "../../../../../../context/AuthContext";
+import WorkflowBuilder from "../Feasibility/workflow/WorkflowBuilder";
 
 interface FeasibilityCardProps {
   data: any;
   mode: "all" | "update" | "bd-update";
- 
   onUpdate: (updated: any) => void;
 
 }
@@ -36,6 +37,9 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   );
   const [finalStatus, setfinalStatus] = useState("");
   const [finalComments, setfinalComments] = useState("");
+
+   const [workflow, setWorkflow] = useState([]);
+  const [projectId, setProjectId] = useState<number | null>(null);
 
   const renderValue = (value: any) =>
     value === null || value === undefined || value === ""
@@ -90,6 +94,145 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
 
     return `${month}/${day}/${year}`; // MM/DD/YYYY
   };
+    const { user } = useContext(AuthContext);
+
+      // ================= FETCH PROJECT FROM BD =================
+  useEffect(() => {
+    const fetchProject = async () => {
+      console.log("🚀 Fetching project for BD ID:", data?.id);
+
+      try {
+        const res = await api.get(`/project/by-bd/${data.id}`, {
+          withCredentials: true,
+        });
+
+        console.log("✅ PROJECT RESPONSE:", res.data);
+
+        const project = res.data.data;
+
+        if (project) {
+          console.log("🎯 Project ID FOUND:", project.id);
+          setProjectId(project.id);
+        } else {
+          console.log("⚠️ No project found for this BD");
+          setProjectId(null);
+        }
+      } catch (err: any) {
+        console.error("❌ ERROR FETCHING PROJECT:", err?.response || err);
+        setProjectId(null);
+      }
+    };
+
+    if (data?.id) {
+      fetchProject();
+    }
+  }, [data]);
+
+    // ================= FETCH WORKFLOW =================
+  useEffect(() => {
+    if (!projectId) {
+      console.log("⛔ No projectId, skipping workflow fetch");
+      return;
+    }
+
+    const fetchWorkflow = async () => {
+      console.log("🚀 Fetching workflow for projectId:", projectId);
+
+      try {
+        const res = await api.get(`/project/${projectId}/workflow`, {
+          withCredentials: true,
+        });
+
+        console.log("✅ WORKFLOW RESPONSE:", res.data);
+
+        const formatted = res.data.data
+          .sort((a: any, b: any) => a.sequence - b.sequence)
+          .map((item: any) => ({
+            id: item.id.toString(),
+            department: item.department,
+          }));
+
+        console.log("🎯 FORMATTED WORKFLOW:", formatted);
+
+        setWorkflow(formatted);
+      } catch (err: any) {
+        console.error("❌ ERROR FETCHING WORKFLOW:", err?.response || err);
+      }
+    };
+
+    fetchWorkflow();
+  }, [projectId]);
+
+  const handleAssignProject = async () => {
+    try {
+      console.log("🚀 Assigning project for BD:", data.id);
+
+      const res = await api.post(
+        "/project/assign",
+        {
+          bd_request_id: data.id,
+          description: data.description,
+          required_date: data.required_date,
+          assigned_by: user.first_name,
+        },
+        { withCredentials: true },
+      );
+
+      console.log("✅ PROJECT CREATED:", res.data);
+
+      const createdProject = res.data.data;
+
+      setProjectId(createdProject.id);
+
+      setAlert({
+        type: "success",
+        message: "Project assigned successfully!",
+      });
+    } catch (err: any) {
+      console.error("❌ ASSIGN PROJECT ERROR:", err?.response || err);
+
+      setAlert({
+        type: "error",
+        message: err.response?.data?.message || "Assignment failed",
+      });
+    }
+  };
+  const handleSaveWorkflow = async () => {
+    // 🚨 IMPORTANT CHECK
+    if (!projectId) {
+      setAlert({
+        type: "error",
+        message: "Please assign project first!",
+      });
+      return;
+    }
+
+    try {
+      await api.put(
+        `/project/${projectId}/workflow`, // ✅ correct ID
+        {
+          workflow: workflow.map((item, index) => ({
+            department: item.department,
+            sequence: index + 1,
+          })),
+        },
+        { withCredentials: true },
+      );
+
+      setAlert({
+        type: "success",
+        message: "Workflow saved successfully!",
+      });
+    } catch (err: any) {
+      console.error(err);
+
+      setAlert({
+        type: "error",
+        message: err.response?.data?.message || "Failed to save workflow",
+      });
+    }
+  };
+
 
   // Handle Feasibility update
   const handleFeasibilityUpdate = async () => {
@@ -243,6 +386,8 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
       </label>
     );
   };
+  const INPUT_CLASS =
+  "w-full h-[42px] px-3 border rounded text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-400";
 
 
 
@@ -306,15 +451,16 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                 fields: [
                   {
                     label: "Description",
-                    value:
-                      data.description || data.description_request || "-",
+                    value: data.description || data.description_request || "-",
                   },
-                  { label: "Priority", value: data.priority || data.priority_level || "-" },
+                  {
+                    label: "Priority",
+                    value: data.priority || data.priority_level || "-",
+                  },
                   {
                     label: "Required Date",
                     value: formatDate(data.required_date || data.required_by),
                   },
-
                 ],
               },
               {
@@ -331,7 +477,10 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
               {
                 title: "Body / Chassis Details",
                 fields: [
-                  { label: "Chassis Manufacturer", value: data.chassis_manufacturer },
+                  {
+                    label: "Chassis Manufacturer",
+                    value: data.chassis_manufacturer,
+                  },
                   { label: "Chassis Model", value: data.chassis_model },
                   { label: "Chassis Number", value: data.chassis_number },
                   { label: "Engine Number", value: data.engine_number },
@@ -365,9 +514,8 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                     value: (
                       <div className="flex flex-wrap gap-2">
                         {ADDITIONAL_FEATURES.map((f) =>
-                          renderCheckbox(!!data[f.key], f.label)
+                          renderCheckbox(!!data[f.key], f.label),
                         )}
-
                       </div>
                     ),
                   },
@@ -381,9 +529,8 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                     value: (
                       <div className="flex flex-wrap gap-2">
                         {COMPLIANCE_STANDARDS.map((f) =>
-                          renderCheckbox(!!data[f.key], f.label)
+                          renderCheckbox(!!data[f.key], f.label),
                         )}
-
                       </div>
                     ),
                   },
@@ -392,68 +539,13 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
               {
                 title: "Timeline & Budget",
                 fields: [
-                  { label: "Expected Delivery", value: formatDate(data.expected_delivery) },
-                  { label: "Approximate Budget", value: data.approximate_budget },
-                ],
-              },
-              {
-                title: "Attachments",
-                fields: [
                   {
-                    label: "Attachments",
-                    value: (
-                      <div className="flex flex-col gap-2">
-                        {Array.isArray(data.attachments) && data.attachments.length > 0 ? (
-                          data.attachments.map((file: any, idx: number) => {
-                            const fileName =
-                              typeof file === "string"
-                                ? file.split("/").pop()
-                                : file.originalname ||
-                                file.filename ||
-                                file.name ||
-                                "Attachment";
-
-                            return (
-                              <span
-                                key={idx}
-                                className="text-xs text-blue-600 underline cursor-pointer"
-                                onClick={() => {
-                                  if (!file) return;
-
-                                  let url = "";
-
-                                  // ✅ NEW FILE (File object)
-                                  if (file instanceof File) {
-                                    url = URL.createObjectURL(file);
-                                  }
-
-                                  // ✅ If backend file path exists
-                                  else if (file.file_path) {
-                                    url = `${import.meta.env.VITE_BACKEND_URL}${file.file_path}`;
-                                  }
-
-                                  // ✅ fallback (OLD DATA)
-                                  else if (file.filename) {
-                                    url = `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${file.filename}`;
-                                  }
-
-                                  if (!url) {
-                                    console.error("Invalid file URL", file);
-                                    return;
-                                  }
-
-                                  window.open(url, "_blank");
-                                }}
-                              >
-                                {fileName}
-                              </span>
-                            );
-                          })
-                        ) : (
-                          <span className="text-xs text-gray-500">No files uploaded</span>
-                        )}
-                      </div>
-                    ),
+                    label: "Expected Delivery",
+                    value: formatDate(data.expected_delivery),
+                  },
+                  {
+                    label: "Approximate Budget",
+                    value: data.approximate_budget,
                   },
                 ],
               },
@@ -466,7 +558,9 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* BD Status */}
                         <div>
-                          <span className="text-gray-600 text-xs">BD Status</span>
+                          <span className="text-gray-600 text-xs">
+                            BD Status
+                          </span>
                           <div className="font-semibold text-black">
                             {renderValue(data.bd_status)}
                           </div>
@@ -474,27 +568,37 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
 
                         {/* BD Comments */}
                         <div>
-                          <span className="text-gray-600 text-xs">BD Comments</span>
+                          <span className="text-gray-600 text-xs">
+                            BD Comments
+                          </span>
                           <div className="font-semibold text-black">
                             {renderValue(data.bd_comments)}
                           </div>
                         </div>
 
-
-
                         {/* Feasibility Status */}
                         <div className="flex flex-col gap-1">
-                          <span className="text-gray-600 text-xs">Feasibility Status</span>
+                          <span className="text-gray-600 text-xs">
+                            Feasibility Status
+                          </span>
                           {mode === "update" ? (
                             <select
                               value={feasibility_status}
-                              onChange={(e) => setFeasibilityStatus(e.target.value)}
+                              onChange={(e) =>
+                                setFeasibilityStatus(e.target.value)
+                              }
                               className="w-full h-[38px] p-2 border rounded text-xs"
                             >
                               <option value="">Select</option>
-                              <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
-                              <option value="FEASIBILITY PENDING">FEASIBILITY PENDING</option>
-                              <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
+                              <option value="FEASIBILITY APPROVED">
+                                FEASIBILITY APPROVED
+                              </option>
+                              <option value="FEASIBILITY PENDING">
+                                FEASIBILITY PENDING
+                              </option>
+                              <option value="FEASIBILITY REJECTED">
+                                FEASIBILITY REJECTED
+                              </option>
                             </select>
                           ) : (
                             <div className="h-[38px] flex items-center font-semibold text-black">
@@ -507,11 +611,15 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
 
                         {/* Feasibility Comments */}
                         <div className="flex flex-col gap-1">
-                          <span className="text-gray-600 text-xs">Feasibility Comments</span>
+                          <span className="text-gray-600 text-xs">
+                            Feasibility Comments
+                          </span>
                           {mode === "update" ? (
                             <textarea
                               value={feasibility_comments}
-                              onChange={(e) => setFeasibilityComments(e.target.value)}
+                              onChange={(e) =>
+                                setFeasibilityComments(e.target.value)
+                              }
                               className="w-full h-[38px] p-2 border rounded text-xs resize-none"
                             />
                           ) : (
@@ -541,7 +649,6 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                 ],
               },
 
-
               {
                 title: "Declaration",
                 fields: [
@@ -549,7 +656,6 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                     label: "",
                     value: (
                       <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-
                         <div className="flex flex-col">
                           <span className="text-gray-600 text-xs font-medium">
                             Declaration Date
@@ -594,13 +700,11 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                             {formatDate(data.created_at)}
                           </span>
                         </div>
-
                       </div>
                     ),
                   },
                 ],
               },
-
             ].map((section) => (
               <div
                 key={section.title}
@@ -618,9 +722,13 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
                   {section.fields.map((f) => (
                     <div key={f.label} className="flex flex-col">
-                      <span className="text-gray-600 text-xs font-medium">{f.label}</span>
+                      <span className="text-gray-600 text-xs font-medium">
+                        {f.label}
+                      </span>
                       <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">
-                        {React.isValidElement(f.value) ? f.value : renderValue(f.value)}
+                        {React.isValidElement(f.value)
+                          ? f.value
+                          : renderValue(f.value)}
                       </span>
                     </div>
                   ))}
@@ -675,9 +783,43 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                 </div>
               </>
             )}
+            {mode === "bd-update" && (
+              <>
+                {/* ================= WORKFLOW BUILDER ================= */}
+                {/* ASSIGN PROJECT FIRST */}
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={handleAssignProject}
+                    className="bg-green-600 text-white px-4 py-2 rounded text-sm sm:text-base"
+                  >
+                    Assign Project
+                  </button>
+                </div>
 
+                {/* WORKFLOW BUILDER */}
+                <div className="bg-white rounded-xl p-4 shadow mt-4">
+                  <h3 className="text-sm font-semibold mb-2">
+                    Project Workflow Sequence
+                  </h3>
 
+                  <WorkflowBuilder workflow={workflow} onChange={setWorkflow} />
 
+                  <div className="flex justify-end mt-3">
+                    <button
+                      onClick={handleSaveWorkflow}
+                      disabled={!projectId}
+                      className={`px-4 py-2 rounded text-sm text-white ${
+                        projectId
+                          ? "bg-blue-600"
+                          : "bg-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      Save Workflow
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
             {/* Close Button */}
             <button
               onClick={() => setShowModal(false)}
@@ -696,13 +838,12 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                   Update Feasibility
                 </button>
               </div>
-
             )}
           </div>
         </div>
       )}
     </div>
   );
-};
+};;
 
 export default FeasibilityCard;

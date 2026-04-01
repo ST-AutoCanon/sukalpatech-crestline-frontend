@@ -932,70 +932,96 @@ const handleSave = async () => {
                                   {vendor.attachments?.[0]?.file_name || "No file uploaded"}
                                 </label>
  */}
-                                <div className="w-full">
-                                  {(() => {
-                                    const attachment = vendor.attachments?.[0];
+                               <div>
 
-                                    // ✅ EDIT MODE
-                                    if (editMode) {
-                                      return (
-                                        <label className="w-full border border-blue-400 rounded px-2 py-1 bg-white cursor-pointer block">
-                                          <span className="block truncate text-sm text-gray-700">
-                                            {attachment?.file_name || "Upload File"}
-                                          </span>
+                                    <label
+                                      className={`w-full border rounded px-2 py-1 text-sm flex items-center overflow-hidden ${editMode
+                                        ? "cursor-pointer border-blue-400 bg-white"
+                                        : "bg-gray-100 text-gray-600"
+                                        }`}
+                                    >
+                                      {/* <span
+                                        className="truncate w-full block text-blue-600 underline cursor-pointer"
+                                        onClick={() => {
+                                          if (!vendor.attachments?.[0]) return;
 
-                                          <input
-                                            type="file"
-                                            className="hidden"
-                                            onChange={(e) => {
-                                              const file = e.target.files?.[0];
-                                              if (!file) return;
+                                          const file = vendor.attachments[0];
 
-                                              const updatedItems = [...activePR.items];
+                                          let fileUrl = "";
 
-                                              updatedItems[itemIndex].vendors[vendorIndex] = {
-                                                ...updatedItems[itemIndex].vendors[vendorIndex],
-                                                attachments: [
-                                                  {
-                                                    id: Date.now(),
-                                                    file_name: file.name,
-                                                    file_path: "",
-                                                    uploaded_by: 0,
-                                                    uploaded_at: new Date().toISOString(),
-                                                    fileObject: file,
-                                                  },
-                                                ],
-                                              };
+                                          // ✅ If new file (local preview)
+                                          if (file.fileObject) {
+                                            fileUrl = URL.createObjectURL(file.fileObject);
+                                          }
+                                          // ✅ If saved file (from backend)
+                                          else if (file.file_path) {
+                                            fileUrl = `${import.meta.env.VITE_BACKEND_URL}/uploads/${file.file_path}`;
+                                          }
 
-                                              setActivePR({ ...activePR, items: updatedItems });
-                                            }}
-                                          />
-                                        </label>
-                                      );
-                                    }
+                                          if (fileUrl) {
+                                            window.open(fileUrl, "_blank");
+                                          }
+                                        }}
+                                      >
+                                        {vendor.attachments?.[0]?.file_name || "No file uploaded"}
+                                      </span> */}
+                                      {(() => {
+                                        const validAttachment = vendor.attachments?.find(
+                                          (att: any) =>
+                                            (att.file_path && att.file_path.trim() !== "") || att.fileObject
+                                        );
 
-                                    // ✅ VIEW MODE
-                                    const validAttachment =
-                                      attachment?.file_path && attachment.file_path.trim() !== "";
+                                        if (!validAttachment) {
+                                          return <span className="text-gray-400 text-sm">No file</span>;
+                                        }
 
-                                    return (
-                                      <div className="w-full border rounded px-2 py-1 bg-gray-100">
-                                        {validAttachment ? (
+                                        const fileUrl = validAttachment.fileObject
+                                          ? validAttachment.file_path // local preview (URL.createObjectURL)
+                                          : `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`;
+
+                                        return (
                                           <a
-                                            href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${attachment.file_path}`}
+                                            href={fileUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-blue-600 underline text-sm block truncate"
+                                            className="text-blue-600 underline text-sm truncate block"
                                           >
-                                            {attachment.file_name}
+                                            {validAttachment.file_name || "View File"}
                                           </a>
-                                        ) : (
-                                          <span className="text-gray-400 text-sm">No file</span>
-                                        )}
-                                      </div>
-                                    );
-                                  })()}
-                                </div>
+                                        );
+                                      })()}
+
+
+                                      {editMode && (
+                                        <input
+                                          type="file"
+                                          className="hidden"
+                                          onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+
+                                            const updatedItems = [...activePR.items];
+
+                                            updatedItems[itemIndex].vendors[vendorIndex] = {
+                                              ...updatedItems[itemIndex].vendors[vendorIndex],
+                                              attachments: [
+                                                {
+                                                  id: Date.now(),
+                                                  file_name: file.name,
+                                                  file_path: URL.createObjectURL(file),
+                                                  uploaded_by: 0,
+                                                  uploaded_at: new Date().toISOString(),
+                                                  fileObject: file,
+                                                },
+                                              ],
+                                            };
+
+                                            setActivePR({ ...activePR, items: updatedItems });
+                                          }}
+                                        />
+                                      )}
+                                    </label>
+                                  </div>
 
 
 

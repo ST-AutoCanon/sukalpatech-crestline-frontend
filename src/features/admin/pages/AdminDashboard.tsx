@@ -25,6 +25,7 @@ export default function AdminDashboard() {
     Departments: <DepartmentPage />,
     EmployeeUpdate: <EmployeeUpdate />,
     CategoryLimit: <CategoryLimitPage />,  };
+     
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">

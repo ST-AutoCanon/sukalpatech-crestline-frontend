@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Aleart from "../../../../components/Aleartmessage";
+import { Minus, Plus } from "lucide-react";
 
 interface BusinessCardProps {
   data: {
@@ -73,6 +74,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState(data);
   const [originalData, setOriginalData] = useState(data);
+
+
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     message: string;
@@ -332,6 +335,20 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
     }
   };
 
+  const [expandedSections, setExpandedSections] = useState({
+    top: true,
+    bottom: true,
+  });
+
+  const toggleSection = (key: "top" | "bottom") => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+
+
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-sm relative">
@@ -407,11 +424,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
           >
 
 
-            <h2
-              className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 
-             bg-clip-text text-transparent text-2xl font-medium mb-4"
-            >
-              {editMode ? `Edit BR-${data.display_id || data.id} Full info` : `View BR-${data.display_id || data.id} Full info`}
+            <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
+            {editMode ? `Edit BR-${data.display_id} info` : `View BR-${data.display_id} info`}
             </h2>
             {/* Map all sections */}
             {[
@@ -468,7 +482,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                 title: "Additional Features",
                 fields: [
                   {
-                    label: "Features",
+
                     value: (
                       <div className="flex flex-wrap gap-3">
                         {ADDITIONAL_FEATURES.map(f =>
@@ -484,7 +498,6 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                 title: "Compliance & Standards",
                 fields: [
                   {
-                    label: "Standards",
                     value: (
                       <div className="flex flex-wrap gap-3">
                         {COMPLIANCE_STANDARDS.map(f =>
@@ -584,208 +597,138 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
 
                 ],
               },
-
-
+              {
+                title: "Declaration",
+                fields: [
+                  { label: "Declaration Date", value: renderEditableField("declaration_date", "date") },
+                  { label: "Place", value: renderEditableField("place") },
+                  { label: "Applicant Signature", value: renderEditableField("applicant_signature") },
+                  { label: "Requested By", value: renderEditableField("requested_by_person") },
+                  { label: "Created At", value: formatDate(data.created_at) }
+                ],
+              },
               {
                 title: "Department Status",
                 fields: [
                   {
                     label: "",
                     value: (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="space-y-2 mt-2">
 
                         {/* BD Status */}
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">BD Status</span>
-                          {editMode ? (
-                            <select
-                              value={formData.bd_status}
-                              onChange={(e) => handleChange("bd_status", e.target.value)}
-                              className={INPUT_CLASS}
-                            >
-                              <option value="PENDING">PENDING</option>
-                              <option value="SUBMITTED">SUBMITTED</option>
-                              <option value="APPROVED">APPROVED</option>
-                            </select>
-                          ) : (
-                            <span className="text-sm font-semibold">
-                              {renderValue(formData.bd_status)}
-                            </span>
-                          )}
+                        <div className="border rounded-md p-3 bg-gray-50 flex justify-between items-start">
+                          <div>
+                            <div className="text-gray-700 font-semibold mb-1">
+                              BD {formData.bd_status?.toUpperCase() || "-"}
+                            </div>
+                            <div className="text-gray-500">{formData.bd_comments || "-"}</div>
+                          </div>
+                          <div className="text-gray-400 text-sm text-right">
+                            {formData.applicant_name} • {formatDate(formData.created_at)}
+                          </div>
                         </div>
 
-                        {/* BD Comments */}
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">BD Comments</span>
-                          {editMode ? (
-                            <textarea
-                              value={formData.bd_comments || ""}
-                              onChange={(e) => handleChange("bd_comments", e.target.value)}
-                              className={INPUT_CLASS}
-                              rows={1} // adjust height
-                            />
-                          ) : (
-                            <span className="text-sm font-semibold">
-                              {renderValue(formData.bd_comments)}
-                            </span>
-                          )}
+                        {/* Feasibility Status */}
+                        <div className="border rounded-md p-3 bg-gray-50 flex justify-between items-start">
+                          <div>
+                            <div className="text-gray-700 font-semibold mb-1">
+                              FEASIBILITY {formData.feasibility_status?.toUpperCase() || "-"}
+                            </div>
+                            <div className="text-gray-500">{formData.feasibility_comments || "-"}</div>
+                          </div>
+                          <div className="text-gray-400 text-sm text-right">
+                            {formData.requested_by_person} • {formatDate(formData.created_at)}
+                          </div>
                         </div>
-
-                        {/* ❌ Hide in edit mode */}
-                        {!editMode && (
-                          <>
-                            {/* Feasibility Status */}
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium">Feasibility Status</span>
-                              <span className="text-sm font-semibold">
-                                {renderValue(formData.feasibility_status, "feasibility_status")}
-                              </span>
-                            </div>
-
-                            {/* Feasibility Comments */}
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium">Feasibility Comments</span>
-                              <span className="text-sm font-semibold">
-                                {renderValue(formData.feasibility_comments)}
-                              </span>
-                            </div>
-
-                            {/* Final BD Status */}
-                            {/* <div className="flex flex-col">
-                              <span className="text-sm font-medium">Final BD Status</span>
-                              <span className="text-sm font-semibold">
-                                {renderValue(formData.finalbd_status)}
-                              </span>
-                            </div> */}
-
-                            {/* Final BD Comments */}
-                            {/* <div className="flex flex-col">
-                              <span className="text-sm font-medium">Final BD Comments</span>
-                              <span className="text-sm font-semibold">
-                                {renderValue(formData.finalbd_comment)}
-                              </span>
-                            </div> */}
-                          </>
-                        )}
 
                       </div>
                     ),
                   },
                 ],
-              },
-              {
-                title: "Declaration",
-                fields: [
-                  {
-                    label: "",
-                    value: (
-                      <div className="grid grid-cols-5 gap-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">Declaration Date</span>
-                          {editMode ? (
-                            <input
-                              type="date"
-                              value={toDateInputValue(formData.declaration_date)}
-                              onChange={(e) =>
-                                handleChange("declaration_date", e.target.value)
-                              }
-                              className={INPUT_CLASS}
-                            />
+              }
+            ].map((section, index) => {
+              const isTopToggle = section.title === "Applicant / Organization Details";
+              const isBottomToggle = section.title === "Department Status";
 
-                          ) : (
-                            <span className="text-sm font-semibold">
-                              {formatDate(formData.declaration_date)}
-                            </span>
-                          )}
-                        </div>
+              // ✅ TOP collapse logic (hide only middle sections BUT keep toggle visible)
+              if (!expandedSections.top && index > 0 && !isTopToggle && !isBottomToggle) {
+                return null;
+              }
 
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">Place</span>
-                          {editMode ? (
-                            <input
-                              type="text"
-                              value={formData.place || ""}
-                              onChange={(e) => handleChange("place", e.target.value)}
-                              className={INPUT_CLASS}
-                            />
-                          ) : (
-                            <span className="text-sm font-semibold">
-                              {renderValue(formData.place)}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">Applicant Signature</span>
-                          {editMode ? (
-                            <input
-                              type="text"
-                              value={formData.applicant_signature || ""}
-                              onChange={(e) =>
-                                handleChange("applicant_signature", e.target.value)
-                              }
-                              className={INPUT_CLASS}
-                            />
-                          ) : (
-                            <span className="text-sm font-semibold">
-                              {renderValue(formData.applicant_signature)}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">Requested By</span>
-                          {editMode ? (
-                            <input
-                              type="text"
-                              value={formData.requested_by_person || ""}
-                              onChange={(e) => handleChange("requested_by_person", e.target.value)}
-                              className={INPUT_CLASS}
-                            />
-                          ) : (
-                            <span className="text-sm font-semibold">
-                              {renderValue(formData.requested_by_person)}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">Created At</span>
-                          <span className="text-sm font-semibold">
-                            {formatDate(formData.created_at)}
-                          </span>
-                        </div>
-
-
-                      </div>
-                    ),
-                  },
-                ],
-              },
-            ].map(section => (
-              <div key={section.title} className="bg-gray-100
-    rounded-xl
-    p-4 sm:p-5
-    shadow
-    flex flex-col
-    gap-3
-  ">
-                <h3 className="text-gray-900 text-sm font-semibold  pb-1">{section.title}</h3>
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2">
-                  {section.fields.map(f => (
-                    <div key={f.label} className="flex flex-col">
-                      <span className="text-gray-600 text-sm font-medium">{f.label}</span>
-                      {React.isValidElement(f.value) ? (
-                        f.value
-                      ) : (
-                        <div className="bg-white border rounded px-2 py-1 text-sm font-semibold text-black">
-                          {renderValue(f.value)}
-                        </div>
-                      )}
+              // ✅ BOTTOM collapse logic (hide only department section BUT keep toggle visible)
+              if (!expandedSections.bottom && isBottomToggle) {
+                return (
+                  <div key={section.title}>
+                    {/* KEEP BUTTON VISIBLE */}
+                    <div className="flex justify-end mb-2">
+                     <button
+                      onClick={() => toggleSection("bottom")}
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded flex items-center"
+                    >
+                        +
+                      </button>
                     </div>
-                  ))}
+                  </div>
+                );
+              }
+
+              return (
+                <div key={section.title}>
+
+                  {/* 🔹 TOP TOGGLE (after Request Details) */}
+                 {section.title === "Applicant / Organization Details" && (
+  <div className="flex justify-end mb-2">
+    <button
+      onClick={() => toggleSection("top")}
+      className="bg-gradient-to-r from-blue-500 to-purple-500 text-white w-8 h-8 flex items-center justify-center rounded"
+    >
+      {expandedSections.top ? <Minus size={16} /> : <Plus size={16} />}
+    </button>
+  </div>
+)}
+
+                  {/* 🔹 BOTTOM TOGGLE (before Department Status) */}
+                  {section.title === "Department Status" && (
+  <div className="flex justify-end mb-2">
+    <button
+      onClick={() => toggleSection("bottom")}
+      className="bg-gradient-to-r from-blue-500 to-purple-500 text-white w-8 h-8 flex items-center justify-center rounded"
+    >
+      {expandedSections.bottom ? <Minus size={16} /> : <Plus size={16} />}
+    </button>
+  </div>
+)}
+                  {/* 🔹 SECTION CARD */}
+                  <div
+                    className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3"
+                  >
+                    <h3 className="text-gray-900 text-sm font-semibold pb-1">
+                      {section.title}
+                    </h3>
+
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2">
+                      {section.fields.map((f, i) => (
+                        <div key={i} className="flex flex-col">
+                          {f.label && (
+                            <span className="text-gray-900 text-sm font-medium">
+                              {f.label}
+                            </span>
+                          )}
+
+                          {React.isValidElement(f.value) ? (
+                            f.value
+                          ) : (
+                            <div className="bg-white border rounded px-2 py-1 text-sm font-semibold text-black">
+                              {renderValue(f.value)}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {editMode && (
               <div className="flex justify-end gap-3">
                 <button

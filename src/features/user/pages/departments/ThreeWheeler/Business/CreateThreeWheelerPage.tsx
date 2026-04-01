@@ -1,24 +1,21 @@
-
 // import { useState, useEffect } from "react";
 // import axios from "axios";
-// import Alert from "../../../components/Aleartmessage";
+// import Alert from "../../../../components/Aleartmessage";
 // import { useNavigate } from "react-router-dom";
 
-// type ApiResponse<T = any> = {
-//   success: boolean;
-//   message: string;
-//   data?: T;
-// };
-
-
-// interface ThreeWheelerModalProps {
+// interface Props {
 //   onClose: () => void;
 //   onSuccess: () => void;
 // }
 
-
-// const ThreeWheelerPage: React.FC<ThreeWheelerModalProps> = ({ onClose, onSuccess }) => {
+// export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
 //   const navigate = useNavigate();
+
+//   const [openSection, setOpenSection] = useState("business");
+
+//   const toggleSection = (section: string) => {
+//     setOpenSection(openSection === section ? "" : section);
+//   };
 
 //   const [formData, setFormData] = useState({
 //     company_name: "",
@@ -37,31 +34,25 @@
 //   });
 
 //   const [loading, setLoading] = useState(false);
-//   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+//   const [alert, setAlert] = useState<any>(null);
 
-//   // Check login
 //   useEffect(() => {
 //     const token = localStorage.getItem("token");
 //     if (!token) {
-//       window.alert("Please login first!");
+//       alert("Please login first!");
 //       navigate("/login");
 //     }
-//   }, [navigate]);
+//   }, []);
 
-//   const handleChange = (
-//     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-//   ) => {
+//   const handleChange = (e: any) => {
 //     setFormData({ ...formData, [e.target.name]: e.target.value });
 //   };
 
-//   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+//   const handleSubmit = async (e: any) => {
 //     e.preventDefault();
 //     setAlert(null);
 
-//     if (!formData.company_name || !formData.contact_person || !formData.phone) {
-//       setAlert({ type: "error", message: "Please fill all required fields." });
-//       return;
-//     }
+//     const token = localStorage.getItem("token");
 
 //     try {
 //       setLoading(true);
@@ -71,22 +62,20 @@
 //         industry_type: "3W",
 //       };
 
-//       const token = localStorage.getItem("token");
-
 //       const res = await axios.post(
-//         "http://localhost:5004/api/business-development/3w/create",
+//         `http://localhost:5004/api/business-development/3w/create`,
 //         payload,
 //         {
+//           headers: { Authorization: `Bearer ${token}` },
 //           withCredentials: true,
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${token}`,
-//           },
 //         }
 //       );
 
 //       if (res.data.success) {
-//         setAlert({ type: "success", message: "3W Business Created ✅" });
+//         setAlert({
+//           type: "success",
+//           message: "3W Created ✅",
+//         });
 
 //         setFormData({
 //           company_name: "",
@@ -103,18 +92,16 @@
 //           business_status: "",
 //           comment: "",
 //         });
-//         // Close modal after 1.5 seconds
+
 //         setTimeout(() => {
-//           setAlert(null);
-//           onSuccess(); // trigger parent refresh
-//           onClose();   // close modal
+//           onSuccess();
 //         }, 1500);
-//       } else {
-//         setAlert({ type: "error", message: res.data.message || "Failed to save" });
 //       }
-//     } catch (error: any) {
-//       console.error("API ERROR:", error);
-//       setAlert({ type: "error", message: error.response?.data?.message || "Server Error" });
+//     } catch (err: any) {
+//       setAlert({
+//         type: "error",
+//         message: err.response?.data?.message || "Error",
+//       });
 //     } finally {
 //       setLoading(false);
 //     }
@@ -123,191 +110,135 @@
 //   return (
 //     <>
 //       {alert && (
-//         <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />
+//         <Alert
+//           type={alert.type}
+//           message={alert.message}
+//           onClose={() => setAlert(null)}
+//         />
 //       )}
 
-//       <div className="min-h-screen flex flex-col bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-6 lg:p-8">
-//         <div className="flex-1 w-full max-w-4xl mx-auto">
-//           <div className="bg-white rounded-2xl shadow-md p-5 sm:p-8">
+//       {/* BACKDROP */}
+//       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-//             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">
-//               3 Wheeler Business Development
-//             </h2>
+//         {/* MODAL */}
+//         <div className="bg-white w-full max-w-5xl rounded-2xl shadow-lg relative max-h-[95vh] overflow-y-auto">
 
-//             <p className="text-gray-500 mb-6 text-sm sm:text-base">
-//               Fill in the project and vehicle details to create a new 3W business development record.
-//             </p>
-
-//             <form onSubmit={handleSubmit} className="space-y-6 mt-3">
-
-//               {/* Company Info */}
-//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
-//                 <input
-//                   type="text"
-//                   name="company_name"
-//                   value={formData.company_name}
-//                   onChange={handleChange}
-//                   placeholder="Company Name"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                   required
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="contact_person"
-//                   value={formData.contact_person}
-//                   onChange={handleChange}
-//                   placeholder="Contact Person"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                   required
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="phone"
-//                   value={formData.phone}
-//                   onChange={handleChange}
-//                   placeholder="Phone"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                   required
-//                 />
-
-//                 <input
-//                   type="email"
-//                   name="email"
-//                   value={formData.email}
-//                   onChange={handleChange}
-//                   placeholder="Email"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-//               </div>
-
-//               {/* Project Details */}
-//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
-//                 <input
-//                   type="text"
-//                   name="project_title"
-//                   value={formData.project_title}
-//                   onChange={handleChange}
-//                   placeholder="Project Title"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="expected_quantity"
-//                   value={formData.expected_quantity}
-//                   onChange={handleChange}
-//                   placeholder="Expected Quantity"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="estimated_budget"
-//                   value={formData.estimated_budget}
-//                   onChange={handleChange}
-//                   placeholder="Estimated Budget"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-//               </div>
-
-//               {/* Vehicle Details */}
-//               <h3 className="text-md sm:text-lg font-semibold text-gray-800 mt-4">
-//                 Vehicle Details
-//               </h3>
-
-//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
-//                 <input
-//                   type="text"
-//                   name="vehicle_model"
-//                   value={formData.vehicle_model}
-//                   onChange={handleChange}
-//                   placeholder="Vehicle Model"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="engine_capacity"
-//                   value={formData.engine_capacity}
-//                   onChange={handleChange}
-//                   placeholder="Engine Capacity"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="fuel_type"
-//                   value={formData.fuel_type}
-//                   onChange={handleChange}
-//                   placeholder="Fuel Type"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   name="load_capacity"
-//                   value={formData.load_capacity}
-//                   onChange={handleChange}
-//                   placeholder="Load Capacity"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//               </div>
-
-//               <h3 className="text-md sm:text-lg font-semibold text-gray-800 mt-4">
-//                 Business Review
-//               </h3>
-
-//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
-//                 <select
-//                   name="business_status"
-//                   value={formData.business_status}
-//                   onChange={handleChange}
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 >
-//                   <option value="">Select Status</option>
-//                   <option value="APPROVED">APPROVED</option>
-//                   <option value="PENDING">PENDING</option>
-//                   <option value="REJECTED">REJECTED</option>
-//                 </select>
-
-//                 <textarea
-//                   name="comment"
-//                   value={formData.comment}
-//                   onChange={handleChange}
-//                   placeholder="Comment"
-//                   className="rounded-lg border border-gray-300 px-3 py-2"
-//                 />
-
-//               </div>
-
-//               {/* Submit */}
-//               <div>
-//                 <button
-//                   type="submit"
-//                   disabled={loading}
-//                   className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 font-semibold hover:opacity-90 disabled:opacity-50"
-//                 >
-//                   {loading ? "Creating Business..." : "Save"}
-//                 </button>
-//               </div>
-
-//             </form>
+//           {/* HEADER */}
+//           <div className="flex justify-between items-center p-5">
+//             <h1 className="text-xl font-semibold text-purple-700">
+//               New 3W Business Request
+//             </h1>
+//             <button onClick={onClose} className="text-gray-500 text-lg">✕</button>
 //           </div>
+
+//           <form onSubmit={handleSubmit} className="p-5 space-y-5">
+
+//             {/* ================= BUSINESS DETAILS ================= */}
+//             <div className="bg-gray-100 rounded-xl p-4">
+//               <div
+//                 className="flex justify-between items-center cursor-pointer"
+//                 onClick={() => toggleSection("business")}
+//               >
+//                 <h2 className="font-medium">Business Details</h2>
+//                 <span className="text-xl font-bold px-2">
+//                   {openSection === "business" ? "−" : "+"}
+//                 </span>
+//               </div>
+
+//               {openSection === "business" && (
+//                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+
+//                   <input name="company_name" value={formData.company_name} onChange={handleChange} placeholder="Company Name" className="bg-white border rounded-lg p-2" />
+//                   <input name="contact_person" value={formData.contact_person} onChange={handleChange} placeholder="Contact Person" className="bg-white border rounded-lg p-2" />
+//                   <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" className="bg-white border rounded-lg p-2" />
+//                   <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="bg-white border rounded-lg p-2" />
+//                   <input name="project_title" value={formData.project_title} onChange={handleChange} placeholder="Project Title" className="bg-white border rounded-lg p-2" />
+//                   <input name="expected_quantity" value={formData.expected_quantity} onChange={handleChange} placeholder="Expected Quantity" className="bg-white border rounded-lg p-2" />
+//                   <input name="estimated_budget" value={formData.estimated_budget} onChange={handleChange} placeholder="Estimated Budget" className="bg-white border rounded-lg p-2" />
+
+//                 </div>
+//               )}
+//             </div>
+
+//             {/* ================= VEHICLE DETAILS ================= */}
+//             <div className="bg-gray-100 rounded-xl p-4">
+//               <div
+//                 className="flex justify-between items-center cursor-pointer"
+//                 onClick={() => toggleSection("vehicle")}
+//               >
+//                 <h2 className="font-medium">Vehicle Details</h2>
+//                 <span className="text-xl font-bold px-2">
+//                   {openSection === "vehicle" ? "−" : "+"}
+//                 </span>
+//               </div>
+
+//               {openSection === "vehicle" && (
+//                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+
+//                   <input name="vehicle_model" value={formData.vehicle_model} onChange={handleChange} placeholder="Vehicle Model" className="bg-white border rounded-lg p-2" />
+//                   <input name="engine_capacity" value={formData.engine_capacity} onChange={handleChange} placeholder="Engine Capacity" className="bg-white border rounded-lg p-2" />
+//                   <input name="fuel_type" value={formData.fuel_type} onChange={handleChange} placeholder="Fuel Type" className="bg-white border rounded-lg p-2" />
+//                   <input name="load_capacity" value={formData.load_capacity} onChange={handleChange} placeholder="Load Capacity" className="bg-white border rounded-lg p-2" />
+
+//                 </div>
+//               )}
+//             </div>
+
+//             {/* ================= BUSINESS REVIEW ================= */}
+//             <div className="bg-gray-100 rounded-xl p-4">
+//               <div
+//                 className="flex justify-between items-center cursor-pointer"
+//                 onClick={() => toggleSection("review")}
+//               >
+//                 <h2 className="font-medium">Business Review</h2>
+//                 <span className="text-xl font-bold px-2">
+//                   {openSection === "review" ? "−" : "+"}
+//                 </span>
+//               </div>
+
+//               {openSection === "review" && (
+//                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+
+//                   <select
+//                     name="business_status"
+//                     value={formData.business_status}
+//                     onChange={handleChange}
+//                     className="bg-white border rounded-lg p-2"
+//                   >
+//                     <option value="">Select Status</option>
+//                     <option value="APPROVED">APPROVED</option>
+//                     <option value="PENDING">PENDING</option>
+//                     <option value="REJECTED">REJECTED</option>
+//                   </select>
+
+//                   <textarea
+//                     name="comment"
+//                     value={formData.comment}
+//                     onChange={handleChange}
+//                     placeholder="Comment"
+//                     className="bg-white border rounded-lg p-2"
+//                   />
+
+//                 </div>
+//               )}
+//             </div>
+
+//             {/* ================= SUBMIT ================= */}
+//             <div className="flex justify-end">
+//               <button
+//                 type="submit"
+//                 className="bg-purple-600 text-white px-6 py-2 rounded-lg"
+//               >
+//                 {loading ? "Saving..." : "Submit"}
+//               </button>
+//             </div>
+
+//           </form>
 //         </div>
 //       </div>
 //     </>
 //   );
-// };
-
-// export default ThreeWheelerPage;
-
+// }
 
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -321,12 +252,8 @@ interface Props {
 
 export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
   const navigate = useNavigate();
-
-  const [openSection, setOpenSection] = useState("business");
-
-  const toggleSection = (section: string) => {
-    setOpenSection(openSection === section ? "" : section);
-  };
+  const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState<any>(null);
 
   const [formData, setFormData] = useState({
     company_name: "",
@@ -343,9 +270,6 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
     business_status: "",
     comment: "",
   });
-
-  const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<any>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -367,14 +291,10 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
 
     try {
       setLoading(true);
-
-      const payload = {
-        ...formData,
-        industry_type: "3W",
-      };
+      const payload = { ...formData, industry_type: "3W" };
 
       const res = await axios.post(
-        `http://localhost:5004/api/business-development/3w/create`,
+        `http://localhost:5001/api/business-development/3w/create`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -383,11 +303,7 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
       );
 
       if (res.data.success) {
-        setAlert({
-          type: "success",
-          message: "3W Created ✅",
-        });
-
+        setAlert({ type: "success", message: "3W Created ✅" });
         setFormData({
           company_name: "",
           contact_person: "",
@@ -404,15 +320,10 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
           comment: "",
         });
 
-        setTimeout(() => {
-          onSuccess();
-        }, 1500);
+        setTimeout(() => onSuccess(), 1500);
       }
     } catch (err: any) {
-      setAlert({
-        type: "error",
-        message: err.response?.data?.message || "Error",
-      });
+      setAlert({ type: "error", message: err.response?.data?.message || "Error" });
     } finally {
       setLoading(false);
     }
@@ -420,130 +331,76 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
 
   return (
     <>
-      {alert && (
-        <Alert
-          type={alert.type}
-          message={alert.message}
-          onClose={() => setAlert(null)}
-        />
-      )}
+      {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
 
-      {/* BACKDROP */}
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-
-        {/* MODAL */}
         <div className="bg-white w-full max-w-5xl rounded-2xl shadow-lg relative max-h-[95vh] overflow-y-auto">
-
-          {/* HEADER */}
-          <div className="flex justify-between items-center p-5">
-            <h1 className="text-xl font-semibold text-purple-700">
+          <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-20">
+            <h2 className="text-xl font-semibold text-purple-600">
               New 3W Business Request
-            </h1>
-            <button onClick={onClose} className="text-gray-500 text-lg">✕</button>
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-xl font-bold hover:text-red-600"
+            >
+              ×
+            </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-5 space-y-5">
 
+          <form onSubmit={handleSubmit} className="p-5 space-y-5">
             {/* ================= BUSINESS DETAILS ================= */}
             <div className="bg-gray-100 rounded-xl p-4">
-              <div
-                className="flex justify-between items-center cursor-pointer"
-                onClick={() => toggleSection("business")}
-              >
-                <h2 className="font-medium">Business Details</h2>
-                <span className="text-xl font-bold px-2">
-                  {openSection === "business" ? "−" : "+"}
-                </span>
+              <h2 className="font-medium mb-4">Business Details</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input name="company_name" value={formData.company_name} onChange={handleChange} placeholder="Company Name" className="bg-white border rounded-lg p-2" />
+                <input name="contact_person" value={formData.contact_person} onChange={handleChange} placeholder="Contact Person" className="bg-white border rounded-lg p-2" />
+                <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" className="bg-white border rounded-lg p-2" />
+                <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="bg-white border rounded-lg p-2" />
               </div>
+            </div>
 
-              {openSection === "business" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-
-                  <input name="company_name" value={formData.company_name} onChange={handleChange} placeholder="Company Name" className="bg-white border rounded-lg p-2" />
-                  <input name="contact_person" value={formData.contact_person} onChange={handleChange} placeholder="Contact Person" className="bg-white border rounded-lg p-2" />
-                  <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" className="bg-white border rounded-lg p-2" />
-                  <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="bg-white border rounded-lg p-2" />
-                  <input name="project_title" value={formData.project_title} onChange={handleChange} placeholder="Project Title" className="bg-white border rounded-lg p-2" />
-                  <input name="expected_quantity" value={formData.expected_quantity} onChange={handleChange} placeholder="Expected Quantity" className="bg-white border rounded-lg p-2" />
-                  <input name="estimated_budget" value={formData.estimated_budget} onChange={handleChange} placeholder="Estimated Budget" className="bg-white border rounded-lg p-2" />
-
-                </div>
-              )}
+            {/* ================= PROJECT DETAILS ================= */}
+            <div className="bg-gray-100 rounded-xl p-4">
+              <h2 className="font-medium mb-4">Project Details</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input name="project_title" value={formData.project_title} onChange={handleChange} placeholder="Project Title" className="bg-white border rounded-lg p-2" />
+                <input name="expected_quantity" value={formData.expected_quantity} onChange={handleChange} placeholder="Expected Quantity" className="bg-white border rounded-lg p-2" />
+                <input name="estimated_budget" value={formData.estimated_budget} onChange={handleChange} placeholder="Estimated Budget" className="bg-white border rounded-lg p-2" />
+              </div>
             </div>
 
             {/* ================= VEHICLE DETAILS ================= */}
             <div className="bg-gray-100 rounded-xl p-4">
-              <div
-                className="flex justify-between items-center cursor-pointer"
-                onClick={() => toggleSection("vehicle")}
-              >
-                <h2 className="font-medium">Vehicle Details</h2>
-                <span className="text-xl font-bold px-2">
-                  {openSection === "vehicle" ? "−" : "+"}
-                </span>
+              <h2 className="font-medium mb-4">Vehicle Details</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input name="vehicle_model" value={formData.vehicle_model} onChange={handleChange} placeholder="Vehicle Model" className="bg-white border rounded-lg p-2" />
+                <input name="engine_capacity" value={formData.engine_capacity} onChange={handleChange} placeholder="Engine Capacity" className="bg-white border rounded-lg p-2" />
+                <input name="fuel_type" value={formData.fuel_type} onChange={handleChange} placeholder="Fuel Type" className="bg-white border rounded-lg p-2" />
+                <input name="load_capacity" value={formData.load_capacity} onChange={handleChange} placeholder="Load Capacity" className="bg-white border rounded-lg p-2" />
               </div>
-
-              {openSection === "vehicle" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-
-                  <input name="vehicle_model" value={formData.vehicle_model} onChange={handleChange} placeholder="Vehicle Model" className="bg-white border rounded-lg p-2" />
-                  <input name="engine_capacity" value={formData.engine_capacity} onChange={handleChange} placeholder="Engine Capacity" className="bg-white border rounded-lg p-2" />
-                  <input name="fuel_type" value={formData.fuel_type} onChange={handleChange} placeholder="Fuel Type" className="bg-white border rounded-lg p-2" />
-                  <input name="load_capacity" value={formData.load_capacity} onChange={handleChange} placeholder="Load Capacity" className="bg-white border rounded-lg p-2" />
-
-                </div>
-              )}
             </div>
 
             {/* ================= BUSINESS REVIEW ================= */}
             <div className="bg-gray-100 rounded-xl p-4">
-              <div
-                className="flex justify-between items-center cursor-pointer"
-                onClick={() => toggleSection("review")}
-              >
-                <h2 className="font-medium">Business Review</h2>
-                <span className="text-xl font-bold px-2">
-                  {openSection === "review" ? "−" : "+"}
-                </span>
+              <h2 className="font-medium mb-4">Business Review</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <select name="business_status" value={formData.business_status} onChange={handleChange} className="bg-white border rounded-lg p-2">
+                  <option value="">Select Status</option>
+                  <option value="APPROVED">APPROVED</option>
+                  <option value="PENDING">PENDING</option>
+                  <option value="REJECTED">REJECTED</option>
+                </select>
+                <textarea name="comment" value={formData.comment} onChange={handleChange} placeholder="Comment" className="bg-white border rounded-lg p-2" />
               </div>
-
-              {openSection === "review" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-
-                  <select
-                    name="business_status"
-                    value={formData.business_status}
-                    onChange={handleChange}
-                    className="bg-white border rounded-lg p-2"
-                  >
-                    <option value="">Select Status</option>
-                    <option value="APPROVED">APPROVED</option>
-                    <option value="PENDING">PENDING</option>
-                    <option value="REJECTED">REJECTED</option>
-                  </select>
-
-                  <textarea
-                    name="comment"
-                    value={formData.comment}
-                    onChange={handleChange}
-                    placeholder="Comment"
-                    className="bg-white border rounded-lg p-2"
-                  />
-
-                </div>
-              )}
             </div>
 
             {/* ================= SUBMIT ================= */}
             <div className="flex justify-end">
-              <button
-                type="submit"
-                className="bg-purple-600 text-white px-6 py-2 rounded-lg"
-              >
-                {loading ? "Saving..." : "Submit"}
+              <button type="submit" className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold">
+                {loading ? "Saving..." : "Submit for Feasibility"}
               </button>
             </div>
-
           </form>
         </div>
       </div>

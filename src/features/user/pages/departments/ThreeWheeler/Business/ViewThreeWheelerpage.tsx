@@ -202,72 +202,66 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
-   cardIndex: number; 
+  cardIndex: number;
 }
 
-const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) => {
+const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) => {
   const [showModal, setShowModal] = useState(false);
-  const [feasibilityStatus, setFeasibilityStatus] = useState("");
-  const [comments, setComments] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...data });
+  const [editChanges, setEditChanges] = useState<Partial<typeof formData>>({});
+  const [feasibilityStatus, setFeasibilityStatus] = useState("");
+  const [comments, setComments] = useState("");
+  const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  const [alert, setAlert] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
+  // Track changes for Cancel
+  const handleEditChange = (key: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    setEditChanges((prev) => ({ ...prev, [key]: value }));
+  };
 
+  // Reset formData when modal opens
   useEffect(() => {
     if (showModal) {
-      setFormData({ ...data }); // ✅ important
+      setFormData({ ...data });
       setFeasibilityStatus(data.feasibility_status || "");
       setComments(data.comments || "");
+      setEditChanges({});
     }
   }, [showModal, data]);
 
   const render = (v: any) => (v ? v : "-");
 
- const updateFeasibility3W = async () => {
-  try {
-    const res = await api.patch(
-      `/business-development/3w/update/${data.id}`,
-      {
-        ...formData,
-        feasibility_status: feasibilityStatus,   // ✅ ADD THIS
-        comments: comments,                      // ✅ ADD THIS
-      },
-      { withCredentials: true }
-    );
+  const updateFeasibility3W = async () => {
+    try {
+      const res = await api.patch(
+        `/business-development/3w/update/${data.id}`,
+        {
+          ...formData,
+          feasibility_status: feasibilityStatus,
+          comments: comments,
+        },
+        { withCredentials: true }
+      );
 
-    const updated = res.data.data;
+      const updated = res.data.data;
 
-    // Update parent state
-    onUpdate?.(updated);
+      // Update parent & local state
+      onUpdate?.(updated);
+      setFormData({ ...updated });
+      setFeasibilityStatus(updated.feasibility_status || "");
+      setComments(updated.comments || "");
 
-    // Update local state
-    setFormData({ ...updated });
-    setFeasibilityStatus(updated.feasibility_status || "");
-    setComments(updated.comments || "");
-
-    setAlert({
-      type: "success",
-      message: "3W Request updated successfully!",
-    });
-
-    setTimeout(() => setAlert(null), 2000);
-    setShowModal(false);
-    setEditMode(false);
-  } catch (err) {
-    console.error("3W Update Error:", err);
-
-    setAlert({
-      type: "error",
-      message: "Failed to update 3W Request",
-    });
-
-    setTimeout(() => setAlert(null), 2000);
-  }
-};
+      setAlert({ type: "success", message: "3W Request updated successfully!" });
+      setTimeout(() => setAlert(null), 2000);
+      setShowModal(false);
+      setEditMode(false);
+    } catch (err) {
+      console.error("3W Update Error:", err);
+      setAlert({ type: "error", message: "Failed to update 3W Request" });
+      setTimeout(() => setAlert(null), 2000);
+    }
+  };
 
   const cardFields = [
     ["Company Name", data.company_name],
@@ -278,20 +272,16 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow p-4 w-full sm:w-[340px] m-2 flex flex-col justify-between">
+    <div className="bg-white rounded-xl shadow p-4 w-full  flex flex-col justify-between">
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
-      <h3 className="text-purple-700 font-semibold text-sm mb-3">
-        3W ID:  {cardIndex + 1} 
-      </h3>
+      <h3 className="text-purple-700 font-semibold text-sm mb-3">3W ID: {cardIndex + 1}</h3>
 
       <div className="space-y-2 flex-1">
         {cardFields.map(([label, value]) => (
-          <div className="flex text-sm">
+          <div key={label} className="flex text-sm">
             <span className="w-36 text-gray-500">{label}:</span>
-            <span className="text-gray-900 font-medium truncate">
-              {render(value)}
-            </span>
+            <span className="text-gray-900 font-medium truncate">{render(value)}</span>
           </div>
         ))}
       </div>
@@ -307,7 +297,7 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
           {mode === "update" ? "Update Feasibility" : "More Info"}
         </button>
 
-       {mode !== "update" && !formData.feasibility_status && (
+        {mode !== "update" && !formData.feasibility_status && (
           <button
             onClick={() => {
               setEditMode(true);
@@ -370,7 +360,6 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
                   ["Comment", data.comment],
                   ["Feasibility Status", data.feasibility_status],
                   ["Feasibility Comments", data.comments],
-
                   ...(mode !== "update"
                     ? [
                       ["Final Status", data.final_status],
@@ -380,38 +369,25 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
                 ],
               },
             ].map((section) => (
-              <div
-                key={section.title}
-                className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3"
-              >
-                <h3 className="text-sm font-semibold text-gray-800">
-                  {section.title}
-                </h3>
+              <div key={section.title} className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3">
+                <h3 className="text-sm font-semibold text-gray-800">{section.title}</h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {section.fields.map(([label, value]) => {
-                    const key = label.toLowerCase().replace(/ /g, "_");
-
+                    const key = label.toLowerCase().replace(/ /g, "_") as keyof typeof formData;
                     return (
                       <div key={label} className="flex flex-col">
-                        <span className="text-gray-600 text-xs font-medium">
-                          {label}
-                        </span>
+                        <span className="text-gray-600 text-xs font-medium">{label}</span>
 
                         {editMode ? (
                           <input
                             value={formData[key] || ""}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                [key]: e.target.value,
-                              }))
-                            }
-                            className="bg-white border rounded px-2 py-1 text-xs text-gray-900"///////////////here added
+                            onChange={(e) => handleEditChange(key, e.target.value)}
+                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
                           />
                         ) : (
-                          <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-gray-900">
-                            {render(value)}
+                          <span className="bg-white border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900">
+                            {render(formData[key])}
                           </span>
                         )}
                       </div>
@@ -423,51 +399,34 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
             {/* ================= FEASIBILITY UPDATE ================= */}
             {mode === "update" && (
-              <>
-                <div className="bg-gray-100 rounded-xl p-4 sm:p-6 shadow">
-                  <h3 className="text-sm font-bold mb-3 text-gray-900">
-                    Feasibility Update
-                  </h3>
+              <div className="bg-gray-100 rounded-xl p-4 sm:p-6 shadow">
+                <h3 className="text-sm font-bold mb-3 text-gray-900">Feasibility Update</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs text-gray-900">Feasibility Status</label>
+                    <select
+                      value={feasibilityStatus}
+                      onChange={(e) => setFeasibilityStatus(e.target.value)}
+                      className="w-full p-2 border rounded text-xs text-gray-900"
+                    >
+                      <option value="">Select</option>
+                      <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
+                      <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
+                      <option value="FEASIBILITY PENDING">FEASIBILITY PENDING</option>
+                    </select>
+                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs text-gray-900">
-                        Feasibility Status
-                      </label>
-                      <select
-                        value={feasibilityStatus}
-                        onChange={(e) =>
-                          setFeasibilityStatus(e.target.value)
-                        }
-                        className="w-full p-2 border rounded text-xs text-gray-900"
-                      >
-                        <option value="">Select</option>
-                        <option value="FEASIBILITY APPROVED">
-                          FEASIBILITY APPROVED
-                        </option>
-                        <option value="FEASIBILITY REJECTED">
-                          FEASIBILITY REJECTED
-                        </option>
-                        <option value="FEASIBILITY PENDING">
-                          FEASIBILITY PENDING
-                        </option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-xs text-gray-900">
-                        Comments
-                      </label>
-                      <textarea
-                        value={comments}
-                        onChange={(e) => setComments(e.target.value)}
-                        className="w-full p-2 border rounded text-xs text-gray-900"
-                      />
-                    </div>
+                  <div>
+                    <label className="text-xs text-gray-900">Comments</label>
+                    <textarea
+                      value={comments}
+                      onChange={(e) => setComments(e.target.value)}
+                      className="w-full p-2 border rounded text-xs text-gray-900"
+                    />
                   </div>
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end mt-2">
                   <button
                     onClick={updateFeasibility3W}
                     className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
@@ -475,10 +434,27 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
                     Update Feasibility
                   </button>
                 </div>
-              </>
+              </div>
             )}
+
+            {/* ================= EDIT BUTTONS ================= */}
             {editMode && (
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2 mt-2">
+                <button
+                  onClick={() => {
+                    // Reset only edited fields
+                    const resetData = { ...formData };
+                    Object.keys(editChanges).forEach((key) => {
+                      resetData[key as keyof typeof resetData] = data[key as keyof typeof data];
+                    });
+                    setFormData(resetData);
+                    setEditChanges({});
+                  }}
+                  className="bg-white border border-gray-300 text-gray-800 px-5 py-2 rounded text-sm hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+
                 <button
                   onClick={updateFeasibility3W}
                   className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
@@ -488,7 +464,7 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
               </div>
             )}
 
-            {/* CLOSE */}
+            {/* CLOSE MODAL */}
             <button
               onClick={() => setShowModal(false)}
               className="absolute top-3 right-4 text-xl text-gray-900"

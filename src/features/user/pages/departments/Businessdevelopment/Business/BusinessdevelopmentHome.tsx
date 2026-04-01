@@ -136,7 +136,7 @@
 import { useState } from "react";
 import BusinessList from "./Businessdevelopmentpage";
 import CreateBusinessModal from "./CreateBusinessPage";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation} from "react-router-dom";
 
 
 const BusinessDevelopmentHome = () => {
@@ -145,6 +145,9 @@ const BusinessDevelopmentHome = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<FilterType>("All PR");
   const [showUpdatePage, setShowUpdatePage] = useState(false);
+  const location = useLocation();
+const queryParams = new URLSearchParams(location.search);
+const type = queryParams.get("type"); // "updated" or null
 
 
 
@@ -232,6 +235,7 @@ const BusinessDevelopmentHome = () => {
             ? "ALL"
             : activeFilter.toUpperCase()
         }
+        type={type} 
       />
 
       {/* MODAL */}

@@ -48,7 +48,7 @@ const UpdatedTwoWheelerRequests: React.FC<Props> = ({ onBack }) => {
       {loading ? (
         <p className="text-white">Loading...</p>
       ) : data.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8 space-y-4">
+       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {data.map((item,index) => (
             <TwoWheelerCard
               key={item.id}
