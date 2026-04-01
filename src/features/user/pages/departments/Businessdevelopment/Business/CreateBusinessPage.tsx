@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, memo } from "react";
 import { api } from "../../../../api/businessApi";
 import axios from "axios";
 import Alert from "../../../../components/Aleartmessage";
+import { Upload } from "lucide-react";
 
 interface Request {
   id: number;
@@ -408,17 +409,17 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {[
-                  "chassis_manufacturer",
-                  "chassis_model",
-                  "chassis_number",
-                  "engine_number",
-                  "wheelbase",
-                  "fuel_type",
+                  "Chassis_Manufacturer",
+                  "Chassis_Model",
+                  "Chassis_Number",
+                  "Engine_Number",
+                  "Wheelbase",
+                  "Fuel_Type",
                 ].map((f) => (
                   <div key={f}>
-                    <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">
-                      {f.replace(/_/g, " ").toUpperCase()}
-                    </label>
+                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">
+  {f.replace(/_/g, " ")}
+</label>
 
                     {f === "fuel_type" ? (
                       <select
@@ -459,16 +460,15 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {[
-                  "seating_capacity",
-                  "seat_type",
-                  "flooring_type",
-                  "interior_color",
+                  "Seating_Capacity",
+                  "Seat_Type",
+                  "Flooring_Type",
+                  "Interior_Color",
                 ].map((f) => (
                   <div key={f}>
-                    <label className="text-xs font-semibold text-gray-700 mb-1 block">
-                      {f.replace(/_/g, " ").toUpperCase()}
-                    </label>
-
+                    <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">
+  {f.replace(/_/g, " ")}
+</label>
                     {/* SEAT TYPE */}
                     {f === "seat_type" && (
                       <select
@@ -519,11 +519,11 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             <Section title="Exterior Specifications" sectionKey="exterior" expanded={expandedSections.exterior}
               toggle={toggleSection}>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {["body_material", "paint_color", "window_type", "door_type"].map((f) => (
+                {["Body_Material", "Paint_Color", "Window_Type", "Door_Type"].map((f) => (
                   <div key={f} className="flex flex-col">
-                    <label className="text-sm font-medium text-gray-500 mb-1">
-                      {f.replace(/_/g, " ").toUpperCase()}
-                    </label>
+                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">
+  {f.replace(/_/g, " ")}
+</label>
                     <input
                       name={f}
                       value={form[f] || ""}
@@ -550,33 +550,71 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             </Section>
 
             {/* Additional Features */}
-            <Section title="Additional Features" sectionKey="features" expanded={expandedSections.features}
-              toggle={toggleSection}>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-
-                {["ac", "cctv", "gps", "fire_extinguisher", "emergency_exit", "led_board", "usb", "luggage_carrier", "wheelchair_access"].map(f => (
-                  <label key={f} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" name={f} checked={!!form[f]} onChange={handleChange} />
-                    {f.replace(/_/g, " ").toUpperCase()}
-                  </label>
-                ))}
-              </div>
-            </Section>
+           <Section
+  title="Additional Features"
+  sectionKey="features"
+  expanded={expandedSections.features}
+  toggle={toggleSection}
+>
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+    {[
+      "Ac",
+      "Cctv",
+      "Gps",
+      "Fire_Extinguisher",
+      "Emergency_Exit",
+      "Led_Board",
+      "Usb",
+      "Luggage_Carrier",
+      "Wheelchair_Access",
+    ].map((f) => (
+      <label
+        key={f}
+        className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1 block"
+      >
+        <input
+          type="checkbox"
+          name={f}
+          checked={!!form[f]}
+          onChange={handleChange}
+          className="mr-2"
+        />
+        {f.replace(/_/g, " ")}
+      </label>
+    ))}
+  </div>
+</Section>
 
             {/* Compliance */}
-            <Section title="Compliance & Standards" sectionKey="compliance" expanded={expandedSections.compliance}
-              toggle={toggleSection}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-
-                {["ais_compliant", "cmvr_compliant", "school_bus_safety", "state_transport_norms"].map(f => (
-                  <label key={f} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" name={f} checked={!!form[f]} onChange={handleChange} />
-                    {f.replace(/_/g, " ").toUpperCase()}
-                  </label>
-                ))}
-              </div>
-            </Section>
+            <Section
+  title="Compliance & Standards"
+  sectionKey="compliance"
+  expanded={expandedSections.compliance}
+  toggle={toggleSection}
+>
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+    {[
+      "Ais_Compliant",
+      "Cmvr_Compliant",
+      "School_Bus_Safety",
+      "State_Transport_Norms",
+    ].map((f) => (
+      <label
+        key={f}
+        className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1 block"
+      >
+        <input
+          type="checkbox"
+          name={f}
+          checked={!!form[f]}
+          onChange={handleChange}
+          className="mr-2"
+        />
+        {f.replace(/_/g, " ")}
+      </label>
+    ))}
+  </div>
+  </Section>
 
             {/* Timeline & Budget */}
             <Section title="Timeline & Budget" sectionKey="timeline" expanded={expandedSections.timeline}
@@ -629,13 +667,14 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
               />
 
               {/* Custom Button */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="cursor-pointer px-2 py-1 bg-white text-gray-600 rounded-md hover:bg-purple-200 transition"
-              >
-                Choose Files
-              </button>
+               <button
+    type="button"
+    onClick={() => fileInputRef.current?.click()}
+    className="flex items-center gap-2 px-3 py-2 border rounded-lg text-gray-700 hover:bg-gray-100"
+  >
+    <Upload size={20} />
+    Upload Files
+  </button>
 
               {/* Selected Files List */}
               {form.attachments.length > 0 ? (
@@ -681,7 +720,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
 
                 <div>
-                  <label className="text-xs font-semibold text-gray-700 mb-1 block">Declaration Date</label>
+                  <label className="text-sm font-semibold text-gray-700 mb-1 block">Declaration Date</label>
                   <input type="date" name="declaration_date" value={form.declaration_date} onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-sm w-full" />
                 </div>
                 <div>

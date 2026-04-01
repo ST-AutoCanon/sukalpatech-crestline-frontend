@@ -247,6 +247,14 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...data });
 
+  const [editChanges, setEditChanges] = useState<Partial<typeof formData>>({});
+  
+    // When editing any field, track the changes
+    const handleEditChange = (key: keyof typeof formData, value: string) => {
+      setFormData((prev) => ({ ...prev, [key]: value }));
+      setEditChanges((prev) => ({ ...prev, [key]: value }));
+    };
+
   useEffect(() => {
     if (showModal) {
       setFormData({ ...data }); // ✅ important
@@ -409,40 +417,27 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
                 ],
               },
             ].map((section) => (
-              <div
-                key={section.title}
-                className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3"
-              >
-                <h3 className="text-sm font-semibold text-gray-800">
-                  {section.title}
-                </h3>
+              <div key={section.title} className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3">
+                <h3 className="text-sm font-semibold text-gray-800">{section.title}</h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {section.fields.map(([label, value]) => {
-                    const key = label.toLowerCase().replace(/ /g, "_");
-
+                    const key = label.toLowerCase().replace(/ /g, "_") as keyof typeof formData;
                     return (
                       <div key={label} className="flex flex-col">
-                        <span className="text-gray-600 text-xs font-medium">
-                          {label}
-                        </span>
+                        <span className="text-gray-600 text-xs font-medium">{label}</span>
 
                         {editMode ? (
-                          <input
-                            value={formData[key] || ""}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                [key]: e.target.value,
-                              }))
-                            }
-                            className="bg-white border rounded px-2 py-1 text-xs"
-                          />
-                        ) : (
-                          <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-gray-900">
-                            {render(value)}
-                          </span>
-                        )}
+  <input
+    value={formData[key] || ""}
+    onChange={(e) => handleEditChange(key, e.target.value)}
+    className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+  />
+) : (
+  <span className="bg-white border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900">
+    {render(formData[key])}
+  </span>
+)}
                       </div>
                     );
                   })}
@@ -505,7 +500,24 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
               </>
             )}
             {editMode && (
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                {/* Cancel Button */}
+                <button
+                  onClick={() => {
+                    // Reset only fields changed during this edit session
+                    const resetData = { ...formData };
+                    Object.keys(editChanges).forEach((key) => {
+                      resetData[key as keyof typeof resetData] = data[key as keyof typeof data];
+                    });
+                    setFormData(resetData);
+                    setEditChanges({}); // clear the session changes
+                  }}
+                  className="bg-white border border-gray-300 text-gray-800 px-5 py-2 rounded text-sm hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+
+                {/* Save Button */}
                 <button
                   onClick={updateFood}
                   className="bg-purple-700 text-white px-5 py-2 rounded text-sm"

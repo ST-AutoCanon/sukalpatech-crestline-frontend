@@ -37,15 +37,32 @@ export default function Sidebar({
   const isActive = (path: string) => location.pathname === path;
 
   const departmentIcons: Record<string, JSX.Element> = {
-  feasibility: <Building2 size={22} />,
-  procurement: <ShoppingCart size={22} />,
-  finance: <Wallet size={22} />,
-  bd: <BarChart3 size={22} />,
-  two_wheeler: <Bike size={22} />,
-  three_wheeler: <Car size={22} />,
-   food_business: <UtensilsCrossed size={22} />,
-  gold_business:<Gem size={22}/>,
+    feasibility: <Building2 size={22} />,
+    procurement: <ShoppingCart size={22} />,
+    finance: <Wallet size={22} />,
+    bd: <BarChart3 size={22} />,
+    two_wheeler: <Bike size={22} />,
+    three_wheeler: <Car size={22} />,
+    food_business: <UtensilsCrossed size={22} />,
+    gold_business: <Gem size={22} />,
   }
+
+  const formatDepartmentName = (name: string) => {
+    const formatted = name
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    // Add BD for specific departments
+    if (
+      ["two_wheeler", "three_wheeler", "food_business", "gold_business"].includes(
+        name.toLowerCase()
+      )
+    ) {
+      return formatted + " BD";
+    }
+
+    return formatted;
+  };
 
   return (
     <>
@@ -62,49 +79,42 @@ export default function Sidebar({
 
 
         {/* Logo */}
-        <div className="flex justify-center mb-6 transition-all duration-300">
+        <div className="flex justify-center transition-all duration-300 mb-0.5">
           <img
             src={sidebarOpen ? icon2 : icon1}
-            alt="Crestline Tech"
+            alt="Flowracle Tech"
             className={`object-contain transition-all duration-300
       ${sidebarOpen ? "h-30 w-40" : "h-14 w-28"}
     `}
           />
         </div>
 
-
-
-
-
         {/* Departments */}
         <nav className="flex-1">
-          <ul className="space-y-3">
+          <ul className="space-y-3 mt-0"> {/* Minimal margin to pull first item closer */}
             {departments.map((dept) => {
-  const key = apiNameToKey[dept.name.toLowerCase()];
-  if (!key) return null;
+              const key = apiNameToKey[dept.name.toLowerCase()];
+              if (!key) return null;
 
-  const route = deptRoutes[key];
-  const active = isActive(route);
+              const route = deptRoutes[key];
+              const active = isActive(route);
 
-  return (
-    <li key={dept.id}>
-      <Link
-        to={route}
-        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-        ${
-          active
-            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
-            : "text-gray-700 hover:bg-gray-100"
-        }`}
-      >
-        {departmentIcons[dept.name.toLowerCase()] || (
-          <Building2 size={22} />
-        )}
-        {sidebarOpen && <span>{dept.name}</span>}
-      </Link>
-    </li>
-  );
-})}
+              return (
+                <li key={dept.id}>
+                  <Link
+                    to={route}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+              ${active
+                        ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                  >
+                    {departmentIcons[dept.name.toLowerCase()] || <Building2 size={22} />}
+                    {sidebarOpen && <span className="mt-0.25">{dept.display_name || formatDepartmentName(dept.name)}</span>}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </aside>

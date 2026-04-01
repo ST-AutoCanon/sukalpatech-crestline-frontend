@@ -159,7 +159,7 @@ export default function EmployeeDashboard() {
 
   two_wheeler: "/employee/bd2/2w",
   three_wheeler: "/employee/bd2/3w",
-    food_business: "/employee/bd2/food", // ✅ FIX
+  food_business: "/employee/bd2/food", // ✅ FIX
    gold_business: "/employee/bd2/gold",
 };
   const departmentNames: Record<string, string> = {
@@ -168,10 +168,10 @@ export default function EmployeeDashboard() {
     "/employee/finance": "Finance",
     "/employee/bd": "Business Development",
    
-  "/employee/bd2/2w": "Two Wheeler",
- "/employee/bd2/3w": "Three Wheeler",
-  "/employee/bd2/food": "Food Business",
-   "/employee/bd2/gold": "Gold Business", 
+  "/employee/bd2/2w": "Two Wheeler BD",
+ "/employee/bd2/3w": "Three Wheeler BD",
+  "/employee/bd2/food": "Food Business BD",
+   "/employee/bd2/gold": "Gold Business BD", 
 };
   if (!user) return <h3 className="p-6 text-lg">Loading user...</h3>;
   if (loading) return <h3 className="p-6 text-lg">Loading dashboard...</h3>;

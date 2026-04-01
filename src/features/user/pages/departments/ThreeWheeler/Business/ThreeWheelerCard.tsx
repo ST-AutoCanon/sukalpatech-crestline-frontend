@@ -227,7 +227,7 @@ const ThreeWheelerCard: React.FC<Props> = ({
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow p-3 w-full sm:w-[360px] md:w-[400px] m-2 flex flex-col justify-between">
+    <div className="bg-white rounded-xl shadow p-3 w-full flex flex-col justify-between">
       
       {/* Alert */}
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
