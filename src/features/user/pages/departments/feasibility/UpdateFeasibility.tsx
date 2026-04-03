@@ -284,6 +284,22 @@ export default function SubmittedRequestsPage() {
       return;
     }
 
+    // ✅ Check if at least ONE vendor has status selected
+const hasAtLeastOneVendorStatus = updateData.items.some((item, itemIndex) =>
+  item.vendors.some((vendor, vendorIndex) => {
+    const key = `${itemIndex}-${vendorIndex}`;
+    return vendorUpdates[key]?.status; // check if status exists
+  })
+);
+
+if (!hasAtLeastOneVendorStatus) {
+  setAlert({
+    type: "error",
+    message: "Please select status for at least one vendor",
+  });
+  return;
+}
+
     try {
       const approvalRes = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/categorylimit/approve`,

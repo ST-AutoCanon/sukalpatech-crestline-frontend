@@ -144,12 +144,26 @@ export default function SubmittedFinanceRequestsPage() {
 
       // ✅ Remove PRs already approved by Finance
       const filteredPRs = allPRs.filter((pr: FinancePR) => {
-        const hasFinanceApproved = pr.department_statuses?.some(
-          (status) =>
-            status.department_status === "FINANCE APPROVED"
-        );
+        if (!pr.department_statuses || pr.department_statuses.length === 0) {
+          return true; // no status → allow
+        }
 
-        return !hasFinanceApproved;
+        // ✅ Get latest status (last item)
+        const latestStatus =
+          pr.department_statuses[pr.department_statuses.length - 1];
+
+        // ❌ Hide if latest is REJECTED
+        if (latestStatus.department_status === "FEASIBILITY REJECTED") {
+          return false;
+        }
+
+        // ❌ (optional) also hide approved
+        if (latestStatus.department_status === "FINANCE APPROVED") {
+          return false;
+        }
+
+        // ✅ Show only pending / others
+        return true;
       });
 
       setRequests(filteredPRs);

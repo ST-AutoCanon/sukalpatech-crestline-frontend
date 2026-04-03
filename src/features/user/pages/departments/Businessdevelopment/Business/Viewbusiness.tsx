@@ -80,8 +80,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const INPUT_CLASS = "border border-blue-400 focus:border-blue-600 focus:ring focus:ring-blue-200 rounded px-2 py-1 text-sm";
-
+const INPUT_CLASS =
+  "w-full border border-gray-500 rounded px-1 py-1 text-sm font-semibold bg-white outline-none focus:outline-none focus:ring-0 focus:border-gray-500";
 
 
   const STATUS_LABELS: Record<string, string> = {
@@ -121,7 +121,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
         <select
           value={formData[key] ?? ""}
           onChange={(e) => handleChange(key, e.target.value)}
-          className="border border-blue-400 focus:border-blue-600 focus:ring focus:ring-blue-200 rounded px-2 py-1 text-sm"
+        className={INPUT_CLASS}
         >
           <option value="">Select</option>
           {DROPDOWN_OPTIONS[key as string].map((option) => (
@@ -143,7 +143,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
             : formData[key] ?? ""
         }
         onChange={(e) => handleChange(key, e.target.value)}
-        className="border border-blue-400 focus:border-blue-600 focus:ring focus:ring-blue-200 rounded px-2 py-1 text-sm"
+       className={INPUT_CLASS}
       />
     );
   };
@@ -266,6 +266,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
     return `${month}/${day}/${year}`; // MM/DD/YYYY
   };
   const canEdit = !data.feasibility_status;
+  console.log("DATA RECEIVED", data);
 
   const handleSave = async () => {
     try {
@@ -347,6 +348,10 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
     }));
   };
 
+  const hasFeasibilityData =
+    formData.feasibility_status ||
+    formData.feasibility_comments;
+
 
 
 
@@ -425,7 +430,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
 
 
             <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-            {editMode ? `Edit BR-${data.display_id} info` : `View BR-${data.display_id} info`}
+              {editMode ? `Edit BR-${data.display_id} info` : `View BR-${data.display_id} info`}
             </h2>
             {/* Map all sections */}
             {[
@@ -613,122 +618,94 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                   {
                     label: "",
                     value: (
-                      <div className="space-y-2 mt-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
                         {/* BD Status */}
-                        <div className="border rounded-md p-3 bg-gray-50 flex justify-between items-start">
-                          <div>
-                            <div className="text-gray-700 font-semibold mb-1">
-                              BD {formData.bd_status?.toUpperCase() || "-"}
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">BD Status</span>
+                          {editMode ? (
+                            <input
+                              type="text"
+                              value={formData.bd_status || ""}
+                              onChange={(e) => handleChange("bd_status", e.target.value)}
+                              className={INPUT_CLASS}
+                            />
+                          ) : (
+                            <div className="bg-white border rounded px-2 py-1 text-sm font-semibold text-black">
+                              {renderValue(formData.bd_status)}
                             </div>
-                            <div className="text-gray-500">{formData.bd_comments || "-"}</div>
-                          </div>
-                          <div className="text-gray-400 text-sm text-right">
-                            {formData.applicant_name} • {formatDate(formData.created_at)}
-                          </div>
+                          )}
                         </div>
 
-                        {/* Feasibility Status */}
-                        <div className="border rounded-md p-3 bg-gray-50 flex justify-between items-start">
-                          <div>
-                            <div className="text-gray-700 font-semibold mb-1">
-                              FEASIBILITY {formData.feasibility_status?.toUpperCase() || "-"}
+                        {/* BD Comments */}
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">BD Comments</span>
+                          {editMode ? (
+                            <textarea
+                              value={formData.bd_comments || ""}
+                              onChange={(e) => handleChange("bd_comments", e.target.value)}
+                              className={INPUT_CLASS}
+                              rows={1} // adjust height
+                            />
+                          ) : (
+                            <div className="bg-white border rounded px-2 py-1 text-sm font-semibold text-black">
+                              {renderValue(formData.bd_comments)}
                             </div>
-                            <div className="text-gray-500">{formData.feasibility_comments || "-"}</div>
-                          </div>
-                          <div className="text-gray-400 text-sm text-right">
-                            {formData.requested_by_person} • {formatDate(formData.created_at)}
-                          </div>
+                          )}
                         </div>
+
+                        {/* ❌ Hide in edit mode */}
+                        {!editMode && hasFeasibilityData && (
+                          <>
+                            {/* Feasibility Status */}
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium">Feasibility Status</span>
+                              <div className="bg-white border rounded px-2 py-1 text-sm font-semibold text-black">
+                                {renderValue(formData.feasibility_status, "feasibility_status")}
+                              </div>
+                            </div>
+
+                            {/* Feasibility Comments */}
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium">Feasibility Comments</span>
+                              <div className="bg-white border rounded px-2 py-1 text-sm font-semibold text-black">
+                                {renderValue(formData.feasibility_comments)}
+                              </div>
+                            </div>
+                          </>
+                        )}
 
                       </div>
                     ),
                   },
                 ],
-              }
-            ].map((section, index) => {
-              const isTopToggle = section.title === "Applicant / Organization Details";
-              const isBottomToggle = section.title === "Department Status";
+              },
 
-              // ✅ TOP collapse logic (hide only middle sections BUT keep toggle visible)
-              if (!expandedSections.top && index > 0 && !isTopToggle && !isBottomToggle) {
-                return null;
-              }
-
-              // ✅ BOTTOM collapse logic (hide only department section BUT keep toggle visible)
-              if (!expandedSections.bottom && isBottomToggle) {
-                return (
-                  <div key={section.title}>
-                    {/* KEEP BUTTON VISIBLE */}
-                    <div className="flex justify-end mb-2">
-                     <button
-                      onClick={() => toggleSection("bottom")}
-                      className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded flex items-center"
-                    >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
-
-              return (
-                <div key={section.title}>
-
-                  {/* 🔹 TOP TOGGLE (after Request Details) */}
-                 {section.title === "Applicant / Organization Details" && (
-  <div className="flex justify-end mb-2">
-    <button
-      onClick={() => toggleSection("top")}
-      className="bg-gradient-to-r from-blue-500 to-purple-500 text-white w-8 h-8 flex items-center justify-center rounded"
-    >
-      {expandedSections.top ? <Minus size={16} /> : <Plus size={16} />}
-    </button>
-  </div>
-)}
-
-                  {/* 🔹 BOTTOM TOGGLE (before Department Status) */}
-                  {section.title === "Department Status" && (
-  <div className="flex justify-end mb-2">
-    <button
-      onClick={() => toggleSection("bottom")}
-      className="bg-gradient-to-r from-blue-500 to-purple-500 text-white w-8 h-8 flex items-center justify-center rounded"
-    >
-      {expandedSections.bottom ? <Minus size={16} /> : <Plus size={16} />}
-    </button>
-  </div>
-)}
-                  {/* 🔹 SECTION CARD */}
-                  <div
-                    className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3"
-                  >
-                    <h3 className="text-gray-900 text-sm font-semibold pb-1">
-                      {section.title}
-                    </h3>
-
-                    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2">
-                      {section.fields.map((f, i) => (
-                        <div key={i} className="flex flex-col">
-                          {f.label && (
-                            <span className="text-gray-900 text-sm font-medium">
-                              {f.label}
-                            </span>
-                          )}
-
-                          {React.isValidElement(f.value) ? (
-                            f.value
-                          ) : (
-                            <div className="bg-white border rounded px-2 py-1 text-sm font-semibold text-black">
-                              {renderValue(f.value)}
-                            </div>
-                          )}
+            ].map(section => (
+              <div key={section.title} className="bg-gray-100
+    rounded-xl
+    p-4 sm:p-5
+    shadow
+    flex flex-col
+    gap-3
+  ">
+                <h3 className="text-gray-900 text-sm font-semibold  pb-1">{section.title}</h3>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2">
+                  {section.fields.map(f => (
+                    <div key={f.label} className="flex flex-col">
+                      <span className="text-gray-600 text-sm font-medium">{f.label}</span>
+                      {React.isValidElement(f.value) ? (
+                        f.value
+                      ) : (
+                        <div className="bg-white border rounded px-2 py-1 text-sm font-semibold text-black">
+                          {renderValue(f.value)}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  </div>
+                  ))}
                 </div>
-              );
-            })}
+              </div>
+            ))}
             {editMode && (
               <div className="flex justify-end gap-3">
                 <button

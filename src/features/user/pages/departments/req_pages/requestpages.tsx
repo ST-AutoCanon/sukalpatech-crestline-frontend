@@ -297,24 +297,15 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   //   return latestStatus === "CREATED";
   // };
   const isEditable = (pr: PR) => {
-    if (filter !== "PR Raised") return false;
+  const statuses = pr.department_statuses || [];
 
-    const statuses = pr.department_statuses || [];
+  if (statuses.length === 0) return true;
 
-    // ✅ If no status → allow edit (fresh PR)
-    if (statuses.length === 0) return true;
+  const latestStatus =
+    statuses[statuses.length - 1]?.department_status?.toUpperCase().trim() || "";
 
-    const latestStatus =
-      statuses[statuses.length - 1]?.department_status?.toUpperCase() || "";
-
-    // ✅ Allow if CREATED
-    if (latestStatus === "CREATED") return true;
-
-    // ✅ Allow if latest status is any kind of PENDING
-    if (latestStatus.includes("PENDING")) return true;
-
-    return false; // ❌ for APPROVED / REJECTED / COMPLETED
-  };
+  return latestStatus.includes("CREATED") || latestStatus.includes("PENDING");
+};
 
   const toggleItemsSection = () => setShowItems((prev) => !prev);
 
@@ -525,11 +516,9 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
     }
   };
   const formatDateForInput = (date: string) => {
-    if (!date) return "";
-
-    // ✅ ALWAYS strip time part directly
-    return date.split("T")[0];
-  };
+  if (!date) return "";
+  return date.split("T")[0];
+};
 
   return (
     <>
@@ -587,7 +576,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   More Info
                 </button>
 
-                {filter === "PR Raised" && isEditable(pr) && (
+              {(filter === "PR Raised" || filter === "Pending") && isEditable(pr) && (
                   <button
                     className="text-sm font-semibold text-blue-600 hover:underline"
                     onClick={(e) => {
@@ -808,11 +797,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   /> */}
                   <input
                     type="date"
-                    value={
-                      activePR.required_date
-                        ? activePR.required_date.split("T")[0]
-                        : ""
-                    }
+                    value={formatDateForInput(activePR.required_date)}
                     disabled={!editMode}
                     onChange={(e) =>
                       setActivePR({ ...activePR, required_date: e.target.value })

@@ -164,17 +164,6 @@ const FeasibilityHome: React.FC = () => {
     }
   };
 
-  /* ================= DYNAMIC BUTTON TEXT ================= */
-  const getBusinessRequestLabel = () => {
-    if (allowedBusinessTypes.length === 0) return "Business Request";
-
-    const names = allowedBusinessTypes.map((b) => getLabel(b.key));
-
-    if (names.length === 1) return `${names[0]} Business Request`;
-    if (names.length === 2) return `${names[0]} & ${names[1]} Business Request`;
-
-    return `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]} Business Request`;
-  };
 
   /* ================= FETCH EMPLOYEE ================= */
   useEffect(() => {
@@ -203,24 +192,38 @@ const FeasibilityHome: React.FC = () => {
           return;
         }
 
-        const filtered = loggedUser.departments
-          .map((d: any) => {
-            const key = normalize(d.name);
-            console.log("Mapping:", d.name, "→", key);
+        // ✅ Get ALL departments from all employees
+const allDepartments = result.data.flatMap((emp: any) =>
+  emp.departments || []
+);
 
-            return departmentMap[key]
-              ? { ...departmentMap[key], permission: d.permission }
-              : null;
-          })
-          .filter(Boolean);
+// ✅ Remove duplicates
+const uniqueDepartments = Array.from(
+  new Map(
+    allDepartments.map((d: any) => [
+      normalize(d.name),
+      d
+    ])
+  ).values()
+);
 
-        console.log("Allowed Tabs:", filtered);
+// ✅ Map to your UI tabs
+const filtered = uniqueDepartments
+  .map((d: any) => {
+    const key = normalize(d.name);
 
-        setAllowedBusinessTypes(filtered as any);
+    return departmentMap[key]
+      ? { ...departmentMap[key], permission: d.permission }
+      : null;
+  })
+  .filter(Boolean);
 
-        if (filtered.length > 0) {
-          setBusinessType(filtered[0].key);
-        }
+setAllowedBusinessTypes(filtered as any);
+
+// ✅ Default tab selection
+if (filtered.length > 0) {
+  setBusinessType(filtered[0].key);
+}
 
       } catch (err) {
         console.error("❌ Fetch failed", err);
@@ -257,18 +260,18 @@ const FeasibilityHome: React.FC = () => {
           </button>
 
           <button
-            onClick={() => {
-              setActiveTab("feasibility");
-              setRequestType("business");
-            }}
-            className={`px-4 py-2 rounded-full ${
-              activeTab === "feasibility" && requestType === "business"
-                ? "bg-white text-purple-700 shadow"
-                : "bg-white/10 hover:bg-white/20"
-            }`}
-          >
-            {getBusinessRequestLabel()}
-          </button>
+  onClick={() => {
+    setActiveTab("feasibility");
+    setRequestType("business");
+  }}
+  className={`px-4 py-2 rounded-full ${
+    activeTab === "feasibility" && requestType === "business"
+      ? "bg-white text-purple-700 shadow"
+      : "bg-white/10 hover:bg-white/20"
+  }`}
+>
+  Business Request
+</button>
 
           <button
             onClick={() => setActiveTab("others")}
