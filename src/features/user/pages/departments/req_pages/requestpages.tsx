@@ -309,6 +309,18 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
   const toggleItemsSection = () => setShowItems((prev) => !prev);
 
+     const normalizeDate = (date: string) => {
+       if (!date) return "";
+
+       const d = new Date(date);
+
+       const year = d.getFullYear();
+       const month = String(d.getMonth() + 1).padStart(2, "0");
+       const day = String(d.getDate()).padStart(2, "0");
+
+       return `${year}-${month}-${day}`;
+  };
+  
   if (loading) return <div className="p-6">Loading PRs...</div>;
   const savePR = async (pr: PR) => {
     const token = localStorage.getItem("token");
@@ -327,7 +339,12 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       }
     );
 
-    if (!fullRes.ok) throw new Error("Full PR Save failed");
+    // if (!fullRes.ok) throw new Error("Full PR Save failed");
+    if (!fullRes.ok) {
+      const errorData = await fullRes.json();
+      console.error("❌ Backend error:", errorData);
+      throw new Error(errorData?.message || "Full PR Save failed");
+    }
 
     const updatedFullPR = await fullRes.json();
 
@@ -489,10 +506,12 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
           formattedDate = activePR.required_date;
         }
       }
+   
 
       const normalizedPR: PR = {
         ...activePR,
-        required_date: formattedDate, // ✅ ALWAYS YYYY-MM-DD
+        // required_date: formattedDate,
+        required_date: activePR.required_date,
       };
 
       await savePR(normalizedPR);
@@ -515,9 +534,19 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       });
     }
   };
-  const formatDateForInput = (date: string) => {
+//   const formatDateForInput = (date: string) => {
+//   if (!date) return "";
+//   return date.split("T")[0];
+  // };
+  
+  // const formatDateForInput = (date: string) => {
+  //   if (!date) return "";
+  //   const d = new Date(date);
+  //   return d.toLocaleDateString("en-CA"); // YYYY-MM-DD
+  // };
+const formatDateForInput = (date: string) => {
   if (!date) return "";
-  return date.split("T")[0];
+  return date.split("T")[0]; // ✅ NO timezone conversion
 };
 
   return (
@@ -541,9 +570,19 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
             <div
               key={pr.id}
               className="relative bg-white rounded-xl p-5 shadow-md flex flex-col justify-between hover:shadow-lg transition cursor-pointer"
-              onClick={() => setActivePR(pr)}
+              // onClick={() => setActivePR(pr)}
+              onClick={() =>
+                setActivePR({
+                  ...pr,
+                  required_date: pr.required_date
+                    ? pr.required_date.split("T")[0]
+                    : "",
+                })
+              }
             >
-              <h3 className="text-purple-600 font-semibold text-lg mb-2 truncate">PR ID:{pr.id}</h3>
+              <h3 className="text-purple-600 font-semibold text-lg mb-2 truncate">
+                PR ID:{pr.id}
+              </h3>
               <div className="space-y-1 text-sm flex-1">
                 <div className="flex justify-between gap-3">
                   <span className="text-gray-400 shrink-0">Description</span>
@@ -551,9 +590,22 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                     {pr.description || "-"}
                   </span>
                 </div>
-                <div className="flex justify-between"><span className="text-gray-400">Priority</span><span className="font-medium text-gray-700">{pr.priority}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Status</span><span className="font-medium text-gray-700">{status}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Department</span><span className="font-medium text-gray-700 truncate">{departmentMap[String(pr.department)] ?? pr.department}</span></div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Priority</span>
+                  <span className="font-medium text-gray-700">
+                    {pr.priority}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Status</span>
+                  <span className="font-medium text-gray-700">{status}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Department</span>
+                  <span className="font-medium text-gray-700 truncate">
+                    {departmentMap[String(pr.department)] ?? pr.department}
+                  </span>
+                </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Delivery Date</span>
                   <span className="font-medium text-gray-700">
@@ -570,30 +622,41 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                   onClick={(e) => {
                     e.stopPropagation();
                     setEditMode(false);
-                    setActivePR(pr);
+                    // setActivePR(pr);
+                 setActivePR({
+                   ...pr,
+                   required_date: normalizeDate(pr.required_date),
+                 });
                   }}
                 >
                   More Info
                 </button>
 
-              {(filter === "PR Raised" || filter === "Pending") && isEditable(pr) && (
-                  <button
-                    className="text-sm font-semibold text-blue-600 hover:underline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditMode(true);
+                {(filter === "PR Raised" || filter === "Pending") &&
+                  isEditable(pr) && (
+                    <button
+                      className="text-sm font-semibold text-blue-600 hover:underline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditMode(true);
 
-                      setOriginalPR(pr); // ✅ store original data
+                        setOriginalPR(pr); // ✅ store original data
 
-                      setActivePR({
-                        ...pr,
-                        department: pr.department ? String(pr.department) : "",
-                      });
-                    }}
-                  >
-                    Edit
-                  </button>
-                )}
+                        // setActivePR({
+                        //   ...pr,
+                        //   department: pr.department ? String(pr.department) : "",
+                        // });
+
+                       setActivePR({
+                         ...pr,
+                         department: pr.department ? String(pr.department) : "",
+                         required_date: normalizeDate(pr.required_date), // ✅ ADD THIS
+                       });
+                      }}
+                    >
+                      Edit
+                    </button>
+                  )}
               </div>
             </div>
           );

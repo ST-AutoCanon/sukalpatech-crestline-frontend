@@ -421,7 +421,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   <input
                     name="description"
                     placeholder="Add description"
-                    className="w-full border rounded-lg p-2 mt-1"
+                    className="w-full border rounded-lg p-2.5 mt-1"
                     onChange={handlePRChange}
                   />
                 </div>
@@ -430,7 +430,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   <select
                     name="priority"
                     defaultValue=""
-                    className="w-full border rounded-lg p-2 mt-1 bg-white"
+                    className="w-full border rounded-lg p-3 mt-1"
                     onChange={handlePRChange}
                   >
                     <option value="" disabled>
@@ -446,7 +446,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   <input
                     type="date"
                     name="required_date"
-                    className="w-full border rounded-lg p-2 mt-1"
+                    className="w-full border rounded-lg p-2.5 mt-1"
                     min={new Date().toISOString().split("T")[0]} // disables past dates
                     onChange={handlePRChange}
                   />
@@ -460,7 +460,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                 </select> */}
                   <select
                     name="department"
-                    className="w-full border rounded-lg p-2 mt-1 bg-white"
+                    className="w-full border rounded-lg p-3 mt-1"
                     onChange={handlePRChange}
                   >
                     <option value="">Select</option>
@@ -476,7 +476,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   <input
                     name="remarks"
                     placeholder="Add remarks"
-                    className="w-full border rounded-lg p-2 mt-1"
+                    className="w-full border rounded-lg p-2.5 mt-1"
                     onChange={handlePRChange}
                   />
                 </div>
@@ -512,6 +512,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                       <span className="text-sm font-semibold">Item Code<span className="text-red-500">*</span></span>
                       <input
                         className="flex-1 border rounded-lg px-2 py-1"
+                        placeholder="Enter Item code"
                         onChange={(e) =>
                           handleItemChange(i, "item_code", e.target.value)
                         }
@@ -521,6 +522,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                       <span className="text-sm font-semibold">Item Name<span className="text-red-500">*</span></span>
                       <input
                         className="flex-1 border rounded-lg px-2 py-1"
+                        placeholder="Enter Item name"
                         onChange={(e) =>
                           handleItemChange(i, "item_name", e.target.value)
                         }
@@ -533,6 +535,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                         type="number"
                         min={1}
                         className="w-full sm:w-28 border rounded-lg px-2 py-1"
+                        placeholder="Enter Qty"
                         onKeyDown={(e) => {
                           // Block invalid keys
                           if (["e", "E", "+", "-", "."].includes(e.key)) {
@@ -565,9 +568,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     >
                       {/* Vendor */}
                       <div>
-                        <label className="text-xs text-gray-600">Vendor<span className="text-red-500">*</span></label>
+                        <label className="text-base text-gray-600">Vendor<span className="text-red-500">*</span></label>
                         <select
-                          className="w-full max-w-full p-2 border rounded mt-1 relative z-20 bg-white"
+                          className="w-full max-w-full p-2.5 border rounded mt-1 relative z-20 "
                           onChange={(e) =>
                             handleVendorChange(i, vi, "vendor_id", e.target.value)
                           }
@@ -583,7 +586,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
                       {/* Upload */}
                       <div>
-                        <label className="text-xs text-gray-600">
+                        <label className="text-base text-gray-600">
                           Upload Quotation
                         </label>
 
@@ -597,7 +600,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
                         <label
                           htmlFor={`file-${i}-${vi}`}
-                          className="w-full p-2 border rounded mt-1 bg-white cursor-pointer text-sm text-gray-700 flex items-center justify-between"
+                          className="w-full p-2.5 border rounded mt-1  cursor-pointer text-sm text-gray-700 flex items-center justify-between"
                         >
                           <span className="truncate">
                             {vendorFiles[`${i}-${vi}`]?.length > 0
@@ -617,6 +620,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                           step={1}
                           inputMode="numeric"
                           className="w-full p-2 border rounded mt-1"
+                          placeholder="Enter price"
                           onChange={(e) => {
                             const value = e.target.value;
 
@@ -642,6 +646,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                         </label>
                         <input
                           className="w-full p-2 border rounded mt-1 bg-gray-100"
+                          placeholder="Total Price"
                           value={vendor.total_price || ""}
                           readOnly
                         />
@@ -660,16 +665,18 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                             handleVendorChange(i, vi, "quotation_validity_date", e.target.value)
                           }
                         />
+                        
                       </div>
                       {/* Comments */}
-                      <div className="flex items-end gap-3 w-full">
+                      <div className="flex items-end gap-3 w-[167px]">
                         {/* Comments */}
                         <div className="flex-1">
                           <label className="text-xs text-gray-600">
                             Comments<span className="text-red-500">*</span>
                           </label>
                           <input
-                            className="w-full p-2 border rounded mt-1"
+                            className="w-full p-2  border rounded mt-1"
+                            placeholder="Add Comment"
                             onChange={(e) => handleComment(i, vi, e.target.value)}
                           />
                         </div>

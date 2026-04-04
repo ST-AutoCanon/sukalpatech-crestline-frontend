@@ -70,28 +70,32 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
   //   }
   // };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      const result = await login(email, password, orgCode, "");
+    // ✅ Skip org validation for this specific user
+    const isSuperAdminLogin =
+      email === "kiran@gmail.com" && password === "Password123";
 
-      console.log("LOGIN RESULT:", result);
+    // ✅ Apply validation only for others
+    if (!isSuperAdminLogin && !orgCode) {
+      alert("Please select organization");
+      return;
+    }
+
+    try {
+      const result = await login(email, password, orgCode || "");
 
       const token = result.data.token || result.data.data.token;
-
       const user: any = jwtDecode(token);
-
-      console.log("USER:", user);
 
       if (onSuccess) onSuccess();
 
       if (user.role === "admin") navigate("/admin");
       else if (user.role === "employee") navigate("/employee");
-      else if (user.role === "manager") {
-        navigate("/manager");
-      } else if (user.role === "super_admin") navigate("/super_admin");
+      else if (user.role === "manager") navigate("/manager");
+      else if (user.role === "super_admin") navigate("/super_admin");
+
     } catch (err) {
       console.error("Login failed", err);
     }
@@ -115,7 +119,6 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
           <select
             value={orgCode}
             onChange={(e) => setOrgCode(e.target.value)}
-            required
             className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
             <option value="" disabled>
