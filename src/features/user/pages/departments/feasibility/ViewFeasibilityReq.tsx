@@ -121,108 +121,108 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   } | null>(null);
 
   const getLatestStatus = (pr: PR) => {
-  const statuses = pr.department_statuses || [];
-  return statuses[statuses.length - 1]?.department_status?.toUpperCase() || "";
-};
+    const statuses = pr.department_statuses || [];
+    return statuses[statuses.length - 1]?.department_status?.toUpperCase() || "";
+  };
 
-const matchesFilter = (status: string, filter: string) => {
-  if (filter === "Pending") return status.includes("PENDING");
-  if (filter === "Rejected") return status.includes("REJECTED");
-  if (filter === "Completed") return status.includes("APPROVED");
+  const matchesFilter = (status: string, filter: string) => {
+    if (filter === "Pending") return status.includes("PENDING");
+    if (filter === "Rejected") return status.includes("REJECTED");
+    if (filter === "Completed") return status.includes("APPROVED");
 
-  return true; // for "All" or others
-};
+    return true; // for "All" or others
+  };
 
-//   const fetchPRs = async () => {
-//     setLoading(true);
-//     try {
-//       const token = localStorage.getItem("token"); // or however you store it
+  //   const fetchPRs = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const token = localStorage.getItem("token"); // or however you store it
 
-//       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
+  //       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
-//       if (
-//         filter === "Pending" ||
-//         filter === "Rejected" ||
-//         filter === "Completed"
-//       ) {
-//         const status =
-//           filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
-//         url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
-//       }
+  //       if (
+  //         filter === "Pending" ||
+  //         filter === "Rejected" ||
+  //         filter === "Completed"
+  //       ) {
+  //         const status =
+  //           filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
+  //         url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
+  //       }
 
-//       const res = await fetch(url, {
-//         method: "GET",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${token}`,
-//         },
-//         credentials: "include", // <-- added
-//       });
+  //       const res = await fetch(url, {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         credentials: "include", // <-- added
+  //       });
 
-//       if (!res.ok) {
-//         throw new Error("Failed to fetch PRs");
-//       }
+  //       if (!res.ok) {
+  //         throw new Error("Failed to fetch PRs");
+  //       }
 
-//       const data = await res.json();
+  //       const data = await res.json();
 
-//       const prsData = (data?.data || []).map((pr: PR) => ({
-//         ...pr,
-//         items: pr.items || [],
-//         department_statuses: pr.department_statuses || [],
-//       }));
+  //       const prsData = (data?.data || []).map((pr: PR) => ({
+  //         ...pr,
+  //         items: pr.items || [],
+  //         department_statuses: pr.department_statuses || [],
+  //       }));
 
-// const filteredPRs = prsData.filter((pr) => {
-//   const latestStatus = getLatestStatus(pr);
-//   return matchesFilter(latestStatus, filter);
-// });
+  // const filteredPRs = prsData.filter((pr) => {
+  //   const latestStatus = getLatestStatus(pr);
+  //   return matchesFilter(latestStatus, filter);
+  // });
 
-// setPrs(filteredPRs);
-//     } catch (err) {
-//       console.error("Fetch PR error", err);
-//       setPrs([]);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+  // setPrs(filteredPRs);
+  //     } catch (err) {
+  //       console.error("Fetch PR error", err);
+  //       setPrs([]);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-const fetchPRs = async () => {
-  setLoading(true);
-  try {
-    const token = localStorage.getItem("token");
-    let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
+  const fetchPRs = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
-    // Apply filter
-    if (["Pending", "Rejected", "Completed"].includes(filter)) {
-      const status = filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
-      url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
+      // Apply filter
+      if (["Pending", "Rejected", "Completed"].includes(filter)) {
+        const status = filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
+        url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
+      }
+
+      const res = await fetch(url, {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch PRs");
+
+      const data = await res.json();
+      let prsData = (data?.data || []).map((pr: PR) => ({
+        ...pr,
+        items: pr.items || [],
+        department_statuses: pr.department_statuses || [],
+      }));
+
+      // Filter based on latest status
+      prsData = prsData.filter(pr => matchesFilter(getLatestStatus(pr), filter));
+
+      setPrs(prsData);
+    } catch (err) {
+      console.error(err);
+      setPrs([]);
+    } finally {
+      setLoading(false);
     }
-
-    const res = await fetch(url, {
-      method: "GET",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      credentials: "include",
-    });
-
-    if (!res.ok) throw new Error("Failed to fetch PRs");
-
-    const data = await res.json();
-    let prsData = (data?.data || []).map((pr: PR) => ({
-      ...pr,
-      items: pr.items || [],
-      department_statuses: pr.department_statuses || [],
-    }));
-
-    // Filter based on latest status
-    prsData = prsData.filter(pr => matchesFilter(getLatestStatus(pr), filter));
-
-    setPrs(prsData);
-  } catch (err) {
-    console.error(err);
-    setPrs([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     fetchPRs();
@@ -264,15 +264,15 @@ const fetchPRs = async () => {
   // }, []);
 
   useEffect(() => {
-  fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, { credentials: "include" })
-    .then(res => res.json())
-    .then(data => {
-      const map: Record<string, string> = {};
-      (data?.data || []).forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
-      setVendorMap(map);
-    })
-    .catch(err => console.error(err));
-}, []);
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, { credentials: "include" })
+      .then(res => res.json())
+      .then(data => {
+        const map: Record<string, string> = {};
+        (data?.data || []).forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
+        setVendorMap(map);
+      })
+      .catch(err => console.error(err));
+  }, []);
 
 
   // useEffect(() => {
@@ -283,16 +283,16 @@ const fetchPRs = async () => {
   // }, []);
 
   // Departments
-useEffect(() => {
-  fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, { credentials: "include" })
-    .then(res => res.json())
-    .then(data => {
-      const map: Record<string, string> = {};
-      (data?.data || []).forEach((d: any) => (map[String(d.department_id)] = d.name));
-      setDepartmentMap(map);
-    })
-    .catch(err => console.error(err));
-}, []);
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, { credentials: "include" })
+      .then(res => res.json())
+      .then(data => {
+        const map: Record<string, string> = {};
+        (data?.data || []).forEach((d: any) => (map[String(d.department_id)] = d.name));
+        setDepartmentMap(map);
+      })
+      .catch(err => console.error(err));
+  }, []);
 
   useEffect(() => {
     fetch(
@@ -413,56 +413,56 @@ useEffect(() => {
   //   }
   // };
 
-const handleSave = async () => {
-  if (!activePR) return;
+  const handleSave = async () => {
+    if (!activePR) return;
 
-  try {
-    let updatedPRData = { ...activePR };
+    try {
+      let updatedPRData = { ...activePR };
 
-    if (newStatus) {
-      updatedPRData = {
-        ...updatedPRData,
-        department_statuses: [
-          ...(updatedPRData.department_statuses || []),
-          {
-            department_status: newStatus,
-            department_comment: newComment,
-            status_updated_by: user?.first_name || "User",
-            updated_at: new Date().toISOString(),
-          },
-        ],
-      };
+      if (newStatus) {
+        updatedPRData = {
+          ...updatedPRData,
+          department_statuses: [
+            ...(updatedPRData.department_statuses || []),
+            {
+              department_status: newStatus,
+              department_comment: newComment,
+              status_updated_by: user?.first_name || "User",
+              updated_at: new Date().toISOString(),
+            },
+          ],
+        };
+      }
+
+      // ✅ Call API
+      await savePR(updatedPRData);
+
+      // ✅ Refetch based on current tab
+      await fetchPRs();
+
+      setNewStatus("");
+      setNewComment("");
+      setEditMode(false);
+      setActivePR(null);
+
+      setAlert({
+        type: "success",
+        message: "PR updated successfully!",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
+
+    } catch (err) {
+      console.error("Save error:", err);
+
+      setAlert({
+        type: "error",
+        message: "Failed to update PR.",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
     }
-
-    // ✅ Call API
-    await savePR(updatedPRData);
-
-    // ✅ Refetch based on current tab
-    await fetchPRs();
-
-    setNewStatus("");
-    setNewComment("");
-    setEditMode(false);
-    setActivePR(null);
-
-    setAlert({
-      type: "success",
-      message: "PR updated successfully!",
-    });
-
-    setTimeout(() => setAlert(null), 3000);
-
-  } catch (err) {
-    console.error("Save error:", err);
-
-    setAlert({
-      type: "error",
-      message: "Failed to update PR.",
-    });
-
-    setTimeout(() => setAlert(null), 3000);
-  }
-};
+  };
   const formatDateForInput = (date: string) => {
     if (!date) return "";
     const d = new Date(date);
@@ -948,15 +948,15 @@ const handleSave = async () => {
                                   {vendor.attachments?.[0]?.file_name || "No file uploaded"}
                                 </label>
  */}
-                               <div>
+                                <div>
 
-                                    <label
-                                      className={`w-full border rounded px-2 py-1 text-sm flex items-center overflow-hidden ${editMode
-                                        ? "cursor-pointer border-blue-400 bg-white"
-                                        : "bg-gray-100 text-gray-600"
-                                        }`}
-                                    >
-                                      {/* <span
+                                  <label
+                                    className={`w-full border rounded px-2 py-1 text-sm flex items-center overflow-hidden ${editMode
+                                      ? "cursor-pointer border-blue-400 bg-white"
+                                      : "bg-gray-100 text-gray-600"
+                                      }`}
+                                  >
+                                    {/* <span
                                         className="truncate w-full block text-blue-600 underline cursor-pointer"
                                         onClick={() => {
                                           if (!vendor.attachments?.[0]) return;
@@ -981,63 +981,63 @@ const handleSave = async () => {
                                       >
                                         {vendor.attachments?.[0]?.file_name || "No file uploaded"}
                                       </span> */}
-                                      {(() => {
-                                        const validAttachment = vendor.attachments?.find(
-                                          (att: any) =>
-                                            (att.file_path && att.file_path.trim() !== "") || att.fileObject
-                                        );
+                                    {(() => {
+                                      const validAttachment = vendor.attachments?.find(
+                                        (att: any) =>
+                                          (att.file_path && att.file_path.trim() !== "") || att.fileObject
+                                      );
 
-                                        if (!validAttachment) {
-                                          return <span className="text-gray-400 text-sm">No file</span>;
-                                        }
+                                      if (!validAttachment) {
+                                        return <span className="text-gray-400 text-sm">No file</span>;
+                                      }
 
-                                        const fileUrl = validAttachment.fileObject
-                                          ? validAttachment.file_path // local preview (URL.createObjectURL)
-                                          : `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`;
+                                      const fileUrl = validAttachment.fileObject
+                                        ? validAttachment.file_path // local preview (URL.createObjectURL)
+                                        : `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`;
 
-                                        return (
-                                          <a
-                                            href={fileUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 underline text-sm truncate block"
-                                          >
-                                            {validAttachment.file_name || "View File"}
-                                          </a>
-                                        );
-                                      })()}
+                                      return (
+                                        <a
+                                          href={fileUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 underline text-sm truncate block"
+                                        >
+                                          {validAttachment.file_name || "View File"}
+                                        </a>
+                                      );
+                                    })()}
 
 
-                                      {editMode && (
-                                        <input
-                                          type="file"
-                                          className="hidden"
-                                          onChange={(e) => {
-                                            const file = e.target.files?.[0];
-                                            if (!file) return;
+                                    {editMode && (
+                                      <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (!file) return;
 
-                                            const updatedItems = [...activePR.items];
+                                          const updatedItems = [...activePR.items];
 
-                                            updatedItems[itemIndex].vendors[vendorIndex] = {
-                                              ...updatedItems[itemIndex].vendors[vendorIndex],
-                                              attachments: [
-                                                {
-                                                  id: Date.now(),
-                                                  file_name: file.name,
-                                                  file_path: URL.createObjectURL(file),
-                                                  uploaded_by: 0,
-                                                  uploaded_at: new Date().toISOString(),
-                                                  fileObject: file,
-                                                },
-                                              ],
-                                            };
+                                          updatedItems[itemIndex].vendors[vendorIndex] = {
+                                            ...updatedItems[itemIndex].vendors[vendorIndex],
+                                            attachments: [
+                                              {
+                                                id: Date.now(),
+                                                file_name: file.name,
+                                                file_path: URL.createObjectURL(file),
+                                                uploaded_by: 0,
+                                                uploaded_at: new Date().toISOString(),
+                                                fileObject: file,
+                                              },
+                                            ],
+                                          };
 
-                                            setActivePR({ ...activePR, items: updatedItems });
-                                          }}
-                                        />
-                                      )}
-                                    </label>
-                                  </div>
+                                          setActivePR({ ...activePR, items: updatedItems });
+                                        }}
+                                      />
+                                    )}
+                                  </label>
+                                </div>
 
 
 
@@ -1137,23 +1137,30 @@ const handleSave = async () => {
                                   className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""
                                     }`}
                                 />
-                                <select
-                                  value={vendor.status ?? ""} // shows last updated status
-                                  onChange={(e) => {
-                                    const updatedItems = [...activePR.items];
-                                    updatedItems[itemIndex].vendors[vendorIndex] = {
-                                      ...updatedItems[itemIndex].vendors[vendorIndex],
-                                      status: e.target.value,
-                                    };
-                                    setActivePR({ ...activePR, items: updatedItems });
-                                  }}
-                                  className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""}`}
-                                >
-                                  <option value="feasibility Pending">feasibility Pending</option>
-                                  <option value="feasibility rejected">feasibility rejected</option>
-                                  <option value="feasibility approved">feasibility approved</option>
-                                </select>
-
+                                {editMode ? (
+                                  <select
+                                    value={vendor.status ?? ""}
+                                    onChange={(e) => {
+                                      const updatedItems = [...activePR.items];
+                                      updatedItems[itemIndex].vendors[vendorIndex] = {
+                                        ...updatedItems[itemIndex].vendors[vendorIndex],
+                                        status: e.target.value,
+                                      };
+                                      setActivePR({ ...activePR, items: updatedItems });
+                                    }}
+                                    className="bg-white border border-blue-400 rounded px-2 py-1 w-full"
+                                  >
+                                    <option value="feasibility Pending">feasibility Pending</option>
+                                    <option value="feasibility rejected">feasibility rejected</option>
+                                    <option value="feasibility approved">feasibility approved</option>
+                                  </select>
+                                ) : (
+                                  <input
+                                    value={vendor.status || "-"}
+                                    readOnly
+                                    className="bg-gray-100 border rounded px-2 py-1 w-full"
+                                  />
+                                )}
 
                               </div>
                             );

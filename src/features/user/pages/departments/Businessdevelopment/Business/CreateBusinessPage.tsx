@@ -337,6 +337,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Description <span className="text-red-500">*</span></label>
                   <input
                     name="description"
+                    placeholder="Enter Description"
                     value={form.description}
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
@@ -373,6 +374,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Requested By Person<span className="text-red-500">*</span></label>
                   <input
                     name="requested_by_person"
+                     placeholder="Enter Person name"
                     value={form.requested_by_person}
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
@@ -387,15 +389,15 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Applicant Name <span className="text-red-500">*</span></label>
-                  <input name="applicant_name" value={form.applicant_name} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
+                  <input name="applicant_name"  placeholder="Enter Applicant name" value={form.applicant_name} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Contact Person</label>
-                  <input name="contact_person" value={form.contact_person} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
+                  <input name="contact_person"  placeholder="Enter Contact person" value={form.contact_person} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Email</label>
-                  <input name="email" value={form.email} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
+                  <input name="email"  placeholder="Enter Email" value={form.email} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">
@@ -420,7 +422,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
                 <div className="col-span-1 sm:col-span-2">
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Address</label>
-                  <input name="address" value={form.address} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
+                  <input name="address"  placeholder="Enter Address" value={form.address} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
               </div>
             </Section>
@@ -467,6 +469,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                       <input
                         name={f}
                         value={form[f] || ""}
+                         placeholder={`Enter ${formatLabel(f)}`}
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                       />
@@ -531,6 +534,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                       <input
                         name={f}
                         value={form[f] || ""}
+                         placeholder={`Enter ${formatLabel(f)}`}
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                       />
@@ -552,6 +556,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                     <input
                       name={f}
                       value={form[f] || ""}
+                       placeholder={`Enter ${formatLabel(f)}`}
                       onChange={handleChange}
                       className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                     />
@@ -646,7 +651,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
               toggle={toggleSection}>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <input type="date" name="expected_delivery" value={form.expected_delivery} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
-                <input type="number" name="approximate_budget" value={form.approximate_budget} placeholder="Approx Budget" onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
+                <input type="number" name="approximate_budget" value={form.approximate_budget} placeholder="Enter Budget" onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
               </div>
             </Section>
 
