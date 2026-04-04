@@ -74,14 +74,16 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState(data);
   const [originalData, setOriginalData] = useState(data);
+  
+  
 
 
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
-const INPUT_CLASS =
-  "w-full border border-gray-500 rounded px-1 py-1 text-sm font-semibold bg-white outline-none focus:outline-none focus:ring-0 focus:border-gray-500";
+  const INPUT_CLASS =
+    "w-full border border-gray-500 rounded px-1 py-1 text-sm font-semibold bg-white outline-none focus:outline-none focus:ring-0 focus:border-gray-500";
 
 
   const STATUS_LABELS: Record<string, string> = {
@@ -121,7 +123,7 @@ const INPUT_CLASS =
         <select
           value={formData[key] ?? ""}
           onChange={(e) => handleChange(key, e.target.value)}
-        className={INPUT_CLASS}
+          className={INPUT_CLASS}
         >
           <option value="">Select</option>
           {DROPDOWN_OPTIONS[key as string].map((option) => (
@@ -143,7 +145,7 @@ const INPUT_CLASS =
             : formData[key] ?? ""
         }
         onChange={(e) => handleChange(key, e.target.value)}
-       className={INPUT_CLASS}
+        className={INPUT_CLASS}
       />
     );
   };
@@ -151,6 +153,7 @@ const INPUT_CLASS =
 
   const renderCheckbox = (key: keyof typeof formData, label: string) => {
     const checked = !!formData[key];
+    
 
     return (
       <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
@@ -278,9 +281,13 @@ const INPUT_CLASS =
         if (value !== undefined && value !== null) {
           // Send numbers as numbers
           if (typeof value === "number") {
-            fd.append(key, value.toString());   // numbers safely converted
+            if (key === "approximate_budget") {
+              fd.append(key, String(Math.round(Number(value))));
+            }  // numbers safely converted
           } else {
-            fd.append(key, value.toString());
+            if (key === "approximate_budget") {
+              fd.append(key, String(Math.round(Number(value))));
+            }
           }
         }
       });

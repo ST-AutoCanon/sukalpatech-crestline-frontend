@@ -133,82 +133,96 @@ const matchesFilter = (status: string, filter: string) => {
   return true; // for "All" or others
 };
 
-  // const fetchPRs = async () => {
-  //   setLoading(true);
-  //   try {
-  //     let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
-  //     if (filter === "Pending" || filter === "Rejected" || filter === "Completed") {
-  //       const status = filter === "Completed" ? "APPROVED" : filter.toUpperCase();
-  //       url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
-  //     }
-  //     const res = await fetch(url);
-  //     const data = await res.json();
-  //     const prsData = (data?.data || []).map((pr: PR) => ({
-  //       ...pr,
-  //       items: pr.items || [],
-  //       department_statuses: pr.department_statuses || [],
-  //     }));
-  //     setPrs(prsData);
-  //   } catch (err) {
-  //     console.error("Fetch PR error", err);
-  //     setPrs([]);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+//   const fetchPRs = async () => {
+//     setLoading(true);
+//     try {
+//       const token = localStorage.getItem("token"); // or however you store it
 
+//       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
-  const fetchPRs = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token"); // or however you store it
+//       if (
+//         filter === "Pending" ||
+//         filter === "Rejected" ||
+//         filter === "Completed"
+//       ) {
+//         const status =
+//           filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
+//         url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
+//       }
 
-      let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
+//       const res = await fetch(url, {
+//         method: "GET",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         credentials: "include", // <-- added
+//       });
 
-      if (
-        filter === "Pending" ||
-        filter === "Rejected" ||
-        filter === "Completed"
-      ) {
-        const status =
-          filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
-        url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
-      }
+//       if (!res.ok) {
+//         throw new Error("Failed to fetch PRs");
+//       }
 
-      const res = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include", // <-- added
-      });
+//       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch PRs");
-      }
+//       const prsData = (data?.data || []).map((pr: PR) => ({
+//         ...pr,
+//         items: pr.items || [],
+//         department_statuses: pr.department_statuses || [],
+//       }));
 
-      const data = await res.json();
+// const filteredPRs = prsData.filter((pr) => {
+//   const latestStatus = getLatestStatus(pr);
+//   return matchesFilter(latestStatus, filter);
+// });
 
-      const prsData = (data?.data || []).map((pr: PR) => ({
-        ...pr,
-        items: pr.items || [],
-        department_statuses: pr.department_statuses || [],
-      }));
+// setPrs(filteredPRs);
+//     } catch (err) {
+//       console.error("Fetch PR error", err);
+//       setPrs([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
-const filteredPRs = prsData.filter((pr) => {
-  const latestStatus = getLatestStatus(pr);
-  return matchesFilter(latestStatus, filter);
-});
+const fetchPRs = async () => {
+  setLoading(true);
+  try {
+    const token = localStorage.getItem("token");
+    let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
-setPrs(filteredPRs);
-    } catch (err) {
-      console.error("Fetch PR error", err);
-      setPrs([]);
-    } finally {
-      setLoading(false);
+    // Apply filter
+    if (["Pending", "Rejected", "Completed"].includes(filter)) {
+      const status = filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
+      url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
     }
-  };
+
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      credentials: "include",
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch PRs");
+
+    const data = await res.json();
+    let prsData = (data?.data || []).map((pr: PR) => ({
+      ...pr,
+      items: pr.items || [],
+      department_statuses: pr.department_statuses || [],
+    }));
+
+    // Filter based on latest status
+    prsData = prsData.filter(pr => matchesFilter(getLatestStatus(pr), filter));
+
+    setPrs(prsData);
+  } catch (err) {
+    console.error(err);
+    setPrs([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchPRs();
@@ -234,20 +248,31 @@ setPrs(filteredPRs);
   //     .catch((err) => console.error("Vendor fetch error:", err));
   // }, []);
 
+  // useEffect(() => {
+  //   fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
+  //     credentials: "include", // <-- added
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       const map: Record<string, string> = {};
+  //       (data?.data || []).forEach((v: any) => {
+  //         map[String(v.vendor_id)] = v.vendor_name;
+  //       });
+  //       setVendorMap(map);
+  //     })
+  //     .catch((err) => console.error("Vendor fetch error:", err));
+  // }, []);
+
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, {
-      credentials: "include", // <-- added
+  fetch(`${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`, { credentials: "include" })
+    .then(res => res.json())
+    .then(data => {
+      const map: Record<string, string> = {};
+      (data?.data || []).forEach((v: any) => (map[String(v.vendor_id)] = v.vendor_name));
+      setVendorMap(map);
     })
-      .then((res) => res.json())
-      .then((data) => {
-        const map: Record<string, string> = {};
-        (data?.data || []).forEach((v: any) => {
-          map[String(v.vendor_id)] = v.vendor_name;
-        });
-        setVendorMap(map);
-      })
-      .catch((err) => console.error("Vendor fetch error:", err));
-  }, []);
+    .catch(err => console.error(err));
+}, []);
 
 
   // useEffect(() => {
@@ -257,26 +282,17 @@ setPrs(filteredPRs);
   //     .catch((err) => console.error("Fetch PR Error:", err));
   // }, []);
 
-  useEffect(() => {
-
-
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
-      credentials: "include", // ✅ send cookie
+  // Departments
+useEffect(() => {
+  fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, { credentials: "include" })
+    .then(res => res.json())
+    .then(data => {
+      const map: Record<string, string> = {};
+      (data?.data || []).forEach((d: any) => (map[String(d.department_id)] = d.name));
+      setDepartmentMap(map);
     })
-      .then((res) => res.json())
-      .then((data) => {
-        const departments = data?.data || [];
-        const map: Record<string, string> = {};
-
-        departments.forEach((d: any) => {
-          map[String(d.department_id)] = d.name;
-        });
-
-        setDepartmentMap(map);
-      })
-      .catch((err) => console.error("Department fetch error", err));
-  }, []);
-
+    .catch(err => console.error(err));
+}, []);
 
   useEffect(() => {
     fetch(

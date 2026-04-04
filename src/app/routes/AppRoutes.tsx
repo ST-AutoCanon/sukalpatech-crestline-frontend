@@ -17,9 +17,9 @@ import EmployeeUpdate from "../../features/admin/pages/EmployeeUpdate";
 import CreateOrganisation from "../../features/superadmin/pages/organisations/CreateOrganisation";
 
 import UpdatedFeasibilityPage from "../../features/user/pages/departments/Businessdevelopment/Feasibility/UpdatedFeasibilitypage";
-import ThreeWheelerPage from "../../features/user/pages/departments/ThreeWheeler/Business/ThreeWheelerHome";
-import Foodbusiness from "../../features/user/pages/departments/FoodBusiness/FoodPages/FoodBusinessHome";
-import TwoWheelerHome from "../../features/user/pages/departments/TwoWheeler/Business/TwoWheelerHome";
+// import ThreeWheelerPage from "../../features/user/pages/departments/ThreeWheeler/Business/ThreeWheelerHome";
+// import Foodbusiness from "../../features/user/pages/departments/FoodBusiness/FoodPages/FoodBusinessHome";
+// import TwoWheelerHome from "../../features/user/pages/departments/TwoWheeler/Business/TwoWheelerHome";
 /* =========================
    Lazy Loaded Departments
 ========================= */
@@ -116,32 +116,32 @@ export default function AppRoutes() {
           }
         />
       </Route>
-      <Route
+      {/* <Route
   path="bd2/2w"
   element={
     <Suspense fallback={<div>Loading 2W...</div>}>
       <TwoWheelerHome />
     </Suspense>
   }
-/>
+/> */}
 
-<Route
+{/* <Route
   path="bd2/3w"
   element={
     <Suspense fallback={<div>Loading 3W...</div>}>
       <ThreeWheelerPage />
     </Suspense>
   }
-/>
+/> */}
 
-<Route
+{/* <Route
   path="bd2/food"
   element={
     <Suspense fallback={<div>Loading Food...</div>}>
       <Foodbusiness />
     </Suspense>
   }
-/>
+/> */}
 
       {/* Admin Routes */}
       <Route
