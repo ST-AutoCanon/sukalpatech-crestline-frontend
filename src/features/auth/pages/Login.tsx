@@ -57,7 +57,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
 
   //      // decode token
   //     const user: any = jwtDecode(token);
-      
+
   //     // ✅ Close modal if provided
   //     if (onSuccess) onSuccess();
 
@@ -115,13 +115,15 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
           <select
             value={orgCode}
             onChange={(e) => setOrgCode(e.target.value)}
-           
+            required
             className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
-            <option value="">Select Organization</option>
+            <option value="" disabled>
+              Select Organization
+            </option>
             {orgCodes.map((org: any) => (
               <option key={org.org_code} value={org.org_code}>
-                {org.name} {/* only shows name in dropdown */}
+                {org.name}
               </option>
             ))}
           </select>

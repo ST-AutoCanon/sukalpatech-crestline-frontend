@@ -253,7 +253,7 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
         }
 
         if (status === "APPROVED") {
-          return latestStatus.includes("APPROVED");
+          return latestStatus.includes("STORE APPROVED");
           // or use === "STORE APPROVED" if strict needed
         }
 

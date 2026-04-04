@@ -497,6 +497,9 @@ const AllVendors: React.FC = () => {
             </div>
 
             <div className="px-6 py-5 space-y-6">
+               <h3 className="text-purple-600 font-medium text-lg mb-2">
+                  ● Vendor Details
+                </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Vendor Name"

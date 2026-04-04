@@ -51,7 +51,7 @@ export const Section = memo(
 );
 const initialForm = {
   bd_status: "CREATED",
-  bd_comments: "",
+  bd_comments: "Initial Review",
   description: "",
   priority: "",
   required_date: "",
@@ -171,6 +171,15 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
       }
     });
   };
+  const validateForm = () => {
+    if (!form.description) return "Description is required";
+    if (!form.priority) return "Priority is required";
+    if (!form.required_date) return "Required Date is required";
+    if (!form.requested_by_person) return "Requested By Person is required";
+    if (!form.applicant_name) return "Applicant Name is required";
+
+    return null; // ✅ no errors
+  };
 
 
 
@@ -205,6 +214,17 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
   const handleSubmit = async (e: any, bdId?: number) => {
     e.preventDefault();
+
+    const errorMessage = validateForm();
+
+    if (errorMessage) {
+      setAlert({
+        type: "error",
+        message: errorMessage,
+      });
+      return; // 🚫 stop API call
+    }
+
 
     const formData = new FormData();
 
@@ -260,6 +280,11 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
         message: "Failed to submit BD info",
       });
     }
+  };
+  const formatLabel = (key: string) => {
+    return key
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
 
@@ -409,24 +434,24 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {[
-                  "Chassis_Manufacturer",
-                  "Chassis_Model",
-                  "Chassis_Number",
-                  "Engine_Number",
-                  "Wheelbase",
-                  "Fuel_Type",
+                  "chassis_manufacturer",
+                  "chassis_model",
+                  "chassis_number",
+                  "engine_number",
+                  "wheelbase",
+                  "fuel_type",
                 ].map((f) => (
                   <div key={f}>
-                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">
-  {f.replace(/_/g, " ")}
-</label>
+                    <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">
+                      {formatLabel(f)}
+                    </label>
 
                     {f === "fuel_type" ? (
                       <select
                         name={f}
                         value={form[f] || ""}
                         onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base bg-gray-100"
+                        className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                       >
                         <option value="">Select Fuel Type</option>
                         <option value="Diesel">Diesel</option>
@@ -460,22 +485,22 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {[
-                  "Seating_Capacity",
-                  "Seat_Type",
-                  "Flooring_Type",
-                  "Interior_Color",
+                  "seating_capacity",
+                  "seat_type",
+                  "flooring_type",
+                  "interior_color",
                 ].map((f) => (
                   <div key={f}>
                     <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">
-  {f.replace(/_/g, " ")}
-</label>
+                      {formatLabel(f)}
+                    </label>
                     {/* SEAT TYPE */}
                     {f === "seat_type" && (
                       <select
                         name={f}
                         value={form[f] || ""}
                         onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-md p-2 text-sm bg-gray-100"
+                        className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                       >
                         <option value="">Select Seat Type</option>
                         <option value="Fixed">Fixed</option>
@@ -492,7 +517,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                         name={f}
                         value={form[f] || ""}
                         onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-md p-2 text-sm bg-gray-100"
+                        className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                       >
                         <option value="">Select Flooring Type</option>
                         <option value="Anti-skid">Anti-skid</option>
@@ -507,7 +532,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                         name={f}
                         value={form[f] || ""}
                         onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                        className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                       />
                     )}
                   </div>
@@ -519,16 +544,16 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             <Section title="Exterior Specifications" sectionKey="exterior" expanded={expandedSections.exterior}
               toggle={toggleSection}>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {["Body_Material", "Paint_Color", "Window_Type", "Door_Type"].map((f) => (
+                {["body_material", "paint_color", "window_type", "door_type"].map((f) => (
                   <div key={f} className="flex flex-col">
-                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">
-  {f.replace(/_/g, " ")}
-</label>
+                    <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">
+                      {formatLabel(f)}
+                    </label>
                     <input
                       name={f}
                       value={form[f] || ""}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                     />
                   </div>
                 ))}
@@ -538,7 +563,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             {/* Body Type */}
             <Section title="Body Type Required" sectionKey="bodyType" expanded={expandedSections.bodyType}
               toggle={toggleSection}>
-              <select name="body_type" value={form.body_type} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 text-sm">
+              <select name="body_type" value={form.body_type} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base">
                 <option value="">Select Body Type</option>
                 <option value="City Bus">City Bus</option>
                 <option value="School Bus">School Bus</option>
@@ -550,78 +575,78 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             </Section>
 
             {/* Additional Features */}
-           <Section
-  title="Additional Features"
-  sectionKey="features"
-  expanded={expandedSections.features}
-  toggle={toggleSection}
->
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-    {[
-      "Ac",
-      "Cctv",
-      "Gps",
-      "Fire_Extinguisher",
-      "Emergency_Exit",
-      "Led_Board",
-      "Usb",
-      "Luggage_Carrier",
-      "Wheelchair_Access",
-    ].map((f) => (
-      <label
-        key={f}
-        className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1 block"
-      >
-        <input
-          type="checkbox"
-          name={f}
-          checked={!!form[f]}
-          onChange={handleChange}
-          className="mr-2"
-        />
-        {f.replace(/_/g, " ")}
-      </label>
-    ))}
-  </div>
-</Section>
+            <Section
+              title="Additional Features"
+              sectionKey="features"
+              expanded={expandedSections.features}
+              toggle={toggleSection}
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {[
+                  "ac",
+                  "cctv",
+                  "gps",
+                  "fire_extinguisher",
+                  "emergency_exit",
+                  "led_board",
+                  "usb",
+                  "luggage_carrier",
+                  "wheelchair_access",
+                ].map((f) => (
+                  <div
+                    key={f}
+                    className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1 block"
+                  >
+                    <input
+                      type="checkbox"
+                      name={f}
+                      checked={!!form[f]}
+                      onChange={handleChange}
+                      className="w-5 h-5 cursor-pointer accent-blue-600"
+                    />
+                    {formatLabel(f)}
+                  </div>
+                ))}
+              </div>
+            </Section>
 
             {/* Compliance */}
             <Section
-  title="Compliance & Standards"
-  sectionKey="compliance"
-  expanded={expandedSections.compliance}
-  toggle={toggleSection}
->
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-    {[
-      "Ais_Compliant",
-      "Cmvr_Compliant",
-      "School_Bus_Safety",
-      "State_Transport_Norms",
-    ].map((f) => (
-      <label
-        key={f}
-        className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1 block"
-      >
-        <input
-          type="checkbox"
-          name={f}
-          checked={!!form[f]}
-          onChange={handleChange}
-          className="mr-2"
-        />
-        {f.replace(/_/g, " ")}
-      </label>
-    ))}
-  </div>
-  </Section>
+              title="Compliance & Standards"
+              sectionKey="compliance"
+              expanded={expandedSections.compliance}
+              toggle={toggleSection}
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {[
+                  "ais_compliant",
+                  "cmvr_cmpliant",
+                  "school_bus_safety",
+                  "state_transport_norms",
+                ].map((f) => (
+                  <div
+                    key={f}
+                    className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1 block"
+                  >
+                    <input
+                      type="checkbox"
+                      name={f}
+                      checked={!!form[f]}
+                      onChange={handleChange}
+                      className="w-5 h-5 cursor-pointer accent-blue-600"
+                    />
+                    {formatLabel(f)}
+                  </div>
+                ))}
+              </div>
+            </Section>
 
             {/* Timeline & Budget */}
             <Section title="Timeline & Budget" sectionKey="timeline" expanded={expandedSections.timeline}
               toggle={toggleSection}>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                <input type="date" name="expected_delivery" value={form.expected_delivery} onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-sm" />
-                <input type="number" name="approximate_budget" value={form.approximate_budget} placeholder="Approx Budget" onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-sm" />
+                <input type="date" name="expected_delivery" value={form.expected_delivery} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
+                <input type="number" name="approximate_budget" value={form.approximate_budget} placeholder="Approx Budget" onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
               </div>
             </Section>
 
@@ -667,14 +692,14 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
               />
 
               {/* Custom Button */}
-               <button
-    type="button"
-    onClick={() => fileInputRef.current?.click()}
-    className="flex items-center gap-2 px-3 py-2 border rounded-lg text-gray-700 hover:bg-gray-100"
-  >
-    <Upload size={20} />
-    Upload Files
-  </button>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2 px-3 py-2 border rounded-lg text-gray-700 hover:bg-gray-100"
+              >
+                <Upload size={20} />
+                Upload Files
+              </button>
 
               {/* Selected Files List */}
               {form.attachments.length > 0 ? (
@@ -707,7 +732,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-sm text-gray-400 mt-2">
                   No files selected
                 </p>
               )}
@@ -721,32 +746,32 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
                 <div>
                   <label className="text-sm font-semibold text-gray-700 mb-1 block">Declaration Date</label>
-                  <input type="date" name="declaration_date" value={form.declaration_date} onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-sm w-full" />
+                  <input type="date" name="declaration_date" value={form.declaration_date} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-gray-700 mb-1 block">Place</label>
-                  <input type="text" name="place" value={form.place} placeholder="Enter Place" onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-sm w-full" />
+                  <label className="text-sm font-semibold text-gray-700 mb-1 block">Place</label>
+                  <input type="text" name="place" value={form.place} placeholder="Enter Place" onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-gray-700 mb-1 block">Applicant Signature</label>
-                  <input type="text" name="applicant_signature" value={form.applicant_signature} placeholder="Enter Signature" onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-sm w-full" />
+                  <label className="text-sm font-semibold text-gray-700 mb-1 block">Applicant Signature</label>
+                  <input type="text" name="applicant_signature" value={form.applicant_signature} placeholder="Enter Signature" onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
               </div>
             </Section>
 
             {/* BD Review */}
-            <Section title="BD Review" sectionKey="bdReview" expanded={expandedSections.bdReview}
+            {/* <Section title="BD Review" sectionKey="bdReview" expanded={expandedSections.bdReview}
               toggle={toggleSection}>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
 
                 <select name="bd_status" value={form.bd_status} onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-sm">
-                  <option value="CREATED">CREATED</option>
+                  <option value="CREATED">APPROVED</option>
                   <option value="PENDING">PENDING</option>
                   <option value="REJECTED">REJECTED</option>
                 </select>
                 <input name="bd_comments" value={form.bd_comments} placeholder="BD Comments" onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-sm" />
               </div>
-            </Section>
+            </Section> */}
 
 
           </form>

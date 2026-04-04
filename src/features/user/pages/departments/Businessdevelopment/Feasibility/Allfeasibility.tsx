@@ -441,7 +441,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
       "
           >
             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium mb-4">
-              BR-{data.id} Full Info
+              BR-{data.display_id} Info
             </h2>
 
             {/* Existing sections */}
@@ -648,6 +648,69 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                   },
                 ],
               },
+              {
+  title: "Attachments",
+  fields: [
+    {
+      label: "Attachments",
+      value: (
+        <div className="flex flex-col gap-2">
+          {Array.isArray(data.attachments) && data.attachments.length > 0 ? (
+            <div className="flex flex-col gap-1">
+              {data.attachments.map((file: any, idx: number) => {
+                const fileName =
+                  typeof file === "string"
+                    ? file.split("/").pop()
+                    : file.originalname ||
+                      file.filename ||
+                      file.name ||
+                      "Attachment";
+
+                return (
+                  <span
+                    key={idx}
+                    className="text-xs text-blue-600 underline cursor-pointer"
+                    onClick={() => {
+                      let url = "";
+
+                      // backend file path
+                      if (file.file_path) {
+                        url = `${import.meta.env.VITE_BACKEND_URL}${file.file_path}`;
+                      }
+
+                      // fallback filename
+                      else if (file.filename) {
+                        url = `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${file.filename}`;
+                      }
+
+                      // string case
+                      else if (typeof file === "string") {
+                        url = file;
+                      }
+
+                      if (!url) {
+                        console.error("Invalid file URL", file);
+                        return;
+                      }
+
+                      window.open(url, "_blank");
+                    }}
+                  >
+                    {fileName}
+                  </span>
+                );
+              })}
+            </div>
+          ) : (
+            <span className="text-xs text-gray-500">
+              No file uploaded
+            </span>
+          )}
+        </div>
+      ),
+    },
+  ],
+},
 
               {
                 title: "Declaration",

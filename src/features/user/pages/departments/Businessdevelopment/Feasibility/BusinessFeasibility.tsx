@@ -41,7 +41,7 @@ const FeasibilityPage = () => {
       </div>
 
       {/* CARD GRID — ALWAYS SHOWN */}
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-5">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-5">
         {prs.map((pr) => (  // <-- add index here
           <FeasibilityCard
             key={pr.id}

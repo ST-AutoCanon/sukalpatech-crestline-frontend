@@ -51,6 +51,9 @@ interface TopNavProps {
 export default function TopNav({ pageTitle, onMenuClick }: TopNavProps) {
   const { user, logout } = useContext(AuthContext);
 
+  const formatTitle = (text: string) =>
+  text.replace(/([A-Z])/g, " $1").trim();
+
   return (
     <header className="w-full bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
       {/* LEFT: Page Title + Mobile Menu */}
@@ -64,7 +67,7 @@ export default function TopNav({ pageTitle, onMenuClick }: TopNavProps) {
           </button>
         )}
         <h1 className="text-white text-lg sm:text-2xl font-semibold truncate">
-          {pageTitle}
+          {formatTitle(pageTitle)}
         </h1>
       </div>
 
