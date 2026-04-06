@@ -3,7 +3,7 @@ import axios from "axios";
 import { AuthContext } from "../../../../../context/AuthContext";
 import { Upload, Trash } from "lucide-react";
 import Aleart from "../../../components/Aleartmessage";
-
+import ItemSearchModal from "./ItemSearchDropdown";
 interface attachments {
   file_name: string;
   file_path: string;
@@ -18,7 +18,8 @@ export default function NewProcurementPage({ onClose, onCreated }) {
     type: "success" | "error";
     message: string;
   } | null>(null);
-
+const [showItemModal, setShowItemModal] = useState(false);
+const [activeItemIndex, setActiveItemIndex] = useState(null);
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement`;
   const API_BASE1 = `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`;
   const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
@@ -387,7 +388,6 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
 
   return (
-
     <>
       {alert && (
         <Aleart
@@ -399,7 +399,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
         <div className="w-full max-w-7xl bg-white text-gray-900 rounded-xl flex flex-col max-h-[95vh] overflow-visible">
           {/* HEADER */}
-         <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-20">
+          <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-20">
             <h2 className="text-xl font-semibold text-purple-600">
               New Procurement Request
             </h2>
@@ -417,7 +417,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
             <div className="bg-gray-100 rounded-xl p-4 overflow-x-auto">
               <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
                 <div>
-                  <label className="text-sm text-gray-600">Description <span className="text-red-500">*</span></label>
+                  <label className="text-sm text-gray-600">
+                    Description <span className="text-red-500">*</span>
+                  </label>
                   <input
                     name="description"
                     placeholder="Add description"
@@ -426,7 +428,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-gray-600">Priority<span className="text-red-500">*</span></label>
+                  <label className="text-sm text-gray-600">
+                    Priority<span className="text-red-500">*</span>
+                  </label>
                   <select
                     name="priority"
                     defaultValue=""
@@ -442,7 +446,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm text-gray-600">Delivery Date <span className="text-red-500">*</span></label>
+                  <label className="text-sm text-gray-600">
+                    Delivery Date <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="date"
                     name="required_date"
@@ -453,7 +459,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                 </div>
 
                 <div>
-                  <label className="text-sm text-gray-600">Department<span className="text-red-500">*</span></label>
+                  <label className="text-sm text-gray-600">
+                    Department<span className="text-red-500">*</span>
+                  </label>
                   {/* <select name="department" className="w-full border rounded-lg p-2 mt-1 bg-white" onChange={handlePRChange}>
                   <option value="">Select</option>
                   {departments.map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
@@ -472,7 +480,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm text-gray-600">Remarks<span className="text-red-500">*</span></label>
+                  <label className="text-sm text-gray-600">
+                    Remarks<span className="text-red-500">*</span>
+                  </label>
                   <input
                     name="remarks"
                     placeholder="Add remarks"
@@ -508,7 +518,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                 {/* ITEM HEADER */}
                 <div className="bg-gray-200 rounded-lg p-3 overflow-x-auto">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <span className="text-sm font-semibold">Item Code<span className="text-red-500">*</span></span>
                       <input
                         className="flex-1 border rounded-lg px-2 py-1"
@@ -517,19 +527,38 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                           handleItemChange(i, "item_code", e.target.value)
                         }
                       />
-                    </div>
+                    </div> */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-semibold">Item Name<span className="text-red-500">*</span></span>
+                      <span className="text-sm font-semibold">
+                        Item Code<span className="text-red-500">*</span>
+                      </span>
+
                       <input
-                        className="flex-1 border rounded-lg px-2 py-1"
-                        placeholder="Enter Item name"
-                        onChange={(e) =>
-                          handleItemChange(i, "item_name", e.target.value)
-                        }
+                        value={item.item_code || ""}
+                        readOnly
+                        placeholder="Select Item"
+                        className="flex-1 border rounded-lg px-2 py-1 bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setActiveItemIndex(i);
+                          setShowItemModal(true);
+                        }}
                       />
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-semibold">Quantity<span className="text-red-500">*</span></span>
+                      <span className="text-sm font-semibold">
+                        Item Name<span className="text-red-500">*</span>
+                      </span>
+                      <input
+                        value={item.item_name || ""}
+                        readOnly
+                        className="flex-1 border rounded-lg px-2 py-1 bg-gray-100"
+                        placeholder="Item name auto-filled"
+                      />
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-semibold">
+                        Quantity<span className="text-red-500">*</span>
+                      </span>
 
                       <input
                         type="number"
@@ -547,7 +576,11 @@ export default function NewProcurementPage({ onClose, onCreated }) {
 
                           // Allow only numbers ≥ 1
                           if (/^[1-9]\d*$/.test(value)) {
-                            handleItemChange(i, "quantity_required", Number(value));
+                            handleItemChange(
+                              i,
+                              "quantity_required",
+                              Number(value),
+                            );
                           } else if (value === "") {
                             // Allow clearing input
                             handleItemChange(i, "quantity_required", "");
@@ -555,7 +588,6 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                         }}
                       />
                     </div>
-
                   </div>
                 </div>
 
@@ -568,11 +600,18 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     >
                       {/* Vendor */}
                       <div>
-                        <label className="text-base text-gray-600">Vendor<span className="text-red-500">*</span></label>
+                        <label className="text-base text-gray-600">
+                          Vendor<span className="text-red-500">*</span>
+                        </label>
                         <select
                           className="w-full max-w-full p-2.5 border rounded mt-1 relative z-20 "
                           onChange={(e) =>
-                            handleVendorChange(i, vi, "vendor_id", e.target.value)
+                            handleVendorChange(
+                              i,
+                              vi,
+                              "vendor_id",
+                              e.target.value,
+                            )
                           }
                         >
                           <option value="">Select</option>
@@ -595,7 +634,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                           id={`file-${i}-${vi}`}
                           className="hidden"
                           multiple
-                          onChange={(e) => handleFileUpload(i, vi, e.target.files)}
+                          onChange={(e) =>
+                            handleFileUpload(i, vi, e.target.files)
+                          }
                         />
 
                         <label
@@ -604,7 +645,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                         >
                           <span className="truncate">
                             {vendorFiles[`${i}-${vi}`]?.length > 0
-                              ? vendorFiles[`${i}-${vi}`].map((f) => f.file.name).join(", ")
+                              ? vendorFiles[`${i}-${vi}`]
+                                  .map((f) => f.file.name)
+                                  .join(", ")
                               : "Choose file"}
                           </span>
 
@@ -613,7 +656,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                       </div>
                       {/* Unit Price */}
                       <div>
-                        <label className="text-xs text-gray-600">Unit Price<span className="text-red-500">*</span></label>
+                        <label className="text-xs text-gray-600">
+                          Unit Price<span className="text-red-500">*</span>
+                        </label>
                         <input
                           type="number"
                           min={0}
@@ -638,7 +683,6 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                         />
                       </div>
 
-
                       {/* Total Price */}
                       <div>
                         <label className="text-xs text-gray-600">
@@ -655,17 +699,22 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                       {/* Validity */}
                       <div className="sm:col-span-1">
                         <label className="text-xs text-gray-600">
-                          Quotation Validity<span className="text-red-500">*</span>
+                          Quotation Validity
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="date"
                           className="w-full p-2 border rounded mt-1"
                           min={new Date().toISOString().split("T")[0]}
                           onChange={(e) =>
-                            handleVendorChange(i, vi, "quotation_validity_date", e.target.value)
+                            handleVendorChange(
+                              i,
+                              vi,
+                              "quotation_validity_date",
+                              e.target.value,
+                            )
                           }
                         />
-                        
                       </div>
                       {/* Comments */}
                       <div className="flex items-end gap-3 w-[167px]">
@@ -677,7 +726,9 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                           <input
                             className="w-full p-2  border rounded mt-1"
                             placeholder="Add Comment"
-                            onChange={(e) => handleComment(i, vi, e.target.value)}
+                            onChange={(e) =>
+                              handleComment(i, vi, e.target.value)
+                            }
                           />
                         </div>
 
@@ -704,23 +755,37 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                   </div>
                 </div>
               </div>
-
-
             ))}
           </div>
 
-
-
           {/* SUBMIT BUTTON - sticky bottom right */}
           <div className="flex justify-end p-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
-            <button onClick={submitPR} className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white flex items-center gap-2">
+            <button
+              onClick={submitPR}
+              className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white flex items-center gap-2"
+            >
               <Upload size={16} /> Submit PR
             </button>
           </div>
-
         </div>
       </div>
-
+      {showItemModal && (
+        <ItemSearchModal
+          onClose={() => setShowItemModal(false)}
+          onSelect={(selectedItem) => {
+            handleItemChange(
+              activeItemIndex,
+              "item_code",
+              selectedItem.item_code,
+            );
+            handleItemChange(
+              activeItemIndex,
+              "item_name",
+              selectedItem.item_name,
+            );
+          }}
+        />
+      )}
     </>
   );
 }
