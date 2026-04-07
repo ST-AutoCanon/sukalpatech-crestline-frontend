@@ -18,9 +18,7 @@ export default function EmployeeManagementPage() {
   const token = localStorage.getItem("token");
 
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
-    null,
-  );
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -40,7 +38,7 @@ export default function EmployeeManagementPage() {
     category: "",
   });
 
-  /* ================= FETCH EMPLOYEES ================= */
+  /* ================= FETCH ================= */
   const fetchEmployees = async () => {
     try {
       const res = await axios.get(`${ADMIN_API_BASE}/employees`, {
@@ -49,7 +47,7 @@ export default function EmployeeManagementPage() {
       });
       setEmployees(res.data.data ?? []);
     } catch (err) {
-      console.error("Failed to fetch employees", err);
+      console.error("Fetch error:", err);
       setEmployees([]);
     }
   };
@@ -61,29 +59,27 @@ export default function EmployeeManagementPage() {
   /* ================= CREATE ================= */
   const handleCreate = async () => {
     if (!newEmployee.first_name.trim()) {
-      setAlert({ type: "error", message: "First Name is required" });
-      return;
+      return setAlert({ type: "error", message: "First Name is required" });
     }
 
     if (!newEmployee.email.trim()) {
-      setAlert({ type: "error", message: "email is required" });
-      return;
+      return setAlert({ type: "error", message: "Email is required" });
     }
 
     const emailRegex = /^[\w.-]+@(gmail\.com|yopmail\.com)$/i;
     if (!emailRegex.test(newEmployee.email)) {
-      setAlert({ type: "error", message: "email is required" });
-      return;
+      return setAlert({
+        type: "error",
+        message: "Enter valid email (gmail/yopmail only)",
+      });
     }
 
     if (!newEmployee.password.trim()) {
-      setAlert({ type: "error", message: "password required" });
-      return;
+      return setAlert({ type: "error", message: "Password is required" });
     }
 
     if (!newEmployee.category) {
-      setAlert({ type: "error", message: "category required" });
-      return;
+      return setAlert({ type: "error", message: "Category is required" });
     }
 
     try {
@@ -94,7 +90,11 @@ export default function EmployeeManagementPage() {
         withCredentials: true,
       });
 
-      setAlert({ type: "success", message: "Employee created successfully" });
+      setAlert({
+        type: "success",
+        message: "Employee created successfully ✅",
+      });
+
       setNewEmployee({
         first_name: "",
         last_name: "",
@@ -106,10 +106,26 @@ export default function EmployeeManagementPage() {
 
       setCreating(false);
       fetchEmployees();
+
     } catch (err: any) {
-      setAlert(
-        err.response?.data?.message || "Failed to create employee ❌"
-      );
+      console.log("CREATE ERROR:", err.response?.data);
+
+      let message = "Failed to create employee ❌";
+
+      if (err.response?.data?.message?.toLowerCase().includes("email")) {
+        message = "Email already exists ⚠️";
+      } else {
+        message =
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          message;
+      }
+
+      setAlert({
+        type: "error",
+        message,
+      });
+
     } finally {
       setLoading(false);
     }
@@ -131,7 +147,10 @@ export default function EmployeeManagementPage() {
         }
       );
 
-      setAlert({ type: "success", message: "Employee updated successfully ✅" });
+      setAlert({
+        type: "success",
+        message: "Employee updated successfully ✅",
+      });
 
       setSelectedEmployee(null);
       fetchEmployees();
@@ -139,16 +158,17 @@ export default function EmployeeManagementPage() {
     } catch (err: any) {
       setAlert({
         type: "error",
-        message: err.response?.data?.message || "Failed to update employee ❌",
+        message:
+          err.response?.data?.message || "Failed to update employee ❌",
       });
     } finally {
       setLoading(false);
     }
   };
+
   /* ================= DELETE ================= */
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this employee?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this employee?")) return;
 
     try {
       await axios.delete(`${ADMIN_API_BASE}/employees/${id}`, {
@@ -156,14 +176,28 @@ export default function EmployeeManagementPage() {
         withCredentials: true,
       });
 
-      setAlert({ type: "success", message: "Employee deleted successfully 🗑️" });
+      setAlert({
+        type: "success",
+        message: "Employee deleted successfully 🗑️",
+      });
 
       fetchEmployees();
 
     } catch (err: any) {
+      let message = "Failed to delete employee ❌";
+
+      if (err.response?.data?.message?.toLowerCase().includes("email")) {
+        message = "Email related error ⚠️";
+      } else {
+        message =
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          message;
+      }
+
       setAlert({
         type: "error",
-        message: err.response?.data?.message || "Failed to create employee ❌",
+        message,
       });
     }
   };

@@ -41,14 +41,20 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
    const [workflow, setWorkflow] = useState([]);
   const [projectId, setProjectId] = useState<number | null>(null);
 
-  const renderValue = (value: any) =>
-    value === null || value === undefined || value === ""
-      ? "-"
-      : typeof value === "boolean"
-        ? value
-          ? "Yes"
-          : "No"
-        : value;
+ const renderValue = (value: any) => {
+  if (value === null || value === undefined || value === "") return "-";
+
+  if (typeof value === "boolean") {
+    return value ? "Yes" : "No";
+  }
+
+  // ✅ FIX: prevent object rendering crash
+  if (typeof value === "object") {
+    return JSON.stringify(value); // OR return "-"
+  }
+
+  return value;
+};
 
   const mainFields = [
     { label: "Description", key: "description" },
@@ -197,42 +203,63 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
       });
     }
   };
-  const handleSaveWorkflow = async () => {
-    // 🚨 IMPORTANT CHECK
-    if (!projectId) {
-      setAlert({
-        type: "error",
-        message: "Please assign project first!",
-      });
-      return;
-    }
+ const handleSaveWorkflow = async () => {
+  // 🚨 CHECK 1: project must exist
+  if (!projectId) {
+    setAlert({
+      type: "error",
+      message: "Please assign project first!",
+    });
+    return;
+  }
 
-    try {
-      await api.put(
-        `/project/${projectId}/workflow`, // ✅ correct ID
-        {
-          workflow: workflow.map((item, index) => ({
-            department: item.department,
-            sequence: index + 1,
-          })),
-        },
-        { withCredentials: true },
-      );
+  // 🚨 CHECK 2: workflow must not be empty
+  if (!workflow || workflow.length === 0) {
+    setAlert({
+      type: "error",
+      message: "Please select at least one department!",
+    });
+    return;
+  }
 
-      setAlert({
-        type: "success",
-        message: "Workflow saved successfully!",
-      });
-    } catch (err: any) {
-      console.error(err);
+  // 🚨 CHECK 3 (optional but BEST): no empty departments
+  const hasEmptyDept = workflow.some(
+    (item: any) => !item.department || item.department.trim() === ""
+  );
 
-      setAlert({
-        type: "error",
-        message: err.response?.data?.message || "Failed to save workflow",
-      });
-    }
-  };
+  if (hasEmptyDept) {
+    setAlert({
+      type: "error",
+      message: "Please select department for all steps!",
+    });
+    return;
+  }
 
+  try {
+    await api.put(
+      `/project/${projectId}/workflow`,
+      {
+        workflow: workflow.map((item, index) => ({
+          department: item.department,
+          sequence: index + 1,
+        })),
+      },
+      { withCredentials: true }
+    );
+
+    setAlert({
+      type: "success",
+      message: "Workflow saved successfully!",
+    });
+  } catch (err: any) {
+    console.error(err);
+
+    setAlert({
+      type: "error",
+      message: err.response?.data?.message || "Failed to save workflow",
+    });
+  }
+};
 
   // Handle Feasibility update
   const handleFeasibilityUpdate = async () => {
@@ -788,11 +815,13 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                       <span className="text-gray-600 text-xs font-medium">
                         {f.label}
                       </span>
-                      <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">
-                        {React.isValidElement(f.value)
-                          ? f.value
-                          : renderValue(f.value)}
-                      </span>
+                     <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">
+  {React.isValidElement(f.value)
+    ? f.value
+    : typeof f.value === "object"
+      ? "-"
+      : renderValue(f.value)}
+</span>
                     </div>
                   ))}
                 </div>

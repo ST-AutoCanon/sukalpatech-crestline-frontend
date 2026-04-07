@@ -4,8 +4,11 @@ import FeasibilityCard from "./Allfeasibility";
 
 const FeasibilityPage = () => {
   const [prs, setPrs] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<"all" | "update">("all");
+  const filters = ["All PR", "Pending", "Rejected", "Completed"] as const;
+  type FilterType = (typeof filters)[number];
 
+  const [activeFilter, setActiveFilter] = useState<FilterType>("All PR");
+  const [activeTab, setActiveTab] = useState<"all" | "update">("all");
   useEffect(() => {
     api.get("/business-development").then((res) => {
       setPrs(res.data.data); // ✅ FIX
@@ -16,41 +19,67 @@ const FeasibilityPage = () => {
     setPrs((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
   };
 
+  const filteredPRs = prs.filter((pr) => {
+    if (activeFilter === "All PR") return true;
+
+    if (activeFilter === "Pending") return pr.feasibility_status === "PENDING";
+    if (activeFilter === "Rejected") return pr.feasibility_status === "REJECTED";
+    if (activeFilter === "Completed") return pr.feasibility_status === "APPROVED";
+
+    return true;
+  });
+
   return (
     <div className="p-6 pt-12">
 
       {/* TOP BAR */}
-      <div className="flex justify-between items-center mb-6 mt-9">
-        {/* LEFT — CURRENT VIEW */}
-        <div
-          onClick={() => setActiveTab("all")}
-          className={`px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer text-white ${activeTab === "all" ? "bg-purple-700" : "bg-purple-300"
-            }`}
-        >
-          All BRs
+      {/* FILTER TABS */}
+      <div className="flex items-center justify-between mb-4 mt-2 text-white">
+
+        {/* LEFT: FILTER TABS */}
+        <div className="flex gap-4">
+          {filters.map((filter) => (
+            <button
+              key={filter}
+              onClick={() => {
+                setActiveFilter(filter);
+                setActiveTab("all");
+              }}
+              className={`pb-1 px-3 ${activeFilter === filter
+                ? "border-b-2 border-white"
+                : "text-white/60"
+                }`}
+            >
+              {filter}
+            </button>
+          ))}
         </div>
 
-        {/* RIGHT — ACTION */}
+        {/* RIGHT: UPDATE BUTTON */}
         <button
           onClick={() => setActiveTab("update")}
-          className={`px-4 py-2.5 rounded-xl font-semibold text-sm text-white border-none cursor-pointer ${activeTab === "update" ? "bg-purple-700" : "bg-purple-300"
+          className={`px-4 py-2  text-sm font-semibold text-white ${activeTab === "update"
+              ? "bg-purple-600"
+              : "bg-purple-600/70"
             }`}
         >
-           Update BR
+          Update BR
         </button>
-      </div>
 
-      {/* CARD GRID — ALWAYS SHOWN */}
+      </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-5">
-        {prs.map((pr) => (  // <-- add index here
+        {filteredPRs.map((pr) => (
           <FeasibilityCard
-            key={pr.id}
+            key={pr.id}   // ✅ unique key
             data={pr}
             mode={activeTab}
             onUpdate={handleUpdateSuccess}
           />
         ))}
       </div>
+
+
+
     </div>
 
   );

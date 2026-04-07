@@ -48,10 +48,12 @@ export default function AddItem() {
   const [vendorList, setVendorList] = useState<Vendor[]>([]);
   const [search, setSearch] = useState("");
   const [items, setItems] = useState<any[]>([]);
+  const [allItems, setAllItems] = useState<any[]>([]); // ✅ backup
   const [qty, setQty] = useState<number | "">("");
 
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [activeVendors, setActiveVendors] = useState<number[]>([]);
+  
 
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -75,6 +77,7 @@ const res = await api.get("/items/items");
         vendors: item.vendors || [],
       }));
       setItems(normalized);
+          setAllItems(normalized); // ✅ store backup
     } catch {
       setItems([]);
     }
@@ -199,7 +202,10 @@ const res = await api.post("/items/items", {
 
   // Search items
   const handleSearch = async () => {
-    if (!search) return;
+     if (!search.trim()) {
+    setItems(allItems); // ✅ restore when empty
+    return;
+  }
     try {
 const res = await api.get(`/items/search?query=${search}`);
       setItems(res.data?.data || []);
@@ -212,6 +218,12 @@ const res = await api.get(`/items/search?query=${search}`);
     const v = vendorList.find((v) => v.vendor_id === id);
     return v ? v.vendor_name : `Vendor ${id}`;
   };
+
+  useEffect(() => {
+  if (search.trim() === "") {
+    setItems(allItems); // ✅ restore automatically
+  }
+}, [search, allItems]);
 
   useEffect(() => {
     fetchRoots();
@@ -347,7 +359,7 @@ const res = await api.get(`/items/search?query=${search}`);
                   }))
                 )
               }
-              placeholder="" // 👈 empty placeholder
+              placeholder="Select vendor" // 👈 empty placeholder
               menuPortalTarget={document.body}
               styles={{
                 control: (base) => ({

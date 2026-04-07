@@ -375,9 +375,9 @@ const AllVendors: React.FC = () => {
   const [formData, setFormData] = useState<any>({});
 
   const [alert, setAlert] = useState<{
-      type: "success" | "error";
-      message: string;
-    } | null>(null);
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   /* ---------- Fetch Vendors ---------- */
   useEffect(() => {
@@ -405,53 +405,53 @@ const AllVendors: React.FC = () => {
   };
 
   /* ---------- Update Vendor ---------- */
- const updateVendor = async () => {
-  try {
-    await axios.put(
-      `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors/${formData.vendor_id}`,
-      formData,
-      { withCredentials: true }
-    );
+  const updateVendor = async () => {
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors/${formData.vendor_id}`,
+        formData,
+        { withCredentials: true }
+      );
 
-    setVendors((prev) =>
-      prev.map((v) =>
-        v.vendor_id === formData.vendor_id ? formData : v
-      )
-    );
+      setVendors((prev) =>
+        prev.map((v) =>
+          v.vendor_id === formData.vendor_id ? formData : v
+        )
+      );
 
-    setActiveVendor(null);
+      setActiveVendor(null);
 
-    setAlert({
-      type: "success",
-      message: "Vendor updated successfully!",
-    });
+      setAlert({
+        type: "success",
+        message: "Vendor updated successfully!",
+      });
 
-    setTimeout(() => {
-      setAlert(null);
-    }, 3000);
+      setTimeout(() => {
+        setAlert(null);
+      }, 3000);
 
-  } catch (error) {
-    console.error("Update failed", error);
+    } catch (error) {
+      console.error("Update failed", error);
 
-    setAlert({
-      type: "error",
-      message: "Failed to update vendor",
-    });
+      setAlert({
+        type: "error",
+        message: "Failed to update vendor",
+      });
 
-    setTimeout(() => {
-      setAlert(null);
-    }, 3000);
-  }
-};
+      setTimeout(() => {
+        setAlert(null);
+      }, 3000);
+    }
+  };
   return (
     <div className="px-4 sm:px-8 py-6 pb-15">
       {alert && (
-      <Aleart
-        type={alert.type}
-        message={alert.message}
-        onClose={() => setAlert(null)}
-      />
-    )}
+        <Aleart
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {vendors.map((v) => (
           <div
@@ -487,7 +487,11 @@ const AllVendors: React.FC = () => {
       {activeVendor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
           <div className="bg-white w-full max-w-4xl rounded-xl shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-end px-6 pt-5 sticky top-0 bg-white z-10">
+            <div className="flex justify-between items-center px-6 pt-5 sticky top-0 bg-white z-10">
+              <h2 className="text-purple-600 font-medium text-lg flex items-center gap-2">
+                  Edit Vendor Info
+              </h2>
+
               <button
                 onClick={() => setActiveVendor(null)}
                 className="text-gray-500 hover:text-gray-700 text-xl"
@@ -495,11 +499,10 @@ const AllVendors: React.FC = () => {
                 ✕
               </button>
             </div>
-
             <div className="px-6 py-5 space-y-6">
-               <h3 className="text-purple-600 font-medium text-lg mb-2">
-                  ● Vendor Details
-                </h3>
+              <h3 className="text-purple-600 font-medium text-lg mb-2">
+                ● Vendor Details
+              </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Vendor Name"

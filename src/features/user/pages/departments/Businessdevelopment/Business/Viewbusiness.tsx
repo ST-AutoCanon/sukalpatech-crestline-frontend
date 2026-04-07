@@ -74,8 +74,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState(data);
   const [originalData, setOriginalData] = useState(data);
-  
-  
+
+
 
 
   const [alert, setAlert] = useState<{
@@ -153,7 +153,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
 
   const renderCheckbox = (key: keyof typeof formData, label: string) => {
     const checked = !!formData[key];
-    
+
 
     return (
       <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
@@ -279,15 +279,10 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
         if (key === "attachments") return;
 
         if (value !== undefined && value !== null) {
-          // Send numbers as numbers
-          if (typeof value === "number") {
-            if (key === "approximate_budget") {
-              fd.append(key, String(Math.round(Number(value))));
-            }  // numbers safely converted
+          if (key === "approximate_budget") {
+            fd.append(key, String(Math.round(Number(value))));
           } else {
-            if (key === "approximate_budget") {
-              fd.append(key, String(Math.round(Number(value))));
-            }
+            fd.append(key, String(value)); // ✅ this saves dates also
           }
         }
       });
@@ -320,6 +315,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
       const result = await res.json();
 
       onUpdate(result.data);
+      setOriginalData(result.data);   // ✅ update original
+      setFormData(result.data);
 
       setEditMode(false);
       setShowModal(false);
@@ -751,4 +748,4 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
   );
 };
 
-export default BusinessCard;
+export default BusinessCard; 

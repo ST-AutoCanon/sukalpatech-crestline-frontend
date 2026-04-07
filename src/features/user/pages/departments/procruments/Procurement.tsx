@@ -18,8 +18,8 @@ export default function NewProcurementPage({ onClose, onCreated }) {
     type: "success" | "error";
     message: string;
   } | null>(null);
-const [showItemModal, setShowItemModal] = useState(false);
-const [activeItemIndex, setActiveItemIndex] = useState(null);
+  const [showItemModal, setShowItemModal] = useState(false);
+  const [activeItemIndex, setActiveItemIndex] = useState(null);
   const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement`;
   const API_BASE1 = `${import.meta.env.VITE_BACKEND_URL}/api/vendor/vendors`;
   const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
@@ -299,92 +299,92 @@ const [activeItemIndex, setActiveItemIndex] = useState(null);
   // };
 
   const validatePR = () => {
-  // PR level fields
-  if (!prData.description || !prData.priority || !prData.required_date || !prData.department || !prData.remarks) {
-    return "Please fill all required PR fields";
-  }
-
-  // Items validation
-  for (let i = 0; i < prData.items.length; i++) {
-    const item = prData.items[i];
-
-    if (!item.item_code || !item.item_name || !item.quantity_required) {
-      return `Please fill all required fields in Item ${i + 1}`;
+    // PR level fields
+    if (!prData.description || !prData.priority || !prData.required_date || !prData.department || !prData.remarks) {
+      return "Please fill all required PR fields";
     }
 
-    // Vendors validation
-    for (let j = 0; j < item.vendors.length; j++) {
-      const vendor = item.vendors[j];
+    // Items validation
+    for (let i = 0; i < prData.items.length; i++) {
+      const item = prData.items[i];
 
-      if (
-        !vendor.vendor_id ||
-        !vendor.unit_price ||
-        !vendor.total_price ||
-        !vendor.quotation_validity_date ||
-        !vendor.comments ||
-        vendor.comments.length === 0 ||
-        !vendor.comments[0]?.comment
-      ) {
-        return `Please fill all required fields for Vendor ${j + 1} in Item ${i + 1}`;
+      if (!item.item_code || !item.item_name || !item.quantity_required) {
+        return `Please fill all required fields in Item ${i + 1}`;
+      }
+
+      // Vendors validation
+      for (let j = 0; j < item.vendors.length; j++) {
+        const vendor = item.vendors[j];
+
+        if (
+          !vendor.vendor_id ||
+          !vendor.unit_price ||
+          !vendor.total_price ||
+          !vendor.quotation_validity_date ||
+          !vendor.comments ||
+          vendor.comments.length === 0 ||
+          !vendor.comments[0]?.comment
+        ) {
+          return `Please fill all required fields for Vendor ${j + 1} in Item ${i + 1}`;
+        }
       }
     }
-  }
 
-  return null; // ✅ no error
-};
+    return null; // ✅ no error
+  };
 
   const submitPR = async () => {
-  try {
-    // ✅ VALIDATION FIRST
-    const error = validatePR();
+    try {
+      // ✅ VALIDATION FIRST
+      const error = validatePR();
 
-    if (error) {
+      if (error) {
+        setAlert({
+          type: "error",
+          message: error,
+        });
+        return; // 🚫 stop API call
+      }
+
+      const formData = new FormData();
+      const formattedData = {
+        ...prData,
+        required_date: prData.required_date
+          ? prData.required_date.split("T")[0]
+          : "",
+      };
+
+      formData.append("data", JSON.stringify(formattedData));
+
+      Object.values(vendorFiles).forEach((files: any) => {
+        files.forEach((f: any) => formData.append("attachments", f.file));
+      });
+
+      await axios.post(`${API_BASE}/purchase-requests`, formData, {
+        withCredentials: true,
+      });
+
+      setAlert({
+        type: "success",
+        message: "PR created successfully",
+      });
+
+      onCreated();
+
+      setTimeout(() => {
+        setAlert(null);
+        onClose();
+      }, 3000);
+
+    } catch (err) {
+      console.error(err);
+
       setAlert({
         type: "error",
-        message: error,
+        message: "Something went wrong while creating PR",
       });
-      return; // 🚫 stop API call
     }
-
-    const formData = new FormData();
-    const formattedData = {
-      ...prData,
-      required_date: prData.required_date
-        ? prData.required_date.split("T")[0]
-        : "",
-    };
-
-    formData.append("data", JSON.stringify(formattedData));
-
-    Object.values(vendorFiles).forEach((files: any) => {
-      files.forEach((f: any) => formData.append("attachments", f.file));
-    });
-
-    await axios.post(`${API_BASE}/purchase-requests`, formData, {
-      withCredentials: true,
-    });
-
-    setAlert({
-      type: "success",
-      message: "PR created successfully",
-    });
-
-    onCreated();
-
-    setTimeout(() => {
-      setAlert(null);
-      onClose();
-    }, 3000);
-
-  } catch (err) {
-    console.error(err);
-
-    setAlert({
-      type: "error",
-      message: "Something went wrong while creating PR",
-    });
-  }
-};
+  };
 
 
   return (
@@ -399,10 +399,9 @@ const [activeItemIndex, setActiveItemIndex] = useState(null);
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
         <div className="w-full max-w-7xl bg-white text-gray-900 rounded-xl flex flex-col max-h-[95vh] overflow-visible">
           {/* HEADER */}
-          <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-20">
-            <h2 className="text-xl font-semibold text-purple-600">
-              New Procurement Request
-            </h2>
+          <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-20 pt-safe">            <h2 className="text-xl font-semibold text-purple-600">
+            New Procurement Request
+          </h2>
             <button
               onClick={onClose}
               className="text-xl font-bold hover:text-red-600"
@@ -412,7 +411,7 @@ const [activeItemIndex, setActiveItemIndex] = useState(null);
           </div>
 
           {/* FORM AREA */}
-          <div className="pt-16 p-4 sm:p-6 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
+          <div className="p-4 sm:p-6 flex-1 overflow-y-auto overflow-x-hidden space-y-6">
             {/* PR INFO */}
             <div className="bg-gray-100 rounded-xl p-4 overflow-x-auto">
               <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
@@ -646,8 +645,8 @@ const [activeItemIndex, setActiveItemIndex] = useState(null);
                           <span className="truncate">
                             {vendorFiles[`${i}-${vi}`]?.length > 0
                               ? vendorFiles[`${i}-${vi}`]
-                                  .map((f) => f.file.name)
-                                  .join(", ")
+                                .map((f) => f.file.name)
+                                .join(", ")
                               : "Choose file"}
                           </span>
 

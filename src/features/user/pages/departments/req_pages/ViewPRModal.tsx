@@ -265,13 +265,13 @@ export default function ViewPRModal({
                     {/* Desktop Labels */}
                     <div className="hidden sm:grid sm:grid-cols-8 gap-4 text-xs font-medium mb-1 text-gray-700">
                       <span>Vendor</span>
-                      <span>Quotation</span>
+                      <span>Upload Quotation</span>
                       <span>Unit Price</span>
                       <span>Total Price</span>
                       <span>Quotation Validity</span>
                       <span>Comments</span>
-                      {/* <span>Feasibility Comment</span> */}
-                      {/* <span>Status</span> */}
+                      <span>Feasibility Comment</span>
+                      <span>Status</span>
                     </div>
 
                     {/* Desktop Rows */}
@@ -310,7 +310,7 @@ export default function ViewPRModal({
                               readOnly
                               className="bg-gray-100 border rounded px-2 py-1 w-full"
                             />
-                            <div>
+                            <div className="border rounded px-2 py-1 w-full bg-gray-100 truncate">
                               {validAttachment ? (
                                 <a
                                   href={
@@ -320,14 +320,12 @@ export default function ViewPRModal({
                                   }
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-blue-600 underline text-sm truncate block"
+                                  className="text-blue-600 underline text-sm block truncate"
                                 >
                                   {validAttachment.file_name || "View File"}
                                 </a>
                               ) : (
-                                <span className="text-gray-400 text-sm">
-                                  No file
-                                </span>
+                                <span className="text-gray-400 text-sm">No file</span>
                               )}
                             </div>
                             <input
@@ -351,16 +349,16 @@ export default function ViewPRModal({
                               readOnly
                               className="bg-gray-100 border rounded px-2 py-1 w-full"
                             />
-                            {/* <input
+                            <input
                               value={feasibilityComment}
                               readOnly
                               className="bg-gray-100 border rounded px-2 py-1 w-full"
-                            /> */}
-                            {/* <input
+                            />
+                            <input
                               value={vendor.status ?? ""}
                               readOnly
                               className="bg-gray-100 border rounded px-2 py-1 w-full"
-                            /> */}
+                            />
                           </div>
                         );
                       })}
@@ -378,10 +376,10 @@ export default function ViewPRModal({
                             new Date(b.commented_at).getTime(),
                         );
                         const prComment = sorted[0]?.comment ?? "";
-                        // const feasibilityComment =
-                        //   sorted.length > 1
-                        //     ? sorted[sorted.length - 1].comment
-                        //     : "";
+                        const feasibilityComment =
+                          sorted.length > 1
+                            ? sorted[sorted.length - 1].comment
+                            : "";
                         const validAttachment = vendor.attachments?.find(
                           (att) =>
                             (att.file_path && att.file_path.trim() !== "") ||
@@ -470,7 +468,7 @@ export default function ViewPRModal({
                                 className="w-full bg-gray-100 border rounded px-2 py-1"
                               />
                             </div>
-                            {/* <div>
+                            <div>
                               <label className="text-xs text-gray-500">
                                 Feasibility Comment
                               </label>
@@ -479,8 +477,8 @@ export default function ViewPRModal({
                                 value={feasibilityComment}
                                 className="w-full bg-gray-100 border rounded px-2 py-1"
                               />
-                            </div> */}
-                            {/* <div>
+                            </div>
+                            <div>
                               <label className="text-xs text-gray-500">
                                 Status
                               </label>
@@ -489,7 +487,7 @@ export default function ViewPRModal({
                                 value={vendor.status ?? ""}
                                 className="w-full bg-gray-100 border rounded px-2 py-1"
                               />
-                            </div> */}
+                            </div>
                           </div>
                         );
                       })}
@@ -579,8 +577,8 @@ export default function ViewPRModal({
                   value={
                     pr.order_details.order_placed_at
                       ? new Date(
-                          pr.order_details.order_placed_at,
-                        ).toLocaleDateString()
+                        pr.order_details.order_placed_at,
+                      ).toLocaleDateString()
                       : ""
                   }
                   className="border p-2 rounded w-full bg-white"
@@ -593,8 +591,8 @@ export default function ViewPRModal({
                   value={
                     pr.order_details.expected_delivery_date
                       ? new Date(
-                          pr.order_details.expected_delivery_date,
-                        ).toLocaleDateString()
+                        pr.order_details.expected_delivery_date,
+                      ).toLocaleDateString()
                       : ""
                   }
                   className="border p-2 rounded w-full bg-white"
