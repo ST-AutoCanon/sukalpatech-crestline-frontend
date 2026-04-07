@@ -143,28 +143,29 @@ export default function SubmittedFinanceRequestsPage() {
       const allPRs = res.data.data || [];
 
       // ✅ Remove PRs already approved by Finance
-      const filteredPRs = allPRs.filter((pr: FinancePR) => {
-        if (!pr.department_statuses || pr.department_statuses.length === 0) {
-          return true; // no status → allow
-        }
+    const filteredPRs = allPRs.filter((pr: FinancePR) => {
+  if (!pr.department_statuses || pr.department_statuses.length === 0) {
+    return true;
+  }
 
-        // ✅ Get latest status (last item)
-        const latestStatus =
-          pr.department_statuses[pr.department_statuses.length - 1];
+  const latestStatus =
+    pr.department_statuses[pr.department_statuses.length - 1];
 
-        // ❌ Hide if latest is REJECTED
-        if (latestStatus.department_status === "FEASIBILITY REJECTED") {
-          return false;
-        }
+  const status = latestStatus.department_status?.toLowerCase().trim();
 
-        // ❌ (optional) also hide approved
-        if (latestStatus.department_status === "FINANCE APPROVED") {
-          return false;
-        }
+  // ❌ Hide rejected
+  if (status?.includes("rejected")) {
+    return false;
+  }
 
-        // ✅ Show only pending / others
-        return true;
-      });
+  // ❌ Hide finance approved
+  if (status === "finance approved") {
+    return false;
+  }
+
+  // ✅ Show pending + others
+  return true;
+});
 
       setRequests(filteredPRs);
 
@@ -243,6 +244,20 @@ export default function SubmittedFinanceRequestsPage() {
   //     setTimeout(() => setAlert(null), 4000);
   //   }
   // };
+  useEffect(() => {
+  fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
+    credentials: "include",
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      const map: Record<string, string> = {};
+      (data?.data || []).forEach((dept: any) => {
+        map[String(dept.id)] = dept.name; // map id → name
+      });
+      setDepartmentMap(map);
+    })
+    .catch((err) => console.error("Department fetch error:", err));
+}, []);
 
 
   const submitUpdate = async () => {
@@ -319,6 +334,7 @@ export default function SubmittedFinanceRequestsPage() {
       setTimeout(() => setAlert(null), 3000);
     }
   };
+  
 
   return (
     <div className="p-4 sm:p-6 text-black">
@@ -343,7 +359,7 @@ export default function SubmittedFinanceRequestsPage() {
 
             <div className="flex-1 space-y-1 sm:space-y-2 text-sm">
               {[
-                ["Department", pr.department],
+                ["Department", departmentMap[pr.department] || pr.department || "-"],
                 ["Priority", pr.priority],
                 [
                   "Required",
@@ -389,7 +405,7 @@ export default function SubmittedFinanceRequestsPage() {
             <div className="bg-gray-100 p-3 sm:p-4 rounded mb-4 overflow-x-auto">
               <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-4 min-w-[300px]">
                 {[
-                  ["Description", selectedPR.description],
+                  ["Department", departmentMap[selectedPR.department] || selectedPR.department || "-"],
                   ["Priority", selectedPR.priority],
                   [
                     "Delivery Date",

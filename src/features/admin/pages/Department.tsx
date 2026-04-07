@@ -108,22 +108,38 @@ export default function DepartmentPage() {
     deptId: number,
     permission: string,
   ) => {
-    await fetch(
-      `${API_URL}/api/departments/employee/${employeeId}/assign-permission`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          department_id: deptId,
-          permission,
-        }),
-      },
-    );
+    try {
+      await fetch(
+        `${API_URL}/api/departments/employee/${employeeId}/assign-permission`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            department_id: deptId,
+            permission,
+          }),
+        },
+      );
 
-    await fetchEmployeesByDept(deptId);
+      await fetchEmployeesByDept(deptId);
+
+      // ✅ SUCCESS ALERT
+      setAlert({
+        type: "success",
+        message: "Employee permission updated successfully!",
+      });
+
+    } catch (err) {
+      console.error(err);
+
+      // ❌ ERROR ALERT
+      setAlert({
+        type: "error",
+        message: "Failed to update permission.",
+      });
+    }
   };
-
   /* ================= UNASSIGN ================= */
   // const deleteDept = async (employeeId: number, deptId: number) => {
   //   await fetch(
@@ -186,7 +202,7 @@ export default function DepartmentPage() {
   return (
 
     // <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-    <div className="w-full h-full bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c]">
+    <div className="min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] px-3 sm:px-4 md:px-6">
       {alert && (
         <Alert
           type={alert.type}
@@ -194,14 +210,14 @@ export default function DepartmentPage() {
           onClose={() => setAlert(null)}
         />
       )}
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow p-4 md:p-6">
+      <div className="w-full max-w-6xl mx-auto bg-white rounded-xl shadow p-4 sm:p-5 md:p-6">
         {!selectedDept && (
           <>
             <h2 className="text-2xl md:text-3xl font-semibold mb-6">
               Departments
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {departments.map((d) => (
                 <button
                   key={d.department_id}

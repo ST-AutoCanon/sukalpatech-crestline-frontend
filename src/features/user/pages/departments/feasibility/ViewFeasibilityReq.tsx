@@ -189,31 +189,37 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
+
       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
-      // Apply filter
       if (["Pending", "Rejected", "Completed"].includes(filter)) {
-        const status = filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
+        const status =
+          filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
+
         url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
       }
 
       const res = await fetch(url, {
-        method: "GET",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
 
       if (!res.ok) throw new Error("Failed to fetch PRs");
 
-      const data = await res.json();
+      let data = await res.json();
+
       let prsData = (data?.data || []).map((pr: PR) => ({
         ...pr,
         items: pr.items || [],
         department_statuses: pr.department_statuses || [],
       }));
 
-      // Filter based on latest status
-      prsData = prsData.filter(pr => matchesFilter(getLatestStatus(pr), filter));
+      // ✅ Apply search locally (FAST)
+      if (search.trim()) {
+        prsData = prsData.filter((pr) =>
+          pr.description?.toLowerCase().includes(search.toLowerCase())
+        );
+      }
 
       setPrs(prsData);
     } catch (err) {
@@ -947,7 +953,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                 {/* <label className="border rounded px-2 py-1 w-full text-sm flex items-center bg-gray-100 text-gray-600 cursor-not-allowed  truncate overflow-hidden whitespace-nowrap">
                                   {vendor.attachments?.[0]?.file_name || "No file uploaded"}
                                 </label>
- */}
+                                 */}
                                 <div>
 
                                   <label
@@ -1191,21 +1197,28 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                                   [
                                     "Upload Quotation",
                                     (() => {
-                                      const attachment = vendor.attachments?.[0];
-                                      const validAttachment =
-                                        attachment?.file_path && attachment.file_path.trim() !== "";
+                                      const validAttachment = vendor.attachments?.find(
+                                        (att: any) =>
+                                          (att.file_path && att.file_path.trim() !== "") || att.fileObject
+                                      );
 
-                                      return validAttachment ? (
+                                      if (!validAttachment) {
+                                        return <span className="text-gray-400">No file</span>;
+                                      }
+
+                                      const fileUrl = validAttachment.fileObject
+                                        ? validAttachment.file_path // local preview (blob URL)
+                                        : `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`;
+
+                                      return (
                                         <a
-                                          href={`${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${attachment.file_path}`}
+                                          href={fileUrl}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className="text-blue-600 underline block truncate"
                                         >
-                                          {attachment.file_name}
+                                          {validAttachment.file_name || "View File"}
                                         </a>
-                                      ) : (
-                                        <span className="text-gray-400">No file</span>
                                       );
                                     })(),
                                   ],

@@ -314,7 +314,12 @@ const AllVendors: React.FC = () => {
       {activeVendor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
           <div className="bg-white w-full max-w-4xl rounded-xl shadow-xl relative max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-end items-center px-6 pt-5 sticky top-0 bg-white z-10">
+          
+            <div className="flex justify-between items-center px-6 pt-5 sticky top-0 bg-white z-10">
+              <h2 className="text-purple-600 font-medium text-lg flex items-center gap-2">
+                View Vendor Info
+              </h2>
+
               <button
                 onClick={() => setActiveVendor(null)}
                 className="text-gray-500 hover:text-gray-700 text-xl"

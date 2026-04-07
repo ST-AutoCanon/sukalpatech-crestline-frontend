@@ -22,9 +22,9 @@ export default function EditPRModal({
   const [showItems, setShowItems] = useState(false);
   const [showStatuses, setShowStatuses] = useState(true);
   const [saving, setSaving] = useState(false);
-const [showItemSearch, setShowItemSearch] = useState(false);
-    const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
-    
+  const [showItemSearch, setShowItemSearch] = useState(false);
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
+
   const formatDateForInput = (date: string) => {
     if (!date) return "";
     return date.split("T")[0];
@@ -37,23 +37,23 @@ const [showItemSearch, setShowItemSearch] = useState(false);
     } finally {
       setSaving(false);
     }
-    };
-    
-    const handleItemSelect = (selectedItem: any) => {
-      if (selectedItemIndex === null) return;
+  };
 
-      const updatedItems = [...activePR.items];
+  const handleItemSelect = (selectedItem: any) => {
+    if (selectedItemIndex === null) return;
 
-      updatedItems[selectedItemIndex] = {
-        ...updatedItems[selectedItemIndex],
-        item_code: selectedItem.item_code,
-        item_name: selectedItem.item_name,
-      };
+    const updatedItems = [...activePR.items];
 
-      setActivePR({ ...activePR, items: updatedItems });
+    updatedItems[selectedItemIndex] = {
+      ...updatedItems[selectedItemIndex],
+      item_code: selectedItem.item_code,
+      item_name: selectedItem.item_name,
     };
 
-    
+    setActivePR({ ...activePR, items: updatedItems });
+  };
+
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto p-4">
       <div className="bg-white w-full max-w-5xl md:max-w-7xl rounded-xl shadow-xl p-4 md:p-6 text-black flex flex-col">
@@ -354,7 +354,7 @@ const [showItemSearch, setShowItemSearch] = useState(false);
                                 const updatedItems = [...activePR.items];
                                 updatedItems[itemIndex].vendors[vendorIndex] = {
                                   ...updatedItems[itemIndex].vendors[
-                                    vendorIndex
+                                  vendorIndex
                                   ],
                                   vendor_id: e.target.value,
                                 };
@@ -373,49 +373,43 @@ const [showItemSearch, setShowItemSearch] = useState(false);
                             </select>
 
                             {/* Upload Quotation */}
-                            <label className="w-full border border-blue-400 bg-white rounded px-2 py-1 text-sm flex items-center overflow-hidden cursor-pointer">
+                            <label className="w-full border border-gray-300 bg-white rounded px-2 py-1 text-sm flex items-center overflow-hidden cursor-pointer">
+
+                              {/* File Name */}
                               {validAttachment ? (
-                                <a
-                                  href={
-                                    validAttachment.fileObject
-                                      ? validAttachment.file_path
-                                      : `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${validAttachment.file_path}`
-                                  }
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 underline text-sm truncate block"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
+                                <span className="text-gray-500 text-sm truncate block">
                                   {validAttachment.file_name || "View File"}
-                                </a>
+                                </span>
                               ) : (
                                 <span className="text-gray-400 text-sm">
                                   No file
                                 </span>
                               )}
+
+                              {/* Hidden File Input */}
                               <input
                                 type="file"
                                 className="hidden"
                                 onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (!file) return;
+
                                   const updatedItems = [...activePR.items];
-                                  updatedItems[itemIndex].vendors[vendorIndex] =
-                                    {
-                                      ...updatedItems[itemIndex].vendors[
-                                        vendorIndex
-                                      ],
-                                      attachments: [
-                                        {
-                                          id: Date.now(),
-                                          file_name: file.name,
-                                          file_path: URL.createObjectURL(file),
-                                          uploaded_by: 0,
-                                          uploaded_at: new Date().toISOString(),
-                                          fileObject: file,
-                                        },
-                                      ],
-                                    };
+
+                                  updatedItems[itemIndex].vendors[vendorIndex] = {
+                                    ...updatedItems[itemIndex].vendors[vendorIndex],
+                                    attachments: [
+                                      {
+                                        id: Date.now(),
+                                        file_name: file.name,
+                                        file_path: URL.createObjectURL(file),
+                                        uploaded_by: 0,
+                                        uploaded_at: new Date().toISOString(),
+                                        fileObject: file,
+                                      },
+                                    ],
+                                  };
+
                                   setActivePR({
                                     ...activePR,
                                     items: updatedItems,
@@ -440,7 +434,7 @@ const [showItemSearch, setShowItemSearch] = useState(false);
                                   0;
                                 updatedItems[itemIndex].vendors[vendorIndex] = {
                                   ...updatedItems[itemIndex].vendors[
-                                    vendorIndex
+                                  vendorIndex
                                   ],
                                   unit_price: price,
                                   total_price: qty * price,
@@ -468,7 +462,7 @@ const [showItemSearch, setShowItemSearch] = useState(false);
                                 const updatedItems = [...activePR.items];
                                 updatedItems[itemIndex].vendors[vendorIndex] = {
                                   ...updatedItems[itemIndex].vendors[
-                                    vendorIndex
+                                  vendorIndex
                                   ],
                                   quotation_validity_date: e.target.value,
                                 };
@@ -630,7 +624,7 @@ const [showItemSearch, setShowItemSearch] = useState(false);
                                       vendorIndex
                                     ] = {
                                       ...updatedItems[itemIndex].vendors[
-                                        vendorIndex
+                                      vendorIndex
                                       ],
                                       attachments: [
                                         {
@@ -667,11 +661,11 @@ const [showItemSearch, setShowItemSearch] = useState(false);
                                     updatedItems[itemIndex].quantity_required ||
                                     0;
                                   updatedItems[itemIndex].vendors[vendorIndex] =
-                                    {
-                                      ...vendor,
-                                      unit_price: price,
-                                      total_price: qty * price,
-                                    };
+                                  {
+                                    ...vendor,
+                                    unit_price: price,
+                                    total_price: qty * price,
+                                  };
                                   setActivePR({
                                     ...activePR,
                                     items: updatedItems,
@@ -870,8 +864,8 @@ const [showItemSearch, setShowItemSearch] = useState(false);
                   value={
                     activePR.order_details.order_placed_at
                       ? new Date(
-                          activePR.order_details.order_placed_at,
-                        ).toLocaleDateString()
+                        activePR.order_details.order_placed_at,
+                      ).toLocaleDateString()
                       : ""
                   }
                   className="border p-2 rounded w-full bg-white"
@@ -884,8 +878,8 @@ const [showItemSearch, setShowItemSearch] = useState(false);
                   value={
                     activePR.order_details.expected_delivery_date
                       ? new Date(
-                          activePR.order_details.expected_delivery_date,
-                        ).toLocaleDateString()
+                        activePR.order_details.expected_delivery_date,
+                      ).toLocaleDateString()
                       : ""
                   }
                   className="border p-2 rounded w-full bg-white"
@@ -949,19 +943,19 @@ const [showItemSearch, setShowItemSearch] = useState(false);
               </div>
               {activePR.store_receiving_details.quantity_status ===
                 "PARTIAL" && (
-                <div>
-                  <label className="text-xs font-medium">
-                    Partial Quantity
-                  </label>
-                  <input
-                    readOnly
-                    value={
-                      activePR.store_receiving_details.partial_quantity ?? 0
-                    }
-                    className="border p-2 rounded w-full bg-white"
-                  />
-                </div>
-              )}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Partial Quantity
+                    </label>
+                    <input
+                      readOnly
+                      value={
+                        activePR.store_receiving_details.partial_quantity ?? 0
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+                )}
               {activePR.store_receiving_details.rejection_reason && (
                 <div className="sm:col-span-2">
                   <label className="text-xs font-medium">
@@ -1083,5 +1077,5 @@ const [showItemSearch, setShowItemSearch] = useState(false);
       )}
     </div>
   );
-    
+
 }

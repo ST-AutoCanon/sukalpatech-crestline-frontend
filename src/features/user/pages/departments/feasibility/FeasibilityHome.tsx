@@ -216,9 +216,12 @@ const filtered = uniqueDepartments
       ? { ...departmentMap[key], permission: d.permission }
       : null;
   })
-  .filter(Boolean);
+  .filter(
+    (item): item is { key: string; component: any; permission?: string } =>
+      item !== null
+  );
+  setAllowedBusinessTypes(filtered);
 
-setAllowedBusinessTypes(filtered as any);
 
 // ✅ Default tab selection
 if (filtered.length > 0) {

@@ -172,15 +172,35 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
     });
   };
   const validateForm = () => {
-    if (!form.description) return "Description is required";
-    if (!form.priority) return "Priority is required";
-    if (!form.required_date) return "Required Date is required";
-    if (!form.requested_by_person) return "Requested By Person is required";
-    if (!form.applicant_name) return "Applicant Name is required";
+  const requiredFields = [
+    { key: "description", label: "Description" },
+    { key: "priority", label: "Priority" },
+    { key: "required_date", label: "Required Date" },
+    { key: "requested_by_person", label: "Requested By Person" },
+    { key: "applicant_name", label: "Applicant Name" },
+  ];
 
-    return null; // ✅ no errors
-  };
+  const filledFields = requiredFields.filter(
+    (f) => form[f.key] && form[f.key].toString().trim() !== ""
+  );
 
+  const missingFields = requiredFields.filter(
+    (f) => !form[f.key] || form[f.key].toString().trim() === ""
+  );
+
+  // ❌ Nothing filled
+  if (filledFields.length === 0) {
+    return "Please fill all required fields";
+  }
+
+  // ⚠️ Some missing
+  if (missingFields.length > 0) {
+    return `Missing: ${missingFields.map((f) => f.label).join(", ")}`;
+  }
+
+  // ✅ All good
+  return null;
+};
 
 
   // const handleSubmit = async (e: any) => {
