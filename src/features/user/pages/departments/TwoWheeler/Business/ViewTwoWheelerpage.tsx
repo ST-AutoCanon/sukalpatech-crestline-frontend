@@ -119,7 +119,8 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) =>
         ))}
       </div>
 
-      <div className="mt-3 flex justify-between items-center">
+      <div className="mt-3 flex items-center gap-8">
+        {/* Left Button */}
         <button
           onClick={() => {
             setEditMode(false);
@@ -130,6 +131,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) =>
           {mode === "update" ? "Update Feasibility" : "More info"}
         </button>
 
+        {/* Right Button */}
         {mode !== "update" && !formData.feasibility_status && (
           <button
             onClick={() => {
@@ -142,7 +144,6 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) =>
           </button>
         )}
       </div>
-
       {/* Modal */}
       {showModal && (
         <div

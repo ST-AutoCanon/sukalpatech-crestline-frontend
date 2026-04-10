@@ -644,8 +644,8 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 {[
-                  "ais_compliant",
-                  "cmvr_cmpliant",
+                  "AIS_compliant",
+                  "CMVR_compliant",
                   "school_bus_safety",
                   "state_transport_norms",
                 ].map((f) => (

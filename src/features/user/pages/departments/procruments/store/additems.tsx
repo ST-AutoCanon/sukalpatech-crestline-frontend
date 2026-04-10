@@ -48,16 +48,16 @@ export default function AddItem() {
   const [vendorList, setVendorList] = useState<Vendor[]>([]);
   const [search, setSearch] = useState("");
   const [items, setItems] = useState<any[]>([]);
-  const [allItems, setAllItems] = useState<any[]>([]); // ✅ backup
   const [qty, setQty] = useState<number | "">("");
 
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [activeVendors, setActiveVendors] = useState<number[]>([]);
-  
 
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const token = localStorage.getItem("token"); // fetch once
+
+
 
 
   const api = axios.create({
@@ -77,7 +77,6 @@ const res = await api.get("/items/items");
         vendors: item.vendors || [],
       }));
       setItems(normalized);
-          setAllItems(normalized); // ✅ store backup
     } catch {
       setItems([]);
     }
@@ -202,10 +201,12 @@ const res = await api.post("/items/items", {
 
   // Search items
   const handleSearch = async () => {
-     if (!search.trim()) {
-    setItems(allItems); // ✅ restore when empty
-    return;
-  }
+    
+    // if (!search) return;
+      if (!search.trim()) {
+        await fetchAllItems(); // 👈 important
+        return;
+      }
     try {
 const res = await api.get(`/items/search?query=${search}`);
       setItems(res.data?.data || []);
@@ -220,22 +221,23 @@ const res = await api.get(`/items/search?query=${search}`);
   };
 
   useEffect(() => {
-  if (search.trim() === "") {
-    setItems(allItems); // ✅ restore automatically
-  }
-}, [search, allItems]);
-
-  useEffect(() => {
     fetchRoots();
     fetchVendors();
     fetchAllItems();
   }, []);
 
- 
+
+
 
   return (
     <div className="w-full h-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-8">
-      {alert && <Aleart type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
+      {alert && (
+        <Aleart
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
 
       <div className="max-w-7xl mx-auto"></div>
       <div className="max-w-7xl mx-auto">
@@ -356,10 +358,10 @@ const res = await api.get(`/items/search?query=${search}`);
                   (selected || []).map((s: any) => ({
                     vendor_id: s.value,
                     vendor_name: s.label,
-                  }))
+                  })),
                 )
               }
-              placeholder="Select vendor" // 👈 empty placeholder
+              placeholder="" // 👈 empty placeholder
               menuPortalTarget={document.body}
               styles={{
                 control: (base) => ({
@@ -398,7 +400,9 @@ const res = await api.get(`/items/search?query=${search}`);
                   className="text-red-500"
                   onClick={() =>
                     setSelectedVendors(
-                      selectedVendors.filter((x) => x.vendor_id !== v.vendor_id)
+                      selectedVendors.filter(
+                        (x) => x.vendor_id !== v.vendor_id,
+                      ),
                     )
                   }
                 >
@@ -429,7 +433,15 @@ const res = await api.get(`/items/search?query=${search}`);
               className="p-2 rounded-lg w-full bg-white text-black"
               placeholder="Search Item"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              // onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearch(value);
+
+                if (value === "") {
+                  fetchAllItems(); // 👈 reload all items when cleared
+                }
+              }}
             />
             <button
               onClick={handleSearch}

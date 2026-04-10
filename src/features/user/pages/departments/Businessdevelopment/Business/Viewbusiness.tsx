@@ -259,12 +259,14 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
   // };
   const formatDate = (date: string | null | undefined) => {
     if (!date) return "-";
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return "-";
 
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const year = d.getFullYear();
+    // ✅ Works for both "YYYY-MM-DD" and ISO "YYYY-MM-DDTHH:mm:ss"
+    const datePart = date.split("T")[0];
+
+    const parts = datePart.split("-");
+    if (parts.length !== 3) return "-";
+
+    const [year, month, day] = parts;
 
     return `${month}/${day}/${year}`; // MM/DD/YYYY
   };
@@ -282,7 +284,17 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
           if (key === "approximate_budget") {
             fd.append(key, String(Math.round(Number(value))));
           } else {
-            fd.append(key, String(value)); // ✅ this saves dates also
+            if (key === "required_date" || key === "expected_delivery" || key === "declaration_date") {
+              const localDate = new Date(value);
+              const offset = localDate.getTimezoneOffset();
+              const correctedDate = new Date(localDate.getTime() - offset * 60000)
+                .toISOString()
+                .split("T")[0];
+
+              fd.append(key, correctedDate);
+            } else {
+              fd.append(key, String(value));
+            }
           }
         }
       });

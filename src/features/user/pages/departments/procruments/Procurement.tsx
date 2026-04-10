@@ -216,11 +216,22 @@ export default function NewProcurementPage({ onClose, onCreated }) {
     setPrData({ ...prData, items: updated });
   };
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
   const handleFileUpload = (i: number, vi: number, files: FileList | null) => {
     if (!files) return;
 
-    const key = `${i}-${vi}`;
+    const oversized = Array.from(files).find(
+      (file) => file.size > MAX_FILE_SIZE
+    );
 
+    if (oversized) {
+      setAlert({
+        type: "error",
+        message: `File "${oversized.name}" exceeds 10MB limit`,
+      });
+      return;
+    }
     const fileArray = Array.from(files).map((file) => ({
       file, // actual File object (for FormData)
       file_name: file.name,

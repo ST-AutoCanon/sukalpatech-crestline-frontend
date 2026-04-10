@@ -67,7 +67,7 @@ const FeasibilityPage = () => {
         </button>
 
       </div>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-5">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-5">
         {filteredPRs.map((pr) => (
           <FeasibilityCard
             key={pr.id}   // ✅ unique key
