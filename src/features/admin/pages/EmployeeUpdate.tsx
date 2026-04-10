@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
 import Alert from "../../../components/Aleartmessage";
+import ConfirmAlert from "../../../../src/features/user/components/ConfirmAlert";
 
 interface Employee {
   id: number;
@@ -23,6 +24,8 @@ export default function EmployeeManagementPage() {
   const [creating, setCreating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const [alert, setAlert] = useState<{
     type: "success" | "error";
@@ -168,8 +171,6 @@ export default function EmployeeManagementPage() {
 
   /* ================= DELETE ================= */
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this employee?")) return;
-
     try {
       await axios.delete(`${ADMIN_API_BASE}/employees/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -182,7 +183,6 @@ export default function EmployeeManagementPage() {
       });
 
       fetchEmployees();
-
     } catch (err: any) {
       let message = "Failed to delete employee ❌";
 
@@ -203,12 +203,30 @@ export default function EmployeeManagementPage() {
   };
 
   return (
+
     <>
       {alert && (
         <Alert
           type={alert.type}
           message={alert.message}
           onClose={() => setAlert(null)}
+        />
+
+      )}
+      {showConfirm && (
+        <ConfirmAlert
+          message="Are you sure you want to delete this employee?"
+          onConfirm={() => {
+            if (deleteId !== null) {
+              handleDelete(deleteId);
+            }
+            setShowConfirm(false);
+            setDeleteId(null);
+          }}
+          onCancel={() => {
+            setShowConfirm(false);
+            setDeleteId(null);
+          }}
         />
       )}
       <div className="min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] text-white py-6">
@@ -357,7 +375,10 @@ export default function EmployeeManagementPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(emp.id)}
+                          onClick={() => {
+                            setDeleteId(emp.id);
+                            setShowConfirm(true);
+                          }}
                           className="text-red-600 hover:underline"
                         >
                           Delete

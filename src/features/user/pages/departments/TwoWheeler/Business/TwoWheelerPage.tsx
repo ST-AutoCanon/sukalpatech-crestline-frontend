@@ -381,13 +381,13 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
 
       if (editId) {
         res = await axios.put(
-          `http://localhost:5001/api/business-development/2w/${editId}`,
+          `http://localhost:5004/api/business-development/2w/${editId}`,
           payload,
           { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
         );
       } else {
         res = await axios.post(
-          `http://localhost:5001/api/business-development/2w/create`,
+          `http://localhost:5004/api/business-development/2w/create`,
           payload,
           { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
         );

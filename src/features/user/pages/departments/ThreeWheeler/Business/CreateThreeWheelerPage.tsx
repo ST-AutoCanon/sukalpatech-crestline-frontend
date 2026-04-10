@@ -294,7 +294,7 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
       const payload = { ...formData, industry_type: "3W" };
 
       const res = await axios.post(
-        `http://localhost:5001/api/business-development/3w/create`,
+        `http://localhost:5004/api/business-development/3w/create`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },

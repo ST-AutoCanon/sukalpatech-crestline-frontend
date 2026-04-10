@@ -53,7 +53,7 @@ export default function AddItem() {
 
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [activeVendors, setActiveVendors] = useState<number[]>([]);
-  
+
 
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -61,14 +61,14 @@ export default function AddItem() {
 
 
   const api = axios.create({
-  baseURL: `${API_BASE}`,
-  withCredentials: true, // ✅ sends HTTP-only cookie automatically
+    baseURL: `${API_BASE}`,
+    withCredentials: true, // ✅ sends HTTP-only cookie automatically
   });
-  
+
   // Fetch all items
   const fetchAllItems = async () => {
     try {
-const res = await api.get("/items/items");
+      const res = await api.get("/items/items");
       const normalized = (res.data?.data || []).map((item: any) => ({
         id: item.id,
         code: item.item_code,
@@ -77,7 +77,7 @@ const res = await api.get("/items/items");
         vendors: item.vendors || [],
       }));
       setItems(normalized);
-          setAllItems(normalized); // ✅ store backup
+      setAllItems(normalized); // ✅ store backup
     } catch {
       setItems([]);
     }
@@ -86,7 +86,7 @@ const res = await api.get("/items/items");
   // Fetch vendors
   const fetchVendors = async () => {
     try {
-const res = await api.get("/vendor/vendors");
+      const res = await api.get("/vendor/vendors");
       setVendorList(Array.isArray(res.data?.data) ? res.data.data : []);
     } catch {
       setVendorList([]);
@@ -96,7 +96,7 @@ const res = await api.get("/vendor/vendors");
   // Fetch roots
   const fetchRoots = async () => {
     try {
-const res = await api.get("/categories/root-category");
+      const res = await api.get("/categories/root-category");
       setRoots(res.data.map((r: any) => ({ ...r, id: String(r.id) })));
     } catch {
       setRoots([]);
@@ -110,7 +110,7 @@ const res = await api.get("/categories/root-category");
     setVariants([]);
     setSubVariants([]);
     try {
-const res = await api.get(`/categories/list?root_id=${rootId}`);
+      const res = await api.get(`/categories/list?root_id=${rootId}`);
       setCategories(res.data.map((c: any) => ({ ...c, id: String(c.id) })));
     } catch {
       setCategories([]);
@@ -122,8 +122,8 @@ const res = await api.get(`/categories/list?root_id=${rootId}`);
     setVariants([]);
     setSubVariants([]);
     try {
-// Fetch products for a category
-const res = await api.get(`/categories/products?category_id=${categoryId}`);
+      // Fetch products for a category
+      const res = await api.get(`/categories/products?category_id=${categoryId}`);
       setProducts(res.data.map((p: any) => ({ ...p, id: String(p.id) })));
     } catch {
       setProducts([]);
@@ -134,7 +134,7 @@ const res = await api.get(`/categories/products?category_id=${categoryId}`);
     setSelectedVariant("");
     setSubVariants([]);
     try {
-const res = await api.get(`/categories/variants?product_id=${productId}`);
+      const res = await api.get(`/categories/variants?product_id=${productId}`);
       setVariants(res.data.map((v: any) => ({ ...v, id: String(v.id) })));
     } catch {
       setVariants([]);
@@ -144,7 +144,7 @@ const res = await api.get(`/categories/variants?product_id=${productId}`);
   const fetchSubVariants = async (variantId: string) => {
     setSelectedSubVariant("");
     try {
-const res = await api.get(`/categories/sub-variants?variant_id=${variantId}`);
+      const res = await api.get(`/categories/sub-variants?variant_id=${variantId}`);
       setSubVariants(res.data.map((sv: any) => ({ ...sv, id: String(sv.id) })));
     } catch {
       setSubVariants([]);
@@ -159,16 +159,16 @@ const res = await api.get(`/categories/sub-variants?variant_id=${variantId}`);
     }
 
     try {
-const res = await api.post("/items/items", {
-  item_name: itemName,
-  qty,
-  vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
-  root_category_id: selectedRoot,
-  category_id: selectedCategory || null,
-  product_id: selectedProduct || null,
-  variant_id: selectedVariant || null,
-  sub_variant_id: selectedSubVariant || null,
-});
+      const res = await api.post("/items/items", {
+        item_name: itemName,
+        qty,
+        vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
+        root_category_id: selectedRoot,
+        category_id: selectedCategory || null,
+        product_id: selectedProduct || null,
+        variant_id: selectedVariant || null,
+        sub_variant_id: selectedSubVariant || null,
+      });
 
       if (res.data?.data) {
         const addedItem = {
@@ -202,17 +202,43 @@ const res = await api.post("/items/items", {
 
   // Search items
   const handleSearch = async () => {
-     if (!search.trim()) {
-    setItems(allItems); // ✅ restore when empty
-    return;
-  }
+    if (!search.trim()) {
+      setItems(allItems); // ✅ restore when empty
+      return;
+    }
     try {
-const res = await api.get(`/items/search?query=${search}`);
+      const res = await api.get(`/items/search?query=${search}`);
       setItems(res.data?.data || []);
     } catch {
       setItems([]);
     }
+    const handleSearch = () => {
+      if (!search.trim()) {
+        setItems(allItems);
+        return;
+      }
+
+      const filtered = allItems.filter((item) =>
+        item.name.toLowerCase().includes(search.toLowerCase()) ||
+        item.code.toLowerCase().includes(search.toLowerCase())
+      );
+
+      setItems(filtered);
+    };
   };
+  useEffect(() => {
+    if (!search.trim()) {
+      setItems(allItems);
+      return;
+    }
+
+    const filtered = allItems.filter((item) =>
+      item.name.toLowerCase().includes(search.toLowerCase()) ||
+      item.code.toLowerCase().includes(search.toLowerCase())
+    );
+
+    setItems(filtered);
+  }, [search, allItems]);
 
   const getVendorName = (id: number) => {
     const v = vendorList.find((v) => v.vendor_id === id);
@@ -220,10 +246,10 @@ const res = await api.get(`/items/search?query=${search}`);
   };
 
   useEffect(() => {
-  if (search.trim() === "") {
-    setItems(allItems); // ✅ restore automatically
-  }
-}, [search, allItems]);
+    if (search.trim() === "") {
+      setItems(allItems); // ✅ restore automatically
+    }
+  }, [search, allItems]);
 
   useEffect(() => {
     fetchRoots();
@@ -231,7 +257,7 @@ const res = await api.get(`/items/search?query=${search}`);
     fetchAllItems();
   }, []);
 
- 
+
 
   return (
     <div className="w-full h-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-8">

@@ -279,14 +279,14 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
 
       <div className="space-y-2 flex-1">
         {cardFields.map(([label, value]) => (
-          <div key={label} className="flex text-sm">
-            <span className="w-36 text-gray-500">{label}:</span>
+           <div key={label} className="flex justify-between text-sm">
+             <span className="text-gray-500">{label}:</span>
             <span className="text-gray-900 font-medium truncate">{render(value)}</span>
           </div>
         ))}
       </div>
 
-      <div className="mt-3 flex justify-between items-center">
+      <div className="mt-3 flex  items-center gap-8">
         <button
           onClick={() => {
             setEditMode(false);
