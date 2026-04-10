@@ -48,27 +48,27 @@ export default function AddItem() {
   const [vendorList, setVendorList] = useState<Vendor[]>([]);
   const [search, setSearch] = useState("");
   const [items, setItems] = useState<any[]>([]);
-  const [allItems, setAllItems] = useState<any[]>([]); // ✅ backup
   const [qty, setQty] = useState<number | "">("");
 
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [activeVendors, setActiveVendors] = useState<number[]>([]);
-
 
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const token = localStorage.getItem("token"); // fetch once
 
 
-  const api = axios.create({
-    baseURL: `${API_BASE}`,
-    withCredentials: true, // ✅ sends HTTP-only cookie automatically
-  });
 
+
+  const api = axios.create({
+  baseURL: `${API_BASE}`,
+  withCredentials: true, // ✅ sends HTTP-only cookie automatically
+  });
+  
   // Fetch all items
   const fetchAllItems = async () => {
     try {
-      const res = await api.get("/items/items");
+const res = await api.get("/items/items");
       const normalized = (res.data?.data || []).map((item: any) => ({
         id: item.id,
         code: item.item_code,
@@ -77,7 +77,6 @@ export default function AddItem() {
         vendors: item.vendors || [],
       }));
       setItems(normalized);
-      setAllItems(normalized); // ✅ store backup
     } catch {
       setItems([]);
     }
@@ -86,7 +85,7 @@ export default function AddItem() {
   // Fetch vendors
   const fetchVendors = async () => {
     try {
-      const res = await api.get("/vendor/vendors");
+const res = await api.get("/vendor/vendors");
       setVendorList(Array.isArray(res.data?.data) ? res.data.data : []);
     } catch {
       setVendorList([]);
@@ -96,7 +95,7 @@ export default function AddItem() {
   // Fetch roots
   const fetchRoots = async () => {
     try {
-      const res = await api.get("/categories/root-category");
+const res = await api.get("/categories/root-category");
       setRoots(res.data.map((r: any) => ({ ...r, id: String(r.id) })));
     } catch {
       setRoots([]);
@@ -110,7 +109,7 @@ export default function AddItem() {
     setVariants([]);
     setSubVariants([]);
     try {
-      const res = await api.get(`/categories/list?root_id=${rootId}`);
+const res = await api.get(`/categories/list?root_id=${rootId}`);
       setCategories(res.data.map((c: any) => ({ ...c, id: String(c.id) })));
     } catch {
       setCategories([]);
@@ -122,8 +121,8 @@ export default function AddItem() {
     setVariants([]);
     setSubVariants([]);
     try {
-      // Fetch products for a category
-      const res = await api.get(`/categories/products?category_id=${categoryId}`);
+// Fetch products for a category
+const res = await api.get(`/categories/products?category_id=${categoryId}`);
       setProducts(res.data.map((p: any) => ({ ...p, id: String(p.id) })));
     } catch {
       setProducts([]);
@@ -134,7 +133,7 @@ export default function AddItem() {
     setSelectedVariant("");
     setSubVariants([]);
     try {
-      const res = await api.get(`/categories/variants?product_id=${productId}`);
+const res = await api.get(`/categories/variants?product_id=${productId}`);
       setVariants(res.data.map((v: any) => ({ ...v, id: String(v.id) })));
     } catch {
       setVariants([]);
@@ -144,7 +143,7 @@ export default function AddItem() {
   const fetchSubVariants = async (variantId: string) => {
     setSelectedSubVariant("");
     try {
-      const res = await api.get(`/categories/sub-variants?variant_id=${variantId}`);
+const res = await api.get(`/categories/sub-variants?variant_id=${variantId}`);
       setSubVariants(res.data.map((sv: any) => ({ ...sv, id: String(sv.id) })));
     } catch {
       setSubVariants([]);
@@ -159,16 +158,16 @@ export default function AddItem() {
     }
 
     try {
-      const res = await api.post("/items/items", {
-        item_name: itemName,
-        qty,
-        vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
-        root_category_id: selectedRoot,
-        category_id: selectedCategory || null,
-        product_id: selectedProduct || null,
-        variant_id: selectedVariant || null,
-        sub_variant_id: selectedSubVariant || null,
-      });
+const res = await api.post("/items/items", {
+  item_name: itemName,
+  qty,
+  vendors: selectedVendors.map((v) => ({ vendor_id: v.vendor_id })),
+  root_category_id: selectedRoot,
+  category_id: selectedCategory || null,
+  product_id: selectedProduct || null,
+  variant_id: selectedVariant || null,
+  sub_variant_id: selectedSubVariant || null,
+});
 
       if (res.data?.data) {
         const addedItem = {
@@ -202,54 +201,24 @@ export default function AddItem() {
 
   // Search items
   const handleSearch = async () => {
-    if (!search.trim()) {
-      setItems(allItems); // ✅ restore when empty
-      return;
-    }
+    
+    // if (!search) return;
+      if (!search.trim()) {
+        await fetchAllItems(); // 👈 important
+        return;
+      }
     try {
-      const res = await api.get(`/items/search?query=${search}`);
+const res = await api.get(`/items/search?query=${search}`);
       setItems(res.data?.data || []);
     } catch {
       setItems([]);
     }
-    const handleSearch = () => {
-      if (!search.trim()) {
-        setItems(allItems);
-        return;
-      }
-
-      const filtered = allItems.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase()) ||
-        item.code.toLowerCase().includes(search.toLowerCase())
-      );
-
-      setItems(filtered);
-    };
   };
-  useEffect(() => {
-    if (!search.trim()) {
-      setItems(allItems);
-      return;
-    }
-
-    const filtered = allItems.filter((item) =>
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.code.toLowerCase().includes(search.toLowerCase())
-    );
-
-    setItems(filtered);
-  }, [search, allItems]);
 
   const getVendorName = (id: number) => {
     const v = vendorList.find((v) => v.vendor_id === id);
     return v ? v.vendor_name : `Vendor ${id}`;
   };
-
-  useEffect(() => {
-    if (search.trim() === "") {
-      setItems(allItems); // ✅ restore automatically
-    }
-  }, [search, allItems]);
 
   useEffect(() => {
     fetchRoots();
@@ -259,9 +228,16 @@ export default function AddItem() {
 
 
 
+
   return (
     <div className="w-full h-full min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-4 sm:p-8">
-      {alert && <Aleart type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
+      {alert && (
+        <Aleart
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
 
       <div className="max-w-7xl mx-auto"></div>
       <div className="max-w-7xl mx-auto">
@@ -382,10 +358,10 @@ export default function AddItem() {
                   (selected || []).map((s: any) => ({
                     vendor_id: s.value,
                     vendor_name: s.label,
-                  }))
+                  })),
                 )
               }
-              placeholder="Select vendor" // 👈 empty placeholder
+              placeholder="" // 👈 empty placeholder
               menuPortalTarget={document.body}
               styles={{
                 control: (base) => ({
@@ -424,7 +400,9 @@ export default function AddItem() {
                   className="text-red-500"
                   onClick={() =>
                     setSelectedVendors(
-                      selectedVendors.filter((x) => x.vendor_id !== v.vendor_id)
+                      selectedVendors.filter(
+                        (x) => x.vendor_id !== v.vendor_id,
+                      ),
                     )
                   }
                 >
@@ -455,7 +433,15 @@ export default function AddItem() {
               className="p-2 rounded-lg w-full bg-white text-black"
               placeholder="Search Item"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              // onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearch(value);
+
+                if (value === "") {
+                  fetchAllItems(); // 👈 reload all items when cleared
+                }
+              }}
             />
             <button
               onClick={handleSearch}
