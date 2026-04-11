@@ -143,29 +143,46 @@ export default function SubmittedFinanceRequestsPage() {
       const allPRs = res.data.data || [];
 
       // ✅ Remove PRs already approved by Finance
-    const filteredPRs = allPRs.filter((pr: FinancePR) => {
-  if (!pr.department_statuses || pr.department_statuses.length === 0) {
-    return true;
-  }
+      const filteredPRs = allPRs.filter((pr: any) => {
+        const payment = pr.finance_payment_details; // 👈 comes from backend
 
-  const latestStatus =
-    pr.department_statuses[pr.department_statuses.length - 1];
+        const stage = payment?.payment_stage?.toLowerCase()?.trim();
 
-  const status = latestStatus.department_status?.toLowerCase().trim();
+        const finalDone =
+          payment?.final_completed === true ||
+          payment?.final_completed === "YES" ||
+          payment?.final_completed === "Yes" ||
+          payment?.final_completed === "true";
 
-  // ❌ Hide rejected
-  if (status?.includes("rejected")) {
-    return false;
-  }
+        // 🔥 Hide ALL FINAL payments (no need to check final_completed)
+        if (stage === "final") {
+          return false;
+        }
 
-  // ❌ Hide finance approved
-  if (status === "finance approved") {
-    return false;
-  }
+        // ---------------- EXISTING LOGIC ----------------
 
-  // ✅ Show pending + others
-  return true;
-});
+        if (!pr.department_statuses || pr.department_statuses.length === 0) {
+          return true;
+        }
+
+        const latestStatus =
+          pr.department_statuses[pr.department_statuses.length - 1];
+
+        const status = latestStatus.department_status?.toLowerCase().trim();
+
+        // ❌ Hide rejected
+        if (status?.includes("rejected")) {
+          return false;
+        }
+
+        // ❌ Hide finance approved
+        if (status === "finance approved") {
+          return false;
+        }
+
+        // ✅ Show remaining (including PARTIAL)
+        return true;
+      });
 
       setRequests(filteredPRs);
 
@@ -245,19 +262,19 @@ export default function SubmittedFinanceRequestsPage() {
   //   }
   // };
   useEffect(() => {
-  fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      const map: Record<string, string> = {};
-      (data?.data || []).forEach((dept: any) => {
-        map[String(dept.id)] = dept.name; // map id → name
-      });
-      setDepartmentMap(map);
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
+      credentials: "include",
     })
-    .catch((err) => console.error("Department fetch error:", err));
-}, []);
+      .then((res) => res.json())
+      .then((data) => {
+        const map: Record<string, string> = {};
+        (data?.data || []).forEach((dept: any) => {
+          map[String(dept.id)] = dept.name; // map id → name
+        });
+        setDepartmentMap(map);
+      })
+      .catch((err) => console.error("Department fetch error:", err));
+  }, []);
 
 
   const submitUpdate = async () => {
@@ -334,7 +351,7 @@ export default function SubmittedFinanceRequestsPage() {
       setTimeout(() => setAlert(null), 3000);
     }
   };
-  
+
 
   return (
     <div className="p-4 sm:p-6 text-black">
@@ -625,7 +642,7 @@ export default function SubmittedFinanceRequestsPage() {
                     className="border p-2 rounded w-full bg-white"
                   >
                     <option value="">Select Payment Type</option>
-                    <option value="ADVANCE">Advance</option>
+                    {/* <option value="ADVANCE">Advance</option> */}
                     <option value="FINAL">Final</option>
                     <option value="PARTIAL">Partial</option>
                   </select>

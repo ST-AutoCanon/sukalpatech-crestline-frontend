@@ -262,15 +262,18 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       });
 
       const filteredPRs = prsData.filter((pr: PR) => {
-        const latestStatus = getLatestStatus(pr);
+  const latestStatus = getLatestStatus(pr);
 
-        if (filter === "Pending") return latestStatus.includes("PENDING");
-        if (filter === "Rejected") return latestStatus.includes("REJECTED");
-        if (filter === "Completed") return latestStatus.includes("APPROVED");
+  if (filter === "Pending") return latestStatus.includes("PENDING");
 
-        return true;
-      });
+  if (filter === "Rejected") return latestStatus.includes("REJECTED");
 
+  if (filter === "Completed") {
+    return pr.finance_payment_details?.payment_stage === "Final";
+  }
+
+  return true;
+});
       setPrs(filteredPRs);
     } catch (err) {
       console.error("Fetch PR error", err);

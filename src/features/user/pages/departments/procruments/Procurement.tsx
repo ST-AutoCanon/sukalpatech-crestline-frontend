@@ -219,59 +219,61 @@ export default function NewProcurementPage({ onClose, onCreated }) {
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
   const handleFileUpload = (i: number, vi: number, files: FileList | null) => {
-    if (!files) return;
+  if (!files) return;
 
-    const oversized = Array.from(files).find(
-      (file) => file.size > MAX_FILE_SIZE
-    );
+  const oversized = Array.from(files).find(
+    (file) => file.size > MAX_FILE_SIZE
+  );
 
-    if (oversized) {
-      setAlert({
-        type: "error",
-        message: `File "${oversized.name}" exceeds 10MB limit`,
-      });
-      return;
-    }
-    const fileArray = Array.from(files).map((file) => ({
-      file, // actual File object (for FormData)
-      file_name: file.name,
-      file_path: "", // backend will update this
-      uploaded_at: new Date().toISOString(),
-      preview: URL.createObjectURL(file),
-    }));
-
-    // ✅ Update vendorFiles (for UI display)
-    setVendorFiles((prev) => ({
-      ...prev,
-      [key]: fileArray,
-    }));
-
-    // ✅ ALSO update prData.attachments (IMPORTANT FIX)
-    setPrData((prev) => {
-      const updatedItems = [...prev.items];
-
-      const updatedVendors = [...updatedItems[i].vendors];
-
-      updatedVendors[vi] = {
-        ...updatedVendors[vi],
-        attachments: fileArray.map((f) => ({
-          file_name: f.file_name,
-          file_path: "", // backend will fill
-          uploaded_at: f.uploaded_at,
-        })),
-      };
-
-      updatedItems[i] = {
-        ...updatedItems[i],
-        vendors: updatedVendors,
-      };
-
-      return {
-        ...prev,
-        items: updatedItems,
-      };
+  if (oversized) {
+    setAlert({
+      type: "error",
+      message: `File "${oversized.name}" exceeds 10MB limit`,
     });
-  };
+    return;
+  }
+
+  const fileArray = Array.from(files).map((file) => ({
+    file,
+    file_name: file.name,
+    file_path: "",
+    uploaded_at: new Date().toISOString(),
+    preview: URL.createObjectURL(file),
+  }));
+
+  const key = `${i}-${vi}`; // ✅ FIX ADDED
+
+  // ✅ Update vendorFiles
+  setVendorFiles((prev) => ({
+    ...prev,
+    [key]: fileArray,
+  }));
+
+  // ✅ Update prData.attachments
+  setPrData((prev) => {
+    const updatedItems = [...prev.items];
+    const updatedVendors = [...updatedItems[i].vendors];
+
+    updatedVendors[vi] = {
+      ...updatedVendors[vi],
+      attachments: fileArray.map((f) => ({
+        file_name: f.file_name,
+        file_path: "",
+        uploaded_at: f.uploaded_at,
+      })),
+    };
+
+    updatedItems[i] = {
+      ...updatedItems[i],
+      vendors: updatedVendors,
+    };
+
+    return {
+      ...prev,
+      items: updatedItems,
+    };
+  });
+};
 
 
   // const submitPR = async () => {
