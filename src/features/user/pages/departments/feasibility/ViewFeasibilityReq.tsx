@@ -192,12 +192,11 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
-      if (["Pending", "Rejected", "Completed"].includes(filter)) {
-        const status =
-          filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
+      if (["Pending", "Rejected"].includes(filter)) {
+  const status = filter.toUpperCase();
 
-        url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
-      }
+  url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
+}
 
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -215,13 +214,35 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       }));
 
       // ✅ Apply search locally (FAST)
-      if (search.trim()) {
-        prsData = prsData.filter((pr) =>
-          pr.description?.toLowerCase().includes(search.toLowerCase())
-        );
-      }
+      // ✅ Apply search
+if (search.trim()) {
+  prsData = prsData.filter((pr) =>
+    pr.description?.toLowerCase().includes(search.toLowerCase())
+  );
+}
 
-      setPrs(prsData);
+// ✅ Apply FILTER (IMPORTANT)
+prsData = prsData.filter((pr) => {
+  const latestStatus = getLatestStatus(pr);
+
+  if (filter === "Pending") {
+    return latestStatus.includes("PENDING");
+  }
+
+  if (filter === "Rejected") {
+    return latestStatus.includes("REJECTED");
+  }
+
+  if (filter === "Completed") {
+    return (
+      pr.finance_payment_details?.payment_stage?.toLowerCase() === "final"
+    );
+  }
+
+  return true;
+});
+
+setPrs(prsData);
     } catch (err) {
       console.error(err);
       setPrs([]);

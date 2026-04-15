@@ -519,7 +519,7 @@ const fetchHierarchy = async () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <input
           type="text"
-          placeholder="Search Item"
+          placeholder="Search hierarchy items"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="p-2 rounded-lg w-full bg-white text-black placeholder-gray-500 shadow"

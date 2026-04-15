@@ -225,15 +225,12 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
-      if (
-        filter === "Pending" ||
-        filter === "Rejected" ||
-        filter === "Completed"
-      ) {
-        const status =
-          filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
-        url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
-      }
+     if (filter === "Pending" || filter === "Rejected") {
+  const status = filter.toUpperCase();
+  url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
+}
+
+// ✅ For Completed → DO NOTHING (use all PRs API)
 
       const res = await fetch(url, {
         credentials: "include", // ✅ send cookie
@@ -269,8 +266,11 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   if (filter === "Rejected") return latestStatus.includes("REJECTED");
 
   if (filter === "Completed") {
-    return pr.finance_payment_details?.payment_stage === "Final";
+    return (
+      pr.finance_payment_details?.payment_stage?.toLowerCase() === "final"
+    );
   }
+
 
   return true;
 });

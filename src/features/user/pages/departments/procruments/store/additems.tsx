@@ -431,7 +431,7 @@ const res = await api.get(`/items/search?query=${search}`);
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <input
               className="p-2 rounded-lg w-full bg-white text-black"
-              placeholder="Search Item"
+              placeholder="Search ItemCode/ItemName"
               value={search}
               // onChange={(e) => setSearch(e.target.value)}
               onChange={(e) => {
