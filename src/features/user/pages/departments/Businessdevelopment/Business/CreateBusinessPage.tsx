@@ -172,35 +172,35 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
     });
   };
   const validateForm = () => {
-  const requiredFields = [
-    { key: "description", label: "Description" },
-    { key: "priority", label: "Priority" },
-    { key: "required_date", label: "Required Date" },
-    { key: "requested_by_person", label: "Requested By Person" },
-    { key: "applicant_name", label: "Applicant Name" },
-  ];
+    const requiredFields = [
+      { key: "description", label: "Description" },
+      { key: "priority", label: "Priority" },
+      { key: "required_date", label: "Required Date" },
+      { key: "requested_by_person", label: "Requested By Person" },
+      { key: "applicant_name", label: "Applicant Name" },
+    ];
 
-  const filledFields = requiredFields.filter(
-    (f) => form[f.key] && form[f.key].toString().trim() !== ""
-  );
+    const filledFields = requiredFields.filter(
+      (f) => form[f.key] && form[f.key].toString().trim() !== ""
+    );
 
-  const missingFields = requiredFields.filter(
-    (f) => !form[f.key] || form[f.key].toString().trim() === ""
-  );
+    const missingFields = requiredFields.filter(
+      (f) => !form[f.key] || form[f.key].toString().trim() === ""
+    );
 
-  // ❌ Nothing filled
-  if (filledFields.length === 0) {
-    return "Please fill all required fields";
-  }
+    // ❌ Nothing filled
+    if (filledFields.length === 0) {
+      return "Please fill all required fields";
+    }
 
-  // ⚠️ Some missing
-  if (missingFields.length > 0) {
-    return `Missing: ${missingFields.map((f) => f.label).join(", ")}`;
-  }
+    // ⚠️ Some missing
+    if (missingFields.length > 0) {
+      return `Missing: ${missingFields.map((f) => f.label).join(", ")}`;
+    }
 
-  // ✅ All good
-  return null;
-};
+    // ✅ All good
+    return null;
+  };
 
 
   // const handleSubmit = async (e: any) => {
@@ -243,6 +243,19 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
         message: errorMessage,
       });
       return; // 🚫 stop API call
+    }
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB (change if needed)
+
+    const invalidFile = form.attachments.find(
+      (file: File) => file.size > MAX_FILE_SIZE
+    );
+
+    if (invalidFile) {
+      setAlert({
+        type: "error",
+        message: `File "${invalidFile.name}" is too large. Max allowed size is 10MB.`,
+      });
+      return;
     }
 
 
@@ -292,12 +305,17 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
         onClose();
       }, 1500); // adjust time if needed
 
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to submit BD info", err);
+
+      const backendMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message;
 
       setAlert({
         type: "error",
-        message: "Failed to submit BD info",
+        message: backendMessage || "Failed to submit BD info",
       });
     }
   };
@@ -394,7 +412,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Requested By Person<span className="text-red-500">*</span></label>
                   <input
                     name="requested_by_person"
-                     placeholder="Enter Person name"
+                    placeholder="Enter Person name"
                     value={form.requested_by_person}
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
@@ -409,15 +427,15 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Applicant Name <span className="text-red-500">*</span></label>
-                  <input name="applicant_name"  placeholder="Enter Applicant name" value={form.applicant_name} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
+                  <input name="applicant_name" placeholder="Enter Applicant name" value={form.applicant_name} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Contact Person</label>
-                  <input name="contact_person"  placeholder="Enter Contact person" value={form.contact_person} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
+                  <input name="contact_person" placeholder="Enter Contact person" value={form.contact_person} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Email</label>
-                  <input name="email"  placeholder="Enter Email" value={form.email} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
+                  <input name="email" placeholder="Enter Email" value={form.email} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">
@@ -442,7 +460,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
 
                 <div className="col-span-1 sm:col-span-2">
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Address</label>
-                  <input name="address"  placeholder="Enter Address" value={form.address} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
+                  <input name="address" placeholder="Enter Address" value={form.address} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base" />
                 </div>
               </div>
             </Section>
@@ -489,7 +507,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                       <input
                         name={f}
                         value={form[f] || ""}
-                         placeholder={`Enter ${formatLabel(f)}`}
+                        placeholder={`Enter ${formatLabel(f)}`}
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                       />
@@ -554,7 +572,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                       <input
                         name={f}
                         value={form[f] || ""}
-                         placeholder={`Enter ${formatLabel(f)}`}
+                        placeholder={`Enter ${formatLabel(f)}`}
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                       />
@@ -576,7 +594,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                     <input
                       name={f}
                       value={form[f] || ""}
-                       placeholder={`Enter ${formatLabel(f)}`}
+                      placeholder={`Enter ${formatLabel(f)}`}
                       onChange={handleChange}
                       className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                     />
@@ -608,9 +626,9 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 {[
-                  "ac",
-                  "cctv",
-                  "gps",
+                  "AC",
+                  "CCTV",
+                  "GPS",
                   "fire_extinguisher",
                   "emergency_exit",
                   "led_board",

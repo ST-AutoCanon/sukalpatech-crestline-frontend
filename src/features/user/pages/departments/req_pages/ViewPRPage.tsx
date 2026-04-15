@@ -89,13 +89,9 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
     setLoading(true);
     try {
       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
-      if (
-        filter === "Pending" ||
-        filter === "Rejected" ||
-        filter === "Completed"
-      ) {
-        const status =
-          filter === "Completed" ? "STORE APPROVED" : filter.toUpperCase();
+
+      if (filter === "Pending" || filter === "Rejected") {
+        const status = filter.toUpperCase();
         url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
       }
 
@@ -118,8 +114,11 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
         const latestStatus = getLatestStatus(pr);
         if (filter === "Pending") return latestStatus.includes("PENDING");
         if (filter === "Rejected") return latestStatus.includes("REJECTED");
-        if (filter === "Completed") return latestStatus.includes("APPROVED");
-        return true;
+        if (filter === "Completed") {
+          return (
+            pr.finance_payment_details?.payment_stage?.toLowerCase() === "final"
+          );
+        } return true;
       });
 
       setPrs(filteredPRs);

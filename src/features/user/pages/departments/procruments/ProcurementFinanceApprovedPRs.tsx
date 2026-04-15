@@ -326,6 +326,8 @@ export default function SubmittedFinanceRequestsPage() {
     fetchApprovedRequests();
   };
 
+  
+
   return (
     <div className="p-4 sm:p-6 text-black">
       {/* ================= PR CARDS ================= */}

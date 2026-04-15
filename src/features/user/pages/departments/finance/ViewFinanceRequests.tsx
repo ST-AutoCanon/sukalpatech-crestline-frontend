@@ -253,8 +253,9 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
         }
 
         if (status === "APPROVED") {
-          return latestStatus.includes("STORE APPROVED");
-          // or use === "STORE APPROVED" if strict needed
+          return (
+            pr.finance_payment_details?.payment_stage?.trim().toLowerCase() === "final"
+          );
         }
 
         return true; // ALL
@@ -887,3 +888,4 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
     </div>
   );
 }
+

@@ -55,6 +55,8 @@ interface FinancePR {
   remarks?: string;
   department_statuses: DepartmentStatus[];
   items: Item[];
+  paymentProofName: "",
+  paymentProofPath: "",
 }
 
 
@@ -84,7 +86,7 @@ export default function SubmittedFinanceRequestsPage() {
     paymentType: "",
     partialPercentage: "",
     finalCompleted: "",
-    paymentProof: null,
+    paymentProof: null as File | null,
     comment: "",
   });
 
@@ -133,63 +135,94 @@ export default function SubmittedFinanceRequestsPage() {
 
 
 
-  const fetchApprovedRequests = async () => {
-    try {
-      const res = await axios.get(
-        `${API_BASE}/approved-finance-requests`,
-        { withCredentials: true }
-      );
+  //   const fetchApprovedRequests = async () => {
+  //   try {
+  //     const res = await axios.get(
+  //       `${API_BASE}/approved-finance-requests`,
+  //       { withCredentials: true }
+  //     );
 
-      const allPRs = res.data.data || [];
+  //     const allPRs = res.data.data || [];
 
-      // ✅ Remove PRs already approved by Finance
-      const filteredPRs = allPRs.filter((pr: any) => {
-        const payment = pr.finance_payment_details; // 👈 comes from backend
+  //     const filteredPRs = allPRs.filter((pr: any) => {
+  //       const payment = pr.finance_payment_details;
+  //       const stage = payment?.payment_stage?.toLowerCase()?.trim();
 
-        const stage = payment?.payment_stage?.toLowerCase()?.trim();
+  //       // ❌ Hide FINAL
+  //       if (stage === "final") return false;
 
-        const finalDone =
-          payment?.final_completed === true ||
-          payment?.final_completed === "YES" ||
-          payment?.final_completed === "Yes" ||
-          payment?.final_completed === "true";
+  //       // -------------------------------
+  //       // ✅ Feasibility Approval Check
+  //       // -------------------------------
+  //       const isFeasibilityApproved = pr.department_statuses?.some(
+  //         (s: any) =>
+  //           s.department_status?.toLowerCase().includes("feasibility approved")
+  //       );
 
-        // 🔥 Hide ALL FINAL payments (no need to check final_completed)
-        if (stage === "final") {
-          return false;
-        }
+  //       if (!isFeasibilityApproved) return false;
 
-        // ---------------- EXISTING LOGIC ----------------
+  //       // -------------------------------
+  //       // ✅ Payment Stage Logic
+  //       // -------------------------------
+  //       if (stage === "partial") return true;
 
-        if (!pr.department_statuses || pr.department_statuses.length === 0) {
-          return true;
-        }
+  //       // -------------------------------
+  //       // ✅ Existing Logic
+  //       // -------------------------------
+  //       if (!pr.department_statuses || pr.department_statuses.length === 0) {
+  //         return false;
+  //       }
 
-        const latestStatus =
-          pr.department_statuses[pr.department_statuses.length - 1];
+  //       const latestStatus =
+  //         pr.department_statuses[pr.department_statuses.length - 1];
 
-        const status = latestStatus.department_status?.toLowerCase().trim();
+  //       const status = latestStatus.department_status?.toLowerCase().trim();
 
-        // ❌ Hide rejected
-        if (status?.includes("rejected")) {
-          return false;
-        }
+  //       if (status?.includes("rejected")) return false;
+  //       if (status === "finance approved") return false;
 
-        // ❌ Hide finance approved
-        if (status === "finance approved") {
-          return false;
-        }
+  //       return true;
+  //     });
 
-        // ✅ Show remaining (including PARTIAL)
-        return true;
-      });
+  //     setRequests(filteredPRs);
 
-      setRequests(filteredPRs);
+  //   } catch (err) {
+  //     console.error("Error fetching approved finance requests:", err);
+  //   }
+  // };
 
-    } catch (err) {
-      console.error("Error fetching approved finance requests:", err);
-    }
-  };
+  //   const fetchPartialFinanceRequests = async () => {
+  //   try {
+  //     const res = await axios.get(
+  //       `${API_BASE}/partial-finance-requests`,
+  //       { withCredentials: true }
+  //     );
+
+  //     const allPRs = res.data.data || [];
+
+  //     // ✅ Keep your existing status filtering
+  //     const filteredPRs = allPRs.filter((pr: any) => {
+  //       if (!pr.department_statuses || pr.department_statuses.length === 0) {
+  //         return true;
+  //       }
+
+  //       const latestStatus =
+  //         pr.department_statuses[pr.department_statuses.length - 1];
+
+  //       const status = latestStatus.department_status?.toLowerCase().trim();
+
+  //       if (status?.includes("rejected")) return false;
+  //       if (status === "finance approved") return false;
+
+  //       return true;
+  //     });
+
+  //     setRequests(filteredPRs);
+
+  //   } catch (err) {
+  //     console.error("Error fetching PARTIAL finance requests:", err);
+  //   }
+  // };
 
 
 
@@ -211,21 +244,62 @@ export default function SubmittedFinanceRequestsPage() {
 
 
   useEffect(() => {
-    fetchApprovedRequests();
+    fetchAllFinanceRequests();
   }, []);
 
   const openPR = (pr: FinancePR) => {
     setSelectedPR(pr);
+
+    const payment =
+      (pr as any)?.finance_payment_details ||
+      (pr as any)?.financePaymentDetails ||
+      (pr as any)?.finance_payment ||
+      pr || {};   // 👈 fallback
+
+    console.log("FULL PR DEBUG:", pr);
+    console.log("PAYMENT DEBUG:", payment);
+
     setUpdateData({
       department_statuses: pr.department_statuses || [],
       items: pr.items || [],
     });
+    setFinance({
+      paymentType: payment.payment_stage ?? payment.paymentStage ?? "",
+
+      partialPercentage:
+        payment.partial_percentage ?? payment.partialPercentage ?? "",
+
+      finalCompleted: (() => {
+        const val =
+          payment.final_completed ??
+          payment.finalCompleted ??
+          payment.final_payment_completed ??
+          "";
+
+        if (val === true || val === 1 || val === "1") return "YES";
+        if (val === false || val === 0 || val === "0") return "NO";
+        return val || "";
+      })(),
+
+      paymentProof: null,
+
+      paymentProofName:
+        payment.payment_proof_file_name ||
+        payment.payment_proof_name ||
+        "",
+
+      paymentProofPath:
+        payment.payment_proof_file_path ||
+        payment.payment_proof ||
+        "",
+
+      comment: payment.finance_comment ?? payment.comment ?? "",
+    });
+
     setModalOpen(true);
     setNewStatus("");
     setNewComment("");
   };
-
-
 
   // const submitUpdate = async () => {
   //   if (!selectedPR || !newStatus) {
@@ -261,6 +335,71 @@ export default function SubmittedFinanceRequestsPage() {
   //     setTimeout(() => setAlert(null), 4000);
   //   }
   // };
+
+  const fetchAllFinanceRequests = async () => {
+    try {
+      const [approvedRes, partialRes] = await Promise.all([
+        axios.get(`${API_BASE}/approved-finance-requests`, { withCredentials: true }),
+        axios.get(`${API_BASE}/partial-finance-requests`, { withCredentials: true }),
+      ]);
+
+      const approvedPRs = approvedRes.data.data || [];
+      const partialPRs = partialRes.data.data || [];
+
+      // ✅ Merge
+      let merged = [...approvedPRs, ...partialPRs];
+
+      // ✅ Remove duplicates
+      merged = merged.filter(
+        (pr, index, self) =>
+          index === self.findIndex((p) => p.id === pr.id)
+      );
+
+      // ✅ Apply filter
+      const filtered = merged.filter((pr: any) => {
+        const payment = pr.finance_payment_details || {};
+
+        const stage = String(payment.payment_stage || "").toLowerCase().trim();
+        const type = String(payment.payment_type || "").toLowerCase().trim();
+        const finalCompletedRaw = payment.final_completed;
+
+        // normalize finalCompleted safely
+        const finalCompleted =
+          typeof finalCompletedRaw === "boolean"
+            ? finalCompletedRaw
+            : String(finalCompletedRaw || "").toLowerCase().trim();
+
+        // ❌ BLOCK FINAL (ALL CASES)
+        const isFinal =
+          stage.includes("final") ||
+          type.includes("final") ||
+          finalCompleted === "yes" ||
+          finalCompleted === "true" ||
+          finalCompleted === "1";
+
+        if (isFinal) return false;
+
+        const latestStatus =
+          pr.department_statuses?.[pr.department_statuses.length - 1];
+
+        const status = latestStatus?.department_status?.toLowerCase().trim();
+
+        if (status?.includes("rejected")) return false;
+        if (status === "finance approved") return false;
+
+        const isFeasibilityApproved = pr.department_statuses?.some((s: any) =>
+          s.department_status?.toLowerCase().includes("feasibility approved")
+        );
+
+        if (!isFeasibilityApproved) return false;
+
+        return true;
+      });
+      setRequests(filtered);
+    } catch (err) {
+      console.error("Error fetching finance requests:", err);
+    }
+  };
   useEffect(() => {
     fetch(`${import.meta.env.VITE_BACKEND_URL}/api/departments`, {
       credentials: "include",
@@ -341,7 +480,7 @@ export default function SubmittedFinanceRequestsPage() {
         setModalOpen(false);
       }, 3000);
 
-      fetchApprovedRequests();
+      fetchAllFinanceRequests();
     } catch (err) {
       console.error("Error updating finance PR:", err);
       setAlert({
@@ -635,7 +774,7 @@ export default function SubmittedFinanceRequestsPage() {
                 <div>
                   <label className="text-xs font-medium">Payment Type</label>
                   <select
-                    value={finance.paymentType}
+                    value={finance.paymentType || ""}
                     onChange={(e) =>
                       setFinance({ ...finance, paymentType: e.target.value })
                     }
@@ -655,7 +794,7 @@ export default function SubmittedFinanceRequestsPage() {
                       Partial Payment Percentage
                     </label>
                     <select
-                      value={finance.partialPercentage}
+                      value={finance.partialPercentage || ""}
                       onChange={(e) =>
                         setFinance({
                           ...finance,
@@ -680,7 +819,7 @@ export default function SubmittedFinanceRequestsPage() {
                     Final Payment Completed
                   </label>
                   <select
-                    value={finance.finalCompleted}
+                    value={finance.finalCompleted || ""}
                     onChange={(e) =>
                       setFinance({ ...finance, finalCompleted: e.target.value })
                     }
@@ -702,7 +841,7 @@ export default function SubmittedFinanceRequestsPage() {
                     <Upload size={18} className="text-blue-600" />
 
                     <span className="text-sm text-gray-700 truncate">
-                      {finance.paymentProof?.name || "Choose file"}
+                      {finance.paymentProof ? finance.paymentProof.name : "Choose file"}
                     </span>
 
                     <input
@@ -717,6 +856,17 @@ export default function SubmittedFinanceRequestsPage() {
                     />
                   </label>
                 </div>
+                {finance.paymentProofPath && (
+                  <div className="text-sm text-blue-600 mt-2">
+                    <a
+                      href={`${import.meta.env.VITE_BACKEND_URL}/${finance.paymentProofPath}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View Existing File
+                    </a>
+                  </div>
+                )}
 
                 {/* Finance Comment */}
                 <div className="sm:col-span-3">
@@ -726,7 +876,7 @@ export default function SubmittedFinanceRequestsPage() {
                   <input
                     type="text"
                     placeholder="Enter finance comment"
-                    value={finance.comment}
+                    value={finance.comment || ""}
                     onChange={(e) =>
                       setFinance({ ...finance, comment: e.target.value })
                     }
@@ -813,4 +963,4 @@ export default function SubmittedFinanceRequestsPage() {
       )}
     </div>
   );
-}
+}  
