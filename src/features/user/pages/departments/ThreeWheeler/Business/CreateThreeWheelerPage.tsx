@@ -253,8 +253,7 @@ interface Props {
 export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<any>(null);
-
+  const [alertData, setAlertData] = useState<any>(null);
   const [formData, setFormData] = useState({
     company_name: "",
     contact_person: "",
@@ -274,7 +273,6 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Please login first!");
       navigate("/login");
     }
   }, []);
@@ -285,16 +283,17 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    setAlert(null);
+    setAlertData(null);
 
     const token = localStorage.getItem("token");
 
     try {
       setLoading(true);
       const payload = { ...formData, industry_type: "3W" };
+      const API_URL = import.meta.env.VITE_BACKEND_URL;
 
       const res = await axios.post(
-        `http://localhost:5004/api/business-development/3w/create`,
+        `${API_URL}/api/business-development/3w/create`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -303,7 +302,7 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
       );
 
       if (res.data.success) {
-        setAlert({ type: "success", message: "3W Created ✅" });
+        setAlertData({ type: "success", message: "3W Created ✅" });
         setFormData({
           company_name: "",
           contact_person: "",
@@ -323,7 +322,7 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
         setTimeout(() => onSuccess(), 1500);
       }
     } catch (err: any) {
-      setAlert({ type: "error", message: err.response?.data?.message || "Error" });
+      setAlertData({ type: "error", message: err.response?.data?.message || "Error" });
     } finally {
       setLoading(false);
     }
@@ -331,8 +330,13 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
 
   return (
     <>
-      {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
-
+      {alertData && (
+        <Alert
+          type={alertData.type}
+          message={alertData.message}
+          onClose={() => setAlertData(null)}
+        />
+      )}
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
         <div className="bg-white w-full max-w-5xl rounded-2xl shadow-lg relative max-h-[95vh] overflow-y-auto">
           <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-20">

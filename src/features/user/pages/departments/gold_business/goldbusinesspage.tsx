@@ -275,8 +275,7 @@ interface Props {
 export default function GoldBusinessPage({ onClose, onSuccess }: Props) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<any>(null);
-
+  const [alertData, setAlertData] = useState<any>(null);
   const [formData, setFormData] = useState({
     company_name: "",
     contact_person: "",
@@ -300,20 +299,19 @@ export default function GoldBusinessPage({ onClose, onSuccess }: Props) {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Please login first!");
       navigate("/login");
     }
   }, []);
-
   const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-   const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    setAlert(null);
+    setAlertData(null);
 
     const token = localStorage.getItem("token");
+    const API_URL = import.meta.env.VITE_BACKEND_URL;
 
     try {
       setLoading(true);
@@ -324,7 +322,7 @@ export default function GoldBusinessPage({ onClose, onSuccess }: Props) {
       };
 
       const res = await axios.post(
-        "http://localhost:5004/api/business-development/gold/create",
+        `${API_URL}/api/business-development/gold/create`,
         payload,
         {
           headers: {
@@ -335,7 +333,7 @@ export default function GoldBusinessPage({ onClose, onSuccess }: Props) {
       );
 
       if (res.data.success) {
-        setAlert({
+        setAlertData({
           type: "success",
           message: "Gold Business Created ✅",
         });
@@ -365,7 +363,7 @@ export default function GoldBusinessPage({ onClose, onSuccess }: Props) {
         }, 1500);
       }
     } catch (err: any) {
-      setAlert({
+      setAlertData({
         type: "error",
         message: err.response?.data?.message || "Error",
       });
@@ -377,8 +375,13 @@ export default function GoldBusinessPage({ onClose, onSuccess }: Props) {
 
   return (
     <>
-      {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
-
+      {alertData && (
+        <Alert
+          type={alertData.type}
+          message={alertData.message}
+          onClose={() => setAlertData(null)}
+        />
+      )}
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
         <div className="bg-white w-full max-w-5xl rounded-2xl shadow-lg relative max-h-[95vh] overflow-y-auto">
 
@@ -457,7 +460,7 @@ export default function GoldBusinessPage({ onClose, onSuccess }: Props) {
               <button type="submit" className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold">
                 {loading ? "Saving..." : "Submit for Feasibility"}
               </button>
-          
+
             </div>
           </form>
         </div>

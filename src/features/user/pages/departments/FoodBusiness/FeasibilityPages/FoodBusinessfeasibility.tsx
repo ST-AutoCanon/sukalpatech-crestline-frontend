@@ -85,26 +85,14 @@ const TwoWheelerFeasibility: React.FC = () => {
 
       {/* CREATE / MODAL FORM */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex justify-center items-start sm:items-start bg-black/30 p-4 overflow-auto">
-          <div className="w-full max-w-3xl relative">
-            {/* CLOSE BUTTON */}
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3 text-2xl font-bold text-gray-600 hover:text-black"
-            >
-              ×
-            </button>
-
-            <FoodBusinessHome
-              onClose={() => setShowModal(false)}
-              onSuccess={() => {
-                setShowModal(false);
-                setRefreshList((prev) => !prev); // Refresh list after creation
-              }}
-            />
-          </div>
-        </div>
-      )}
+  <FoodBusinessHome
+    onClose={() => setShowModal(false)}
+    onSuccess={() => {
+      setShowModal(false);
+      setRefreshList((prev) => !prev);
+    }}
+  />
+)}
     </div>
   );
 };

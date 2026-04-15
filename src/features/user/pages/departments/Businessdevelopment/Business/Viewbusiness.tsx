@@ -257,19 +257,16 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
   //   if (isNaN(d.getTime())) return "-";
   //   return d.toLocaleDateString("en-GB");
   // };
-  const formatDate = (date: string | null | undefined) => {
-    if (!date) return "-";
+ const formatDate = (date: string | null | undefined) => {
+  if (!date) return "-";
 
-    // ✅ Works for both "YYYY-MM-DD" and ISO "YYYY-MM-DDTHH:mm:ss"
-    const datePart = date.split("T")[0];
+  const d = new Date(date);
+  const offset = d.getTimezoneOffset();
 
-    const parts = datePart.split("-");
-    if (parts.length !== 3) return "-";
-
-    const [year, month, day] = parts;
-
-    return `${month}/${day}/${year}`; // MM/DD/YYYY
-  };
+  return new Date(d.getTime() - offset * 60000)
+    .toISOString()
+    .split("T")[0];
+};
   const canEdit = !data.feasibility_status;
   console.log("DATA RECEIVED", data);
 
@@ -278,7 +275,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
       const fd = new FormData();
 
       Object.entries(formData).forEach(([key, value]) => {
-        if (key === "attachments") return;
+         if (key === "attachments" || key === "created_at") return;
 
         if (value !== undefined && value !== null) {
           if (key === "approximate_budget") {

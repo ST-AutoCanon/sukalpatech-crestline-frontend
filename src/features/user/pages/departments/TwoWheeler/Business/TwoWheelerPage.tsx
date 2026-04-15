@@ -328,7 +328,7 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Alert from "../../../../components/Aleartmessage";
+import AlertMessage from "../../../../components/Aleartmessage";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
@@ -360,10 +360,10 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Please login first!");
       navigate("/login");
     }
   }, []);
+  const API_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -381,13 +381,13 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
 
       if (editId) {
         res = await axios.put(
-          `http://localhost:5004/api/business-development/2w/${editId}`,
+          `${API_URL}/api/business-development/2w/${editId}`,
           payload,
           { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
         );
       } else {
         res = await axios.post(
-          `http://localhost:5004/api/business-development/2w/create`,
+          `${API_URL}/api/business-development/2w/create`,
           payload,
           { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
         );
@@ -422,7 +422,11 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
   return (
     <>
       {alert && (
-        <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />
+        <AlertMessage
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
       )}
 
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

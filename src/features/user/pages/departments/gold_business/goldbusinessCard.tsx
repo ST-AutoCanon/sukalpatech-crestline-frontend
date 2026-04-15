@@ -310,10 +310,9 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
-            <h2 className="bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 bg-clip-text text-transparent text-2xl font-medium">
+             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
               GOLD-{data.id} Full Info
             </h2>
-
             {/* ================= SECTIONS ================= */}
             {[
               {
@@ -420,7 +419,7 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
                   <button
                     onClick={handleUpdate}
                     disabled={loading}
-                    className="bg-yellow-600 text-white px-5 py-2 rounded text-sm"
+                    className="bg-blue-600 text-white px-5 py-2 rounded text-sm"
                   >
                     {loading ? "Updating..." : "Update Final Status"}
                   </button>
