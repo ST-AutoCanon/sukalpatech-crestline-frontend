@@ -88,26 +88,15 @@ const FoodBusinessHome = () => {
       />
 
       {/* CREATE MODAL */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center p-4">
-          <div className="bg-white rounded-xl w-full max-w-3xl p-6 relative">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3 text-xl"
-            >
-              ×
-            </button>
-
-            <FoodBusinessPage
-              onClose={() => setShowModal(false)}
-              onSuccess={() => {
-                handleSuccess();
-                setShowModal(false);
-              }}
-            />
-          </div>
-        </div>
-      )}
+     {showModal && (
+  <FoodBusinessPage
+    onClose={() => setShowModal(false)}
+    onSuccess={() => {
+      handleSuccess();
+      setShowModal(false);
+    }}
+  />
+)}
     </div>
   );
 };

@@ -36,7 +36,7 @@ const UpdatedGoldRequests: React.FC<Props> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-6">
       <div className="flex justify-between mb-6">
-        <h2 className="text-white text-xl">Updated Food Feasibility Requests</h2>
+        <h2 className="text-white text-xl">Updated Gold Feasibility Requests</h2>
         <button
           onClick={onBack}
           className="bg-white text-purple-700 px-4 py-2 rounded"

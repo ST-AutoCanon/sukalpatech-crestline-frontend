@@ -274,21 +274,16 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
     try {
       if (bdId) {
         await api.patch(
-          `/business-development/${bdId}/submit`,
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
+  `/business-development/${bdId}/submit`,
+  formData
+);
 
         setAlert({
           type: "success",
           message: "BD info updated successfully!",
         });
       } else {
-        await api.post(
-          "/business-development",
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
+       await api.post("/business-development", formData);
 
         setAlert({
           type: "success",

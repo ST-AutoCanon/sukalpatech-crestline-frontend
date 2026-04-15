@@ -261,8 +261,7 @@ interface Props {
 export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<any>(null);
-
+  const [alertData, setAlertData] = useState<any>(null);
   const [formData, setFormData] = useState({
     company_name: "",
     contact_person: "",
@@ -283,7 +282,6 @@ export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Please login first!");
       navigate("/login");
     }
   }, []);
@@ -294,21 +292,27 @@ export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    setAlert(null);
+    setAlertData(null);
     const token = localStorage.getItem("token");
 
     try {
       setLoading(true);
       const payload = { ...formData, industry_type: "FOOD" };
 
+      const API_URL = import.meta.env.VITE_BACKEND_URL;
       const res = await axios.post(
-        "http://localhost:5004/api/business-development/food/create",
+        `${API_URL}/api/business-development/food/create`,
         payload,
-        { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
       );
 
       if (res.data.success) {
-        setAlert({ type: "success", message: "Food Business Created ✅" });
+        setAlertData({ type: "success", message: "Food Business Created ✅" });
         setFormData({
           company_name: "",
           contact_person: "",
@@ -328,7 +332,7 @@ export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
         setTimeout(() => onSuccess(), 1500);
       }
     } catch (err: any) {
-      setAlert({ type: "error", message: err.response?.data?.message || "Error" });
+      setAlertData({ type: "error", message: err.response?.data?.message || "Error" });
     } finally {
       setLoading(false);
     }
@@ -336,8 +340,13 @@ export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
 
   return (
     <>
-      {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
-
+      {alertData && (
+        <Alert
+          type={alertData.type}
+          message={alertData.message}
+          onClose={() => setAlertData(null)}
+        />
+      )}
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
         <div className="bg-white w-full max-w-5xl rounded-2xl shadow-lg relative max-h-[95vh] overflow-y-auto">
 
