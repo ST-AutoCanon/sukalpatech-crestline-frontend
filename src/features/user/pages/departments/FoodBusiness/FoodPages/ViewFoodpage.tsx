@@ -368,7 +368,7 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
             {/* HEADER */}
             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
-              FOOD-{data.id} Full Info
+              FOOD-{cardIndex+1} Full Info
             </h2>
 
             {/* ================= SECTIONS ================= */}
