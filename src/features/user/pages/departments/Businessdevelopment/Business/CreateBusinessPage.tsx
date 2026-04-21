@@ -274,16 +274,16 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
     try {
       if (bdId) {
         await api.patch(
-  `/business-development/${bdId}/submit`,
-  formData
-);
+          `/business-development/${bdId}/submit`,
+          formData
+        );
 
         setAlert({
           type: "success",
           message: "BD info updated successfully!",
         });
       } else {
-       await api.post("/business-development", formData);
+        await api.post("/business-development", formData);
 
         setAlert({
           type: "success",
@@ -627,7 +627,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                   "fire_extinguisher",
                   "emergency_exit",
                   "led_board",
-                  "usb",
+                  "USB",
                   "luggage_carrier",
                   "wheelchair_access",
                 ].map((f) => (
@@ -705,7 +705,24 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                 onChange={(e) => {
                   if (!e.target.files) return;
 
+                  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
                   const selectedFiles = Array.from(e.target.files);
+
+                  // ❌ Find oversized files
+                  const invalidFile = selectedFiles.find(
+                    (file) => file.size > MAX_FILE_SIZE
+                  );
+
+                  if (invalidFile) {
+                    setAlert({
+                      type: "error",
+                      message: `File "${invalidFile.name}" exceeds 10MB limit`,
+                    });
+
+                    e.target.value = ""; // reset input
+                    return;
+                  }
 
                   setForm((prev: any) => {
                     const existingFiles = prev.attachments || [];

@@ -263,7 +263,7 @@
 // }
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../../api/businessApi";
 import Alert from "../../../components/Aleartmessage";
 import { useNavigate } from "react-router-dom";
 
@@ -311,7 +311,6 @@ export default function GoldBusinessPage({ onClose, onSuccess }: Props) {
     setAlertData(null);
 
     const token = localStorage.getItem("token");
-    const API_URL = import.meta.env.VITE_BACKEND_URL;
 
     try {
       setLoading(true);
@@ -321,16 +320,7 @@ export default function GoldBusinessPage({ onClose, onSuccess }: Props) {
         industry_type: "gold_business",
       };
 
-      const res = await axios.post(
-        `${API_URL}/api/business-development/gold/create`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
-      );
+      const res = await api.post("/business-development/gold/create", payload);
 
       if (res.data.success) {
         setAlertData({

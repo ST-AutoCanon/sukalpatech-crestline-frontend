@@ -249,7 +249,7 @@
 
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../../../api/businessApi";
 import Alert from "../../../../components/Aleartmessage";
 import { useNavigate } from "react-router-dom";
 
@@ -299,16 +299,9 @@ export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
       setLoading(true);
       const payload = { ...formData, industry_type: "FOOD" };
 
-      const API_URL = import.meta.env.VITE_BACKEND_URL;
-      const res = await axios.post(
-        `${API_URL}/api/business-development/food/create`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
+      const res = await api.post(
+        `/business-development/food/create`,
+        payload
       );
 
       if (res.data.success) {

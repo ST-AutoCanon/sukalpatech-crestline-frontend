@@ -241,7 +241,7 @@
 // }
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../../../api/businessApi";
 import Alert from "../../../../components/Aleartmessage";
 import { useNavigate } from "react-router-dom";
 
@@ -290,19 +290,14 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
     try {
       setLoading(true);
       const payload = { ...formData, industry_type: "3W" };
-      const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-      const res = await axios.post(
-        `${API_URL}/api/business-development/3w/create`,
-        payload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        }
-      );
+     const res = await api.post(
+  `/business-development/3w/create`,
+  payload
+);
 
       if (res.data.success) {
-        setAlertData({ type: "success", message: "3W Created ✅" });
+        setAlertData({ type: "success", message: "3W Business Created ✅" });
         setFormData({
           company_name: "",
           contact_person: "",
