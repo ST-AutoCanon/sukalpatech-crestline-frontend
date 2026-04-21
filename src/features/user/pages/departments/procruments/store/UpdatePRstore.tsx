@@ -354,67 +354,141 @@ export default function SubmittedFinanceRequestsPage() {
 
 
 
+  // const submitUpdate = async () => {
+  //   if (!selectedPR || !newStatus) {
+  //     setAlert({
+  //       type: "error",
+  //       message: "Please select procurement PR status",
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     // Map frontend state to backend expected key
+  //     const storeReceivingDetails = {
+  //       quantity_status: orderDetails.quantityStatus,
+  //       partial_quantity: orderDetails.partialQuantity || null,
+  //       rejection_reason: orderDetails.rejectionReason || null,
+  //       building: orderDetails.building || null,
+  //       rack: orderDetails.rack || null,
+  //       received_at: new Date().toISOString(),
+  //       received_by: user.first_name,
+  //     };
+
+  //     console.log("Submitting Store Receiving Details:", storeReceivingDetails);
+
+  //     const payload = {
+  //       department_statuses: [
+  //         {
+  //           department_status: newStatus,
+  //           department_comment: newComment,
+  //           status_updated_by: user.first_name,
+  //           updated_at: new Date().toISOString(),
+  //         },
+  //       ],
+  //       items: updateData.items,
+  //       store_receiving_details: storeReceivingDetails, // <- key matches backend
+  //     };
+
+  //     // Send to backend
+  //     await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
+  //       withCredentials: true,
+  //     });
+
+  //     setAlert({
+  //       type: "success",
+  //       message: "Store PR updated successfully",
+  //     });
+
+  //     setTimeout(() => {
+  //       setModalOpen(false);
+  //       setAlert(null);
+  //     }, 2000);
+
+  //     // Refresh list
+  //     fetchApprovedRequests();
+  //   } catch (err) {
+  //     console.error("❌ Failed to update Store PR:", err);
+  //     setAlert({
+  //       type: "error",
+  //       message: "Failed to update Store PR",
+  //     });
+  //   }
+  // };
+
   const submitUpdate = async () => {
-    if (!selectedPR || !newStatus) {
-      setAlert({
-        type: "error",
-        message: "Please select procurement PR status",
-      });
-      return;
+  if (!selectedPR || !newStatus) {
+    setAlert({
+      type: "error",
+      message: "Please select procurement PR status",
+    });
+    return;
+  }
+
+  try {
+    const paymentStage =
+      selectedPR.finance_payment_details?.payment_stage;
+
+    const quantityStatus = orderDetails.quantityStatus;
+
+    // 🔥 CONDITION HERE
+    let overrideStatus = newStatus;
+
+    if (
+      paymentStage === "PARTIAL" &&
+      quantityStatus === "PARTIAL"
+    ) {
+      // send it back to procurement/store flow
+      overrideStatus = "REOPENED"; 
+      // OR "PROCUREMENT PENDING" (depends on your system statuses)
     }
 
-    try {
-      // Map frontend state to backend expected key
-      const storeReceivingDetails = {
-        quantity_status: orderDetails.quantityStatus,
-        partial_quantity: orderDetails.partialQuantity || null,
-        rejection_reason: orderDetails.rejectionReason || null,
-        building: orderDetails.building || null,
-        rack: orderDetails.rack || null,
-        received_at: new Date().toISOString(),
-        received_by: user.first_name,
-      };
+    const storeReceivingDetails = {
+      quantity_status: quantityStatus,
+      partial_quantity: orderDetails.partialQuantity || null,
+      rejection_reason: orderDetails.rejectionReason || null,
+      building: orderDetails.building || null,
+      rack: orderDetails.rack || null,
+      received_at: new Date().toISOString(),
+      received_by: user.first_name,
+    };
 
-      console.log("Submitting Store Receiving Details:", storeReceivingDetails);
+    const payload = {
+      department_statuses: [
+        {
+          department_status: overrideStatus, // 👈 use override
+          department_comment: newComment,
+          status_updated_by: user.first_name,
+          updated_at: new Date().toISOString(),
+        },
+      ],
+      items: updateData.items,
+      store_receiving_details: storeReceivingDetails,
+    };
 
-      const payload = {
-        department_statuses: [
-          {
-            department_status: newStatus,
-            department_comment: newComment,
-            status_updated_by: user.first_name,
-            updated_at: new Date().toISOString(),
-          },
-        ],
-        items: updateData.items,
-        store_receiving_details: storeReceivingDetails, // <- key matches backend
-      };
+    await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
+      withCredentials: true,
+    });
 
-      // Send to backend
-      await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
-        withCredentials: true,
-      });
+    setAlert({
+      type: "success",
+      message: "Store PR updated successfully",
+    });
 
-      setAlert({
-        type: "success",
-        message: "Store PR updated successfully",
-      });
+    setTimeout(() => {
+      setModalOpen(false);
+      setAlert(null);
+    }, 2000);
 
-      setTimeout(() => {
-        setModalOpen(false);
-        setAlert(null);
-      }, 2000);
-
-      // Refresh list
-      fetchApprovedRequests();
-    } catch (err) {
-      console.error("❌ Failed to update Store PR:", err);
-      setAlert({
-        type: "error",
-        message: "Failed to update Store PR",
-      });
-    }
-  };
+    fetchApprovedRequests();
+  } catch (err) {
+    console.error("❌ Failed to update Store PR:", err);
+    setAlert({
+      type: "error",
+      message: "Failed to update Store PR",
+    });
+  }
+};
 
   return (
     <div className="p-4 sm:p-6 text-black">
@@ -892,7 +966,6 @@ export default function SubmittedFinanceRequestsPage() {
                     >
                       <option value="">Select</option>
                       <option value="FULL">Full</option>
-                      <option value="HALF">Half</option>
                       <option value="PARTIAL">Partial</option>
                     </select>
                   </div>

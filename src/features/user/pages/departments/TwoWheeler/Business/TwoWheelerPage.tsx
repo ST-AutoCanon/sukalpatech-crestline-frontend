@@ -327,7 +327,7 @@
 
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../../../api/businessApi";
 import AlertMessage from "../../../../components/Aleartmessage";
 import { useNavigate } from "react-router-dom";
 
@@ -363,7 +363,6 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
       navigate("/login");
     }
   }, []);
-  const API_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -380,21 +379,13 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
       let res;
 
       if (editId) {
-        res = await axios.put(
-          `${API_URL}/api/business-development/2w/${editId}`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
-        );
+       res = await api.put(`/business-development/2w/${editId}`, payload);
       } else {
-        res = await axios.post(
-          `${API_URL}/api/business-development/2w/create`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
-        );
+        res = await api.post(`/business-development/2w/create`, payload);
       }
 
       if (res.data.success) {
-        setAlert({ type: "success", message: editId ? "Updated ✅" : "Created ✅" });
+        setAlert({ type: "success", message: editId ? "Updated ✅" : "2W Business Created ✅" });
         setFormData({
           company_name: "",
           contact_person: "",

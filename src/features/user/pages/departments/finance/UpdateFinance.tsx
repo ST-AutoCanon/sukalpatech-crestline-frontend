@@ -76,6 +76,9 @@ export default function SubmittedFinanceRequestsPage() {
 
   const [newStatus, setNewStatus] = useState("");
   const [newComment, setNewComment] = useState("");
+  const [orderDetails, setOrderDetails] = useState<any>(null);
+  const [receivingDetails, setReceivingDetails] = useState<any>(null);
+
 
   const [alert, setAlert] = useState<{
     type: "success" | "error";
@@ -247,60 +250,81 @@ export default function SubmittedFinanceRequestsPage() {
     fetchAllFinanceRequests();
   }, []);
 
-  const openPR = (pr: FinancePR) => {
-    setSelectedPR(pr);
+  const openPR = async (pr: FinancePR) => {
+    try {
+      // 🔥 Call API to get FULL PR details
+      const res = await axios.get(
+        `${API_BASE}/finance-requests/${pr.id}`,
+        { withCredentials: true }
+      );
 
-    const payment =
-      (pr as any)?.finance_payment_details ||
-      (pr as any)?.financePaymentDetails ||
-      (pr as any)?.finance_payment ||
-      pr || {};   // 👈 fallback
+      const fullPR = res.data?.data;
 
-    console.log("FULL PR DEBUG:", pr);
-    console.log("PAYMENT DEBUG:", payment);
+      console.log("FULL PR FROM API:", fullPR);
 
-    setUpdateData({
-      department_statuses: pr.department_statuses || [],
-      items: pr.items || [],
-    });
-    setFinance({
-      paymentType: payment.payment_stage ?? payment.paymentStage ?? "",
+      setSelectedPR(fullPR);
 
-      partialPercentage:
-        payment.partial_percentage ?? payment.partialPercentage ?? "",
+      // -------------------------
+      // ✅ PAYMENT
+      // -------------------------
+      const payment = fullPR.finance_payment_details || {};
 
-      finalCompleted: (() => {
-        const val =
-          payment.final_completed ??
-          payment.finalCompleted ??
-          payment.final_payment_completed ??
-          "";
+      setFinance({
+        paymentType: payment.payment_stage || "",
+        partialPercentage: payment.partial_percentage || "",
+        finalCompleted:
+          payment.final_completed === true ? "YES" : "NO",
+        paymentProof: null,
+        paymentProofName: payment.payment_proof_file_name || "",
+        paymentProofPath: payment.payment_proof_file_path || "",
+        comment: payment.finance_comment || "",
+      });
 
-        if (val === true || val === 1 || val === "1") return "YES";
-        if (val === false || val === 0 || val === "0") return "NO";
-        return val || "";
-      })(),
+      // -------------------------
+      // ✅ ITEMS
+      // -------------------------
+      setUpdateData({
+        department_statuses: fullPR.department_statuses || [],
+        items: fullPR.items || [],
+      });
 
-      paymentProof: null,
+      // -------------------------
+      // ✅ ORDER DETAILS
+      // -------------------------
+      const order = fullPR.order_details || {};
 
-      paymentProofName:
-        payment.payment_proof_file_name ||
-        payment.payment_proof_name ||
-        "",
+      setOrderDetails({
+        orderPlaced: order.order_placed_at ? "YES" : "NO",
+        expectedDeliveryDate: order.expected_delivery_date || "",
+        transportMode: order.transport_mode || "",
+        inHouseType: order.in_house_type || "",
+        vendorAddress: order.vendor_address || "",
+        file: null,
+        filePath: order.po_file_path || "",
+        fileName: order.po_file_name || "",
+      });
 
-      paymentProofPath:
-        payment.payment_proof_file_path ||
-        payment.payment_proof ||
-        "",
+      // -------------------------
+      // ✅ RECEIVING DETAILS
+      // -------------------------
+      const receiving = fullPR.order_receiving_details || {};
 
-      comment: payment.finance_comment ?? payment.comment ?? "",
-    });
+      setReceivingDetails({
+        quantity_status: receiving.quantity_status || "",
+        partial_quantity: receiving.partial_quantity || "",
+        rejection_reason: receiving.rejection_reason || "",
+        building: receiving.building || "",
+        rack: receiving.rack || "",
+      });
 
-    setModalOpen(true);
-    setNewStatus("");
-    setNewComment("");
+      setModalOpen(true);
+      setNewStatus("");
+      setNewComment("");
+
+    } catch (err) {
+      console.error("Error fetching PR details:", err);
+    }
   };
-
   // const submitUpdate = async () => {
   //   if (!selectedPR || !newStatus) {
   //     setAlert({ type: "error", message: "Please select finance status" });
@@ -490,6 +514,7 @@ export default function SubmittedFinanceRequestsPage() {
       setTimeout(() => setAlert(null), 3000);
     }
   };
+
 
 
   return (
@@ -763,7 +788,7 @@ export default function SubmittedFinanceRequestsPage() {
 
 
             {/* ================= FINANCE SECTION ================= */}
-            <div className="border border-gray-200 rounded p-4 mb-4">
+            <div className="border border-gray-200 bg-gray-100 rounded p-4 mb-4">
               <h3 className="font-semibold mb-4 text-purple-600">
                 Finance Payment Update
               </h3>
@@ -886,6 +911,148 @@ export default function SubmittedFinanceRequestsPage() {
 
               </div>
             </div>
+            {selectedPR.order_details &&
+              (
+                selectedPR.order_details.order_placed_at ||
+                selectedPR.order_details.expected_delivery_date ||
+                selectedPR.order_details.transport_mode ||
+                selectedPR.order_details.in_house_type ||
+                selectedPR.order_details.vendor_address ||
+                selectedPR.order_details.po_file_path
+              ) && (
+              <div className="border border-gray-200 bg-gray-100 rounded p-4 mb-4">
+                <h3 className="font-semibold mb-4 text-purple-600">
+                  PR Order Details
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                  {/* Order Placed */}
+                  <div>
+                    <label className="text-xs font-medium">Order Placed</label>
+                    <input
+                      readOnly
+                      value={
+                        selectedPR.order_details?.order_placed_at
+                          ? new Date(
+                            selectedPR.order_details?.order_placed_at,
+                          ).toLocaleDateString()
+                          : ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Expected Delivery */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Expected Delivery
+                    </label>
+                    <input
+                      readOnly
+                      value={
+                        selectedPR.order_details?.expected_delivery_date
+                          ? new Date(
+                            selectedPR.order_details?.expected_delivery_date,
+                          ).toLocaleDateString()
+                          : ""
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Transport Mode */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Transport Mode
+                    </label>
+                    <input
+                      readOnly
+                      value={selectedPR.order_details?.transport_mode || ""}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* In-House Type */}
+                  <div>
+                    <label className="text-xs font-medium">In-House Type</label>
+                    <input
+                      readOnly
+                      value={selectedPR.order_details?.in_house_type || ""}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* Vendor Address */}
+                  <div>
+                    <label className="text-xs font-medium">
+                      Vendor Address
+                    </label>
+                    <input
+                      readOnly
+                      value={selectedPR.order_details?.vendor_address || ""}
+                      className="border p-2 rounded w-full bg-white"
+                    />
+                  </div>
+
+                  {/* PO File */}
+                  {selectedPR.order_details?.po_file_path && (
+                    <div>
+                      <label className="text-xs font-medium">PO File</label>
+                      <a
+                        href={`${import.meta.env.VITE_BACKEND_URL}/${selectedPR.order_details?.po_file_path}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        {selectedPR.order_details?.po_file_name ||
+                          "View PO File"}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {receivingDetails &&
+              (
+                receivingDetails.quantity_status ||
+                receivingDetails.partial_quantity ||
+                receivingDetails.rejection_reason ||
+                receivingDetails.building ||
+                receivingDetails.rack
+              ) && (
+                <div className="bg-gray-100 p-4 rounded mb-4">
+                <h3 className="font-semibold mb-3 text-purple-600">Store Receiving Details</h3>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+
+                  <div>
+                    <label>Quantity Status</label>
+                    <input readOnly value={receivingDetails.quantity_status || ""} className="border p-2 rounded w-full bg-white" />
+                  </div>
+
+                  <div>
+                    <label>Partial Quantity</label>
+                    <input readOnly value={receivingDetails.partial_quantity || ""} className="border p-2 rounded w-full bg-white" />
+                  </div>
+
+                  <div>
+                    <label>Rejection Reason</label>
+                    <input readOnly value={receivingDetails.rejection_reason || ""} className="border p-2 rounded w-full bg-white" />
+                  </div>
+
+                  <div>
+                    <label>Building</label>
+                    <input readOnly value={receivingDetails.building || ""} className="border p-2 rounded w-full bg-white" />
+                  </div>
+
+                  <div>
+                    <label>Rack</label>
+                    <input readOnly value={receivingDetails.rack || ""} className="border p-2 rounded w-full bg-white" />
+                  </div>
+
+                </div>
+              </div>
+            )}
 
             {/* STATUS SECTION */}
             <div className="flex justify-end mb-2">
