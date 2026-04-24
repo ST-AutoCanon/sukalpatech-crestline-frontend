@@ -233,11 +233,16 @@ prsData = prsData.filter((pr) => {
     return latestStatus.includes("REJECTED");
   }
 
-  if (filter === "Completed") {
-    return (
-      pr.finance_payment_details?.payment_stage?.toLowerCase() === "final"
-    );
-  }
+   if (filter === "Completed") {
+  const paymentStage =
+    pr.finance_payment_details?.payment_stage?.toLowerCase() || "";
+
+  const quantityStatus =
+    pr.store_receiving_details?.quantity_status?.toUpperCase() || "";
+
+  return paymentStage === "final" && quantityStatus === "FULL";
+}
+
 
   return true;
 });

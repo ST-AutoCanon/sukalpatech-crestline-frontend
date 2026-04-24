@@ -283,7 +283,11 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
           message: "BD info updated successfully!",
         });
       } else {
-        await api.post("/business-development", formData);
+        await api.post("/business-development", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
         setAlert({
           type: "success",
