@@ -361,7 +361,7 @@ const res = await api.get(`/items/search?query=${search}`);
                   })),
                 )
               }
-              placeholder="" // 👈 empty placeholder
+              placeholder="Select Vendor" // 👈 empty placeholder
               menuPortalTarget={document.body}
               styles={{
                 control: (base) => ({

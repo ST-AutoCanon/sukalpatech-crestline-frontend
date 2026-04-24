@@ -67,6 +67,15 @@ interface PROrderDetails {
   vendor_address: string | null;
 }
 
+interface StoreReceivingDetails {
+  quantity_status?: string;
+  partial_quantity?: number;
+  rejection_reason?: string;
+  building?: string;
+  rack?: string;
+}
+
+
 interface StorePR {
   id: string;
   department?: string;
@@ -80,6 +89,7 @@ interface StorePR {
 
   finance_payment_details?: FinancePaymentDetails;
   order_details?: PROrderDetails;
+  store_receiving_details?:StoreReceivingDetails;
 }
 
 /* ================= COMPONENT ================= */
@@ -162,19 +172,30 @@ export default function SubmittedFinanceRequestsPage() {
   // };
 
   const fetchApprovedRequests = async () => {
-    const token = localStorage.getItem("token");
+  try {
+    const [allRes, filteredRes] = await Promise.all([
+      axios.get(`${API_BASE}/finance-approved-store-requests`, {
+        withCredentials: true,
+      }),
+      axios.get(`${API_BASE}/finance-approved-store-requests/partial`, {
+        withCredentials: true,
+      }),
+    ]);
 
-    // const res = await axios.get(`${API_BASE}/finance-approved-store-requests`, {
-    //   headers: {
-    //     Authorization: `Bearer ${token}`,
-    //   },
-    // });
-    const res = await axios.get(`${API_BASE}/finance-approved-store-requests`, {
-      withCredentials: true,
-    });
+    const allData = allRes.data.data || [];
+    const filteredData = filteredRes.data.data || [];
 
-    setRequests(res.data.data || []);
-  };
+    // 👉 Merge or use separately
+    setRequests(allData);
+
+    console.log("All PRs:", allData);
+    console.log("Filtered PRs:", filteredData);
+
+  } catch (err) {
+    console.error("Error fetching requests:", err);
+  }
+};
+  
 
 
   // useEffect(() => {
@@ -241,15 +262,26 @@ export default function SubmittedFinanceRequestsPage() {
   }, []);
 
   const openPR = (pr: StorePR) => {
-    setSelectedPR(pr);
-    setUpdateData({
-      department_statuses: pr.department_statuses || [],
-      items: pr.items || [],
-    });
-    setModalOpen(true);
-    setNewStatus("");
-    setNewComment("");
-  };
+  setSelectedPR(pr);
+
+  setUpdateData({
+    department_statuses: pr.department_statuses || [],
+    items: pr.items || [],
+  });
+
+  // 🔥 PREFILL STORE RECEIVING DETAILS
+  setOrderDetails({
+    quantityStatus: pr.store_receiving_details?.quantity_status || "",
+    partialQuantity: pr.store_receiving_details?.partial_quantity || "",
+    rejectionReason: pr.store_receiving_details?.rejection_reason || "",
+    building: pr.store_receiving_details?.building || "",
+    rack: pr.store_receiving_details?.rack || "",
+  });
+
+  setModalOpen(true);
+  setNewStatus("");
+  setNewComment("");
+};
 
   //  const submitUpdate = async () => {
   //   if (!selectedPR || !newStatus) {
@@ -434,15 +466,7 @@ export default function SubmittedFinanceRequestsPage() {
     // 🔥 CONDITION HERE
     let overrideStatus = newStatus;
 
-    if (
-      paymentStage === "PARTIAL" &&
-      quantityStatus === "PARTIAL"
-    ) {
-      // send it back to procurement/store flow
-      overrideStatus = "REOPENED"; 
-      // OR "PROCUREMENT PENDING" (depends on your system statuses)
-    }
-
+   const finalStatus = newStatus;
     const storeReceivingDetails = {
       quantity_status: quantityStatus,
       partial_quantity: orderDetails.partialQuantity || null,
@@ -456,7 +480,7 @@ export default function SubmittedFinanceRequestsPage() {
     const payload = {
       department_statuses: [
         {
-          department_status: overrideStatus, // 👈 use override
+          department_status: finalStatus, // 👈 use override
           department_comment: newComment,
           status_updated_by: user.first_name,
           updated_at: new Date().toISOString(),

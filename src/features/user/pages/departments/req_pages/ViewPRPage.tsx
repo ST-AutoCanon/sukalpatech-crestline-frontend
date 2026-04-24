@@ -114,12 +114,19 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
         const latestStatus = getLatestStatus(pr);
         if (filter === "Pending") return latestStatus.includes("PENDING");
         if (filter === "Rejected") return latestStatus.includes("REJECTED");
-        if (filter === "Completed") {
-          return (
-            pr.finance_payment_details?.payment_stage?.toLowerCase() === "final"
-          );
-        } return true;
-      });
+          if (filter === "Completed") {
+  const paymentStage =
+    pr.finance_payment_details?.payment_stage?.toLowerCase() || "";
+
+  const quantityStatus =
+    pr.store_receiving_details?.quantity_status?.toUpperCase() || "";
+
+  return paymentStage === "final" && quantityStatus === "FULL";
+}
+
+
+  return true;
+});
 
       setPrs(filteredPRs);
     } catch (err) {

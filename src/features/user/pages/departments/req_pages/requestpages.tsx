@@ -266,10 +266,14 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   if (filter === "Rejected") return latestStatus.includes("REJECTED");
 
   if (filter === "Completed") {
-    return (
-      pr.finance_payment_details?.payment_stage?.toLowerCase() === "final"
-    );
-  }
+  const paymentStage =
+    pr.finance_payment_details?.payment_stage?.toLowerCase() || "";
+
+  const quantityStatus =
+    pr.store_receiving_details?.quantity_status?.toUpperCase() || "";
+
+  return paymentStage === "final" && quantityStatus === "FULL";
+}
 
 
   return true;

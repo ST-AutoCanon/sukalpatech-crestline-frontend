@@ -328,7 +328,7 @@
 
 import { useState, useEffect } from "react";
 import { api } from "../../../../api/businessApi";
-import AlertMessage from "../../../../components/Aleartmessage";
+import AleartMessage from "../../../../components/Aleartmessage";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
@@ -357,12 +357,12 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
     comment: "",
   });
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-    }
-  }, []);
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     navigate("/login");
+  //   }
+  // }, []);
 
   const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -413,7 +413,7 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
   return (
     <>
       {alert && (
-        <AlertMessage
+        <AleartMessage
           type={alert.type}
           message={alert.message}
           onClose={() => setAlert(null)}
