@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import { X, Plus, Minus } from "lucide-react";
 import Aleart from "../../../components/Aleartmessage";
+
 
 type Props = {
   filter: string;
@@ -225,12 +226,12 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
-     if (filter === "Pending" || filter === "Rejected") {
-  const status = filter.toUpperCase();
-  url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
-}
+      if (filter === "Pending" || filter === "Rejected") {
+        const status = filter.toUpperCase();
+        url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
+      }
 
-// ✅ For Completed → DO NOTHING (use all PRs API)
+      // ✅ For Completed → DO NOTHING (use all PRs API)
 
       const res = await fetch(url, {
         credentials: "include", // ✅ send cookie
@@ -244,40 +245,82 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       //   department_statuses: pr.department_statuses || [],
       // }));
 
-      const prsData = (data?.data || []).map((pr: PR) => {
-        // 🔥 convert department NAME → ID
-        const deptEntry = Object.entries(departmentMap).find(
-          ([_, name]) => name === pr.department
-        );
+      // const prsData = (data?.data || []).map((pr: PR) => {
+      //   // 🔥 convert department NAME → ID
+      //   const deptEntry = Object.entries(departmentMap).find(
+      //     ([_, name]) => name === pr.department
+      //   );
 
-        return {
-          ...pr,
-          department: deptEntry ? deptEntry[0] : String(pr.department), // ✅ FIX
-          items: pr.items || [],
-          department_statuses: pr.department_statuses || [],
-        };
-      });
+      //   return {
+      //     ...pr,
+      //     department: deptEntry ? deptEntry[0] : String(pr.department), // ✅ FIX
+      //     items: pr.items || [],
+      //     department_statuses: pr.department_statuses || [],
+      //   };
+      // });
+
+      const rawData = data?.data || [];
+
+// ✅ STEP 1: Merge duplicates by PR id
+const mergedMap = new Map<string, PR>();
+
+rawData.forEach((pr: PR) => {
+  if (!mergedMap.has(pr.id)) {
+    mergedMap.set(pr.id, {
+      ...pr,
+      items: [...(pr.items || [])],
+      department_statuses: [...(pr.department_statuses || [])],
+    });
+  } else {
+    const existing = mergedMap.get(pr.id)!;
+
+    // ✅ Merge items
+    existing.items = [
+      ...existing.items,
+      ...(pr.items || [])
+    ];
+
+    // ✅ Merge statuses
+    existing.department_statuses = [
+      ...existing.department_statuses,
+      ...(pr.department_statuses || [])
+    ];
+  }
+});
+
+// ✅ STEP 2: Convert department name → id (your logic)
+const prsData = Array.from(mergedMap.values()).map((pr) => {
+  const deptEntry = Object.entries(departmentMap).find(
+    ([_, name]) => name === pr.department
+  );
+
+  return {
+    ...pr,
+    department: deptEntry ? deptEntry[0] : String(pr.department),
+  };
+});
 
       const filteredPRs = prsData.filter((pr: PR) => {
-  const latestStatus = getLatestStatus(pr);
+        const latestStatus = getLatestStatus(pr);
 
-  if (filter === "Pending") return latestStatus.includes("PENDING");
+        if (filter === "Pending") return latestStatus.includes("PENDING");
 
-  if (filter === "Rejected") return latestStatus.includes("REJECTED");
+        if (filter === "Rejected") return latestStatus.includes("REJECTED");
 
-  if (filter === "Completed") {
-  const paymentStage =
-    pr.finance_payment_details?.payment_stage?.toLowerCase() || "";
+        if (filter === "Completed") {
+          const paymentStage =
+            pr.finance_payment_details?.payment_stage?.toLowerCase() || "";
 
-  const quantityStatus =
-    pr.store_receiving_details?.quantity_status?.toUpperCase() || "";
+          const quantityStatus =
+            pr.store_receiving_details?.quantity_status?.toUpperCase() || "";
 
-  return paymentStage === "final" && quantityStatus === "FULL";
-}
+          return paymentStage === "final" && quantityStatus === "FULL";
+        }
 
 
-  return true;
-});
+        return true;
+      });
+      console.log("RAW API DATA:", data.data);
       setPrs(filteredPRs);
     } catch (err) {
       console.error("Fetch PR error", err);
@@ -286,17 +329,27 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       setLoading(false);
     }
   };
+  
 
 
   // useEffect(() => {
   //   fetchPRs();
   // }, [filter, search, refreshKey]);
 
-  useEffect(() => {
-    if (Object.keys(departmentMap).length > 0) {
-      fetchPRs(); // ✅ only after departments loaded
-    }
-  }, [filter, search, refreshKey, departmentMap]);
+const hasFetched = useRef(false);
+
+useEffect(() => {
+  if (!hasFetched.current && Object.keys(departmentMap).length > 0) {
+    fetchPRs();
+    hasFetched.current = true;
+  }
+}, [departmentMap]);
+
+useEffect(() => {
+  if (hasFetched.current) {
+    fetchPRs();
+  }
+}, [filter, search, refreshKey]);
 
   // const isEditable = (pr: PR) => {
   //   if (filter !== "PR Raised") return false;
@@ -304,30 +357,30 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   //   return latestStatus === "CREATED";
   // };
   const isEditable = (pr: PR) => {
-  const statuses = pr.department_statuses || [];
+    const statuses = pr.department_statuses || [];
 
-  if (statuses.length === 0) return true;
+    if (statuses.length === 0) return true;
 
-  const latestStatus =
-    statuses[statuses.length - 1]?.department_status?.toUpperCase().trim() || "";
+    const latestStatus =
+      statuses[statuses.length - 1]?.department_status?.toUpperCase().trim() || "";
 
-  return latestStatus.includes("CREATED") || latestStatus.includes("PENDING");
-};
+    return latestStatus.includes("CREATED") || latestStatus.includes("PENDING");
+  };
 
   const toggleItemsSection = () => setShowItems((prev) => !prev);
 
-     const normalizeDate = (date: string) => {
-       if (!date) return "";
+  const normalizeDate = (date: string) => {
+    if (!date) return "";
 
-       const d = new Date(date);
+    const d = new Date(date);
 
-       const year = d.getFullYear();
-       const month = String(d.getMonth() + 1).padStart(2, "0");
-       const day = String(d.getDate()).padStart(2, "0");
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
 
-       return `${year}-${month}-${day}`;
+    return `${year}-${month}-${day}`;
   };
-  
+
   if (loading) return <div className="p-6">Loading PRs...</div>;
   const savePR = async (pr: PR) => {
     const token = localStorage.getItem("token");
@@ -513,7 +566,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
           formattedDate = activePR.required_date;
         }
       }
-   
+
 
       const normalizedPR: PR = {
         ...activePR,
@@ -541,20 +594,20 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       });
     }
   };
-//   const formatDateForInput = (date: string) => {
-//   if (!date) return "";
-//   return date.split("T")[0];
+  //   const formatDateForInput = (date: string) => {
+  //   if (!date) return "";
+  //   return date.split("T")[0];
   // };
-  
+
   // const formatDateForInput = (date: string) => {
   //   if (!date) return "";
   //   const d = new Date(date);
   //   return d.toLocaleDateString("en-CA"); // YYYY-MM-DD
   // };
-const formatDateForInput = (date: string) => {
-  if (!date) return "";
-  return date.split("T")[0]; // ✅ NO timezone conversion
-};
+  const formatDateForInput = (date: string) => {
+    if (!date) return "";
+    return date.split("T")[0]; // ✅ NO timezone conversion
+  };
 
   return (
     <>
@@ -630,10 +683,10 @@ const formatDateForInput = (date: string) => {
                     e.stopPropagation();
                     setEditMode(false);
                     // setActivePR(pr);
-                 setActivePR({
-                   ...pr,
-                   required_date: normalizeDate(pr.required_date),
-                 });
+                    setActivePR({
+                      ...pr,
+                      required_date: normalizeDate(pr.required_date),
+                    });
                   }}
                 >
                   More Info
@@ -654,11 +707,11 @@ const formatDateForInput = (date: string) => {
                         //   department: pr.department ? String(pr.department) : "",
                         // });
 
-                       setActivePR({
-                         ...pr,
-                         department: pr.department ? String(pr.department) : "",
-                         required_date: normalizeDate(pr.required_date), // ✅ ADD THIS
-                       });
+                        setActivePR({
+                          ...pr,
+                          department: pr.department ? String(pr.department) : "",
+                          required_date: normalizeDate(pr.required_date), // ✅ ADD THIS
+                        });
                       }}
                     >
                       Edit
@@ -1721,9 +1774,7 @@ const formatDateForInput = (date: string) => {
 
                   {/* Transport Mode */}
                   <div>
-                    <label className="text-xs font-medium">
-                      Transport Mode
-                    </label>
+                    <label className="text-xs font-medium">Transport Mode</label>
                     <input
                       readOnly
                       value={activePR.order_details.transport_mode || ""}
@@ -1731,27 +1782,29 @@ const formatDateForInput = (date: string) => {
                     />
                   </div>
 
-                  {/* In-House Type */}
-                  <div>
-                    <label className="text-xs font-medium">In-House Type</label>
-                    <input
-                      readOnly
-                      value={activePR.order_details.in_house_type || ""}
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
+                  {/* ✅ IN HOUSE → Show Delivery Type */}
+                  {activePR.order_details.transport_mode === "IN_HOUSE" && (
+                    <div>
+                      <label className="text-xs font-medium">Delivery Type</label>
+                      <input
+                        readOnly
+                        value={activePR.order_details.in_house_type || ""}
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
 
-                  {/* Vendor Address */}
-                  <div>
-                    <label className="text-xs font-medium">
-                      Vendor Address
-                    </label>
-                    <input
-                      readOnly
-                      value={activePR.order_details.vendor_address || ""}
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
+                  {/* ✅ COLLECT → Show Vendor Address */}
+                  {activePR.order_details.transport_mode === "COLLECT" && (
+                    <div>
+                      <label className="text-xs font-medium">Vendor Address</label>
+                      <input
+                        readOnly
+                        value={activePR.order_details.vendor_address || ""}
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
 
                   {/* PO File */}
                   {activePR.order_details.po_file_path && (

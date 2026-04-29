@@ -799,54 +799,52 @@ export default function SubmittedFinanceRequestsPage() {
               </div>
 
               {/* In-House Options */}
-              {orderDetails.orderPlaced === "YES" &&
-                orderDetails.transportMode === "IN_HOUSE" && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium mb-1">
-                      Delivery Type
-                    </label>
-                    <select
-                      value={orderDetails.inHouseType}
-                      onChange={(e) => {
-                        setOrderDetails({
-                          ...orderDetails,
-                          inHouseType: e.target.value,
-                        });
-
-                        console.log("In-house Type:", e.target.value);
-                      }}
-                      className="border p-2 rounded w-full bg-white"
-                    >
-                      <option value="">Select Type</option>
-                      <option value="COURIER">Courier</option>
-                      <option value="TRANSPORT">Transportation</option>
-                    </select>
-                  </div>
-                )}
+             {orderDetails.orderPlaced === "YES" &&
+  orderDetails.transportMode === "IN_HOUSE" && (
+    <div className="mt-4">
+      <label className="block text-sm font-medium mb-1">
+        Delivery Type
+      </label>
+      <select
+        value={orderDetails.inHouseType || ""}
+        onChange={(e) =>
+          setOrderDetails((prev) => ({
+            ...prev,
+            inHouseType: e.target.value,
+            vendorAddress: "", // reset other field
+          }))
+        }
+        className="border p-2 rounded w-full bg-white"
+      >
+        <option value="">Select Type</option>
+        <option value="COURIER">Courier</option>
+        <option value="TRANSPORT">Transportation</option>
+      </select>
+    </div>
+)}
 
               {/* Collect from Vendor */}
-              {orderDetails.orderPlaced === "YES" &&
-                orderDetails.transportMode === "COLLECT" && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium mb-1">
-                      Vendor Address
-                    </label>
-                    <input
-                      type="text"
-                      value={orderDetails.vendorAddress}
-                      onChange={(e) => {
-                        setOrderDetails({
-                          ...orderDetails,
-                          vendorAddress: e.target.value,
-                        });
-
-                        console.log("Vendor Address:", e.target.value);
-                      }}
-                      placeholder="Enter Vendor Address"
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
-                )}
+             {orderDetails.orderPlaced === "YES" &&
+  orderDetails.transportMode === "COLLECT" && (
+    <div className="mt-4">
+      <label className="block text-sm font-medium mb-1">
+        Vendor Address
+      </label>
+      <input
+        type="text"
+        value={orderDetails.vendorAddress || ""}
+        onChange={(e) =>
+          setOrderDetails((prev) => ({
+            ...prev,
+            vendorAddress: e.target.value,
+            inHouseType: "", // reset other field
+          }))
+        }
+        placeholder="Enter Vendor Address"
+        className="border p-2 rounded w-full bg-white"
+      />
+    </div>
+)}
             </div>
 
             {/* STATUS SECTION */}

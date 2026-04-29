@@ -109,6 +109,11 @@ export default function ViewPRModal({
   const [showItems, setShowItems] = useState(false);
   const [showStatuses, setShowStatuses] = useState(true);
 
+  const mode = pr.order_details?.transport_mode?.toLowerCase().trim();
+
+   console.log("MODE:", pr.order_details?.transport_mode);
+  console.log("IN HOUSE TYPE:", pr.order_details?.in_house_type);
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto p-4">
       <div className="bg-white w-full max-w-5xl md:max-w-7xl rounded-xl shadow-xl p-4 md:p-6 text-black flex flex-col">
@@ -598,30 +603,40 @@ export default function ViewPRModal({
                   className="border p-2 rounded w-full bg-white"
                 />
               </div>
-              <div>
-                <label className="text-xs font-medium">Transport Mode</label>
-                <input
-                  readOnly
-                  value={pr.order_details.transport_mode || ""}
-                  className="border p-2 rounded w-full bg-white"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium">In-House Type</label>
-                <input
-                  readOnly
-                  value={pr.order_details.in_house_type || ""}
-                  className="border p-2 rounded w-full bg-white"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium">Vendor Address</label>
-                <input
-                  readOnly
-                  value={pr.order_details.vendor_address || ""}
-                  className="border p-2 rounded w-full bg-white"
-                />
-              </div>
+              {/* Transport Mode - ALWAYS visible */}
+{/* Mode - always visible */}
+<div>
+  <label className="text-xs font-medium">Mode of Transportation</label>
+  <input
+    readOnly
+    value={pr.order_details.transport_mode || ""}
+    className="border p-2 rounded w-full bg-white"
+  />
+</div>
+
+{/* ✅ IN HOUSE */}
+{mode === "in_house" && (
+  <div>
+    <label className="text-xs font-medium">Delivery Type</label>
+    <input
+      readOnly
+      value={pr.order_details.in_house_type || ""}
+      className="border p-2 rounded w-full bg-white"
+    />
+  </div>
+)}
+
+{/* ✅ COLLECT */}
+{mode === "collect" && (
+  <div>
+    <label className="text-xs font-medium">Vendor Address</label>
+    <input
+      readOnly
+      value={pr.order_details.vendor_address || "N/A"}
+      className="border p-2 rounded w-full bg-white"
+    />
+  </div>
+)}
               {pr.order_details.po_file_path && (
                 <div>
                   <label className="text-xs font-medium">PO File</label>

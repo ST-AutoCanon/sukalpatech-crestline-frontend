@@ -239,6 +239,11 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
       });
 
       let data: FinancePR[] = res.data.data || [];
+      // ✅ REMOVE DUPLICATES BASED ON PR ID
+data = data.filter(
+  (pr, index, self) =>
+    index === self.findIndex((p) => p.id === pr.id)
+);
 
       // ✅ Filter based on LATEST status only
       data = data.filter((pr) => {
@@ -264,7 +269,7 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
 
 
         return true;
-        });
+      });
 
       setRequests(data);
     } catch (err) {
@@ -716,10 +721,9 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
                   </div>
 
                   {/* Transport Mode */}
+                  {/* Transport Mode */}
                   <div>
-                    <label className="text-xs font-medium">
-                      Transport Mode
-                    </label>
+                    <label className="text-xs font-medium">Transport Mode</label>
                     <input
                       readOnly
                       value={selectedPR.order_details.transport_mode || ""}
@@ -727,27 +731,29 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
                     />
                   </div>
 
-                  {/* In-House Type */}
-                  <div>
-                    <label className="text-xs font-medium">In-House Type</label>
-                    <input
-                      readOnly
-                      value={selectedPR.order_details.in_house_type || ""}
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
+                  {/* ✅ IN HOUSE → Show Delivery Type */}
+                  {selectedPR.order_details.transport_mode === "IN_HOUSE" && (
+                    <div>
+                      <label className="text-xs font-medium">Delivery Type</label>
+                      <input
+                        readOnly
+                        value={selectedPR.order_details.in_house_type || ""}
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
 
-                  {/* Vendor Address */}
-                  <div>
-                    <label className="text-xs font-medium">
-                      Vendor Address
-                    </label>
-                    <input
-                      readOnly
-                      value={selectedPR.order_details.vendor_address || ""}
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
+                  {/* ✅ COLLECT → Show Vendor Address */}
+                  {selectedPR.order_details.transport_mode === "COLLECT" && (
+                    <div>
+                      <label className="text-xs font-medium">Vendor Address</label>
+                      <input
+                        readOnly
+                        value={selectedPR.order_details.vendor_address || ""}
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
 
                   {/* PO File */}
                   {selectedPR.order_details.po_file_path && (

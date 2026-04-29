@@ -73,6 +73,8 @@ interface StoreReceivingDetails {
   rejection_reason?: string;
   building?: string;
   rack?: string;
+  received_at?: string;
+  received_by?: string;
 }
 
 
@@ -89,7 +91,7 @@ interface StorePR {
 
   finance_payment_details?: FinancePaymentDetails;
   order_details?: PROrderDetails;
-  store_receiving_details?:StoreReceivingDetails;
+  store_receiving_details?: StoreReceivingDetails[];
 }
 
 /* ================= COMPONENT ================= */
@@ -171,6 +173,37 @@ export default function SubmittedFinanceRequestsPage() {
   //   setRequests(res.data.data || []);
   // };
 
+  // const fetchApprovedRequests = async () => {
+  //   try {
+  //     const [allRes, filteredRes] = await Promise.all([
+  //       axios.get(`${API_BASE}/finance-approved-store-requests`, {
+  //         withCredentials: true,
+  //       }),
+  //       axios.get(`${API_BASE}/finance-approved-store-requests/partial`, {
+  //         withCredentials: true,
+  //       }),
+  //     ]);
+
+  //     const allData = allRes.data.data || [];
+  //     const filteredData = filteredRes.data.data || [];
+
+  //     // 👉 Merge or use separately
+  //     const uniquePRs = Object.values(
+  //       allData.reduce((acc: any, pr: any) => {
+  //         acc[pr.id] = pr; // overwrite duplicates
+  //         return acc;
+  //       }, {})
+  //     );
+
+  //     setRequests(uniquePRs);
+  //     console.log("🔥 FULL API RESPONSE:", allRes.data);
+  //     console.log("🔥 PR LIST:", allData);
+  //     console.log("PR IDs:", allData.map((pr: any) => pr.id));
+
+  //   } catch (err) {
+  //     console.error("Error fetching requests:", err);
+  //   }
+  // };
   const fetchApprovedRequests = async () => {
   try {
     const [allRes, filteredRes] = await Promise.all([
@@ -183,19 +216,36 @@ export default function SubmittedFinanceRequestsPage() {
     ]);
 
     const allData = allRes.data.data || [];
-    const filteredData = filteredRes.data.data || [];
 
-    // 👉 Merge or use separately
-    setRequests(allData);
+    const uniquePRs = Object.values(
+      allData.reduce((acc: any, pr: any) => {
+        acc[pr.id] = pr;
+        return acc;
+      }, {})
+    ) as StorePR[];
 
-    console.log("All PRs:", allData);
-    console.log("Filtered PRs:", filteredData);
+    // ✅ FILTER OUT COMPLETED PRs
+    const activePRs = uniquePRs.filter((pr) => {
+      const latest = pr.store_receiving_details?.reduce(
+        (latest, current) => {
+          if (!latest) return current;
+          return new Date(current.received_at) > new Date(latest.received_at)
+            ? current
+            : latest;
+        },
+        null as StoreReceivingDetails | null
+      );
+
+      return latest?.quantity_status !== "FULL";
+    });
+
+    setRequests(activePRs);
 
   } catch (err) {
     console.error("Error fetching requests:", err);
   }
 };
-  
+
 
 
   // useEffect(() => {
@@ -244,6 +294,7 @@ export default function SubmittedFinanceRequestsPage() {
 
         const data = await res.json();
 
+
         const map: Record<string, string> = {};
         (data?.data || []).forEach((v: any) => {
           map[String(v.vendor_id)] = v.vendor_name;
@@ -262,26 +313,31 @@ export default function SubmittedFinanceRequestsPage() {
   }, []);
 
   const openPR = (pr: StorePR) => {
-  setSelectedPR(pr);
+    setSelectedPR(pr);
 
-  setUpdateData({
-    department_statuses: pr.department_statuses || [],
-    items: pr.items || [],
-  });
+    setUpdateData({
+      department_statuses: pr.department_statuses || [],
+      items: pr.items || [],
+    });
 
-  // 🔥 PREFILL STORE RECEIVING DETAILS
-  setOrderDetails({
-    quantityStatus: pr.store_receiving_details?.quantity_status || "",
-    partialQuantity: pr.store_receiving_details?.partial_quantity || "",
-    rejectionReason: pr.store_receiving_details?.rejection_reason || "",
-    building: pr.store_receiving_details?.building || "",
-    rack: pr.store_receiving_details?.rack || "",
-  });
-
-  setModalOpen(true);
-  setNewStatus("");
-  setNewComment("");
-};
+    // 🔥 PREFILL STORE RECEIVING DETAILS
+    const latest = pr.store_receiving_details?.reduce((latest, current) => {
+      if (!latest) return current;
+      return new Date(current.received_at) > new Date(latest.received_at)
+        ? current
+        : latest;
+    }, null as StoreReceivingDetails | null);
+    setOrderDetails({
+      quantityStatus: latest?.quantity_status || "",
+      partialQuantity: latest?.partial_quantity || "",
+      rejectionReason: latest?.rejection_reason || "",
+      building: latest?.building || "",
+      rack: latest?.rack || "",
+    });
+    setModalOpen(true);
+    setNewStatus("");
+    setNewComment("");
+  };
 
   //  const submitUpdate = async () => {
   //   if (!selectedPR || !newStatus) {
@@ -449,70 +505,70 @@ export default function SubmittedFinanceRequestsPage() {
   // };
 
   const submitUpdate = async () => {
-  if (!selectedPR || !newStatus) {
-    setAlert({
-      type: "error",
-      message: "Please select procurement PR status",
-    });
-    return;
-  }
+    if (!selectedPR || !newStatus) {
+      setAlert({
+        type: "error",
+        message: "Please select procurement PR status",
+      });
+      return;
+    }
 
-  try {
-    const paymentStage =
-      selectedPR.finance_payment_details?.payment_stage;
+    try {
+      const paymentStage =
+        selectedPR.finance_payment_details?.payment_stage;
 
-    const quantityStatus = orderDetails.quantityStatus;
+      const quantityStatus = orderDetails.quantityStatus;
 
-    // 🔥 CONDITION HERE
-    let overrideStatus = newStatus;
+      // 🔥 CONDITION HERE
+      let overrideStatus = newStatus;
 
-   const finalStatus = newStatus;
-    const storeReceivingDetails = {
-      quantity_status: quantityStatus,
-      partial_quantity: orderDetails.partialQuantity || null,
-      rejection_reason: orderDetails.rejectionReason || null,
-      building: orderDetails.building || null,
-      rack: orderDetails.rack || null,
-      received_at: new Date().toISOString(),
-      received_by: user.first_name,
-    };
+      const finalStatus = newStatus;
+      const storeReceivingDetails = {
+        quantity_status: quantityStatus,
+        partial_quantity: orderDetails.partialQuantity || null,
+        rejection_reason: orderDetails.rejectionReason || null,
+        building: orderDetails.building || null,
+        rack: orderDetails.rack || null,
+        received_at: new Date().toISOString(),
+        received_by: user.first_name,
+      };
 
-    const payload = {
-      department_statuses: [
-        {
-          department_status: finalStatus, // 👈 use override
-          department_comment: newComment,
-          status_updated_by: user.first_name,
-          updated_at: new Date().toISOString(),
-        },
-      ],
-      items: updateData.items,
-      store_receiving_details: storeReceivingDetails,
-    };
+      const payload = {
+        department_statuses: [
+          {
+            department_status: finalStatus, // 👈 use override
+            department_comment: newComment,
+            status_updated_by: user.first_name,
+            updated_at: new Date().toISOString(),
+          },
+        ],
+        items: updateData.items,
+        store_receiving_details: storeReceivingDetails,
+      };
 
-    await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
-      withCredentials: true,
-    });
+      await axios.put(`${API_BASE}/store-requests/${selectedPR.id}`, payload, {
+        withCredentials: true,
+      });
 
-    setAlert({
-      type: "success",
-      message: "Store PR updated successfully",
-    });
+      setAlert({
+        type: "success",
+        message: "Store PR updated successfully",
+      });
 
-    setTimeout(() => {
-      setModalOpen(false);
-      setAlert(null);
-    }, 2000);
+      setTimeout(() => {
+        setModalOpen(false);
+        setAlert(null);
+      }, 2000);
 
-    fetchApprovedRequests();
-  } catch (err) {
-    console.error("❌ Failed to update Store PR:", err);
-    setAlert({
-      type: "error",
-      message: "Failed to update Store PR",
-    });
-  }
-};
+      fetchApprovedRequests();
+    } catch (err) {
+      console.error("❌ Failed to update Store PR:", err);
+      setAlert({
+        type: "error",
+        message: "Failed to update Store PR",
+      });
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6 text-black">
@@ -912,11 +968,10 @@ export default function SubmittedFinanceRequestsPage() {
                     />
                   </div>
 
+
                   {/* Transport Mode */}
                   <div>
-                    <label className="text-xs font-medium">
-                      Transport Mode
-                    </label>
+                    <label className="text-xs font-medium">Transport Mode</label>
                     <input
                       readOnly
                       value={selectedPR.order_details.transport_mode || ""}
@@ -924,27 +979,29 @@ export default function SubmittedFinanceRequestsPage() {
                     />
                   </div>
 
-                  {/* In-House Type */}
-                  <div>
-                    <label className="text-xs font-medium">In-House Type</label>
-                    <input
-                      readOnly
-                      value={selectedPR.order_details.in_house_type || ""}
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
+                  {/* ✅ IN HOUSE → Show Delivery Type */}
+                  {selectedPR.order_details.transport_mode === "IN_HOUSE" && (
+                    <div>
+                      <label className="text-xs font-medium">Delivery Type</label>
+                      <input
+                        readOnly
+                        value={selectedPR.order_details.in_house_type || ""}
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
 
-                  {/* Vendor Address */}
-                  <div>
-                    <label className="text-xs font-medium">
-                      Vendor Address
-                    </label>
-                    <input
-                      readOnly
-                      value={selectedPR.order_details.vendor_address || ""}
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
+                  {/* ✅ COLLECT → Show Vendor Address */}
+                  {selectedPR.order_details.transport_mode === "COLLECT" && (
+                    <div>
+                      <label className="text-xs font-medium">Vendor Address</label>
+                      <input
+                        readOnly
+                        value={selectedPR.order_details.vendor_address || ""}
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
 
                   {/* PO File */}
                   {selectedPR.order_details.po_file_path && (
@@ -1067,6 +1124,51 @@ export default function SubmittedFinanceRequestsPage() {
                       <option value="R2">Rack 2</option>
                     </select>
                   </div>
+                </div>
+              </div>
+            )}
+            {selectedPR.store_receiving_details?.length > 0 && (
+              <div className="border border-gray-200 rounded p-4 mb-4">
+                <h3 className="font-semibold mb-4 text-purple-600">
+                  Order Receivied History
+                </h3>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full border text-sm">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="p-2 border">Date</th>
+                        <th className="p-2 border">Status</th>
+                        <th className="p-2 border">Partial Qty</th>
+                        <th className="p-2 border">Building</th>
+                        <th className="p-2 border">Rack</th>
+                        <th className="p-2 border">Received By</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {selectedPR.store_receiving_details.map((rec, i) => (
+                        <tr key={i} className="text-center">
+                          <td className="p-2 border">
+                            {rec.received_at
+                              ? new Date(rec.received_at).toLocaleDateString()
+                              : "-"}
+                          </td>
+                          <td className="p-2 border">{rec.quantity_status || "-"}</td>
+                          <td className="p-2 border">{rec.partial_quantity || "-"}</td>
+                          <td className="p-2 border">{rec.building || "-"}</td>
+                          <td className="p-2 border">
+                            {rec.rack
+                              ? rec.rack.startsWith("R")
+                                ? `Rack${rec.rack.slice(1)}`
+                                : rec.rack
+                              : "-"}
+                          </td>
+                          <td className="p-2 border">{rec.received_by || "-"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}

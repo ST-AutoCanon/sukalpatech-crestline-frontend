@@ -193,10 +193,10 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       let url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/purchase-requests`;
 
       if (["Pending", "Rejected"].includes(filter)) {
-  const status = filter.toUpperCase();
+        const status = filter.toUpperCase();
 
-  url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
-}
+        url = `${import.meta.env.VITE_BACKEND_URL}/api/new-procurement/prs/status/${status}`;
+      }
 
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -212,42 +212,49 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
         items: pr.items || [],
         department_statuses: pr.department_statuses || [],
       }));
+      prsData = prsData.filter(
+        (pr, index, self) =>
+          index === self.findIndex((p) => p.id === pr.id)
+      );
 
       // ✅ Apply search locally (FAST)
       // ✅ Apply search
-if (search.trim()) {
-  prsData = prsData.filter((pr) =>
-    pr.description?.toLowerCase().includes(search.toLowerCase())
-  );
-}
+      if (search.trim()) {
+        prsData = prsData.filter((pr) =>
+          pr.description?.toLowerCase().includes(search.toLowerCase())
+        );
+      }
 
-// ✅ Apply FILTER (IMPORTANT)
-prsData = prsData.filter((pr) => {
-  const latestStatus = getLatestStatus(pr);
+      // ✅ Apply FILTER (IMPORTANT)
+      prsData = prsData.filter((pr) => {
+        const latestStatus = getLatestStatus(pr);
 
-  if (filter === "Pending") {
-    return latestStatus.includes("PENDING");
-  }
+        if (filter === "Pending") {
+          return latestStatus.includes("PENDING");
+        }
 
-  if (filter === "Rejected") {
-    return latestStatus.includes("REJECTED");
-  }
+        if (filter === "Rejected") {
+          return latestStatus.includes("REJECTED");
+        }
 
-   if (filter === "Completed") {
+       if (filter === "Completed") {
   const paymentStage =
-    pr.finance_payment_details?.payment_stage?.toLowerCase() || "";
+    pr.finance_payment_details?.payment_stage?.toLowerCase();
 
   const quantityStatus =
-    pr.store_receiving_details?.quantity_status?.toUpperCase() || "";
+    pr.store_receiving_details?.quantity_status?.toUpperCase();
+
+  // Only filter if BOTH exist
+  if (!paymentStage || !quantityStatus) return false;
 
   return paymentStage === "final" && quantityStatus === "FULL";
 }
 
 
-  return true;
-});
+        return true;
+      });
 
-setPrs(prsData);
+      setPrs(prsData);
     } catch (err) {
       console.error(err);
       setPrs([]);
@@ -1424,9 +1431,7 @@ setPrs(prsData);
 
                   {/* Transport Mode */}
                   <div>
-                    <label className="text-xs font-medium">
-                      Transport Mode
-                    </label>
+                    <label className="text-xs font-medium">Transport Mode</label>
                     <input
                       readOnly
                       value={activePR.order_details.transport_mode || ""}
@@ -1434,27 +1439,29 @@ setPrs(prsData);
                     />
                   </div>
 
-                  {/* In-House Type */}
-                  <div>
-                    <label className="text-xs font-medium">In-House Type</label>
-                    <input
-                      readOnly
-                      value={activePR.order_details.in_house_type || ""}
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
+                  {/* ✅ IN HOUSE → Show Delivery Type */}
+                  {activePR.order_details.transport_mode === "IN_HOUSE" && (
+                    <div>
+                      <label className="text-xs font-medium">Delivery Type</label>
+                      <input
+                        readOnly
+                        value={activePR.order_details.in_house_type || ""}
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
 
-                  {/* Vendor Address */}
-                  <div>
-                    <label className="text-xs font-medium">
-                      Vendor Address
-                    </label>
-                    <input
-                      readOnly
-                      value={activePR.order_details.vendor_address || ""}
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
+                  {/* ✅ COLLECT → Show Vendor Address */}
+                  {activePR.order_details.transport_mode === "COLLECT" && (
+                    <div>
+                      <label className="text-xs font-medium">Vendor Address</label>
+                      <input
+                        readOnly
+                        value={activePR.order_details.vendor_address || ""}
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+                  )}
 
                   {/* PO File */}
                   {activePR.order_details.po_file_path && (
