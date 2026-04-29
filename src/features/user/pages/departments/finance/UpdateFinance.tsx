@@ -55,8 +55,8 @@ interface FinancePR {
   remarks?: string;
   department_statuses: DepartmentStatus[];
   items: Item[];
-  paymentProofName: "",
-  paymentProofPath: "",
+  payment_proof_file_name?: string;
+  payment_proof_file_path?: string;
 }
 
 
@@ -78,6 +78,7 @@ export default function SubmittedFinanceRequestsPage() {
   const [newComment, setNewComment] = useState("");
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [receivingDetails, setReceivingDetails] = useState<any>(null);
+  const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
 
 
   const [alert, setAlert] = useState<{
@@ -90,6 +91,8 @@ export default function SubmittedFinanceRequestsPage() {
     partialPercentage: "",
     finalCompleted: "",
     paymentProof: null as File | null,
+    paymentProofName: "",
+    paymentProofPath: "",
     comment: "",
   });
 
@@ -257,10 +260,16 @@ export default function SubmittedFinanceRequestsPage() {
         `${API_BASE}/finance-requests/${pr.id}`,
         { withCredentials: true }
       );
+      const historyRes = await axios.get(
+        `${API_BASE}/finance-payment-history/${pr.id}`,
+        { withCredentials: true }
+      );
+
+      setPaymentHistory(historyRes.data?.data || []);
 
       const fullPR = res.data?.data;
 
-      console.log("FULL PR FROM API:", fullPR);
+      console.log("Receiving details:", fullPR.order_receiving_details);
 
       setSelectedPR(fullPR);
 
@@ -272,8 +281,7 @@ export default function SubmittedFinanceRequestsPage() {
       setFinance({
         paymentType: payment.payment_stage || "",
         partialPercentage: payment.partial_percentage || "",
-        finalCompleted:
-          payment.final_completed === true ? "YES" : "NO",
+        finalCompleted: payment.final_completed ? "YES" : "NO",
         paymentProof: null,
         paymentProofName: payment.payment_proof_file_name || "",
         paymentProofPath: payment.payment_proof_file_path || "",
@@ -469,7 +477,9 @@ export default function SubmittedFinanceRequestsPage() {
       // 2️⃣ Payment Fields
       // ---------------------------
       formData.append("payment_stage", finance.paymentType || "");
-      formData.append("partial_percentage", finance.partialPercentage || "");
+      if (finance.partialPercentage) {
+        formData.append("partial_percentage", finance.partialPercentage);
+      }
       formData.append("final_completed", finance.finalCompleted || "");
       formData.append("finance_comment", finance.comment || "");
 
@@ -513,6 +523,30 @@ export default function SubmittedFinanceRequestsPage() {
       });
       setTimeout(() => setAlert(null), 3000);
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // ✅ Max size (5MB)
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      setAlert({
+        type: "error",
+        message: "File size must be less than 5MB",
+      });
+
+      e.target.value = ""; // reset input
+      return;
+    }
+
+    // ✅ Accept any file type (PDF, image, Excel, etc.)
+    setFinance({
+      ...finance,
+      paymentProof: file,
+    });
   };
 
 
@@ -762,6 +796,7 @@ export default function SubmittedFinanceRequestsPage() {
                                 className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
                               />
 
+
                               {/* 7️⃣ Feasibility Comment */}
                               <input
                                 readOnly
@@ -838,23 +873,25 @@ export default function SubmittedFinanceRequestsPage() {
                   </div>
                 )}
 
-                {/* Final Payment Completed */}
-                <div>
-                  <label className="text-xs font-medium">
-                    Final Payment Completed
-                  </label>
-                  <select
-                    value={finance.finalCompleted || ""}
-                    onChange={(e) =>
-                      setFinance({ ...finance, finalCompleted: e.target.value })
-                    }
-                    className="border p-2 rounded w-full bg-white"
-                  >
-                    <option value="">Select</option>
-                    <option value="YES">Yes</option>
-                    <option value="NO">No</option>
-                  </select>
-                </div>
+                {/* Final Payment Completed (ONLY when FINAL selected) */}
+                {finance.paymentType === "FINAL" && (
+                  <div>
+                    <label className="text-xs font-medium">
+                      Final Payment Completed
+                    </label>
+                    <select
+                      value={finance.finalCompleted || ""}
+                      onChange={(e) =>
+                        setFinance({ ...finance, finalCompleted: e.target.value })
+                      }
+                      className="border p-2 rounded w-full bg-white"
+                    >
+                      <option value="">Select</option>
+                      <option value="YES">Yes</option>
+                      <option value="NO">No</option>
+                    </select>
+                  </div>
+                )}
 
                 {/* Payment Proof Upload */}
                 <div className="sm:col-span-3">
@@ -872,12 +909,7 @@ export default function SubmittedFinanceRequestsPage() {
                     <input
                       type="file"
                       className="hidden"
-                      onChange={(e) =>
-                        setFinance({
-                          ...finance,
-                          paymentProof: e.target.files?.[0],
-                        })
-                      }
+                      onChange={handleFileChange}
                     />
                   </label>
                 </div>
@@ -911,6 +943,76 @@ export default function SubmittedFinanceRequestsPage() {
 
               </div>
             </div>
+
+            {/* ================= PAYMENT HISTORY ================= */}
+            {paymentHistory.length > 0 && (
+              <div className="border border-gray-200 bg-gray-100 rounded p-4 mb-4">
+                <h3 className="font-semibold mb-3 text-purple-600">
+                  Payment History
+                </h3>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm border border-gray-300">
+                    <thead className="bg-gray-200 text-gray-700">
+                      <tr>
+                        <th className="border px-3 py-2">Date</th>
+                        <th className="border px-3 py-2">Stage</th>
+                        <th className="border px-3 py-2">Partial %</th>
+                        <th className="border px-3 py-2">Final</th>
+                        <th className="border px-3 py-2">Comment</th>
+                        <th className="border px-3 py-2">File</th>
+
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {paymentHistory.map((h, i) => (
+                        <tr key={i} className="bg-white">
+                          <td className="border px-3 py-2">
+                            {h.created_at
+                              ? new Date(h.created_at).toLocaleDateString()
+                              : "-"}
+                          </td>
+
+                          <td className="border px-3 py-2">
+                            {h.payment_stage || "-"}
+                          </td>
+
+                          <td className="border px-3 py-2">
+                            {h.partial_percentage || "-"}
+                          </td>
+
+                          <td className="border px-3 py-2">
+                            {h.final_completed ? "YES" : "NO"}
+                          </td>
+
+                          <td className="border px-3 py-2">
+                            {h.finance_comment || "-"}
+                          </td>
+
+                          <td className="border px-3 py-2">
+                            {h.payment_proof_file_path ? (
+                              <a
+                                href={`${import.meta.env.VITE_BACKEND_URL}/${h.payment_proof_file_path}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-blue-600 underline"
+                              >
+                                View
+                              </a>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+
+
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
             {selectedPR.order_details &&
               (
                 selectedPR.order_details.order_placed_at ||
@@ -920,98 +1022,99 @@ export default function SubmittedFinanceRequestsPage() {
                 selectedPR.order_details.vendor_address ||
                 selectedPR.order_details.po_file_path
               ) && (
-              <div className="border border-gray-200 bg-gray-100 rounded p-4 mb-4">
-                <h3 className="font-semibold mb-4 text-purple-600">
-                  PR Order Details
-                </h3>
+                <div className="border border-gray-200 bg-gray-100 rounded p-4 mb-4">
+                  <h3 className="font-semibold mb-4 text-purple-600">
+                    PR Order Details
+                  </h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                  {/* Order Placed */}
-                  <div>
-                    <label className="text-xs font-medium">Order Placed</label>
-                    <input
-                      readOnly
-                      value={
-                        selectedPR.order_details?.order_placed_at
-                          ? new Date(
-                            selectedPR.order_details?.order_placed_at,
-                          ).toLocaleDateString()
-                          : ""
-                      }
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
-
-                  {/* Expected Delivery */}
-                  <div>
-                    <label className="text-xs font-medium">
-                      Expected Delivery
-                    </label>
-                    <input
-                      readOnly
-                      value={
-                        selectedPR.order_details?.expected_delivery_date
-                          ? new Date(
-                            selectedPR.order_details?.expected_delivery_date,
-                          ).toLocaleDateString()
-                          : ""
-                      }
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
-
-                  {/* Transport Mode */}
-                  <div>
-                    <label className="text-xs font-medium">
-                      Transport Mode
-                    </label>
-                    <input
-                      readOnly
-                      value={selectedPR.order_details?.transport_mode || ""}
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
-
-                  {/* In-House Type */}
-                  <div>
-                    <label className="text-xs font-medium">In-House Type</label>
-                    <input
-                      readOnly
-                      value={selectedPR.order_details?.in_house_type || ""}
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
-
-                  {/* Vendor Address */}
-                  <div>
-                    <label className="text-xs font-medium">
-                      Vendor Address
-                    </label>
-                    <input
-                      readOnly
-                      value={selectedPR.order_details?.vendor_address || ""}
-                      className="border p-2 rounded w-full bg-white"
-                    />
-                  </div>
-
-                  {/* PO File */}
-                  {selectedPR.order_details?.po_file_path && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                    {/* Order Placed */}
                     <div>
-                      <label className="text-xs font-medium">PO File</label>
-                      <a
-                        href={`${import.meta.env.VITE_BACKEND_URL}/${selectedPR.order_details?.po_file_path}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline"
-                      >
-                        {selectedPR.order_details?.po_file_name ||
-                          "View PO File"}
-                      </a>
+                      <label className="text-xs font-medium">Order Placed</label>
+                      <input
+                        readOnly
+                        value={
+                          selectedPR.order_details?.order_placed_at
+                            ? new Date(
+                              selectedPR.order_details?.order_placed_at,
+                            ).toLocaleDateString()
+                            : ""
+                        }
+                        className="border p-2 rounded w-full bg-white"
+                      />
                     </div>
-                  )}
+
+                    {/* Expected Delivery */}
+                    <div>
+                      <label className="text-xs font-medium">
+                        Expected Delivery
+                      </label>
+                      <input
+                        readOnly
+                        value={
+                          selectedPR.order_details?.expected_delivery_date
+                            ? new Date(
+                              selectedPR.order_details?.expected_delivery_date,
+                            ).toLocaleDateString()
+                            : ""
+                        }
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+
+                    {/* Transport Mode */}
+                    {/* Transport Mode */}
+                    <div>
+                      <label className="text-xs font-medium">Transport Mode</label>
+                      <input
+                        readOnly
+                        value={selectedPR.order_details.transport_mode || ""}
+                        className="border p-2 rounded w-full bg-white"
+                      />
+                    </div>
+
+                    {/* ✅ IN HOUSE → Show Delivery Type */}
+                    {selectedPR.order_details.transport_mode === "IN_HOUSE" && (
+                      <div>
+                        <label className="text-xs font-medium">Delivery Type</label>
+                        <input
+                          readOnly
+                          value={selectedPR.order_details.in_house_type || ""}
+                          className="border p-2 rounded w-full bg-white"
+                        />
+                      </div>
+                    )}
+
+                    {/* ✅ COLLECT → Show Vendor Address */}
+                    {selectedPR.order_details.transport_mode === "COLLECT" && (
+                      <div>
+                        <label className="text-xs font-medium">Vendor Address</label>
+                        <input
+                          readOnly
+                          value={selectedPR.order_details.vendor_address || ""}
+                          className="border p-2 rounded w-full bg-white"
+                        />
+                      </div>
+                    )}
+
+                    {/* PO File */}
+                    {selectedPR.order_details?.po_file_path && (
+                      <div>
+                        <label className="text-xs font-medium">PO File</label>
+                        <a
+                          href={`${import.meta.env.VITE_BACKEND_URL}/${selectedPR.order_details?.po_file_path}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          {selectedPR.order_details?.po_file_name ||
+                            "View PO File"}
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
             {receivingDetails &&
               (
                 receivingDetails.quantity_status ||
@@ -1021,38 +1124,38 @@ export default function SubmittedFinanceRequestsPage() {
                 receivingDetails.rack
               ) && (
                 <div className="bg-gray-100 p-4 rounded mb-4">
-                <h3 className="font-semibold mb-3 text-purple-600">Store Receiving Details</h3>
+                  <h3 className="font-semibold mb-3 text-purple-600">Store Receiving Details</h3>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
 
-                  <div>
-                    <label>Quantity Status</label>
-                    <input readOnly value={receivingDetails.quantity_status || ""} className="border p-2 rounded w-full bg-white" />
+                    <div>
+                      <label>Quantity Status</label>
+                      <input readOnly value={receivingDetails.quantity_status || ""} className="border p-2 rounded w-full bg-white" />
+                    </div>
+
+                    <div>
+                      <label>Partial Quantity</label>
+                      <input readOnly value={receivingDetails.partial_quantity || ""} className="border p-2 rounded w-full bg-white" />
+                    </div>
+
+                    <div>
+                      <label>Rejection Reason</label>
+                      <input readOnly value={receivingDetails.rejection_reason || ""} className="border p-2 rounded w-full bg-white" />
+                    </div>
+
+                    <div>
+                      <label>Building</label>
+                      <input readOnly value={receivingDetails.building || ""} className="border p-2 rounded w-full bg-white" />
+                    </div>
+
+                    <div>
+                      <label>Rack</label>
+                      <input readOnly value={receivingDetails.rack || ""} className="border p-2 rounded w-full bg-white" />
+                    </div>
+
                   </div>
-
-                  <div>
-                    <label>Partial Quantity</label>
-                    <input readOnly value={receivingDetails.partial_quantity || ""} className="border p-2 rounded w-full bg-white" />
-                  </div>
-
-                  <div>
-                    <label>Rejection Reason</label>
-                    <input readOnly value={receivingDetails.rejection_reason || ""} className="border p-2 rounded w-full bg-white" />
-                  </div>
-
-                  <div>
-                    <label>Building</label>
-                    <input readOnly value={receivingDetails.building || ""} className="border p-2 rounded w-full bg-white" />
-                  </div>
-
-                  <div>
-                    <label>Rack</label>
-                    <input readOnly value={receivingDetails.rack || ""} className="border p-2 rounded w-full bg-white" />
-                  </div>
-
                 </div>
-              </div>
-            )}
+              )}
 
             {/* STATUS SECTION */}
             <div className="flex justify-end mb-2">

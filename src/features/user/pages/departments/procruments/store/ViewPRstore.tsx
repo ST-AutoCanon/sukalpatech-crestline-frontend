@@ -145,17 +145,39 @@ export default function SubmittedStoreeRequestsPage() {
   //   setRequests(res.data.data || []);
   // };
 
-  const fetchApprovedRequests = async () => {
-    const token = localStorage.getItem("token");
+ const fetchApprovedRequests = async () => {
+  const token = localStorage.getItem("token");
 
-    const res = await axios.get(`${API_BASE}/purchase-requests`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  const res = await axios.get(`${API_BASE}/purchase-requests`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
-    setRequests(res.data.data || []);
-  };
+  const rawData = res.data.data || [];
+
+  const grouped = Object.values(
+    rawData.reduce((acc: any, pr: StorePR) => {
+      const key = String(pr.id);
+
+      if (!acc[key]) {
+        acc[key] = {
+          ...pr,
+          items: [],
+        };
+      }
+
+      // merge items safely
+      if (pr.items?.length) {
+        acc[key].items.push(...pr.items);
+      }
+
+      return acc;
+    }, {})
+  );
+
+  setRequests(grouped);
+};
 
 
   useEffect(() => {

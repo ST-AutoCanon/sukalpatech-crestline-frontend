@@ -114,21 +114,26 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
         const latestStatus = getLatestStatus(pr);
         if (filter === "Pending") return latestStatus.includes("PENDING");
         if (filter === "Rejected") return latestStatus.includes("REJECTED");
-          if (filter === "Completed") {
-  const paymentStage =
-    pr.finance_payment_details?.payment_stage?.toLowerCase() || "";
+        if (filter === "Completed") {
+          const paymentStage =
+            pr.finance_payment_details?.payment_stage?.toLowerCase() || "";
 
-  const quantityStatus =
-    pr.store_receiving_details?.quantity_status?.toUpperCase() || "";
+          const quantityStatus =
+            pr.store_receiving_details?.quantity_status?.toUpperCase() || "";
 
-  return paymentStage === "final" && quantityStatus === "FULL";
-}
+          return paymentStage === "final" && quantityStatus === "FULL";
+        }
 
 
-  return true;
-});
+        return true;
+      });
+      // ✅ FIX DUPLICATES HERE
+      const uniquePRs = Array.from(
+        new Map(filteredPRs.map((pr) => [String(pr.id), pr])).values()
+      );
 
-      setPrs(filteredPRs);
+      setPrs(uniquePRs);
+
     } catch (err) {
       console.error("Fetch PR error", err);
       setPrs([]);
