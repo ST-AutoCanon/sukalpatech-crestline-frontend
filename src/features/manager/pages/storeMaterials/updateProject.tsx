@@ -84,51 +84,113 @@ const [alert, setAlert] = useState<{
   };
 
   /* ================= UPDATE STATUS ================= */
-  const handleStatusUpdate = async () => {
-    if (!status) {
-     setAlert({
-       type: "error",
-       message: "Status required",
-     });
-      return;
+  // const handleStatusUpdate = async () => {
+  //   if (!status) {
+  //    setAlert({
+  //      type: "error",
+  //      message: "Status required",
+  //    });
+  //     return;
+  //   }
+
+  //   try {
+  //     setLoading(true);
+
+  //     await axios.post(
+  //       `${API_BASE}/status`,
+  //       {
+  //         project_management_id: selectedProject?.id,
+  //         department: departmentName, // ✅ FIXED
+  //         updated_by: user.first_name,
+  //         status,
+  //         comments,
+  //       },
+  //       { withCredentials: true },
+  //     );
+
+  //     setAlert({
+  //       type: "success",
+  //       message: "Status updated successfully",
+  //     });
+
+  //     setStatus("");
+  //     setComments("");
+
+  //     setModalOpen(false);
+
+  //     fetchProjects();
+  //   } catch (err: any) {
+  //     console.error("Status update error", err);
+  //     setAlert({
+  //       type: "error",
+  //       message: err?.response?.data?.message || "Error updating status",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+ const handleStatusUpdate = async () => {
+  if (!status) {
+    setAlert({
+      type: "error",
+      message: "Status required",
+    });
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    // ✅ CALL BACKEND ONCE
+    const res = await axios.post(
+      `${API_BASE}/status`,
+      {
+        project_management_id: selectedProject?.id,
+        department: departmentName,
+        updated_by: user.first_name,
+        status,
+        comments,
+      },
+      { withCredentials: true }
+    );
+
+    // ✅ GET WORKFLOW INFO FROM RESPONSE
+    const workflow = res.data.workflowInfo;
+
+    let alertMessage = "";
+
+    if (workflow?.status === "APPROVED") {
+      alertMessage = `✅ Approved → moved to ${workflow.next}`;
+    } else if (workflow?.status === "REJECTED") {
+      alertMessage = `❌ Rejected → sent back to ${workflow.previous}`;
+    } else if (workflow?.status === "PENDING") {
+      alertMessage = `⏳ Pending in ${workflow.current}`;
     }
 
-    try {
-      setLoading(true);
+    // ✅ SHOW ALERT
+    setAlert({
+      type: "success",
+      message: alertMessage || "Status updated successfully",
+    });
 
-      await axios.post(
-        `${API_BASE}/status`,
-        {
-          project_management_id: selectedProject?.id,
-          department: departmentName, // ✅ FIXED
-          updated_by: user.first_name,
-          status,
-          comments,
-        },
-        { withCredentials: true },
-      );
+    setStatus("");
+    setComments("");
+    setModalOpen(false);
 
-      setAlert({
-        type: "success",
-        message: "Status updated successfully",
-      });
+    fetchProjects();
 
-      setStatus("");
-      setComments("");
+  } catch (err: any) {
+    console.error("Status update error", err);
 
-      setModalOpen(false);
-
-      fetchProjects();
-    } catch (err: any) {
-      console.error("Status update error", err);
-      setAlert({
-        type: "error",
-        message: err?.response?.data?.message || "Error updating status",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    setAlert({
+      type: "error",
+      message: err?.response?.data?.message || "Error updating status",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="p-4 sm:p-6 text-black">
