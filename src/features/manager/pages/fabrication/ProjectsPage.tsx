@@ -27,21 +27,40 @@ export default function ProjectPage() {
   const [statusList, setStatusList] = useState<any[]>([]);
   const [expandDeptStatus, setExpandDeptStatus] = useState(true);
 
+  const filters = ["All PR", "Pending", "Rejected", "Completed"] as const;
+type FilterType = (typeof filters)[number];
+
+const [filter, setFilter] = useState<FilterType>("All PR");
+
   /* ================= FETCH PROJECTS ================= */
-  const fetchProjects = async () => {
-    try {
-      const res = await axios.get(`${API_BASE}`, {
-        withCredentials: true,
-      });
-      setProjects(res.data.data || []);
-    } catch (err) {
-      console.error("Project fetch error", err);
-    }
-  };
+ const fetchProjects = async () => {
+  const mappedStatus =
+    filter === "All PR"
+      ? "ALL"
+      : filter === "Completed"
+      ? "APPROVED"
+      : filter.toUpperCase();
+
+  console.log("👉 Selected Filter:", filter);
+  console.log("👉 API Status Param:", mappedStatus);
+
+  try {
+    const res = await axios.get(`${API_BASE}`, {
+      params: { status: mappedStatus },
+      withCredentials: true,
+    });
+
+    console.log("✅ API Response:", res.data);
+
+    setProjects(res.data.data || []);
+  } catch (err) {
+    console.error("❌ Fetch Projects Error:", err);
+  }
+};
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [filter]);
 
   /* ================= FETCH STATUS ================= */
   const fetchStatuses = async (projectId: number) => {
@@ -74,6 +93,30 @@ export default function ProjectPage() {
   return (
     <div className="p-4 sm:p-6 text-black">
       {/* ================= PROJECT CARDS ================= */}
+
+      <div className="flex gap-10 mb-4">
+        {filters.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setFilter(tab)}
+            className="flex flex-col items-center text-sm font-medium"
+          >
+            {/* TEXT */}
+            <span
+              className={`transition-all ${filter === tab ? "text-white" : "text-white/60 hover:text-white"
+                }`}
+            >
+              {tab}
+            </span>
+
+            {/* UNDERLINE (only for active tab) */}
+            <span
+              className={`h-[2px] mt-1 rounded transition-all duration-300 ${filter === tab ? "w-full bg-white" : "w-0"
+                }`}
+            />
+          </button>
+        ))}
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         {projects.map((p) => (
           <div

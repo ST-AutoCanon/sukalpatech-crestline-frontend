@@ -111,7 +111,7 @@ export default function TopNav({ pageTitle, onMenuClick }: TopNavProps) {
             onClick={() => setShowDropdown(!showDropdown)}
             className="relative text-white p-2 rounded hover:bg-white/20 transition"
           >
-            <Bell size={22} />
+            {/* <Bell size={22} /> */}
 
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-4 h-4 flex items-center justify-center">
