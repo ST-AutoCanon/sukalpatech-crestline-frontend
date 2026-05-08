@@ -382,10 +382,10 @@ export default function NewProcurementPage({ onClose, onCreated }) {
         message: "PR created successfully",
       });
 
-      onCreated();
+    
 
       setTimeout(() => {
-        setAlert(null);
+        onCreated();
         onClose();
       }, 3000);
 
@@ -575,7 +575,7 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                       <input
                         type="number"
                         min={1}
-                        className="w-full sm:w-28 border rounded-lg px-2 py-1"
+                        className="flex-1 border rounded-lg px-2 py-1 bg-gray-100"
                         placeholder="Enter Qty"
                         onKeyDown={(e) => {
                           // Block invalid keys

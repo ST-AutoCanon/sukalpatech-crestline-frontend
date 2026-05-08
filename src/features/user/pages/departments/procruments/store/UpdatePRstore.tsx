@@ -204,47 +204,69 @@ export default function SubmittedFinanceRequestsPage() {
   //     console.error("Error fetching requests:", err);
   //   }
   // };
+
   const fetchApprovedRequests = async () => {
-  try {
-    const [allRes, filteredRes] = await Promise.all([
-      axios.get(`${API_BASE}/finance-approved-store-requests`, {
-        withCredentials: true,
-      }),
-      axios.get(`${API_BASE}/finance-approved-store-requests/partial`, {
-        withCredentials: true,
-      }),
-    ]);
+    try {
+      const [allRes, filteredRes] = await Promise.all([
+        axios.get(`${API_BASE}/finance-approved-store-requests`, {
+          withCredentials: true,
+        }),
+        axios.get(`${API_BASE}/finance-approved-store-requests/partial`, {
+          withCredentials: true,
+        }),
+      ]);
 
-    const allData = allRes.data.data || [];
+      const allData = allRes.data.data || [];
 
-    const uniquePRs = Object.values(
-      allData.reduce((acc: any, pr: any) => {
-        acc[pr.id] = pr;
-        return acc;
-      }, {})
-    ) as StorePR[];
+      const uniquePRs = Object.values(
+        allData.reduce((acc: any, pr: any) => {
+          acc[pr.id] = pr;
+          return acc;
+        }, {})
+      ) as StorePR[];
 
-    // ✅ FILTER OUT COMPLETED PRs
-    const activePRs = uniquePRs.filter((pr) => {
-      const latest = pr.store_receiving_details?.reduce(
-        (latest, current) => {
+      // ✅ FILTER OUT COMPLETED PRs
+      const activePRs = uniquePRs.filter((pr) => {
+        let details: StoreReceivingDetails[] = [];
+
+        // ✅ Ensure it's always an array
+        if (Array.isArray(pr.store_receiving_details)) {
+          details = pr.store_receiving_details;
+        } else if (pr.store_receiving_details) {
+          // if backend sends single object → wrap it
+          details = [pr.store_receiving_details as StoreReceivingDetails];
+        }
+
+        // ✅ If no details → keep PR
+        if (details.length === 0) return true;
+
+        // ✅ Find latest safely
+        const latest = details.reduce((latest, current) => {
           if (!latest) return current;
-          return new Date(current.received_at) > new Date(latest.received_at)
-            ? current
-            : latest;
-        },
-        null as StoreReceivingDetails | null
-      );
 
-      return latest?.quantity_status !== "FULL";
-    });
+          const currentTime = current.received_at
+            ? new Date(current.received_at).getTime()
+            : 0;
 
-    setRequests(activePRs);
+          const latestTime = latest.received_at
+            ? new Date(latest.received_at).getTime()
+            : 0;
 
-  } catch (err) {
-    console.error("Error fetching requests:", err);
-  }
-};
+          return currentTime > latestTime ? current : latest;
+        }, null as StoreReceivingDetails | null);
+
+        // ✅ Normalize status
+        const status = latest?.quantity_status?.trim().toUpperCase();
+
+        // ❌ Remove FULL
+        return status !== "FULL";
+      });
+      setRequests(activePRs);
+
+    } catch (err) {
+      console.error("Error fetching requests:", err);
+    }
+  };
 
 
 
@@ -321,12 +343,31 @@ export default function SubmittedFinanceRequestsPage() {
     });
 
     // 🔥 PREFILL STORE RECEIVING DETAILS
-    const latest = pr.store_receiving_details?.reduce((latest, current) => {
-      if (!latest) return current;
-      return new Date(current.received_at) > new Date(latest.received_at)
-        ? current
-        : latest;
-    }, null as StoreReceivingDetails | null);
+    let details: StoreReceivingDetails[] = [];
+
+    // ✅ normalize to array
+    if (Array.isArray(pr.store_receiving_details)) {
+      details = pr.store_receiving_details;
+    } else if (pr.store_receiving_details) {
+      details = [pr.store_receiving_details as StoreReceivingDetails];
+    }
+
+    // ✅ find latest safely
+    let latest: StoreReceivingDetails | null = null;
+
+    if (details.length > 0) {
+      latest = details.reduce((prev, curr) => {
+        const prevTime = prev?.received_at
+          ? new Date(prev.received_at).getTime()
+          : 0;
+
+        const currTime = curr?.received_at
+          ? new Date(curr.received_at).getTime()
+          : 0;
+
+        return currTime > prevTime ? curr : prev;
+      }, details[0]);
+    }
     setOrderDetails({
       quantityStatus: latest?.quantity_status || "",
       partialQuantity: latest?.partial_quantity || "",
@@ -1127,53 +1168,63 @@ export default function SubmittedFinanceRequestsPage() {
                 </div>
               </div>
             )}
-            {selectedPR.store_receiving_details?.length > 0 && (
-              <div className="border border-gray-200 rounded p-4 mb-4">
-                <h3 className="font-semibold mb-4 text-purple-600">
-                  Order Receivied History
-                </h3>
+            {(() => {
+              let details: StoreReceivingDetails[] = [];
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full border text-sm">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="p-2 border">Date</th>
-                        <th className="p-2 border">Status</th>
-                        <th className="p-2 border">Partial Qty</th>
-                        <th className="p-2 border">Building</th>
-                        <th className="p-2 border">Rack</th>
-                        <th className="p-2 border">Received By</th>
-                      </tr>
-                    </thead>
+              if (Array.isArray(selectedPR.store_receiving_details)) {
+                details = selectedPR.store_receiving_details;
+              } else if (selectedPR.store_receiving_details) {
+                details = [selectedPR.store_receiving_details];
+              }
 
-                    <tbody>
-                      {selectedPR.store_receiving_details.map((rec, i) => (
-                        <tr key={i} className="text-center">
-                          <td className="p-2 border">
-                            {rec.received_at
-                              ? new Date(rec.received_at).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="p-2 border">{rec.quantity_status || "-"}</td>
-                          <td className="p-2 border">{rec.partial_quantity || "-"}</td>
-                          <td className="p-2 border">{rec.building || "-"}</td>
-                          <td className="p-2 border">
-                            {rec.rack
-                              ? rec.rack.startsWith("R")
-                                ? `Rack${rec.rack.slice(1)}`
-                                : rec.rack
-                              : "-"}
-                          </td>
-                          <td className="p-2 border">{rec.received_by || "-"}</td>
+              if (details.length === 0) return null;
+
+              return (
+                <div className="border border-gray-200 rounded p-4 mb-4">
+                  <h3 className="font-semibold mb-4 text-purple-600">
+                    Order Received History
+                  </h3>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border text-sm">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="p-2 border">Date</th>
+                          <th className="p-2 border">Status</th>
+                          <th className="p-2 border">Partial Qty</th>
+                          <th className="p-2 border">Building</th>
+                          <th className="p-2 border">Rack</th>
+                          <th className="p-2 border">Received By</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+
+                      <tbody>
+                        {details.map((rec, i) => (
+                          <tr key={i} className="text-center">
+                            <td className="p-2 border">
+                              {rec.received_at
+                                ? new Date(rec.received_at).toLocaleDateString()
+                                : "-"}
+                            </td>
+                            <td className="p-2 border">{rec.quantity_status || "-"}</td>
+                            <td className="p-2 border">{rec.partial_quantity || "-"}</td>
+                            <td className="p-2 border">{rec.building || "-"}</td>
+                            <td className="p-2 border">
+                              {rec.rack
+                                ? rec.rack.startsWith("R")
+                                  ? `Rack${rec.rack.slice(1)}`
+                                  : rec.rack
+                                : "-"}
+                            </td>
+                            <td className="p-2 border">{rec.received_by || "-"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            )}
-
-
+              );
+            })()}
             {/* STATUS SECTION */}
             <div className="flex justify-end mb-2">
               <button

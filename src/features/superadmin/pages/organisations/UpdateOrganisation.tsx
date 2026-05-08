@@ -63,7 +63,9 @@ const UpdateOrganisation = () => {
         if (res.data.success && res.data.data) {
           const mapped = res.data.data.map((d) => ({
             value: d.name,
-            label: d.name,
+            label: d.name
+              .replace(/_/g, " ")
+              .replace(/\b\w/g, (char) => char.toUpperCase()),
           }));
           setAvailableDepartments(mapped);
         }

@@ -4,7 +4,10 @@ import axios from "axios";
 /* ================= TYPES ================= */
 interface Project {
   id: number;
+  display_id: number;
   bd_request_id: number;
+  bd_request_display_id?: number;
+
   description: string;
   required_date: string;
   assigned_date: string;
@@ -27,35 +30,35 @@ export default function ProjectPage() {
   const [statusList, setStatusList] = useState<any[]>([]);
   const [expandDeptStatus, setExpandDeptStatus] = useState(true);
   const filters = ["All PR", "Pending", "Rejected", "Completed"] as const;
-type FilterType = (typeof filters)[number];
+  type FilterType = (typeof filters)[number];
 
-const [filter, setFilter] = useState<FilterType>("All PR");
+  const [filter, setFilter] = useState<FilterType>("All PR");
 
   /* ================= FETCH PROJECTS ================= */
   const fetchProjects = async () => {
-  try {
-    const mappedStatus =
-      filter === "All PR"
-        ? "ALL"
-        : filter === "Completed"
-        ? "APPROVED"
-        : filter.toUpperCase();
+    try {
+      const mappedStatus =
+        filter === "All PR"
+          ? "ALL"
+          : filter === "Completed"
+            ? "APPROVED"
+            : filter.toUpperCase();
 
-    console.log("👉 Selected Filter:", filter);
-    console.log("👉 API Status Param:", mappedStatus);
+      console.log("👉 Selected Filter:", filter);
+      console.log("👉 API Status Param:", mappedStatus);
 
-    const res = await axios.get(`${API_BASE}`, {
-      params: { status: mappedStatus },
-      withCredentials: true,
-    });
+      const res = await axios.get(`${API_BASE}`, {
+        params: { status: mappedStatus },
+        withCredentials: true,
+      });
 
-    console.log("✅ API Response:", res.data);
+      console.log("✅ API Response:", res.data);
 
-    setProjects(res.data.data || []);
-  } catch (err) {
-    console.error("❌ Project fetch error", err);
-  }
-};
+      setProjects(res.data.data || []);
+    } catch (err) {
+      console.error("❌ Project fetch error", err);
+    }
+  };
 
   useEffect(() => {
     fetchProjects();
@@ -95,30 +98,28 @@ const [filter, setFilter] = useState<FilterType>("All PR");
     <div className="p-4 sm:p-6 text-black">
       {/* ================= PROJECT CARDS ================= */}
       <div className="flex gap-10 mb-4">
-  {filters.map((tab) => (
-    <button
-      key={tab}
-      onClick={() => setFilter(tab)}
-      className="flex flex-col items-center text-sm font-medium"
-    >
-      <span
-        className={`transition-all ${
-          filter === tab
-            ? "text-white"
-            : "text-white/60 hover:text-white"
-        }`}
-      >
-        {tab}
-      </span>
+        {filters.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setFilter(tab)}
+            className="flex flex-col items-center text-sm font-medium"
+          >
+            <span
+              className={`transition-all ${filter === tab
+                ? "text-white"
+                : "text-white/60 hover:text-white"
+                }`}
+            >
+              {tab}
+            </span>
 
-      <span
-        className={`h-[2px] mt-1 rounded transition-all duration-300 ${
-          filter === tab ? "w-full bg-white" : "w-0"
-        }`}
-      />
-    </button>
-  ))}
-</div>
+            <span
+              className={`h-[2px] mt-1 rounded transition-all duration-300 ${filter === tab ? "w-full bg-white" : "w-0"
+                }`}
+            />
+          </button>
+        ))}
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         {projects.map((p) => (
           <div
@@ -127,13 +128,13 @@ const [filter, setFilter] = useState<FilterType>("All PR");
             className="bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col min-h-[200px] cursor-pointer"
           >
             <h2 className="text-purple-600 font-semibold text-lg mb-2">
-              Project ID: {p.id}
+              Project ID: {p.display_id ?? p.id}
             </h2>
 
             <div className="flex-1 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">BD Request</span>
-                <span className="font-medium">{p.bd_request_id}</span>
+                {p.bd_request_display_id ?? p.bd_request_id}
               </div>
 
               <div className="flex justify-between">
@@ -164,7 +165,7 @@ const [filter, setFilter] = useState<FilterType>("All PR");
           <div className="bg-white w-full max-w-4xl rounded shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto relative">
             {/* HEADER */}
             <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-              Project Details (ID: {selectedProject.id})
+              Project Details (ID: {selectedProject.display_id ?? selectedProject.id})
             </h2>
 
             {/* CLOSE */}
@@ -179,8 +180,15 @@ const [filter, setFilter] = useState<FilterType>("All PR");
             <div className="bg-gray-100 p-4 rounded mt-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  ["Project ID", selectedProject.id],
-                  ["BD Request ID", selectedProject.bd_request_id],
+                  [
+                    "Project ID",
+                    selectedProject.display_id ?? selectedProject.id,
+                  ],
+                  [
+                    "BD Request ID",
+                    selectedProject.bd_request_display_id ??
+                    selectedProject.bd_request_id,
+                  ],
                   ["Required Date", formatDate(selectedProject.required_date)],
                   ["Assigned Date", formatDate(selectedProject.assigned_date)],
                   ["Assigned By", selectedProject.assigned_by],
@@ -232,7 +240,7 @@ const [filter, setFilter] = useState<FilterType>("All PR");
                       >
                         {/* LEFT */}
                         <div className="flex flex-col gap-1">
-                          <p>                            
+                          <p>
                             <strong>Status:</strong> {s.department} — {s.status}
                           </p>
                           <p>
