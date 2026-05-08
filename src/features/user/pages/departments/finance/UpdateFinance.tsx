@@ -620,7 +620,8 @@ export default function SubmittedFinanceRequestsPage() {
             <div className="bg-gray-100 p-3 sm:p-4 rounded mb-4 overflow-x-auto">
               <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-4 min-w-[300px]">
                 {[
-                  ["Department", departmentMap[selectedPR.department] || selectedPR.department || "-"],
+                   ["Description", selectedPR.description],
+                  // ["Department", departmentMap[selectedPR.department] || selectedPR.department || "-"],
                   ["Priority", selectedPR.priority],
                   [
                     "Delivery Date",
@@ -673,7 +674,7 @@ export default function SubmittedFinanceRequestsPage() {
                       {/* Description */}
                       <div className="flex items-center gap-2">
                         <span className="font-medium w-24 shrink-0">
-                          Description
+                          Item Name
                         </span>
                         <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
                           {item.item_name || "-"}
@@ -689,8 +690,8 @@ export default function SubmittedFinanceRequestsPage() {
                       </div>
                     </div>
                     {/* VENDOR TABLE */}
-                    <div className="overflow-x-auto">
-                      <div className="grid grid-cols-8 gap-2 min-w-[700px] text-sm font-medium text-gray-700 mb-2">
+                    <div className="w-full overflow-x-auto">
+                      <div className="grid grid-cols-8 gap-2 min-w-[1000px] text-sm font-medium text-gray-700 mb-2">
                         <div>Vendor</div>
                         <div>Upload Quotation</div>
                         <div>Unit Price</div>

@@ -28,6 +28,11 @@ export default function Sidebar({
   const departmentIcons: Record<string, JSX.Element> = {
     engineering_design: <Settings size={22} />,
   };
+  const formatDepartmentName = (name: string) => {
+    return name
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
 
   return (
     <>
@@ -63,11 +68,10 @@ export default function Sidebar({
               <Link
                 to="/manager/dashboard"
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg
-                ${
-                  isActive("/manager/dashboard")
+                ${isActive("/manager/dashboard")
                     ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
                     : "text-gray-700 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 <LayoutDashboard size={22} />
                 {sidebarOpen && <span>Dashboard</span>}
@@ -89,14 +93,15 @@ export default function Sidebar({
                   <Link
                     to={route}
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg
-                    ${
-                      active
+                    ${active
                         ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
                         : "text-gray-700 hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
-                    {departmentIcons[key] || <Settings size={22} />}
-                    {sidebarOpen && <span>{dept.name}</span>}
+                    <div className="min-w-[22px] min-h-[22px] flex items-center justify-center">
+                      {departmentIcons[key] || <Settings size={22} />}
+                    </div>
+                    {sidebarOpen && <span>{formatDepartmentName(dept.name)}</span>}
                   </Link>
                 </li>
               );
@@ -114,9 +119,8 @@ export default function Sidebar({
           <button
             onClick={() => navigate("/manager/dashboard")}
             className={`flex flex-col items-center justify-center w-12 h-12
-            ${
-              isActive("/manager/dashboard") ? "text-blue-600" : "text-gray-500"
-            }`}
+            ${isActive("/manager/dashboard") ? "text-blue-600" : "text-gray-500"
+              }`}
           >
             <LayoutDashboard size={22} />
           </button>

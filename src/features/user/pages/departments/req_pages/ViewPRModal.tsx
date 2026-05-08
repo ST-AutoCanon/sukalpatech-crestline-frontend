@@ -505,7 +505,7 @@ export default function ViewPRModal({
 
         {/* Finance Payment Details */}
         {pr.finance_payment_details && (
-          <div className="border border-gray-200 rounded p-4 mb-4">
+          <div className="bg-gray-100 rounded p-4 mb-4 mt-6">
             <h3 className="font-semibold mb-3 text-purple-600">
               Finance Payment Details
             </h3>
@@ -570,7 +570,7 @@ export default function ViewPRModal({
 
         {/* PR Order Details */}
         {pr.order_details && (
-          <div className="border border-gray-200 rounded p-4 mb-4">
+          <div className="bg-gray-100 rounded p-4 mb-4">
             <h3 className="font-semibold mb-4 text-purple-600">
               PR Order Details
             </h3>
@@ -656,7 +656,7 @@ export default function ViewPRModal({
 
         {/* Store Receiving Details */}
         {pr.store_receiving_details && (
-          <div className="border border-gray-200 rounded p-4 mb-4">
+          <div className="bg-gray-100 rounded p-4 mb-4">
             <h3 className="font-semibold mb-4 text-purple-600">
               Store Receiving Details
             </h3>

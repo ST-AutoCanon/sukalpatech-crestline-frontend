@@ -187,7 +187,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 
-  const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
+const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
 /* ================= TYPES ================= */
 export interface WorkflowItem {
   id: string;
@@ -243,6 +243,11 @@ const SortableItem: React.FC<SortableItemProps> = ({
 
     fetchDepartments();
   }, []);
+  const formatDepartmentName = (name: string) => {
+    return name
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
 
 
   return (
@@ -271,7 +276,9 @@ const SortableItem: React.FC<SortableItemProps> = ({
 
         {departments.map((dept) => (
           <option key={dept.department_id} value={dept.name}>
-            {dept.name}
+            <option key={dept.department_id} value={dept.name}>
+              {formatDepartmentName(dept.name)}
+            </option>
           </option>
         ))}
       </select>

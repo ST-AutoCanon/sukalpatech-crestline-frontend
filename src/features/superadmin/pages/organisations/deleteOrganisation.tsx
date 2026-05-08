@@ -120,7 +120,7 @@ const DeleteOrganisation = () => {
             <div className="flex justify-end gap-2 px-4 pb-4">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="px-3 py-1 bg-gray-200 rounded"
+                className="px-3 py-1 bg-gray-500 rounded"
               >
                 Cancel
               </button>

@@ -442,7 +442,7 @@ data = data.filter(
                       {/* Description */}
                       <div className="flex items-center gap-2">
                         <span className="font-medium w-24 shrink-0">
-                          Description
+                          Item Name
                         </span>
                         <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
                           {item.item_name || "-"}

@@ -285,20 +285,20 @@ export default function SubmittedRequestsPage() {
     }
 
     // ✅ Check if at least ONE vendor has status selected
-const hasAtLeastOneVendorStatus = updateData.items.some((item, itemIndex) =>
-  item.vendors.some((vendor, vendorIndex) => {
-    const key = `${itemIndex}-${vendorIndex}`;
-    return vendorUpdates[key]?.status; // check if status exists
-  })
-);
+    const hasAtLeastOneVendorStatus = updateData.items.some((item, itemIndex) =>
+      item.vendors.some((vendor, vendorIndex) => {
+        const key = `${itemIndex}-${vendorIndex}`;
+        return vendorUpdates[key]?.status; // check if status exists
+      })
+    );
 
-if (!hasAtLeastOneVendorStatus) {
-  setAlert({
-    type: "error",
-    message: "Please select status for at least one vendor",
-  });
-  return;
-}
+    if (!hasAtLeastOneVendorStatus) {
+      setAlert({
+        type: "error",
+        message: "Please select status for at least one vendor",
+      });
+      return;
+    }
 
     try {
       const approvalRes = await axios.post(
@@ -458,7 +458,7 @@ if (!hasAtLeastOneVendorStatus) {
                   className="bg-gray-100 p-3 sm:p-4 rounded mb-4 space-y-4"
                 >
                   {/* ITEM HEADER */}
-                  <div className="bg-gray-200 rounded-lg flex flex-col sm:flex-row gap-2 sm:gap-6 mb-2 sm:mb-4 py-2 sm:py-4">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 mb-2 sm:mb-4 py-2 sm:py-4">
                     {/* mobile */}
                     <div className="flex flex-col sm:hidden gap-1">
                       <div className="flex justify-between">
@@ -486,28 +486,44 @@ if (!hasAtLeastOneVendorStatus) {
                     </div>
 
                     {/* desktop */}
-                    <div className="hidden sm:grid sm:grid-cols-3 gap-3 sm:gap-6 mb-3 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium w-24 shrink-0">
+                    <div className="hidden sm:grid sm:grid-cols-3 gap-8 mb-4 text-sm w-full">
+                      {/* Item Code */}
+                      <div className="flex items-center gap-3">
+                        <label className="font-medium min-w-[80px] text-gray-700">
                           Item Code
-                        </span>
-                        <div className="bg-white border rounded px-4 py-1 flex-1">
-                          {item.item_code}
-                        </div>
+                        </label>
+
+                        <input
+                          readOnly
+                          value={item.item_code || ""}
+                          className="border rounded px-3 py-1 w-[180px] bg-white"
+                        />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium w-24 shrink-0">
+
+                      {/* Item Name */}
+                      <div className="flex items-center gap-3">
+                        <label className="font-medium min-w-[80px] text-gray-700">
                           Item Name
-                        </span>
-                        <div className="bg-white border rounded px-2 py-1 flex-1 truncate">
-                          {item.item_name}
-                        </div>
+                        </label>
+
+                        <input
+                          readOnly
+                          value={item.item_name || ""}
+                          className="border rounded px-3 py-1 w-[260px] bg-white"
+                        />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium w-24 shrink-0">Qty</span>
-                        <div className="bg-white border rounded px-4 py-1 flex-1">
-                          {item.quantity_required ?? "-"}
-                        </div>
+
+                      {/* Qty */}
+                      <div className="flex items-center gap-3">
+                        <label className="font-medium min-w-[50px] text-gray-700">
+                          Qty
+                        </label>
+
+                        <input
+                          readOnly
+                          value={item.quantity_required ?? ""}
+                          className="border rounded px-3 py-1 w-[260px] bg-white"
+                        />
                       </div>
                     </div>
                   </div>
@@ -522,7 +538,7 @@ if (!hasAtLeastOneVendorStatus) {
                     };
                     return (
                       <div key={vendor.id} className="mb-4">
-                        {/* MOBILE VIEW */}
+                        
                         {/* MOBILE VIEW */}
                         <div className="sm:hidden overflow-x-auto">
                           <div className="flex gap-3 min-w-[900px]">

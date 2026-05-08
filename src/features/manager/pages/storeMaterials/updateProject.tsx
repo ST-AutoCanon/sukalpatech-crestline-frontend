@@ -5,7 +5,10 @@ import Alert from "../../../../components/Aleartmessage";
 /* ================= TYPES ================= */
 interface Project {
   id: number;
+  display_id?: number;
   bd_request_id: number;
+  bd_request_display_id?: number;
+
   description: string;
   required_date: string;
   assigned_date: string;
@@ -22,11 +25,11 @@ export default function ProjectPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-const [alert, setAlert] = useState<{
-  type: "success" | "error";
-  message: string;
-} | null>(null);
-  
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
   const [status, setStatus] = useState("");
   const [comments, setComments] = useState("");
   const [loading, setLoading] = useState(false);
@@ -130,67 +133,67 @@ const [alert, setAlert] = useState<{
   //   }
   // };
 
- const handleStatusUpdate = async () => {
-  if (!status) {
-    setAlert({
-      type: "error",
-      message: "Status required",
-    });
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    // ✅ CALL BACKEND ONCE
-    const res = await axios.post(
-      `${API_BASE}/status`,
-      {
-        project_management_id: selectedProject?.id,
-        department: departmentName,
-        updated_by: user.first_name,
-        status,
-        comments,
-      },
-      { withCredentials: true }
-    );
-
-    // ✅ GET WORKFLOW INFO FROM RESPONSE
-    const workflow = res.data.workflowInfo;
-
-    let alertMessage = "";
-
-    if (workflow?.status === "APPROVED") {
-      alertMessage = `✅ Approved → moved to ${workflow.next}`;
-    } else if (workflow?.status === "REJECTED") {
-      alertMessage = `❌ Rejected → sent back to ${workflow.previous}`;
-    } else if (workflow?.status === "PENDING") {
-      alertMessage = `⏳ Pending in ${workflow.current}`;
+  const handleStatusUpdate = async () => {
+    if (!status) {
+      setAlert({
+        type: "error",
+        message: "Status required",
+      });
+      return;
     }
 
-    // ✅ SHOW ALERT
-    setAlert({
-      type: "success",
-      message: alertMessage || "Status updated successfully",
-    });
+    try {
+      setLoading(true);
 
-    setStatus("");
-    setComments("");
-    setModalOpen(false);
+      // ✅ CALL BACKEND ONCE
+      const res = await axios.post(
+        `${API_BASE}/status`,
+        {
+          project_management_id: selectedProject?.id,
+          department: departmentName,
+          updated_by: user.first_name,
+          status,
+          comments,
+        },
+        { withCredentials: true }
+      );
 
-    fetchProjects();
+      // ✅ GET WORKFLOW INFO FROM RESPONSE
+      const workflow = res.data.workflowInfo;
 
-  } catch (err: any) {
-    console.error("Status update error", err);
+      let alertMessage = "";
 
-    setAlert({
-      type: "error",
-      message: err?.response?.data?.message || "Error updating status",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+      if (workflow?.status === "APPROVED") {
+        alertMessage = `✅ Approved → moved to ${workflow.next}`;
+      } else if (workflow?.status === "REJECTED") {
+        alertMessage = `❌ Rejected → sent back to ${workflow.previous}`;
+      } else if (workflow?.status === "PENDING") {
+        alertMessage = `⏳ Pending in ${workflow.current}`;
+      }
+
+      // ✅ SHOW ALERT
+      setAlert({
+        type: "success",
+        message: alertMessage || "Status updated successfully",
+      });
+
+      setStatus("");
+      setComments("");
+      setModalOpen(false);
+
+      fetchProjects();
+
+    } catch (err: any) {
+      console.error("Status update error", err);
+
+      setAlert({
+        type: "error",
+        message: err?.response?.data?.message || "Error updating status",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6 text-black">
@@ -210,13 +213,13 @@ const [alert, setAlert] = useState<{
             className="bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col min-h-[200px] cursor-pointer"
           >
             <h2 className="text-purple-600 font-semibold text-lg mb-2">
-              Project ID: {p.id}
+              Project ID: {p.display_id ?? p.id}
             </h2>
 
             <div className="flex-1 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">BD Request</span>
-                <span className="font-medium">{p.bd_request_id}</span>
+                <span className="font-medium"> {p.bd_request_display_id ?? p.bd_request_id}</span>
               </div>
 
               <div className="flex justify-between">
@@ -247,7 +250,7 @@ const [alert, setAlert] = useState<{
           <div className="bg-white w-full max-w-4xl rounded shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto relative">
             {/* HEADER */}
             <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-              Project Details (ID: {selectedProject.id})
+              Project Details (ID: {selectedProject.display_id ?? selectedProject.id})
             </h2>
 
             {/* CLOSE */}
@@ -262,8 +265,15 @@ const [alert, setAlert] = useState<{
             <div className="bg-gray-100 p-4 rounded mt-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  ["Project ID", selectedProject.id],
-                  ["BD Request ID", selectedProject.bd_request_id],
+                  [
+                    "Project ID",
+                    selectedProject.display_id ?? selectedProject.id,
+                  ],
+                  [
+                    "BD Request ID",
+                    selectedProject.bd_request_display_id ??
+                    selectedProject.bd_request_id,
+                  ],
                   ["Required Date", formatDate(selectedProject.required_date)],
                   ["Assigned Date", formatDate(selectedProject.assigned_date)],
                   ["Assigned By", selectedProject.assigned_by],

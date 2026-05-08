@@ -463,7 +463,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                   { label: "Mobile Number", value: renderEditableField("mobile_number") },
                   { label: "Email", value: renderEditableField("email") },
                   { label: "Address", value: renderEditableField("address") },
-                  { label: "Body Type Required", value: renderEditableField("body_type") },
+                 
                 ],
               },
               {
@@ -495,6 +495,13 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                   { label: "Door Type", value: renderEditableField("door_type") },
                 ],
               },
+               {
+                title: "Body Type Require",
+                fields: [
+                { label: "Body Type Required", value: renderEditableField("body_type") },
+                ],
+              },
+
               {
                 title: "Additional Features",
                 fields: [

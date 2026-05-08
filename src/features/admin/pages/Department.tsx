@@ -198,6 +198,11 @@ export default function DepartmentPage() {
     setSelectedDept(dept);
     await fetchEmployeesByDept(dept.department_id);
   };
+  const formatDepartmentName = (name: string) => {
+  return name
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
 
   return (
 
@@ -224,7 +229,7 @@ export default function DepartmentPage() {
                   className="text-left p-3 rounded-lg border hover:bg-blue-100"
                   onClick={() => openDepartment(d)}
                 >
-                  {d.name}
+                 {formatDepartmentName(d.name)}
                 </button>
               ))}
             </div>
@@ -243,7 +248,7 @@ export default function DepartmentPage() {
               <span className="ml-2 text-blue-600">Back</span>
             </div>
             <h2 className="text-2xl md:text-3xl font-semibold mb-6">
-              {selectedDept.name} — Employees
+              {formatDepartmentName(selectedDept.name)} — Employees
             </h2>
 
             {selectedDepartmentEmployees.length === 0 ? (
