@@ -260,32 +260,70 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       // });
 
       const rawData = data?.data || [];
+      // ✅ Normalize latest store receiving record
+const normalizedData = rawData.map((pr: any) => {
+  const store = pr.store_receiving_details;
+
+  // if backend returns multiple records
+  const latestStore = Array.isArray(store)
+    ? store.reduce((latest: any, curr: any) => {
+        const latestTime = new Date(
+          latest?.updated_at || latest?.created_at || 0
+        ).getTime();
+
+        const currTime = new Date(
+          curr?.updated_at || curr?.created_at || 0
+        ).getTime();
+
+        return currTime > latestTime ? curr : latest;
+      }, store[0])
+    : store;
+
+  return {
+    ...pr,
+    store_receiving_details: latestStore,
+  };
+});
 
 // ✅ STEP 1: Merge duplicates by PR id
 const mergedMap = new Map<string, PR>();
 
-rawData.forEach((pr: PR) => {
-  if (!mergedMap.has(pr.id)) {
-    mergedMap.set(pr.id, {
-      ...pr,
-      items: [...(pr.items || [])],
-      department_statuses: [...(pr.department_statuses || [])],
-    });
-  } else {
-    const existing = mergedMap.get(pr.id)!;
+normalizedData.forEach((pr: PR) => {
+if (!mergedMap.has(pr.id)) {
+  mergedMap.set(pr.id, {
+    ...pr,
+    items: [...(pr.items || [])],
+    department_statuses: [...(pr.department_statuses || [])],
+  });
+} else {
+  const existing = mergedMap.get(pr.id)!;
 
-    // ✅ Merge items
-    existing.items = [
-      ...existing.items,
-      ...(pr.items || [])
-    ];
+  // merge items
+  existing.items = [
+    ...existing.items,
+    ...(pr.items || [])
+  ];
 
-    // ✅ Merge statuses
-    existing.department_statuses = [
-      ...existing.department_statuses,
-      ...(pr.department_statuses || [])
-    ];
+  // merge statuses
+  existing.department_statuses = [
+    ...existing.department_statuses,
+    ...(pr.department_statuses || [])
+  ];
+
+  // ✅ IMPORTANT: always keep latest store receiving details
+  const existingTime = new Date(
+    existing.store_receiving_details?.received_at || 0
+  ).getTime();
+
+  const newTime = new Date(
+    pr.store_receiving_details?.received_at || 0
+  ).getTime();
+
+  if (newTime > existingTime) {
+    existing.store_receiving_details =
+      pr.store_receiving_details;
   }
+}
 });
 
 // ✅ STEP 2: Convert department name → id (your logic)
@@ -312,7 +350,7 @@ const prsData = Array.from(mergedMap.values()).map((pr) => {
             pr.finance_payment_details?.payment_stage?.toLowerCase() || "";
 
           const quantityStatus =
-            pr.store_receiving_details?.quantity_status?.toUpperCase() || "";
+  pr.store_receiving_details?.quantity_status?.toUpperCase().trim() || "";
 
           return paymentStage === "final" && quantityStatus === "FULL";
         }

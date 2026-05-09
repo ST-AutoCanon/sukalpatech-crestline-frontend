@@ -240,10 +240,16 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
 
       let data: FinancePR[] = res.data.data || [];
       // ✅ REMOVE DUPLICATES BASED ON PR ID
-data = data.filter(
-  (pr, index, self) =>
-    index === self.findIndex((p) => p.id === pr.id)
-);
+      data.sort(
+        (a, b) =>
+          (b.store_receiving_details?.id || 0) -
+          (a.store_receiving_details?.id || 0)
+      );
+
+      data = data.filter(
+        (pr, index, self) =>
+          index === self.findIndex((p) => p.id === pr.id)
+      );
 
       // ✅ Filter based on LATEST status only
       data = data.filter((pr) => {
