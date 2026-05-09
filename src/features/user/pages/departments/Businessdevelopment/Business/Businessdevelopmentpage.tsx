@@ -57,8 +57,15 @@ const BusinessList = ({ refresh, filter, type }: BusinessListProps) => {
       if (type === "updated") {
         data = data.filter((pr: any) => pr.feasibility_status);
       }
+      // ✅ SHOW LATEST CREATED FIRST
+      const sortedData = [...data].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() -
+          new Date(a.created_at).getTime()
+      );
 
-      setRequests(data);
+      setRequests(sortedData);
+
     } catch (error) {
       console.error("Error fetching requests:", error);
     }
