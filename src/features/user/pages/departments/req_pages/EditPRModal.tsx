@@ -1,7 +1,7 @@
 // EditPRModal.tsx
 import { useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
-import { PR } from "./ViewPRModal";
+import type { PR } from "./ViewPRModal";
 import ItemSearchModal from "../procruments/ItemSearchDropdown";
 type Props = {
   pr: PR;
