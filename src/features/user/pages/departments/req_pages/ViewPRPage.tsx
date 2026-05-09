@@ -1,7 +1,8 @@
 // ViewPRPage.tsx
 import { useEffect, useState } from "react";
 import Aleart from "../../../components/Aleartmessage";
-import ViewPRModal, { PR } from "./ViewPRModal";
+import ViewPRModal from "./ViewPRModal";
+import type { PR } from "./ViewPRModal";
 import EditPRModal from "./EditPRModal";
 
 type Props = {
