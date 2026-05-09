@@ -113,6 +113,10 @@ export default function ViewPRModal({
 
    console.log("MODE:", pr.order_details?.transport_mode);
   console.log("IN HOUSE TYPE:", pr.order_details?.in_house_type);
+  const formatEnumText = (value?: string) => {
+  if (!value) return "";
+  return value.replace(/_/g, " ");
+};
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto p-4">
@@ -604,39 +608,39 @@ export default function ViewPRModal({
                 />
               </div>
               {/* Transport Mode - ALWAYS visible */}
-{/* Mode - always visible */}
-<div>
-  <label className="text-xs font-medium">Mode of Transportation</label>
-  <input
-    readOnly
-    value={pr.order_details.transport_mode || ""}
-    className="border p-2 rounded w-full bg-white"
-  />
-</div>
+              {/* Mode - always visible */}
+              <div>
+                <label className="text-xs font-medium">Mode of Transportation</label>
+                <input
+                  readOnly
+                  value={formatEnumText(pr.order_details.transport_mode || "")}
+                  className="border p-2 rounded w-full bg-white"
+                />
+              </div>
 
-{/* ✅ IN HOUSE */}
-{mode === "in_house" && (
-  <div>
-    <label className="text-xs font-medium">Delivery Type</label>
-    <input
-      readOnly
-      value={pr.order_details.in_house_type || ""}
-      className="border p-2 rounded w-full bg-white"
-    />
-  </div>
-)}
+              {/* ✅ IN HOUSE */}
+              {mode === "in_house" && (
+                <div>
+                  <label className="text-xs font-medium">Delivery Type</label>
+                  <input
+                    readOnly
+                    value={formatEnumText(pr.order_details.in_house_type || "")}
+                    className="border p-2 rounded w-full bg-white"
+                  />
+                </div>
+              )}
 
-{/* ✅ COLLECT */}
-{mode === "collect" && (
-  <div>
-    <label className="text-xs font-medium">Vendor Address</label>
-    <input
-      readOnly
-      value={pr.order_details.vendor_address || "N/A"}
-      className="border p-2 rounded w-full bg-white"
-    />
-  </div>
-)}
+              {/* ✅ COLLECT */}
+              {mode === "collect" && (
+                <div>
+                  <label className="text-xs font-medium">Vendor Address</label>
+                  <input
+                    readOnly
+                    value={pr.order_details.vendor_address || "N/A"}
+                    className="border p-2 rounded w-full bg-white"
+                  />
+                </div>
+              )}
               {pr.order_details.po_file_path && (
                 <div>
                   <label className="text-xs font-medium">PO File</label>

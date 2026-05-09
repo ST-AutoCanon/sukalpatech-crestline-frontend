@@ -294,6 +294,10 @@ data = data.filter(
     setNewStatus("");
     setNewComment("");
   };
+  const formatEnumText = (value?: string) => {
+  if (!value) return "";
+  return value.replace(/_/g, " ");
+};
 
   /* ================= UI ================= */
   return (
@@ -726,7 +730,7 @@ data = data.filter(
                     <label className="text-xs font-medium">Transport Mode</label>
                     <input
                       readOnly
-                      value={selectedPR.order_details.transport_mode || ""}
+                      value={formatEnumText(selectedPR.order_details.transport_mode || "")}
                       className="border p-2 rounded w-full bg-white"
                     />
                   </div>
@@ -737,7 +741,7 @@ data = data.filter(
                       <label className="text-xs font-medium">Delivery Type</label>
                       <input
                         readOnly
-                        value={selectedPR.order_details.in_house_type || ""}
+                        value={formatEnumText(selectedPR.order_details.transport_mode || "")}
                         className="border p-2 rounded w-full bg-white"
                       />
                     </div>

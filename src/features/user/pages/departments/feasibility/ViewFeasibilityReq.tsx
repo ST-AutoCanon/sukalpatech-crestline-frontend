@@ -558,6 +558,10 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
       normalized === "FEASIBILITY PENDING"
     );
   };
+  const formatEnumText = (value?: string) => {
+  if (!value) return "";
+  return value.replace(/_/g, " ");
+};
   return (
     <>
       {alert && (
@@ -1434,7 +1438,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                     <label className="text-xs font-medium">Transport Mode</label>
                     <input
                       readOnly
-                      value={activePR.order_details.transport_mode || ""}
+                      value={formatEnumText(activePR.order_details.transport_mode || "")}
                       className="border p-2 rounded w-full bg-white"
                     />
                   </div>
@@ -1445,7 +1449,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       <label className="text-xs font-medium">Delivery Type</label>
                       <input
                         readOnly
-                        value={activePR.order_details.in_house_type || ""}
+                        value={formatEnumText(activePR.order_details.in_house_type || "")}
                         className="border p-2 rounded w-full bg-white"
                       />
                     </div>

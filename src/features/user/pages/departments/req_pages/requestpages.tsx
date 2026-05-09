@@ -608,6 +608,11 @@ useEffect(() => {
     if (!date) return "";
     return date.split("T")[0]; // ✅ NO timezone conversion
   };
+  const formatEnumText = (value?: string) => {
+  if (!value) return "";
+  return value.replace(/_/g, " ");
+};
+  
 
   return (
     <>
@@ -1777,7 +1782,7 @@ useEffect(() => {
                     <label className="text-xs font-medium">Transport Mode</label>
                     <input
                       readOnly
-                      value={activePR.order_details.transport_mode || ""}
+                      value={formatEnumText(activePR.order_details.transport_mode || "")}
                       className="border p-2 rounded w-full bg-white"
                     />
                   </div>
@@ -1788,7 +1793,7 @@ useEffect(() => {
                       <label className="text-xs font-medium">Delivery Type</label>
                       <input
                         readOnly
-                        value={activePR.order_details.in_house_type || ""}
+                        value={formatEnumText(activePR.order_details.in_house_type || "")}
                         className="border p-2 rounded w-full bg-white"
                       />
                     </div>
