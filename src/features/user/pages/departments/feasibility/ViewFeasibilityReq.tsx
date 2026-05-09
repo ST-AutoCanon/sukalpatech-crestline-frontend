@@ -207,52 +207,83 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
       let data = await res.json();
 
-      let prsData = (data?.data || []).map((pr: PR) => ({
-        ...pr,
-        items: pr.items || [],
-        department_statuses: pr.department_statuses || [],
-      }));
-      prsData = prsData.filter(
-        (pr, index, self) =>
-          index === self.findIndex((p) => p.id === pr.id)
-      );
+     const rawData = data?.data || [];
 
-      // ✅ Apply search locally (FAST)
-      // ✅ Apply search
-      if (search.trim()) {
-        prsData = prsData.filter((pr) =>
-          pr.description?.toLowerCase().includes(search.toLowerCase())
-        );
-      }
+// ✅ STEP 1: sort by latest store receiving update OR updated_at
+rawData.sort((a: any, b: any) => {
+  const aTime = new Date(
+    a.store_receiving_details?.updated_at || a.updated_at || 0
+  ).getTime();
 
-      // ✅ Apply FILTER (IMPORTANT)
-      prsData = prsData.filter((pr) => {
-        const latestStatus = getLatestStatus(pr);
+  const bTime = new Date(
+    b.store_receiving_details?.updated_at || b.updated_at || 0
+  ).getTime();
 
-        if (filter === "Pending") {
-          return latestStatus.includes("PENDING");
-        }
+  return bTime - aTime; // latest first
+});
 
-        if (filter === "Rejected") {
-          return latestStatus.includes("REJECTED");
-        }
+// ✅ STEP 2: keep only latest PR record per id
+const map: Record<string, PR> = {};
 
-       if (filter === "Completed") {
-  const paymentStage =
-    pr.finance_payment_details?.payment_stage?.toLowerCase();
+for (const pr of rawData) {
+  const key = String(pr.id);
 
-  const quantityStatus =
-    pr.store_receiving_details?.quantity_status?.toUpperCase();
+  const existing = map[key];
 
-  // Only filter if BOTH exist
-  if (!paymentStage || !quantityStatus) return false;
+  const newTime = new Date(
+    pr.store_receiving_details?.updated_at || pr.updated_at || 0
+  ).getTime();
 
-  return paymentStage === "final" && quantityStatus === "FULL";
+  const oldTime = existing
+    ? new Date(
+        existing.store_receiving_details?.updated_at || existing.updated_at || 0
+      ).getTime()
+    : 0;
+
+  if (!existing || newTime > oldTime) {
+    map[key] = {
+      ...pr,
+      items: [
+        ...(map[key]?.items || []),
+        ...(pr.items || []),
+      ],
+    };
+  }
+}
+let prsData = Object.values(map).sort((a: any, b: any) => b.id - a.id);
+// ✅ SEARCH
+if (search.trim()) {
+  prsData = prsData.filter((pr) =>
+    pr.description?.toLowerCase().includes(search.toLowerCase())
+  );
 }
 
+// ✅ FILTER
+prsData = prsData.filter((pr) => {
+  const latestStatus = getLatestStatus(pr);
 
-        return true;
-      });
+  if (filter === "Pending") {
+    return latestStatus.includes("PENDING");
+  }
+
+  if (filter === "Rejected") {
+    return latestStatus.includes("REJECTED");
+  }
+
+  if (filter === "Completed") {
+    const paymentStage =
+      pr.finance_payment_details?.payment_stage?.toLowerCase();
+
+    const quantityStatus =
+      pr.store_receiving_details?.quantity_status?.toUpperCase();
+
+    if (!paymentStage || !quantityStatus) return false;
+
+    return paymentStage === "final" && quantityStatus === "FULL";
+  }
+
+  return true;
+});
 
       setPrs(prsData);
     } catch (err) {
