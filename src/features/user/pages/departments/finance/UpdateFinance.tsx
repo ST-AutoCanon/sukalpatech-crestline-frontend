@@ -388,45 +388,59 @@ export default function SubmittedFinanceRequestsPage() {
       );
 
       // ✅ Apply filter
-      const filtered = merged.filter((pr: any) => {
-        const payment = pr.finance_payment_details || {};
+     const filtered = merged.filter((pr: any) => {
+  const payment = pr.finance_payment_details || {};
 
-        const stage = String(payment.payment_stage || "").toLowerCase().trim();
-        const type = String(payment.payment_type || "").toLowerCase().trim();
-        const finalCompletedRaw = payment.final_completed;
+  const stage = String(payment.payment_stage || "").toLowerCase().trim();
+  const type = String(payment.payment_type || "").toLowerCase().trim();
 
-        // normalize finalCompleted safely
-        const finalCompleted =
-          typeof finalCompletedRaw === "boolean"
-            ? finalCompletedRaw
-            : String(finalCompletedRaw || "").toLowerCase().trim();
+  const finalCompletedRaw = payment.final_completed;
 
-        // ❌ BLOCK FINAL (ALL CASES)
-        const isFinal =
-          stage.includes("final") ||
-          type.includes("final") ||
-          finalCompleted === "yes" ||
-          finalCompleted === "true" ||
-          finalCompleted === "1";
+  const finalCompleted =
+    typeof finalCompletedRaw === "boolean"
+      ? finalCompletedRaw
+      : String(finalCompletedRaw || "").toLowerCase().trim();
 
-        if (isFinal) return false;
+  // ❌ Hide FINAL payments
+  const isFinal =
+    stage.includes("final") ||
+    type.includes("final") ||
+    finalCompleted === "yes" ||
+    finalCompleted === "true" ||
+    finalCompleted === "1";
 
-        const latestStatus =
-          pr.department_statuses?.[pr.department_statuses.length - 1];
+  if (isFinal) return false;
 
-        const status = latestStatus?.department_status?.toLowerCase().trim();
+  // ✅ SORT statuses properly
+  const sortedStatuses = [...(pr.department_statuses || [])].sort(
+    (a, b) =>
+      new Date(b.updated_at || 0).getTime() -
+      new Date(a.updated_at || 0).getTime()
+  );
 
-        if (status?.includes("rejected")) return false;
-        if (status === "finance approved") return false;
+  const latestStatus = sortedStatuses[0];
 
-        const isFeasibilityApproved = pr.department_statuses?.some((s: any) =>
-          s.department_status?.toLowerCase().includes("feasibility approved")
-        );
+  const status = latestStatus?.department_status
+    ?.toLowerCase()
+    .trim();
 
-        if (!isFeasibilityApproved) return false;
+  // ❌ rejected
+  if (status?.includes("rejected")) return false;
 
-        return true;
-      });
+  // ❌ already finance approved
+  if (status === "finance approved") return false;
+
+  // ✅ Must contain feasibility approved anywhere
+  const isFeasibilityApproved = sortedStatuses.some((s: any) =>
+    s.department_status
+      ?.toLowerCase()
+      .includes("feasibility approved")
+  );
+
+  if (!isFeasibilityApproved) return false;
+
+  return true;
+});
       setRequests(filtered);
     } catch (err) {
       console.error("Error fetching finance requests:", err);
