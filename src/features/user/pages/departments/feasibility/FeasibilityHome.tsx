@@ -155,11 +155,11 @@ const FeasibilityHome: React.FC = () => {
   /* ================= LABEL HELPER ================= */
   const getLabel = (key: string) => {
     switch (key) {
-      case "bd": return "BD";
-      case "2w": return "2W";
-      case "3w": return "3W";
-      case "food": return "Food";
-      case "gold": return "Gold";
+      case "bd": return "Bus Body";
+      case "2w": return "2W Business";
+      case "3w": return "3W Business";
+      case "food": return "Food Business";
+      case "gold": return "Gold Business";
       default: return key.toUpperCase();
     }
   };

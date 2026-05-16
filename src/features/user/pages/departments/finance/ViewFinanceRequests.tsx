@@ -64,6 +64,7 @@ interface StoreReceivingDetails {
   quantity_status: string; // e.g., "FULL", "PARTIAL"
   partial_quantity?: number | null;
   rejection_reason?: string | null;
+  updated_at?: string;
 }
 
 interface FinancePR {
@@ -239,14 +240,32 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
       });
 
       let data: FinancePR[] = res.data.data || [];
-      // ✅ REMOVE DUPLICATES BASED ON PR ID
-// ✅ Sort by PR ID descending
-     data.sort((a, b) => Number(b.id) - Number(a.id));
+      // ✅ Sort latest PR first
+      // ✅ Remove duplicate PRs and keep latest store receiving record
+      const latestPRMap = new Map<string, FinancePR>();
 
-      data = data.filter(
-        (pr, index, self) =>
-          index === self.findIndex((p) => p.id === pr.id)
-      );
+      data.forEach((pr) => {
+        const existing = latestPRMap.get(pr.id);
+
+        const currentTime = new Date(
+          pr.store_receiving_details?.updated_at || 0
+        ).getTime();
+
+        const existingTime = new Date(
+          existing?.store_receiving_details?.updated_at || 0
+        ).getTime();
+
+        // keep latest updated record
+        if (!existing || currentTime > existingTime) {
+          latestPRMap.set(pr.id, pr);
+        }
+      });
+
+      // ✅ Convert back to array
+      data = Array.from(latestPRMap.values());
+
+      // ✅ Sort PR IDs descending (14,13,12,11)
+      data.sort((a, b) => Number(b.id) - Number(a.id));
 
       // ✅ Filter based on LATEST status only
       data = data.filter((pr) => {
@@ -298,9 +317,9 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
     setNewComment("");
   };
   const formatEnumText = (value?: string) => {
-  if (!value) return "";
-  return value.replace(/_/g, " ");
-};
+    if (!value) return "";
+    return value.replace(/_/g, " ");
+  };
 
   /* ================= UI ================= */
   return (
@@ -727,7 +746,7 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
                     />
                   </div>
 
-                  {/* Transport Mode */}
+                 
                   {/* Transport Mode */}
                   <div>
                     <label className="text-xs font-medium">Transport Mode</label>
