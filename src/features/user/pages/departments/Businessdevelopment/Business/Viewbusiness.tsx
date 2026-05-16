@@ -295,16 +295,41 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
         }
       });
 
-      if (formData.attachments) {
-        const attachmentsArray = Array.isArray(formData.attachments)
-          ? formData.attachments
-          : [formData.attachments];
+      // if (formData.attachments) {
+      //   const attachmentsArray = Array.isArray(formData.attachments)
+      //     ? formData.attachments
+      //     : [formData.attachments];
 
-        attachmentsArray.forEach((file: any) => {
-          if (file instanceof File) fd.append("attachments", file);
-          else fd.append("attachments", JSON.stringify(file));
+      //   attachmentsArray.forEach((file: any) => {
+      //     if (file instanceof File) fd.append("attachments", file);
+      //     else fd.append("attachments", JSON.stringify(file));
+      //   });
+      // }
+
+      // ✅ KEEP OLD + NEW ATTACHMENTS
+      const existingAttachments: any[] = [];
+      const newFiles: File[] = [];
+
+      if (Array.isArray(formData.attachments)) {
+        formData.attachments.forEach((file: any) => {
+          if (file instanceof File) {
+            newFiles.push(file);
+          } else {
+            existingAttachments.push(file);
+          }
         });
       }
+
+      // ✅ send old attachments
+      fd.append(
+        "existingAttachments",
+        JSON.stringify(existingAttachments)
+      );
+
+      // ✅ send only newly selected files
+      newFiles.forEach((file) => {
+        fd.append("attachments", file);
+      });
 
       const res = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/api/business-development/${data.id}`,
@@ -463,7 +488,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                   { label: "Mobile Number", value: renderEditableField("mobile_number") },
                   { label: "Email", value: renderEditableField("email") },
                   { label: "Address", value: renderEditableField("address") },
-                 
+
                 ],
               },
               {
@@ -495,10 +520,10 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                   { label: "Door Type", value: renderEditableField("door_type") },
                 ],
               },
-               {
+              {
                 title: "Body Type Require",
                 fields: [
-                { label: "Body Type Required", value: renderEditableField("body_type") },
+                  { label: "Body Type Required", value: renderEditableField("body_type") },
                 ],
               },
 
@@ -609,9 +634,16 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                           <input
                             type="file"
                             multiple
-                            onChange={(e) =>
-                              handleChange("attachments", Array.from(e.target.files || []))
-                            }
+                            onChange={(e) => {
+                              const newFiles = Array.from(e.target.files || []);
+
+                              handleChange("attachments", [
+                                ...(Array.isArray(formData.attachments)
+                                  ? formData.attachments
+                                  : []),
+                                ...newFiles,
+                              ]);
+                            }}
                             className={INPUT_CLASS}
                           />
                         )}

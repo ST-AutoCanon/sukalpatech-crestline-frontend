@@ -138,6 +138,12 @@ export default function SubmittedFinanceRequestsPage() {
     if (!date) return "";
     return new Date(date).toLocaleDateString("en-GB");
   };
+  const formatEnumText = (value?: string) => {
+    if (!value) return "";
+    return value.replace(/_/g, " ");
+  };
+
+
 
 
 
@@ -230,6 +236,70 @@ export default function SubmittedFinanceRequestsPage() {
   //   }
   // };
 
+  const openPR = async (pr: FinancePR) => {
+    try {
+      // ✅ Fetch PR details first
+      const res = await axios.get(
+        `${API_BASE}/finance-requests/${pr.id}`,
+        { withCredentials: true }
+      );
+
+      const fullPR = res.data?.data;
+
+      setSelectedPR(fullPR);
+      // ✅ Restore finance state
+      const payment = fullPR.finance_payment_details || {};
+
+      setFinance({
+        paymentType: payment.payment_stage || "",
+        partialPercentage: payment.partial_percentage || "",
+        finalCompleted: payment.final_completed ? "YES" : "NO",
+        paymentProof: null,
+        paymentProofName: payment.payment_proof_file_name || "",
+        paymentProofPath: payment.payment_proof_file_path || "",
+        comment: payment.finance_comment || "",
+      });
+
+      // ✅ OPEN MODAL IMMEDIATELY
+      setModalOpen(true);
+
+      // ✅ Safe receiving details
+      const receiving = fullPR.order_receiving_details || {};
+
+      setReceivingDetails({
+        quantity_status: receiving.quantity_status || "",
+        partial_quantity: receiving.partial_quantity || "",
+        rejection_reason: receiving.rejection_reason || "",
+        building: receiving.building || "",
+        rack: receiving.rack || "",
+      });
+
+      // ✅ Fetch payment history separately
+      try {
+        const historyRes = await axios.get(
+          `${API_BASE}/finance-payment-history/${pr.id}`,
+          { withCredentials: true }
+        );
+
+        setPaymentHistory(historyRes.data?.data || []);
+
+      } catch (historyErr) {
+        console.error("Payment history API failed:", historyErr);
+
+        // prevent popup failure
+        setPaymentHistory([]);
+      }
+
+    } catch (err) {
+      console.error("Error fetching PR details:", err);
+
+      setAlert({
+        type: "error",
+        message: "Failed to load PR details",
+      });
+    }
+  };
+
 
 
 
@@ -253,86 +323,86 @@ export default function SubmittedFinanceRequestsPage() {
     fetchAllFinanceRequests();
   }, []);
 
-  const openPR = async (pr: FinancePR) => {
-    try {
-      // 🔥 Call API to get FULL PR details
-      const res = await axios.get(
-        `${API_BASE}/finance-requests/${pr.id}`,
-        { withCredentials: true }
-      );
-      const historyRes = await axios.get(
-        `${API_BASE}/finance-payment-history/${pr.id}`,
-        { withCredentials: true }
-      );
+  // const openPR = async (pr: FinancePR) => {
+  //   try {
+  //     // 🔥 Call API to get FULL PR details
+  //     const res = await axios.get(
+  //       `${API_BASE}/finance-requests/${pr.id}`,
+  //       { withCredentials: true }
+  //     );
+  //     const historyRes = await axios.get(
+  //       `${API_BASE}/finance-payment-history/${pr.id}`,
+  //       { withCredentials: true }
+  //     );
 
-      setPaymentHistory(historyRes.data?.data || []);
+  //     setPaymentHistory(historyRes.data?.data || []);
 
-      const fullPR = res.data?.data;
+  //     const fullPR = res.data?.data;
 
-      console.log("Receiving details:", fullPR.order_receiving_details);
+  //     console.log("Receiving details:", fullPR.order_receiving_details);
 
-      setSelectedPR(fullPR);
+  //     setSelectedPR(fullPR);
 
-      // -------------------------
-      // ✅ PAYMENT
-      // -------------------------
-      const payment = fullPR.finance_payment_details || {};
+  //     // -------------------------
+  //     // ✅ PAYMENT
+  //     // -------------------------
+  //     const payment = fullPR.finance_payment_details || {};
 
-      setFinance({
-        paymentType: payment.payment_stage || "",
-        partialPercentage: payment.partial_percentage || "",
-        finalCompleted: payment.final_completed ? "YES" : "NO",
-        paymentProof: null,
-        paymentProofName: payment.payment_proof_file_name || "",
-        paymentProofPath: payment.payment_proof_file_path || "",
-        comment: payment.finance_comment || "",
-      });
+  //     setFinance({
+  //       paymentType: payment.payment_stage || "",
+  //       partialPercentage: payment.partial_percentage || "",
+  //       finalCompleted: payment.final_completed ? "YES" : "NO",
+  //       paymentProof: null,
+  //       paymentProofName: payment.payment_proof_file_name || "",
+  //       paymentProofPath: payment.payment_proof_file_path || "",
+  //       comment: payment.finance_comment || "",
+  //     });
 
-      // -------------------------
-      // ✅ ITEMS
-      // -------------------------
-      setUpdateData({
-        department_statuses: fullPR.department_statuses || [],
-        items: fullPR.items || [],
-      });
+  //     // -------------------------
+  //     // ✅ ITEMS
+  //     // -------------------------
+  //     setUpdateData({
+  //       department_statuses: fullPR.department_statuses || [],
+  //       items: fullPR.items || [],
+  //     });
 
-      // -------------------------
-      // ✅ ORDER DETAILS
-      // -------------------------
-      const order = fullPR.order_details || {};
+  //     // -------------------------
+  //     // ✅ ORDER DETAILS
+  //     // -------------------------
+  //     const order = fullPR.order_details || {};
 
-      setOrderDetails({
-        orderPlaced: order.order_placed_at ? "YES" : "NO",
-        expectedDeliveryDate: order.expected_delivery_date || "",
-        transportMode: order.transport_mode || "",
-        inHouseType: order.in_house_type || "",
-        vendorAddress: order.vendor_address || "",
-        file: null,
-        filePath: order.po_file_path || "",
-        fileName: order.po_file_name || "",
-      });
+  //     setOrderDetails({
+  //       orderPlaced: order.order_placed_at ? "YES" : "NO",
+  //       expectedDeliveryDate: order.expected_delivery_date || "",
+  //       transportMode: order.transport_mode || "",
+  //       inHouseType: order.in_house_type || "",
+  //       vendorAddress: order.vendor_address || "",
+  //       file: null,
+  //       filePath: order.po_file_path || "",
+  //       fileName: order.po_file_name || "",
+  //     });
 
-      // -------------------------
-      // ✅ RECEIVING DETAILS
-      // -------------------------
-      const receiving = fullPR.order_receiving_details || {};
+  //     // -------------------------
+  //     // ✅ RECEIVING DETAILS
+  //     // -------------------------
+  //     const receiving = fullPR.order_receiving_details || {};
 
-      setReceivingDetails({
-        quantity_status: receiving.quantity_status || "",
-        partial_quantity: receiving.partial_quantity || "",
-        rejection_reason: receiving.rejection_reason || "",
-        building: receiving.building || "",
-        rack: receiving.rack || "",
-      });
+  //     setReceivingDetails({
+  //       quantity_status: receiving.quantity_status || "",
+  //       partial_quantity: receiving.partial_quantity || "",
+  //       rejection_reason: receiving.rejection_reason || "",
+  //       building: receiving.building || "",
+  //       rack: receiving.rack || "",
+  //     });
 
-      setModalOpen(true);
-      setNewStatus("");
-      setNewComment("");
+  //     setModalOpen(true);
+  //     setNewStatus("");
+  //     setNewComment("");
 
-    } catch (err) {
-      console.error("Error fetching PR details:", err);
-    }
-  };
+  //   } catch (err) {
+  //     console.error("Error fetching PR details:", err);
+  //   }
+  // };
   // const submitUpdate = async () => {
   //   if (!selectedPR || !newStatus) {
   //     setAlert({ type: "error", message: "Please select finance status" });
@@ -388,59 +458,59 @@ export default function SubmittedFinanceRequestsPage() {
       );
 
       // ✅ Apply filter
-     const filtered = merged.filter((pr: any) => {
-  const payment = pr.finance_payment_details || {};
+      const filtered = merged.filter((pr: any) => {
+        const payment = pr.finance_payment_details || {};
 
-  const stage = String(payment.payment_stage || "").toLowerCase().trim();
-  const type = String(payment.payment_type || "").toLowerCase().trim();
+        const stage = String(payment.payment_stage || "").toLowerCase().trim();
+        const type = String(payment.payment_type || "").toLowerCase().trim();
 
-  const finalCompletedRaw = payment.final_completed;
+        const finalCompletedRaw = payment.final_completed;
 
-  const finalCompleted =
-    typeof finalCompletedRaw === "boolean"
-      ? finalCompletedRaw
-      : String(finalCompletedRaw || "").toLowerCase().trim();
+        const finalCompleted =
+          typeof finalCompletedRaw === "boolean"
+            ? finalCompletedRaw
+            : String(finalCompletedRaw || "").toLowerCase().trim();
 
-  // ❌ Hide FINAL payments
-  const isFinal =
-    stage.includes("final") ||
-    type.includes("final") ||
-    finalCompleted === "yes" ||
-    finalCompleted === "true" ||
-    finalCompleted === "1";
+        // ❌ Hide FINAL payments
+        const isFinal =
+          stage.includes("final") ||
+          type.includes("final") ||
+          finalCompleted === "yes" ||
+          finalCompleted === "true" ||
+          finalCompleted === "1";
 
-  if (isFinal) return false;
+        if (isFinal) return false;
 
-  // ✅ SORT statuses properly
-  const sortedStatuses = [...(pr.department_statuses || [])].sort(
-    (a, b) =>
-      new Date(b.updated_at || 0).getTime() -
-      new Date(a.updated_at || 0).getTime()
-  );
+        // ✅ SORT statuses properly
+        const sortedStatuses = [...(pr.department_statuses || [])].sort(
+          (a, b) =>
+            new Date(b.updated_at || 0).getTime() -
+            new Date(a.updated_at || 0).getTime()
+        );
 
-  const latestStatus = sortedStatuses[0];
+        const latestStatus = sortedStatuses[0];
 
-  const status = latestStatus?.department_status
-    ?.toLowerCase()
-    .trim();
+        const status = latestStatus?.department_status
+          ?.toLowerCase()
+          .trim();
 
-  // ❌ rejected
-  if (status?.includes("rejected")) return false;
+        // ❌ rejected
+        if (status?.includes("rejected")) return false;
 
-  // ❌ already finance approved
-  if (status === "finance approved") return false;
+        // ❌ already finance approved
+        if (status === "finance approved") return false;
 
-  // ✅ Must contain feasibility approved anywhere
-  const isFeasibilityApproved = sortedStatuses.some((s: any) =>
-    s.department_status
-      ?.toLowerCase()
-      .includes("feasibility approved")
-  );
+        // ✅ Must contain feasibility approved anywhere
+        const isFeasibilityApproved = sortedStatuses.some((s: any) =>
+          s.department_status
+            ?.toLowerCase()
+            .includes("feasibility approved")
+        );
 
-  if (!isFeasibilityApproved) return false;
+        if (!isFeasibilityApproved) return false;
 
-  return true;
-});
+        return true;
+      });
       setRequests(filtered);
     } catch (err) {
       console.error("Error fetching finance requests:", err);
@@ -634,7 +704,7 @@ export default function SubmittedFinanceRequestsPage() {
             <div className="bg-gray-100 p-3 sm:p-4 rounded mb-4 overflow-x-auto">
               <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-4 min-w-[300px]">
                 {[
-                   ["Description", selectedPR.description],
+                  ["Description", selectedPR.description],
                   // ["Department", departmentMap[selectedPR.department] || selectedPR.department || "-"],
                   ["Priority", selectedPR.priority],
                   [
@@ -1077,13 +1147,13 @@ export default function SubmittedFinanceRequestsPage() {
                       />
                     </div>
 
-                    {/* Transport Mode */}
+
                     {/* Transport Mode */}
                     <div>
                       <label className="text-xs font-medium">Transport Mode</label>
                       <input
                         readOnly
-                        value={selectedPR.order_details.transport_mode || ""}
+                        value={formatEnumText(selectedPR.order_details.transport_mode || "")}
                         className="border p-2 rounded w-full bg-white"
                       />
                     </div>
@@ -1094,7 +1164,7 @@ export default function SubmittedFinanceRequestsPage() {
                         <label className="text-xs font-medium">Delivery Type</label>
                         <input
                           readOnly
-                          value={selectedPR.order_details.in_house_type || ""}
+                          value={formatEnumText(selectedPR.order_details.transport_mode || "")}
                           className="border p-2 rounded w-full bg-white"
                         />
                       </div>

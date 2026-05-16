@@ -135,6 +135,12 @@ export default function SubmittedFinanceRequestsPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+   
+  
+  const formatEnumText = (value?: string) => {
+  if (!value) return "";
+  return value.replace(/_/g, " ");
+};
 
 
 
@@ -261,7 +267,12 @@ export default function SubmittedFinanceRequestsPage() {
         // ❌ Remove FULL
         return status !== "FULL";
       });
-      setRequests(activePRs);
+      // ✅ Sort latest PR first (15,14,13...)
+      const sortedPRs = activePRs.sort(
+        (a, b) => Number(b.id) - Number(a.id)
+      );
+
+      setRequests(sortedPRs);
 
     } catch (err) {
       console.error("Error fetching requests:", err);
@@ -951,21 +962,19 @@ export default function SubmittedFinanceRequestsPage() {
 
                 {/* Payment Proof */}
                 {selectedPR.finance_payment_details.payment_proof_file_path && (
-                  <div className="mt-4">
-                    <a
-                      href={`${import.meta.env.VITE_BACKEND_URL}/${selectedPR.finance_payment_details.payment_proof_file_path}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 underline"
-                    >
-                      {selectedPR.finance_payment_details
-                        .payment_proof_file_name || "View Payment Proof"}
-                    </a>
-                  </div>
-                )}
+              <div className="mt-4">
+                <a
+                  href={`${import.meta.env.VITE_BACKEND_URL}/${selectedPR.finance_payment_details.payment_proof_file_path}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  View Payment Proof
+                </a>
               </div>
             )}
-
+          </div>
+        )}
 
             {/* ================= PR ORDER DETAILS ================= */}
             {selectedPR.order_details && (
@@ -1011,11 +1020,11 @@ export default function SubmittedFinanceRequestsPage() {
 
 
                   {/* Transport Mode */}
-                  <div>
+                 <div>
                     <label className="text-xs font-medium">Transport Mode</label>
                     <input
                       readOnly
-                      value={selectedPR.order_details.transport_mode || ""}
+                      value={formatEnumText(selectedPR.order_details.transport_mode || "")}
                       className="border p-2 rounded w-full bg-white"
                     />
                   </div>
@@ -1026,7 +1035,7 @@ export default function SubmittedFinanceRequestsPage() {
                       <label className="text-xs font-medium">Delivery Type</label>
                       <input
                         readOnly
-                        value={selectedPR.order_details.in_house_type || ""}
+                        value={formatEnumText(selectedPR.order_details.transport_mode || "")}
                         className="border p-2 rounded w-full bg-white"
                       />
                     </div>
