@@ -395,7 +395,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-sm relative">
       <h2 className="text-purple-600 font-semibold text-lg mb-2 truncate">
-        BR ID: {data.display_id || data.id}
+        BR ID: {data.id || data.id}
       </h2>
       <div className="flex flex-col gap-1">
         {mainFields.map((item) => (
@@ -467,7 +467,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
 
 
             <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-              {editMode ? `Edit BR-${data.display_id} info` : `View BR-${data.display_id} info`}
+              {editMode ? `Edit BR-${data.id} info` : `View BR-${data.id} info`}
             </h2>
             {/* Map all sections */}
             {[

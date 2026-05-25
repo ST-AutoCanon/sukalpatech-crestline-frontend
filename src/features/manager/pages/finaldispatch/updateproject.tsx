@@ -5,9 +5,12 @@ import Alert from "../../../../components/Aleartmessage";
 /* ================= TYPES ================= */
 interface Project {
   id: number;
+
   display_id?: number;
+
   bd_request_id: number;
   bd_request_display_id?: number;
+
   description: string;
   required_date: string;
   assigned_date: string;
@@ -25,10 +28,10 @@ export default function ProjectPage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [alert, setAlert] = useState<{
-    type: "success" | "error" | "warning";
-    message: string;
-  } | null>(null);
-
+  type: "success" | "error";
+  message: string;
+} | null>(null);
+  
   const [status, setStatus] = useState("");
   const [comments, setComments] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,7 +40,7 @@ export default function ProjectPage() {
 
   const statuses = ["IN_PROGRESS","PENDING", "APPROVED", "REJECTED"];
 
-  const departmentName = "fabrication_structure"; // ✅ FIXED (NO HARD CODE)
+  const departmentName = "final_dispatch"; // ✅ FIXED (NO HARD CODE)
 
   /* ================= FETCH PROJECTS (WORKFLOW FILTERED) ================= */
   const fetchProjects = async () => {
@@ -110,10 +113,10 @@ export default function ProjectPage() {
   //       { withCredentials: true },
   //     );
 
-  //     setAlert({
-  //       type: "success",
-  //       message: "Status updated successfully",
-  //     });
+  //    setAlert({
+  //      type: "success",
+  //      message: "Status updated successfully",
+  //    });
 
   //     setStatus("");
   //     setComments("");
@@ -123,76 +126,76 @@ export default function ProjectPage() {
   //     fetchProjects();
   //   } catch (err: any) {
   //     console.error("Status update error", err);
-  //     setAlert({
-  //       type: "error",
-  //       message: err?.response?.data?.message || "Error updating status",
-  //     });
+  //   setAlert({
+  //     type: "error",
+  //     message: err?.response?.data?.message || "Error updating status",
+  //   });
   //   } finally {
   //     setLoading(false);
   //   }
   // };
 
   const handleStatusUpdate = async () => {
-    if (!status) {
-      setAlert({
-        type: "error",
-        message: "Status required",
-      });
-      return;
+  if (!status) {
+    setAlert({
+      type: "error",
+      message: "Status required",
+    });
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    // ✅ CALL BACKEND ONCE
+    const res = await axios.post(
+      `${API_BASE}/status`,
+      {
+        project_management_id: selectedProject?.id,
+        department: departmentName,
+        updated_by: user.first_name,
+        status,
+        comments,
+      },
+      { withCredentials: true }
+    );
+
+    // ✅ GET WORKFLOW INFO FROM RESPONSE
+    const workflow = res.data.workflowInfo;
+
+    let alertMessage = "";
+
+    if (workflow?.status === "APPROVED") {
+      alertMessage = `✅ Approved → moved to ${workflow.next}`;
+    } else if (workflow?.status === "REJECTED") {
+      alertMessage = `❌ Rejected → sent back to ${workflow.previous}`;
+    } else if (workflow?.status === "PENDING") {
+      alertMessage = `⏳ Pending in ${workflow.current}`;
     }
 
-    try {
-      setLoading(true);
+    // ✅ SHOW ALERT
+    setAlert({
+      type: "success",
+      message: alertMessage || "Status updated successfully",
+    });
 
-      // ✅ CALL BACKEND ONCE
-      const res = await axios.post(
-        `${API_BASE}/status`,
-        {
-          project_management_id: selectedProject?.id,
-          department: departmentName,
-          updated_by: user.first_name,
-          status,
-          comments,
-        },
-        { withCredentials: true }
-      );
+    setStatus("");
+    setComments("");
+    setModalOpen(false);
 
-      // ✅ GET WORKFLOW INFO FROM RESPONSE
-      const workflow = res.data.workflowInfo;
+    fetchProjects();
 
-      let alertMessage = "";
+  } catch (err: any) {
+    console.error("Status update error", err);
 
-      if (workflow?.status === "APPROVED") {
-        alertMessage = `✅ Approved → moved to ${workflow.next}`;
-      } else if (workflow?.status === "REJECTED") {
-        alertMessage = `❌ Rejected → sent back to ${workflow.previous}`;
-      } else if (workflow?.status === "PENDING") {
-        alertMessage = `⏳ Pending in ${workflow.current}`;
-      }
-
-      // ✅ SHOW ALERT
-      setAlert({
-        type: "success",
-        message: alertMessage || "Status updated successfully",
-      });
-
-      setStatus("");
-      setComments("");
-      setModalOpen(false);
-
-      fetchProjects();
-
-    } catch (err: any) {
-      console.error("Status update error", err);
-
-      setAlert({
-        type: "error",
-        message: err?.response?.data?.message || "Error updating status",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    setAlert({
+      type: "error",
+      message: err?.response?.data?.message || "Error updating status",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="p-4 sm:p-6 text-black">
@@ -212,13 +215,13 @@ export default function ProjectPage() {
             className="bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col min-h-[200px] cursor-pointer"
           >
             <h2 className="text-purple-600 font-semibold text-lg mb-2">
-              Project ID: {p.display_id ?? p.id}
+             Project ID: {p.display_id ?? p.id}
             </h2>
 
             <div className="flex-1 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">BD Request</span>
-                <span className="font-medium">{p.bd_request_display_id ?? p.bd_request_id}</span>
+                 {p.bd_request_display_id ?? p.bd_request_id}
               </div>
 
               <div className="flex justify-between">

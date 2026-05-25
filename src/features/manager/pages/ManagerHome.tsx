@@ -549,16 +549,32 @@ export default function ManagerHome() {
   const [allStatuses, setAllStatuses] =
     useState<StatusType[]>([]);
 
-  const departments = [
-    "engineering_design",
-    "fabrication_structure",
-    "stores_materials",
-    "quality_control",
-  ];
-
   const [activeDepartment, setActiveDepartment] =
-    useState(departments[0]);
+  useState("");
+ 
+// GET UNIQUE DEPARTMENTS FROM WORKFLOW
 
+const currentProjectWorkflow = workflow.filter(
+  (w) =>
+    w.project_management_id === projects[0]?.id
+);
+
+const departments = Array.from(
+  new Set(
+    currentProjectWorkflow.map((w) =>
+      w.department?.toLowerCase()
+    )
+  )
+).filter(Boolean);
+
+useEffect(() => {
+  if (
+    departments.length > 0 &&
+    !activeDepartment
+  ) {
+    setActiveDepartment(departments[0]);
+  }
+}, [departments, activeDepartment]);
   /* =========================================================
      FETCH DATA
   ========================================================= */
@@ -580,11 +596,7 @@ export default function ManagerHome() {
 
         setProjects(projectData);
 
-        console.log(
-          "PROJECTS:",
-          projectData
-        );
-
+     
         // ================= WORKFLOW =================
 
         const workflowPromises = projectData.map(
@@ -607,10 +619,7 @@ const mergedWorkflow =
 
 setWorkflow(mergedWorkflow);
 
-console.log(
-  "WORKFLOW:",
-  mergedWorkflow
-);
+
 
         // ================= STATUSES =================
 
@@ -634,10 +643,6 @@ console.log(
 
         setAllStatuses(mergedStatuses);
 
-        console.log(
-          "ALL STATUSES:",
-          mergedStatuses
-        );
       } catch (err) {
         console.error(err);
       }
@@ -662,7 +667,7 @@ console.log(
 
 const assignedProjectIds = projects
   .filter((project) => {
-    // PROJECT WORKFLOW
+    // workflow for project
     const projectWorkflow = workflow
       .filter(
         (w) =>
@@ -673,63 +678,28 @@ const assignedProjectIds = projects
         (a, b) => a.sequence - b.sequence
       );
 
-    // PROJECT STATUSES
-    const projectStatuses =
-      allStatuses.filter(
-        (s) =>
-          s.project_management_id ===
-          project.id
-      );
-
-    // FIND ACTIVE STEP INDEX
-    let activeSequence = 1;
-
-    for (const step of projectWorkflow) {
-      const deptStatuses =
-        projectStatuses.filter(
-          (s) =>
-            s.department?.toLowerCase() ===
-            step.department?.toLowerCase()
-        );
-
-      const latestDeptStatus =
-        deptStatuses.sort(
-          (a, b) =>
-            new Date(b.updated_at).getTime() -
-            new Date(a.updated_at).getTime()
-        )[0];
-
-      // STOP AT FIRST NON-APPROVED
-      if (
-        !latestDeptStatus ||
-        latestDeptStatus.status?.toUpperCase() !==
-          "APPROVED"
-      ) {
-        activeSequence = step.sequence;
-        break;
-      }
-
-      // IF APPROVED MOVE FORWARD
-      activeSequence =
-        step.sequence + 1;
-    }
-
-    // CHECK IF ACTIVE DEPARTMENT
-    const deptWorkflow =
+    // current active department step
+    const currentStep =
       projectWorkflow.find(
         (w) =>
           w.department?.toLowerCase() ===
           activeDepartment.toLowerCase()
       );
 
-    // DEPARTMENT SHOULD SHOW ASSIGNED
-    // IF ITS SEQUENCE <= ACTIVE SEQUENCE
+    if (!currentStep) return false;
 
-    return (
-      deptWorkflow &&
-      deptWorkflow.sequence <=
-        activeSequence
-    );
+    // statuses for this project + department
+    const deptStatuses =
+      allStatuses.filter(
+        (s) =>
+          s.project_management_id ===
+            project.id &&
+          s.department?.toLowerCase() ===
+            activeDepartment.toLowerCase()
+      );
+
+    // NO STATUS YET = ASSIGNED
+    return deptStatuses.length === 0;
   })
   .map((p) => p.id);
 
@@ -743,13 +713,10 @@ const total = assignedProjectIds.length;
   ========================================================= */
 
   const filteredStatuses = allStatuses.filter(
-    (status) =>
-      status.department?.toLowerCase() ===
-        activeDepartment.toLowerCase() &&
-      assignedProjectIds.includes(
-        status.project_management_id
-      )
-  );
+  (status) =>
+    status.department?.toLowerCase() ===
+    activeDepartment.toLowerCase()
+);
 
   /* =========================================================
      LATEST STATUS OF EACH PROJECT
@@ -781,6 +748,11 @@ const total = assignedProjectIds.length;
   /* =========================================================
      COUNTS
   ========================================================= */
+  const inProgress = departmentStatuses.filter(
+    (s) =>
+      s.status?.toUpperCase() ===
+      "IN_PROGRESS"
+  ).length;
 
   const approved = departmentStatuses.filter(
     (s) =>
@@ -803,6 +775,7 @@ const total = assignedProjectIds.length;
   console.log({
     activeDepartment,
     total,
+    inProgress,
     approved,
     pending,
     rejected,
@@ -814,27 +787,33 @@ const total = assignedProjectIds.length;
   ========================================================= */
 
   const chartData = [
-    {
-      name: "Completed",
-      value: approved,
-    },
+  {
+    name: "Completed",
+    value: approved,
+  },
 
-    {
-      name: "Pending",
-      value: pending,
-    },
+  {
+    name: "In Progress",
+    value: inProgress,
+  },
 
-    {
-      name: "Rejected",
-      value: rejected,
-    },
-  ];
+  {
+    name: "Pending",
+    value: pending,
+  },
+
+  {
+    name: "Rejected",
+    value: rejected,
+  },
+];
 
   const COLORS = [
-    "#22c55e",
-    "#eab308",
-    "#ef4444",
-  ];
+  "#22c55e", // completed
+  "#3b82f6", // in progress
+  "#eab308", // pending
+  "#ef4444", // rejected
+];
 
   /* =========================================================
      FORMAT DEPARTMENT
@@ -914,6 +893,16 @@ const total = assignedProjectIds.length;
 
             <h2 className="text-3xl font-bold text-blue-600 mt-2">
               {total}
+            </h2>
+          </div>
+
+            <div className="bg-green-50 rounded-xl p-5 border-l-4 border-green-500">
+            <p className="text-gray-600 text-sm">
+              In_Progress
+            </p>
+
+            <h2 className="text-3xl font-bold text-green-600 mt-2">
+              {inProgress}
             </h2>
           </div>
 

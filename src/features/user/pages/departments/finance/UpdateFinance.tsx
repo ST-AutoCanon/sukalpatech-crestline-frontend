@@ -245,6 +245,12 @@ export default function SubmittedFinanceRequestsPage() {
       );
 
       const fullPR = res.data?.data;
+      // ✅ ADD THIS
+setUpdateData({
+  department_statuses: fullPR.department_statuses || [],
+  items: fullPR.items || [],
+});
+
 
       setSelectedPR(fullPR);
       // ✅ Restore finance state

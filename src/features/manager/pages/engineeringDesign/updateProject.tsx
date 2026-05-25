@@ -38,7 +38,7 @@ export default function ProjectPage() {
   const [statusList, setStatusList] = useState<any[]>([]);
   const [expandDeptStatus, setExpandDeptStatus] = useState(true);
 
-  const statuses = ["PENDING", "APPROVED", "REJECTED"];
+  const statuses = ["IN_PROGRESS","PENDING", "APPROVED", "REJECTED"];
 
   const departmentName = "engineering_design"; // ✅ FIXED (NO HARD CODE)
 

@@ -27,6 +27,12 @@ import EngineeringDesignPage from "./features/manager/pages/engineeringDesign/En
 import StoreMaterialsPage from "./features/manager/pages/storeMaterials/StoreMaterialsHome";
 import FabricationPage from "./features/manager/pages/fabrication/FabricationHome";
 import QualityControlPage from "./features/manager/pages/qualityControl/QualityControlHome";
+import PannelingWeldingPage from "./features/manager/pages/paneling&welding/Paneling&weldingHome";
+import InteriorFitmentPage from "./features/manager/pages/InteriorFitment/InteriorFitmentHome";
+import GlassDoorsPage from "./features/manager/pages/glass&doors/glass&doorsHome";
+import FinalDispatchPage from "./features/manager/pages/finaldispatch/finaldispatchHome";
+import FinalAssemblyDispatchPage from "./features/manager/pages/finalassembly&dispatch/finalassemblyHome";
+
 
 import UpdatedFeasibilityPage from "./features/user/pages/departments/Businessdevelopment/Feasibility/UpdatedFeasibilitypage";
 import Home from "./pages/Home";
@@ -176,10 +182,24 @@ export default function AppRoutes() {
       >
         <Route index element={<ManagerDashboardHome />} />
         <Route path="dashboard" element={<ManagerDashboardHome />} />
-        <Route path="engineering-design" element={<EngineeringDesignPage />} />
-        <Route path="store-materials" element={<StoreMaterialsPage />} />
-        <Route path="fabrication" element={<FabricationPage />} />
-        <Route path="quality-control" element={<QualityControlPage />} />
+       <Route
+          path="engineering-design/:bdId"
+          element={<EngineeringDesignPage />}
+        />
+
+        <Route path="store-materials/:bdId" element={<StoreMaterialsPage />} />
+        <Route path="fabrication/:bdId" element={<FabricationPage />} />
+        <Route path="quality-control/:bdId" element={<QualityControlPage />} />
+        <Route
+          path="panneling-welding/:bdId"
+          element={<PannelingWeldingPage/>}
+        />
+
+        <Route path="interior-fitment/:bdId" element={<InteriorFitmentPage />} />
+        <Route path="glass-doors/:bdId" element={<GlassDoorsPage/>} />
+        <Route path="final-dispatch/:bdId" element={<FinalDispatchPage />} />
+        <Route path="final-assembly-dispatch/:bdId" element={<FinalAssemblyDispatchPage/>} />
+
       </Route>
 
       {/* Admin Routes */}

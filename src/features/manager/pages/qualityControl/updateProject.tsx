@@ -34,7 +34,7 @@ const [alert, setAlert] = useState<{
   const [statusList, setStatusList] = useState<any[]>([]);
   const [expandDeptStatus, setExpandDeptStatus] = useState(true);
 
-  const statuses = ["PENDING", "APPROVED", "REJECTED"];
+  const statuses = ["IN_PROGRESS","PENDING", "APPROVED", "REJECTED"];
 
   const departmentName = "quality_control"; // ✅ FIXED (NO HARD CODE)
 

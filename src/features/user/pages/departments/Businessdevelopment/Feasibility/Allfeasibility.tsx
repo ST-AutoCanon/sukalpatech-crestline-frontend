@@ -428,7 +428,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
         />
       )}
       <h2 className="text-purple-600 font-semibold text-sm mb-2 truncate">
-        BR ID: {data.display_id || data.id}
+        BR ID: {data.id || data.id}
       </h2>
 
       <div className="flex flex-col gap-0.5">
@@ -468,7 +468,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
       "
           >
             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium mb-4">
-              BR-{data.display_id} Info
+              BR-{data.id} Info
             </h2>
 
             {/* Existing sections */}
@@ -498,7 +498,6 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                   { label: "Mobile Number", value: data.mobile_number },
                   { label: "Email", value: data.email },
                   { label: "Address", value: data.address },
-                  { label: "Body Type Required", value: data.body_type },
                 ],
               },
               {
@@ -531,6 +530,12 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                   { label: "Paint Color", value: data.paint_color },
                   { label: "Window Type", value: data.window_type },
                   { label: "Door Type", value: data.door_type },
+                ],
+              },
+              {
+                title: "Body Type Require",
+                fields: [
+                  { label: "Body Type Required", value: data.body_type },
                 ],
               },
               {

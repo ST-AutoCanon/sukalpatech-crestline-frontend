@@ -533,12 +533,9 @@ prsData = prsData.filter((pr) => {
       setTimeout(() => setAlert(null), 3000);
     }
   };
-  const formatDateForInput = (date: string) => {
+   const formatDateForInput = (date: string) => {
     if (!date) return "";
-    const d = new Date(date);
-    const offset = d.getTimezoneOffset();
-    const localDate = new Date(d.getTime() - offset * 60 * 1000);
-    return localDate.toISOString().split("T")[0];
+    return date.split("T")[0]; // ✅ NO timezone conversion
   };
 
   const isEditable = (pr: PR) => {
@@ -625,7 +622,11 @@ prsData = prsData.filter((pr) => {
                 <div className="flex justify-between"><span className="text-gray-400">Priority</span><span className="font-medium text-gray-700">{pr.priority}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Status</span><span className="font-medium text-gray-700">{status}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Department</span><span className="font-medium text-gray-700 truncate">{departmentMap[String(pr.department)] ?? pr.department}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Delivery Date</span><span className="font-medium text-gray-700">{new Date(pr.required_date).toLocaleDateString()}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Delivery Date</span><span className="font-medium text-gray-700">
+                    {pr.required_date
+                      ? new Date(pr.required_date).toLocaleDateString("en-US")
+                      : "-"}
+                  </span></div>
               </div>
 
               <div className="mt-3 flex gap-4">
@@ -706,22 +707,25 @@ prsData = prsData.filter((pr) => {
                 </div>
 
                 <div>
-                  <div className="text-gray-900"> Delivery Date</div>
-                  <input
-                    type="date"
-                    value={formatDateForInput(activePR.required_date)}
-                    readOnly={true}
-                    onChange={(e) => {
-                      const date = e.target.value; // "2026-03-01"
-                      setActivePR({
-                        ...activePR,
-                        required_date: new Date(date).toISOString(), // full ISO
-                      });
-                    }}
-                    className={`bg-white border rounded px-2 py-1 w-full`}
-                  />
+  <div className="text-gray-900">Delivery Date</div>
 
-                </div>
+  <input
+    type="date"
+    value={
+      activePR.required_date
+        ? activePR.required_date.split("T")[0]
+        : ""
+    }
+    readOnly
+    onChange={(e) =>
+      setActivePR({
+        ...activePR,
+        required_date: e.target.value,
+      })
+    }
+    className="bg-white border rounded px-2 py-1 w-full"
+  />
+</div>
 
                 <div>
                   <div className="text-gray-900">Department</div>
