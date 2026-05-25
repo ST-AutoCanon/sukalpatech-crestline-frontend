@@ -7,10 +7,10 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
 // Real project ID from DB
 // const PROJECT_ID = 1;
 
-export default function EngineeringDesignPage() {
+export default function FinalDispatch() {
   const { user } = useContext(AuthContext);
   const { bdId } = useParams();
-  
+
 const [project, setProject] = useState<any>(null);
   const [deptId, setDeptId] = useState<number | null>(null);
   const [alert, setAlert] = useState<{
@@ -63,7 +63,7 @@ const [project, setProject] = useState<any>(null);
         if (!data.success) return;
 
         const dept = data.data.find(
-          (d: any) => d.name === "engineering_design",
+          (d: any) => d.name === "panneling-welding",
         );
         setDeptId(dept?.department_id || null);
       } catch (err) {
@@ -91,7 +91,6 @@ const [project, setProject] = useState<any>(null);
       return;
     }
     const bdRequestId = bdId;
-   
 
 if (!bdRequestId) {
   setAlert({
@@ -134,14 +133,14 @@ if (!bdRequestId) {
         body: JSON.stringify({
           title: "Project Completed",
           message:
-            "Engineering & Design department completed the project and moved to next department",
+            "Final dispatch department completed the project and moved to next department",
           type: "PROJECT_MOVED",
           related_bd_id: bdRequestId,
           recipient_department_id: deptId, // dynamically fetched department
           // Optionally, you can also send to a role or specific user:
           // recipient_role: "manager",
           // recipient_id: 54,
-          metadata: { department: "Engineering & Design" },
+          metadata: { department: "Final Dispatch" },
         }),
       });
 
@@ -180,11 +179,11 @@ if (!bdRequestId) {
       )}
       <div className="bg-white rounded-2xl shadow-md p-6">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          Engineering & Design
+          Final Dispatch
         </h2>
 
         <p className="text-gray-600 mb-6">
-          Manage engineering drawings, design approvals, and technical
+          Manage Final dispatch drawings, design approvals, and technical
           documentation.
         </p>
 
@@ -192,7 +191,7 @@ if (!bdRequestId) {
           <div className="bg-gray-50 p-5 rounded-xl border">
             <h3 className="font-semibold text-gray-700 mb-2">Drawings</h3>
             <p className="text-sm text-gray-500">
-              Upload and manage engineering drawings.
+              Upload and manage Final dispatch drawings.
             </p>
           </div>
 

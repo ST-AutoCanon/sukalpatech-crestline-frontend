@@ -174,9 +174,9 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
+  DragEndEvent,
 } from "@dnd-kit/core";
 
-import type { DragEndEvent } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
@@ -187,7 +187,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 
-const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
+  const API_BASE2 = `${import.meta.env.VITE_BACKEND_URL}/api/departments`;
 /* ================= TYPES ================= */
 export interface WorkflowItem {
   id: string;
@@ -243,11 +243,14 @@ const SortableItem: React.FC<SortableItemProps> = ({
 
     fetchDepartments();
   }, []);
-  const formatDepartmentName = (name: string) => {
-    return name
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (char) => char.toUpperCase());
-  };
+  const formatDepartment = (name: string) => {
+  return name
+    .split("_")
+    .map(
+      (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    )
+    .join("_");
+};
 
 
   return (
@@ -276,9 +279,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
 
         {departments.map((dept) => (
           <option key={dept.department_id} value={dept.name}>
-            <option key={dept.department_id} value={dept.name}>
-              {formatDepartmentName(dept.name)}
-            </option>
+            {formatDepartment(dept.name)}
           </option>
         ))}
       </select>

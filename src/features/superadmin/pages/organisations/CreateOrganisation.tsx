@@ -289,6 +289,7 @@ const CreateOrganisation = () => {
         `${ADMIN_API_BASE}/organisations-admin/departments`,
         { withCredentials: true }
       );
+      console.log("DEPARTMENTS API:", res.data);
 
       if (res.data.success && res.data.data) {
         // const mapped = res.data.data.map((d) => ({
