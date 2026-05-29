@@ -36,7 +36,8 @@ import FinalAssemblyDispatchPage from "./features/manager/pages/finalassembly&di
 
 import ProjectManagerDashboard from "./features/ProjectManager/ProjectManagerDashboard";
 import ProjectManagerPage from "./features/ProjectManager/Pages/ProjectManagerPage";
-import ProjectManagerHome from "./features/ProjectManager/pages/ProjectManagerHome";
+import ProjectManagerHome from "./features/ProjectManager/Pages/ProjectManagerHome";
+
 
 
 
@@ -216,6 +217,131 @@ export default function AppRoutes() {
   path="/project_manager"
   element={
     <RequireAuth roles={["project_manager"]}>
+      <ProjectManagerDashboard />
+    </RequireAuth>
+  }
+>
+  <Route
+    index
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="dashboard"
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="projects"
+    element={<ProjectManagerPage />}
+  />
+</Route>
+
+{/* PROJECT MANAGER A */}
+<Route
+  path="/project_manager_a"
+  element={
+    <RequireAuth roles={["project_manager_a"]}>
+      <ProjectManagerDashboard />
+    </RequireAuth>
+  }
+>
+  <Route
+    index
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="dashboard"
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="projects"
+    element={<ProjectManagerPage />}
+  />
+</Route>
+
+{/* PROJECT MANAGER B */}
+<Route
+  path="/project_manager_b"
+  element={
+    <RequireAuth roles={["project_manager_b"]}>
+      <ProjectManagerDashboard />
+    </RequireAuth>
+  }
+>
+  <Route
+    index
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="dashboard"
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="projects"
+    element={<ProjectManagerPage />}
+  />
+</Route>
+
+{/* PROJECT MANAGER C */}
+<Route
+  path="/project_manager_c"
+  element={
+    <RequireAuth roles={["project_manager_c"]}>
+      <ProjectManagerDashboard />
+    </RequireAuth>
+  }
+>
+  <Route
+    index
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="dashboard"
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="projects"
+    element={<ProjectManagerPage />}
+  />
+</Route>
+
+{/* PROJECT MANAGER D */}
+<Route
+  path="/project_manager_d"
+  element={
+    <RequireAuth roles={["project_manager_d"]}>
+      <ProjectManagerDashboard />
+    </RequireAuth>
+  }
+>
+  <Route
+    index
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="dashboard"
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="projects"
+    element={<ProjectManagerPage />}
+  />
+</Route>
+
+{/* PROJECT MANAGER E */}
+<Route
+  path="/project_manager_e"
+  element={
+    <RequireAuth roles={["project_manager_e"]}>
       <ProjectManagerDashboard />
     </RequireAuth>
   }
