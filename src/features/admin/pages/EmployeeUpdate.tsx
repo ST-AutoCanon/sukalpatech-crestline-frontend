@@ -313,6 +313,7 @@ export default function EmployeeManagementPage() {
                 >
                   <option value="employee">Employee</option>
                   <option value="manager">Manager</option>
+                  <option value="project_manager">Project Manager</option>
                 </select>
                 <select
                   className="border rounded-xl px-4 py-3 md:col-span-2 focus:ring-2 focus:ring-blue-400 outline-none"
@@ -447,6 +448,7 @@ export default function EmployeeManagementPage() {
                   >
                     <option value="employee">Employee</option>
                     <option value="manager">Manager</option>
+                    <option value="project_manager">Project Manager</option>
                   </select>
                   <select
                     className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 outline-none"

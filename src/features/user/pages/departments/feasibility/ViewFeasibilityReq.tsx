@@ -207,83 +207,83 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
 
       let data = await res.json();
 
-     const rawData = data?.data || [];
+      const rawData = data?.data || [];
 
-// ✅ STEP 1: sort by latest store receiving update OR updated_at
-rawData.sort((a: any, b: any) => {
-  const aTime = new Date(
-    a.store_receiving_details?.updated_at || a.updated_at || 0
-  ).getTime();
+      // ✅ STEP 1: sort by latest store receiving update OR updated_at
+      rawData.sort((a: any, b: any) => {
+        const aTime = new Date(
+          a.store_receiving_details?.updated_at || a.updated_at || 0
+        ).getTime();
 
-  const bTime = new Date(
-    b.store_receiving_details?.updated_at || b.updated_at || 0
-  ).getTime();
+        const bTime = new Date(
+          b.store_receiving_details?.updated_at || b.updated_at || 0
+        ).getTime();
 
-  return bTime - aTime; // latest first
-});
+        return bTime - aTime; // latest first
+      });
 
-// ✅ STEP 2: keep only latest PR record per id
-const map: Record<string, PR> = {};
+      // ✅ STEP 2: keep only latest PR record per id
+      const map: Record<string, PR> = {};
 
-for (const pr of rawData) {
-  const key = String(pr.id);
+      for (const pr of rawData) {
+        const key = String(pr.id);
 
-  const existing = map[key];
+        const existing = map[key];
 
-  const newTime = new Date(
-    pr.store_receiving_details?.updated_at || pr.updated_at || 0
-  ).getTime();
+        const newTime = new Date(
+          pr.store_receiving_details?.updated_at || pr.updated_at || 0
+        ).getTime();
 
-  const oldTime = existing
-    ? new Date(
-        existing.store_receiving_details?.updated_at || existing.updated_at || 0
-      ).getTime()
-    : 0;
+        const oldTime = existing
+          ? new Date(
+            existing.store_receiving_details?.updated_at || existing.updated_at || 0
+          ).getTime()
+          : 0;
 
-  if (!existing || newTime > oldTime) {
-    map[key] = {
-      ...pr,
-      items: [
-        ...(map[key]?.items || []),
-        ...(pr.items || []),
-      ],
-    };
-  }
-}
-let prsData = Object.values(map).sort((a: any, b: any) => b.id - a.id);
-// ✅ SEARCH
-if (search.trim()) {
-  prsData = prsData.filter((pr) =>
-    pr.description?.toLowerCase().includes(search.toLowerCase())
-  );
-}
+        if (!existing || newTime > oldTime) {
+          map[key] = {
+            ...pr,
+            items: [
+              ...(map[key]?.items || []),
+              ...(pr.items || []),
+            ],
+          };
+        }
+      }
+      let prsData = Object.values(map).sort((a: any, b: any) => b.id - a.id);
+      // ✅ SEARCH
+      if (search.trim()) {
+        prsData = prsData.filter((pr) =>
+          pr.description?.toLowerCase().includes(search.toLowerCase())
+        );
+      }
 
-// ✅ FILTER
-prsData = prsData.filter((pr) => {
-  const latestStatus = getLatestStatus(pr);
+      // ✅ FILTER
+      prsData = prsData.filter((pr) => {
+        const latestStatus = getLatestStatus(pr);
 
-  if (filter === "Pending") {
-    return latestStatus.includes("PENDING");
-  }
+        if (filter === "Pending") {
+          return latestStatus.includes("PENDING");
+        }
 
-  if (filter === "Rejected") {
-    return latestStatus.includes("REJECTED");
-  }
+        if (filter === "Rejected") {
+          return latestStatus.includes("REJECTED");
+        }
 
-  if (filter === "Completed") {
-    const paymentStage =
-      pr.finance_payment_details?.payment_stage?.toLowerCase();
+        if (filter === "Completed") {
+          const paymentStage =
+            pr.finance_payment_details?.payment_stage?.toLowerCase();
 
-    const quantityStatus =
-      pr.store_receiving_details?.quantity_status?.toUpperCase();
+          const quantityStatus =
+            pr.store_receiving_details?.quantity_status?.toUpperCase();
 
-    if (!paymentStage || !quantityStatus) return false;
+          if (!paymentStage || !quantityStatus) return false;
 
-    return paymentStage === "final" && quantityStatus === "FULL";
-  }
+          return paymentStage === "final" && quantityStatus === "FULL";
+        }
 
-  return true;
-});
+        return true;
+      });
 
       setPrs(prsData);
     } catch (err) {
@@ -533,7 +533,7 @@ prsData = prsData.filter((pr) => {
       setTimeout(() => setAlert(null), 3000);
     }
   };
-   const formatDateForInput = (date: string) => {
+  const formatDateForInput = (date: string) => {
     if (!date) return "";
     return date.split("T")[0]; // ✅ NO timezone conversion
   };
@@ -587,9 +587,9 @@ prsData = prsData.filter((pr) => {
     );
   };
   const formatEnumText = (value?: string) => {
-  if (!value) return "";
-  return value.replace(/_/g, " ");
-};
+    if (!value) return "";
+    return value.replace(/_/g, " ");
+  };
   return (
     <>
       {alert && (
@@ -623,10 +623,10 @@ prsData = prsData.filter((pr) => {
                 <div className="flex justify-between"><span className="text-gray-400">Status</span><span className="font-medium text-gray-700">{status}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Department</span><span className="font-medium text-gray-700 truncate">{departmentMap[String(pr.department)] ?? pr.department}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Delivery Date</span><span className="font-medium text-gray-700">
-                    {pr.required_date
-                      ? new Date(pr.required_date).toLocaleDateString("en-US")
-                      : "-"}
-                  </span></div>
+                  {pr.required_date
+                    ? new Date(pr.required_date).toLocaleDateString("en-US")
+                    : "-"}
+                </span></div>
               </div>
 
               <div className="mt-3 flex gap-4">
@@ -707,25 +707,25 @@ prsData = prsData.filter((pr) => {
                 </div>
 
                 <div>
-  <div className="text-gray-900">Delivery Date</div>
+                  <div className="text-gray-900">Delivery Date</div>
 
-  <input
-    type="date"
-    value={
-      activePR.required_date
-        ? activePR.required_date.split("T")[0]
-        : ""
-    }
-    readOnly
-    onChange={(e) =>
-      setActivePR({
-        ...activePR,
-        required_date: e.target.value,
-      })
-    }
-    className="bg-white border rounded px-2 py-1 w-full"
-  />
-</div>
+                  <input
+                    type="date"
+                    value={
+                      activePR.required_date
+                        ? activePR.required_date.split("T")[0]
+                        : ""
+                    }
+                    readOnly
+                    onChange={(e) =>
+                      setActivePR({
+                        ...activePR,
+                        required_date: e.target.value,
+                      })
+                    }
+                    className="bg-white border rounded px-2 py-1 w-full"
+                  />
+                </div>
 
                 <div>
                   <div className="text-gray-900">Department</div>
@@ -1503,18 +1503,26 @@ prsData = prsData.filter((pr) => {
                   )}
 
                   {/* PO File */}
-                  {activePR.order_details.po_file_path && (
+                  {activePR.order_details?.po_file_path && (
                     <div>
-                      <label className="text-xs font-medium">PO File</label>
-                      <a
-                        href={`${import.meta.env.VITE_BACKEND_URL}/${activePR.order_details.po_file_path}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline"
-                      >
-                        {activePR.order_details.po_file_name ||
-                          "View PO File"}
-                      </a>
+                      <label className="text-xs font-medium block mb-1">
+                        PO File
+                      </label>
+
+                      <input
+                        type="text"
+                        readOnly
+                        value={
+                          activePR.order_details?.po_file_name || "View File"
+                        }
+                        onClick={() =>
+                          window.open(
+                            `${import.meta.env.VITE_BACKEND_URL}/${activePR.order_details?.po_file_path}`,
+                            "_blank"
+                          )
+                        }
+                        className="border border-black p-2 rounded w-full bg-white text-blue-600 underline cursor-pointer"
+                      />
                     </div>
                   )}
                 </div>

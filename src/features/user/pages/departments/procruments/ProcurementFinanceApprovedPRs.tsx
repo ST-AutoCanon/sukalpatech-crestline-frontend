@@ -800,26 +800,29 @@ export default function SubmittedFinanceRequestsPage() {
 
               {/* In-House Options */}
              {orderDetails.orderPlaced === "YES" &&
-  orderDetails.transportMode === "IN_HOUSE" && (
+  orderDetails.inHouseType === "IN_HOUSE" && (
     <div className="mt-4">
       <label className="block text-sm font-medium mb-1">
         Delivery Type
       </label>
       <select
         value={orderDetails.inHouseType || ""}
-        onChange={(e) =>
-          setOrderDetails((prev) => ({
-            ...prev,
-            inHouseType: e.target.value,
-            vendorAddress: "", // reset other field
-          }))
-        }
+        onChange={(e) => {
+  console.log("Delivery Type Selected:", e.target.value);
+
+  setOrderDetails((prev) => ({
+    ...prev,
+    inHouseType: e.target.value,
+    vendorAddress: "", // reset other field
+  }));
+}}
         className="border p-2 rounded w-full bg-white"
       >
         <option value="">Select Type</option>
         <option value="COURIER">Courier</option>
         <option value="TRANSPORT">Transportation</option>
       </select>
+      
     </div>
 )}
 

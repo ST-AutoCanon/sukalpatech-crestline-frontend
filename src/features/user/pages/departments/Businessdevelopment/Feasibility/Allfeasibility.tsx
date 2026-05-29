@@ -2,7 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { api } from "../../../../api/businessApi";
 import ALeart from "../../../../components/Aleartmessage";
 import { AuthContext } from "../../../../../../context/AuthContext";
-import WorkflowBuilder from "../Feasibility/workflow/WorkflowBuilder";
+import { useNavigate } from "react-router-dom";
+// import WorkflowBuilder from "../Feasibility/workflow/WorkflowBuilder";
 
 interface FeasibilityCardProps {
   data: any;
@@ -38,23 +39,23 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   const [finalStatus, setfinalStatus] = useState("");
   const [finalComments, setfinalComments] = useState("");
 
-   const [workflow, setWorkflow] = useState([]);
+  //  const [workflow, setWorkflow] = useState([]);
   const [projectId, setProjectId] = useState<number | null>(null);
 
- const renderValue = (value: any) => {
-  if (value === null || value === undefined || value === "") return "-";
+  const renderValue = (value: any) => {
+    if (value === null || value === undefined || value === "") return "-";
 
-  if (typeof value === "boolean") {
-    return value ? "Yes" : "No";
-  }
+    if (typeof value === "boolean") {
+      return value ? "Yes" : "No";
+    }
 
-  // ✅ FIX: prevent object rendering crash
-  if (typeof value === "object") {
-    return JSON.stringify(value); // OR return "-"
-  }
+    // ✅ FIX: prevent object rendering crash
+    if (typeof value === "object") {
+      return JSON.stringify(value); // OR return "-"
+    }
 
-  return value;
-};
+    return value;
+  };
 
   const mainFields = [
     { label: "Description", key: "description" },
@@ -100,9 +101,10 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
 
     return `${month}/${day}/${year}`; // MM/DD/YYYY
   };
-    const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-      // ================= FETCH PROJECT FROM BD =================
+  // ================= FETCH PROJECT FROM BD =================
   useEffect(() => {
     const fetchProject = async () => {
       console.log("🚀 Fetching project for BD ID:", data?.id);
@@ -134,132 +136,150 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
     }
   }, [data]);
 
-    // ================= FETCH WORKFLOW =================
-  useEffect(() => {
-    if (!projectId) {
-      console.log("⛔ No projectId, skipping workflow fetch");
-      return;
-    }
+  // ================= FETCH WORKFLOW =================
+  // useEffect(() => {
+  //   if (!projectId) {
+  //     console.log("⛔ No projectId, skipping workflow fetch");
+  //     return;
+  //   }
 
-    const fetchWorkflow = async () => {
-      console.log("🚀 Fetching workflow for projectId:", projectId);
+  //   const fetchWorkflow = async () => {
+  //     console.log("🚀 Fetching workflow for projectId:", projectId);
 
-      try {
-        const res = await api.get(`/project/${projectId}/workflow`, {
-          withCredentials: true,
-        });
+  //     try {
+  //       const res = await api.get(`/project/${projectId}/workflow`, {
+  //         withCredentials: true,
+  //       });
 
-        console.log("✅ WORKFLOW RESPONSE:", res.data);
+  //       console.log("✅ WORKFLOW RESPONSE:", res.data);
 
-        const formatted = res.data.data
-          .sort((a: any, b: any) => a.sequence - b.sequence)
-          .map((item: any) => ({
-            id: item.id.toString(),
-            department: item.department,
-          }));
+  //       const formatted = res.data.data
+  //         .sort((a: any, b: any) => a.sequence - b.sequence)
+  //         .map((item: any) => ({
+  //           id: item.id.toString(),
+  //           department: item.department,
+  //         }));
 
-        console.log("🎯 FORMATTED WORKFLOW:", formatted);
+  //       console.log("🎯 FORMATTED WORKFLOW:", formatted);
 
-        setWorkflow(formatted);
-      } catch (err: any) {
-        console.error("❌ ERROR FETCHING WORKFLOW:", err?.response || err);
-      }
-    };
+  //       setWorkflow(formatted);
+  //     } catch (err: any) {
+  //       console.error("❌ ERROR FETCHING WORKFLOW:", err?.response || err);
+  //     }
+  //   };
 
-    fetchWorkflow();
-  }, [projectId]);
+  //   fetchWorkflow();
+  // }, [projectId]);
 
-  const handleAssignProject = async () => {
-    try {
-      console.log("🚀 Assigning project for BD:", data.id);
+  // const handleAssignProject = async () => {
+  //   try {
+  //     // already assigned
+  //     if (projectId) {
+  //       setAlert({
+  //         type: "success",
+  //         message: "Project already assigned successfully!",
+  //       });
 
-      const res = await api.post(
-        "/project/assign",
-        {
-          bd_request_id: data.id,
-          description: data.description,
-          required_date: data.required_date,
-          assigned_by: user.first_name,
-        },
-        { withCredentials: true },
-      );
+  //       return;
+  //     }
 
-      console.log("✅ PROJECT CREATED:", res.data);
+  //     const res = await api.post(
+  //       "/project-manager/projects/assign",
+  //       {
+  //         bd_request_id: data.id,
+  //         description: data.description,
+  //         required_date: data.required_date,
+  //         assigned_by: user.first_name,
+  //         current_department: "PROJECT_MANAGER",
+  //       },
+  //       { withCredentials: true }
+  //     );
 
-      const createdProject = res.data.data;
+  //     console.log("✅ ASSIGN RESPONSE:", res.data);
 
-      setProjectId(createdProject.id);
+  //     const createdProject = res.data.data;
 
-      setAlert({
-        type: "success",
-        message: "Project assigned successfully!",
-      });
-    } catch (err: any) {
-      console.error("❌ ASSIGN PROJECT ERROR:", err?.response || err);
+  //     setProjectId(createdProject.id);
 
-      setAlert({
-        type: "error",
-        message: err.response?.data?.message || "Assignment failed",
-      });
-    }
-  };
- const handleSaveWorkflow = async () => {
-  // 🚨 CHECK 1: project must exist
-  if (!projectId) {
-    setAlert({
-      type: "error",
-      message: "Please assign project first!",
-    });
-    return;
-  }
+  //     // ✅ SHOW SUCCESS ALERT
+  //     setAlert({
+  //       type: "success",
+  //       message: "Project assigned successfully!",
+  //     });
 
-  // 🚨 CHECK 2: workflow must not be empty
-  if (!workflow || workflow.length === 0) {
-    setAlert({
-      type: "error",
-      message: "Please select at least one department!",
-    });
-    return;
-  }
+  //     // ✅ refresh parent page data
+  //     onUpdate(createdProject);
 
-  // 🚨 CHECK 3 (optional but BEST): no empty departments
-  const hasEmptyDept = workflow.some(
-    (item: any) => !item.department || item.department.trim() === ""
-  );
+  //     // ❌ REMOVE NAVIGATE
+  //     // navigate("/manager/project-manager", { replace: true });
 
-  if (hasEmptyDept) {
-    setAlert({
-      type: "error",
-      message: "Please select department for all steps!",
-    });
-    return;
-  }
+  //   } catch (err: any) {
+  //     console.error("❌ ASSIGN ERROR:", err);
 
-  try {
-    await api.put(
-      `/project/${projectId}/workflow`,
-      {
-        workflow: workflow.map((item, index) => ({
-          department: item.department,
-          sequence: index + 1,
-        })),
-      },
-      { withCredentials: true }
-    );
+  //     setAlert({
+  //       type: "error",
+  //       message:
+  //         err.response?.data?.message || "Assignment failed",
+  //     });
+  //   }
+  // };
+  //  const handleSaveWorkflow = async () => {
+  //   // 🚨 CHECK 1: project must exist
+  //   if (!projectId) {
+  //     setAlert({
+  //       type: "error",
+  //       message: "Please assign project first!",
+  //     });
+  //     return;
+  //   }
 
-    setAlert({
-      type: "success",
-      message: "Workflow saved successfully!",
-    });
-  } catch (err: any) {
-    console.error(err);
+  //   // 🚨 CHECK 2: workflow must not be empty
+  //   if (!workflow || workflow.length === 0) {
+  //     setAlert({
+  //       type: "error",
+  //       message: "Please select at least one department!",
+  //     });
+  //     return;
+  //   }
 
-    setAlert({
-      type: "error",
-      message: err.response?.data?.message || "Failed to save workflow",
-    });
-  }
-};
+  //   // 🚨 CHECK 3 (optional but BEST): no empty departments
+  //   const hasEmptyDept = workflow.some(
+  //     (item: any) => !item.department || item.department.trim() === ""
+  //   );
+
+  //   if (hasEmptyDept) {
+  //     setAlert({
+  //       type: "error",
+  //       message: "Please select department for all steps!",
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     await api.put(
+  //       `/project/${projectId}/workflow`,
+  //       {
+  //         workflow: workflow.map((item, index) => ({
+  //           department: item.department,
+  //           sequence: index + 1,
+  //         })),
+  //       },
+  //       { withCredentials: true }
+  //     );
+
+  //     setAlert({
+  //       type: "success",
+  //       message: "Workflow saved successfully!",
+  //     });
+  //   } catch (err: any) {
+  //     console.error(err);
+
+  //     setAlert({
+  //       type: "error",
+  //       message: err.response?.data?.message || "Failed to save workflow",
+  //     });
+  //   }
+  // };
 
   // Handle Feasibility update
   const handleFeasibilityUpdate = async () => {
@@ -337,24 +357,89 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
   //   }
   // };
 
-  const handleBdUpdate = async () => {
+  // const handleBdUpdate = async () => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const res = await api.patch(
+  //       `/business-development/${data.id}/bd-update`,
+  //       {
+  //         bd_status: finalStatus,
+  //         bd_comments: finalComments,
+  //       },
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` }, // ✅ send token
+  //       }
+  //     );
+  //     onUpdate(res.data.data);
+
+  //     setAlert({
+  //       type: "success",
+  //       message: "Business development updated successfully!",
+  //     });
+
+  //     setTimeout(() => {
+  //       setAlert(null);
+  //       setShowModal(false);
+  //     }, 1500);
+
+  //   } catch (err) {
+  //     console.error("Failed to update BD info", err);
+
+  //     setAlert({
+  //       type: "error",
+  //       message: "Failed to update BD info",
+  //     });
+
+  //     setTimeout(() => setAlert(null), 3000);
+  //   }
+  // };
+
+  const handleBdUpdateAndAssign = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await api.patch(
+
+      // 1️⃣ Update BD
+      const bdRes = await api.patch(
         `/business-development/${data.id}/bd-update`,
         {
           bd_status: finalStatus,
           bd_comments: finalComments,
         },
         {
-          headers: { Authorization: `Bearer ${token}` }, // ✅ send token
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
-      onUpdate(res.data.data);
 
+      // update parent state
+      onUpdate(bdRes.data.data);
+
+      // 2️⃣ Assign project IF not already assigned
+      if (!projectId) {
+        const assignRes = await api.post(
+          "/project-manager/projects/assign",
+          {
+            bd_request_id: data.id,
+            description: data.description,
+            required_date: data.required_date,
+            assigned_by: user.first_name,
+            current_department: "PROJECT_MANAGER",
+          },
+          {
+            withCredentials: true,
+          }
+        );
+
+        console.log("✅ PROJECT ASSIGNED:", assignRes.data);
+
+        setProjectId(assignRes.data.data.id);
+      }
+
+      // ✅ Success alert
       setAlert({
         type: "success",
-        message: "Business development updated successfully!",
+        message: "Business development updated and assigned successfully!",
       });
 
       setTimeout(() => {
@@ -362,12 +447,14 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
         setShowModal(false);
       }, 1500);
 
-    } catch (err) {
-      console.error("Failed to update BD info", err);
+    } catch (err: any) {
+      console.error(err);
 
       setAlert({
         type: "error",
-        message: "Failed to update BD info",
+        message:
+          err.response?.data?.message ||
+          "Failed to update and assign project",
       });
 
       setTimeout(() => setAlert(null), 3000);
@@ -414,25 +501,19 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
     );
   };
   const INPUT_CLASS =
-  "w-full h-[42px] px-3 border rounded text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-400";
+    "w-full h-[42px] px-3 border rounded text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-400";
 
 
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 text-sm relative">
-      {alert && (
-        <ALeart
-          type={alert.type}
-          message={alert.message}
-          onClose={() => setAlert(null)}
-        />
-      )}
+
       <h2 className="text-purple-600 font-semibold text-sm mb-2 truncate">
         BR ID: {data.id || data.id}
       </h2>
 
       <div className="flex flex-col gap-0.5">
-       {mainFields.map((item) => (
+        {mainFields.map((item) => (
           <div key={item.key} className="flex justify-between items-center">
             <span className="text-gray-400 font-medium shrink-0 w-32 truncate">{item.label}</span>
             <span className="font-medium text-gray-700 text-sm text-right truncate w-2/3">
@@ -467,6 +548,16 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
         flex flex-col gap-6
       "
           >
+
+            {alert && (
+              <div className="sticky top-0 z-50 mb-3">
+                <ALeart
+                  type={alert.type}
+                  message={alert.message}
+                  onClose={() => setAlert(null)}
+                />
+              </div>
+            )}
             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium mb-4">
               BR-{data.id} Info
             </h2>
@@ -681,68 +772,68 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                 ],
               },
               {
-  title: "Attachments",
-  fields: [
-    {
-      label: "Attachments",
-      value: (
-        <div className="flex flex-col gap-2">
-          {Array.isArray(data.attachments) && data.attachments.length > 0 ? (
-            <div className="flex flex-col gap-1">
-              {data.attachments.map((file: any, idx: number) => {
-                const fileName =
-                  typeof file === "string"
-                    ? file.split("/").pop()
-                    : file.originalname ||
-                      file.filename ||
-                      file.name ||
-                      "Attachment";
+                title: "Attachments",
+                fields: [
+                  {
+                    label: "Attachments",
+                    value: (
+                      <div className="flex flex-col gap-2">
+                        {Array.isArray(data.attachments) && data.attachments.length > 0 ? (
+                          <div className="flex flex-col gap-1">
+                            {data.attachments.map((file: any, idx: number) => {
+                              const fileName =
+                                typeof file === "string"
+                                  ? file.split("/").pop()
+                                  : file.originalname ||
+                                  file.filename ||
+                                  file.name ||
+                                  "Attachment";
 
-                return (
-                  <span
-                    key={idx}
-                    className="text-xs text-blue-600 underline cursor-pointer"
-                    onClick={() => {
-                      let url = "";
+                              return (
+                                <span
+                                  key={idx}
+                                  className="text-xs text-blue-600 underline cursor-pointer"
+                                  onClick={() => {
+                                    let url = "";
 
-                      // backend file path
-                      if (file.file_path) {
-                        url = `${import.meta.env.VITE_BACKEND_URL}${file.file_path}`;
-                      }
+                                    // backend file path
+                                    if (file.file_path) {
+                                      url = `${import.meta.env.VITE_BACKEND_URL}${file.file_path}`;
+                                    }
 
-                      // fallback filename
-                      else if (file.filename) {
-                        url = `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${file.filename}`;
-                      }
+                                    // fallback filename
+                                    else if (file.filename) {
+                                      url = `${import.meta.env.VITE_BACKEND_URL}/uploads/attachments/${file.filename}`;
+                                    }
 
-                      // string case
-                      else if (typeof file === "string") {
-                        url = file;
-                      }
+                                    // string case
+                                    else if (typeof file === "string") {
+                                      url = file;
+                                    }
 
-                      if (!url) {
-                        console.error("Invalid file URL", file);
-                        return;
-                      }
+                                    if (!url) {
+                                      console.error("Invalid file URL", file);
+                                      return;
+                                    }
 
-                      window.open(url, "_blank");
-                    }}
-                  >
-                    {fileName}
-                  </span>
-                );
-              })}
-            </div>
-          ) : (
-            <span className="text-xs text-gray-500">
-              No file uploaded
-            </span>
-          )}
-        </div>
-      ),
-    },
-  ],
-},
+                                    window.open(url, "_blank");
+                                  }}
+                                >
+                                  {fileName}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-500">
+                            No file uploaded
+                          </span>
+                        )}
+                      </div>
+                    ),
+                  },
+                ],
+              },
 
               {
                 title: "Declaration",
@@ -820,13 +911,13 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                       <span className="text-gray-600 text-xs font-medium">
                         {f.label}
                       </span>
-                     <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">
-  {React.isValidElement(f.value)
-    ? f.value
-    : typeof f.value === "object"
-      ? "-"
-      : renderValue(f.value)}
-</span>
+                      <span className="bg-white border rounded px-2 py-1 text-xs font-semibold text-black">
+                        {React.isValidElement(f.value)
+                          ? f.value
+                          : typeof f.value === "object"
+                            ? "-"
+                            : renderValue(f.value)}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -844,6 +935,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                     {/* BD Status */}
                     <div className="flex flex-col gap-1">
                       <span className="text-gray-600 text-xs">BD Status</span>
+
                       <select
                         value={finalStatus}
                         onChange={(e) => setfinalStatus(e.target.value)}
@@ -859,6 +951,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                     {/* BD Comments */}
                     <div className="flex flex-col gap-1">
                       <span className="text-gray-600 text-xs">BD Comments</span>
+
                       <textarea
                         value={finalComments}
                         onChange={(e) => setfinalComments(e.target.value)}
@@ -869,54 +962,19 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                   </div>
                 </div>
 
-                {/* BUTTON: OUTSIDE GRAY BOX, RIGHT END */}
+                {/* SINGLE BUTTON */}
                 <div className="flex justify-end mt-4">
                   <button
-                    onClick={handleBdUpdate}
+                    onClick={handleBdUpdateAndAssign}
                     className="bg-purple-700 text-white px-5 py-2 rounded text-sm sm:text-base"
                   >
-                    Update Business Development
+                    Update & Assign To Project Manager
                   </button>
                 </div>
               </>
             )}
-            {mode === "bd-update" && (
-              <>
-                {/* ================= WORKFLOW BUILDER ================= */}
-                {/* ASSIGN PROJECT FIRST */}
-                <div className="flex justify-end mt-2">
-                  <button
-                    onClick={handleAssignProject}
-                    className="bg-green-600 text-white px-4 py-2 rounded text-sm sm:text-base"
-                  >
-                    Assign Project
-                  </button>
-                </div>
 
-                {/* WORKFLOW BUILDER */}
-                <div className="bg-white rounded-xl p-4 shadow mt-4">
-                  <h3 className="text-sm font-semibold mb-2">
-                    Project Workflow Sequence
-                  </h3>
 
-                  <WorkflowBuilder workflow={workflow} onChange={setWorkflow} />
-
-                  <div className="flex justify-end mt-3">
-                    <button
-                      onClick={handleSaveWorkflow}
-                      disabled={!projectId}
-                      className={`px-4 py-2 rounded text-sm text-white ${
-                        projectId
-                          ? "bg-blue-600"
-                          : "bg-gray-400 cursor-not-allowed"
-                      }`}
-                    >
-                      Save Workflow
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
             {/* Close Button */}
             <button
               onClick={() => setShowModal(false)}

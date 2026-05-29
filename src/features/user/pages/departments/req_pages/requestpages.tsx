@@ -1850,18 +1850,26 @@ useEffect(() => {
                   )}
 
                   {/* PO File */}
-                  {activePR.order_details.po_file_path && (
+                  {activePR.order_details?.po_file_path && (
                     <div>
-                      <label className="text-xs font-medium">PO File</label>
-                      <a
-                        href={`${import.meta.env.VITE_BACKEND_URL}/${activePR.order_details.po_file_path}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline"
-                      >
-                        {activePR.order_details.po_file_name ||
-                          "View PO File"}
-                      </a>
+                      <label className="text-xs font-medium block mb-1">
+                        PO File
+                      </label>
+
+                      <input
+                        type="text"
+                        readOnly
+                        value={
+                          activePR.order_details?.po_file_name || "View File"
+                        }
+                        onClick={() =>
+                          window.open(
+                            `${import.meta.env.VITE_BACKEND_URL}/${activePR.order_details?.po_file_path}`,
+                            "_blank"
+                          )
+                        }
+                        className="border border-black p-2 rounded w-full bg-white text-blue-600 underline cursor-pointer"
+                      />
                     </div>
                   )}
                 </div>
