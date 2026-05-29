@@ -21,6 +21,7 @@ import FoodBusinessHome from "./features/user/pages/departments/FoodBusiness/Foo
 import GoldBusinessHome from "./features/user/pages/departments/gold_business/goldbusinessHome";
 
 
+
 import ManagerDashboard from "./features/manager/pages/ManagerDashboard";
 import ManagerDashboardHome from "./features/manager/pages/ManagerHome";
 import EngineeringDesignPage from "./features/manager/pages/engineeringDesign/EngineeringDesignHome";
@@ -32,6 +33,11 @@ import InteriorFitmentPage from "./features/manager/pages/InteriorFitment/Interi
 import GlassDoorsPage from "./features/manager/pages/glass&doors/glass&doorsHome";
 import FinalDispatchPage from "./features/manager/pages/finaldispatch/finaldispatchHome";
 import FinalAssemblyDispatchPage from "./features/manager/pages/finalassembly&dispatch/finalassemblyHome";
+
+import ProjectManagerDashboard from "./features/ProjectManager/ProjectManagerDashboard";
+import ProjectManagerPage from "./features/ProjectManager/Pages/ProjectManagerPage";
+import ProjectManagerHome from "./features/ProjectManager/pages/ProjectManagerHome";
+
 
 
 import UpdatedFeasibilityPage from "./features/user/pages/departments/Businessdevelopment/Feasibility/UpdatedFeasibilitypage";
@@ -112,6 +118,7 @@ export default function AppRoutes() {
       >
         <Route index element={<EmployeeDashboardHome />} />
         <Route path="dashboard" element={<EmployeeDashboardHome />} />
+        
 
         {Object.entries(componentMap).map(([key, Component]) => (
           <Route
@@ -182,6 +189,8 @@ export default function AppRoutes() {
       >
         <Route index element={<ManagerDashboardHome />} />
         <Route path="dashboard" element={<ManagerDashboardHome />} />
+
+        <Route path="project-manager" element={<ProjectManagerPage />} />
        <Route
           path="engineering-design/:bdId"
           element={<EngineeringDesignPage />}
@@ -201,6 +210,31 @@ export default function AppRoutes() {
         <Route path="final-assembly-dispatch/:bdId" element={<FinalAssemblyDispatchPage/>} />
 
       </Route>
+      {/* Project Manager Routes */}
+{/* Project Manager Routes */}
+<Route
+  path="/project_manager"
+  element={
+    <RequireAuth roles={["project_manager"]}>
+      <ProjectManagerDashboard />
+    </RequireAuth>
+  }
+>
+  <Route
+    index
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="dashboard"
+    element={<ProjectManagerHome />}
+  />
+
+  <Route
+    path="projects"
+    element={<ProjectManagerPage />}
+  />
+</Route>
 
       {/* Admin Routes */}
       <Route

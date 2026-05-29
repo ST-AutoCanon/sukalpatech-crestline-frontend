@@ -507,9 +507,17 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
                             !vendor.status.toLowerCase().includes("rejected")
                         )
                         .map((vendor, vi) => {
+                          console.log("COMMENTS", vendor.comments);
+
                           // Find the latest feasibility comment (commented_by = 2)
+                          // PR Comment
+                          const prComment =
+                            vendor.comments?.[0]?.comment || "";
+
                           const feasibilityComment =
-                            vendor.comments?.[vendor.comments.length - 1]?.comment || "";
+                            vendor.comments?.length && vendor.comments.length > 1
+                              ? vendor.comments[vendor.comments.length - 1]?.comment
+                              : "";
 
 
                           return (
@@ -590,11 +598,12 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
                               />
 
                               {/* 6️⃣ Comments (PR Comment) */}
-                              <input
-                                readOnly
-                                value={vendor.comments?.[0]?.comment || ""}
-                                className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
-                              />
+                               <input
+          readOnly
+          value={prComment}
+          className="border rounded px-1 py-1 bg-white text-xs sm:text-sm"
+        />
+
 
                               {/* 7️⃣ Feasibility Comment */}
                               <input
@@ -763,7 +772,7 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
                       <label className="text-xs font-medium">Delivery Type</label>
                       <input
                         readOnly
-                        value={formatEnumText(selectedPR.order_details.transport_mode || "")}
+                        value={formatEnumText(selectedPR.order_details.in_house_type || "")}
                         className="border p-2 rounded w-full bg-white"
                       />
                     </div>
@@ -782,18 +791,26 @@ export default function SubmittedFinanceRequestsPage({ status }: Props) {
                   )}
 
                   {/* PO File */}
-                  {selectedPR.order_details.po_file_path && (
+                  {selectedPR.order_details?.po_file_path && (
                     <div>
-                      <label className="text-xs font-medium">PO File</label>
-                      <a
-                        href={`${import.meta.env.VITE_BACKEND_URL}/${selectedPR.order_details.po_file_path}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline"
-                      >
-                        {selectedPR.order_details.po_file_name ||
-                          "View PO File"}
-                      </a>
+                      <label className="text-xs font-medium block mb-1">
+                        PO File
+                      </label>
+
+                      <input
+                        type="text"
+                        readOnly
+                        value={
+                          selectedPR.order_details?.po_file_name || "View File"
+                        }
+                        onClick={() =>
+                          window.open(
+                            `${import.meta.env.VITE_BACKEND_URL}/${selectedPR.order_details?.po_file_path}`,
+                            "_blank"
+                          )
+                        }
+                        className="border border-black p-2 rounded w-full bg-white text-blue-600 underline cursor-pointer"
+                      />
                     </div>
                   )}
                 </div>
