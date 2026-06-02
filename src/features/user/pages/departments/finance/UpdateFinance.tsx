@@ -664,7 +664,7 @@ setUpdateData({
 
             <div className="flex-1 space-y-1 sm:space-y-2 text-sm">
               {[
-                ["Department", departmentMap[pr.department] || pr.department || "-"],
+                 ["Department", departmentMap[pr.department] || pr.department || "-"],
                 ["Priority", pr.priority],
                 [
                   "Required",
@@ -719,7 +719,7 @@ setUpdateData({
                       ? new Date(selectedPR.required_date).toLocaleDateString("en-US")
                       : "-",
                   ],
-                  ["Department", departmentMap[String(selectedPR.department)] || "-"],
+                 ["Department", selectedPR.department],
                   ["Remarks", selectedPR.remarks],
                 ].map(([label, value], i) => (
                   <div key={i}>

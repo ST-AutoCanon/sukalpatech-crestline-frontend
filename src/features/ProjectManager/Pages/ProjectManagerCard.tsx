@@ -188,12 +188,15 @@ import { AuthContext } from "../../../context/AuthContext";
 interface Props {
   data: any;
   onUpdate: () => void;
+   isUpdateMode?: boolean;
 }
 
-const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate }) => {
+const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate,isUpdateMode }) => {
   const [workflow, setWorkflow] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [projectId, setProjectId] = useState<number | null>(null);
+  const [selectedManager, setSelectedManager] = useState("");
+  
 
   const { user }: any = useContext(AuthContext);
 
@@ -201,172 +204,212 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate }) => {
     type: "success" | "error";
     message: string;
   } | null>(null);
-
-  // ================= FETCH WORKFLOW =================
-  useEffect(() => {
-    if (!data?.id) return;
-
-    const fetchWorkflow = async () => {
-      try {
-        const res = await api.get(`/project/${data.id}/workflow`, {
-          withCredentials: true,
-        });
-
-        const formatted = (res.data.data || []).map((item: any) => ({
-          id: item.id?.toString(),
-          department: item.department,
-        }));
-
-        setWorkflow(formatted);
-
-        // existing project id if available
-        if (res.data.project_id) {
-          setProjectId(res.data.project_id);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchWorkflow();
-  }, [data]);
-
-  // ================= ASSIGN PROJECT =================
-  const handleAssignProject = async () => {
-    try {
-      console.log("🚀 Assigning project for BD:", data.id);
-
-      const res = await api.post(
-        "/project/assign",
-        {
-          bd_request_id: data.id,
-          description: data.description,
-          required_date: data.required_date,
-          assigned_by: user.first_name,
-        },
-        { withCredentials: true }
-      );
-
-      console.log("✅ PROJECT CREATED:", res.data);
-
-      const createdProject = res.data.data;
-
-      setProjectId(createdProject.id);
-
-      return createdProject.id;
-
-    } catch (err: any) {
-      console.error("❌ ASSIGN PROJECT ERROR:", err?.response || err);
-
-      // ================= PROJECT ALREADY EXISTS =================
-      if (
-        err.response?.data?.message === "Project already exists"
-      ) {
-        try {
-          // fetch existing project id
-          const existingRes = await api.get(
-            `/project/by-bd/${data.id}`,
-            { withCredentials: true }
-          );
-
-          const existingProject = existingRes.data.data;
-
-          console.log("✅ EXISTING PROJECT:", existingProject);
-
-          setProjectId(existingProject.id);
-
-          setAlert({
-            type: "success",
-            message: "Project already assigned",
-          });
-
-          return existingProject.id;
-
-        } catch (fetchErr) {
-          console.error(fetchErr);
-
-          throw new Error(
-            "Project exists but failed to fetch details"
-          );
-        }
-      }
-
-      throw new Error(
-        err.response?.data?.message || "Assignment failed"
-      );
-    }
-  };
-  // ================= SAVE WORKFLOW =================
-  const handleSaveWorkflow = async () => {
-    try {
-      if (workflow.length === 0) {
-        setAlert({
-          type: "error",
-          message: "Please add departments",
-        });
-        return;
-      }
-
-      let currentProjectId = projectId;
-
-      // STEP 1 → Assign Project First
-      if (!currentProjectId) {
-        currentProjectId = await handleAssignProject();
-      }
-
-      // STEP 2 → Save Workflow
-      await api.put(
-        `/project/${currentProjectId}/workflow`,
-        {
-          workflow: workflow.map((item, index) => ({
-            department: item.department,
-            sequence: index + 1,
-          })),
-        },
-        { withCredentials: true }
-      );
-
-      // STEP 3 → Update Status
-      await api.post(
-        "/project/status",
-        {
-          project_management_id: currentProjectId,
-          department: "PROJECT_MANAGER",
-          status: "APPROVED",
-          comments: "Workflow created",
-        },
-        { withCredentials: true }
-      );
-
-      // ✅ SHOW ALERT
-      // ✅ SHOW SUCCESS ALERT
-      setAlert({
-        type: "success",
-        message: "Workflow saved successfully!",
-      });
-
-      // ✅ KEEP ALERT VISIBLE
-      setTimeout(() => {
-        setShowModal(false);
-      }, 2000);
-
-      // ✅ REFRESH AFTER MODAL CLOSES
-      setTimeout(() => {
-        setAlert(null);
-        onUpdate();
-      }, 2500);
-    } catch (err: any) {
-      console.error(err);
-
+  const handleAssignManager = async () => {
+  try {
+    if (!selectedManager) {
       setAlert({
         type: "error",
-        message:
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to save workflow",
+        message: "Please select project manager",
       });
+
+      return;
     }
-  };
+
+  await api.put(
+  `/project-manager/projects/${data.id}/assign-manager`,
+  {
+    assigned_project_manager: selectedManager.toLowerCase(),
+  },
+  { withCredentials: true }
+);
+
+    setAlert({
+      type: "success",
+      message: `Assigned to ${selectedManager}`,
+    });
+
+    setTimeout(() => {
+      setShowModal(false);
+      onUpdate();
+    }, 1500);
+
+  } catch (err: any) {
+    console.error(err);
+
+    setAlert({
+      type: "error",
+      message:
+        err.response?.data?.message ||
+        "Failed to assign manager",
+    });
+  }
+};
+
+  // ================= FETCH WORKFLOW =================
+  // useEffect(() => {
+  //   if (!data?.id) return;
+
+  //   const fetchWorkflow = async () => {
+  //     try {
+  //       const res = await api.get(`/project/${data.id}/workflow`, {
+  //         withCredentials: true,
+  //       });
+
+  //       const formatted = (res.data.data || []).map((item: any) => ({
+  //         id: item.id?.toString(),
+  //         department: item.department,
+  //       }));
+
+  //       setWorkflow(formatted);
+
+  //       // existing project id if available
+  //       if (res.data.project_id) {
+  //         setProjectId(res.data.project_id);
+  //       }
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   };
+
+  //   fetchWorkflow();
+  // }, [data]);
+
+  // ================= ASSIGN PROJECT =================
+  // const handleAssignProject = async () => {
+  //   try {
+  //     console.log("🚀 Assigning project for BD:", data.id);
+
+  //     const res = await api.post(
+  //       "/project/assign",
+  //       {
+  //         bd_request_id: data.id,
+  //         description: data.description,
+  //         required_date: data.required_date,
+  //         assigned_by: user.first_name,
+  //       },
+  //       { withCredentials: true }
+  //     );
+
+  //     console.log("✅ PROJECT CREATED:", res.data);
+
+  //     const createdProject = res.data.data;
+
+  //     setProjectId(createdProject.id);
+
+  //     return createdProject.id;
+
+  //   } catch (err: any) {
+  //     console.error("❌ ASSIGN PROJECT ERROR:", err?.response || err);
+
+  //     // ================= PROJECT ALREADY EXISTS =================
+  //     if (
+  //       err.response?.data?.message === "Project already exists"
+  //     ) {
+  //       try {
+  //         // fetch existing project id
+  //         const existingRes = await api.get(
+  //           `/project/by-bd/${data.id}`,
+  //           { withCredentials: true }
+  //         );
+
+  //         const existingProject = existingRes.data.data;
+
+  //         console.log("✅ EXISTING PROJECT:", existingProject);
+
+  //         setProjectId(existingProject.id);
+
+  //         setAlert({
+  //           type: "success",
+  //           message: "Project already assigned",
+  //         });
+
+  //         return existingProject.id;
+
+  //       } catch (fetchErr) {
+  //         console.error(fetchErr);
+
+  //         throw new Error(
+  //           "Project exists but failed to fetch details"
+  //         );
+  //       }
+  //     }
+
+  //     throw new Error(
+  //       err.response?.data?.message || "Assignment failed"
+  //     );
+  //   }
+  // };
+  // // ================= SAVE WORKFLOW =================
+  // const handleSaveWorkflow = async () => {
+  //   try {
+  //     if (workflow.length === 0) {
+  //       setAlert({
+  //         type: "error",
+  //         message: "Please add departments",
+  //       });
+  //       return;
+  //     }
+
+  //     let currentProjectId = projectId;
+
+  //     // STEP 1 → Assign Project First
+  //     if (!currentProjectId) {
+  //       currentProjectId = await handleAssignProject();
+  //     }
+
+  //     // STEP 2 → Save Workflow
+  //     await api.put(
+  //       `/project/${currentProjectId}/workflow`,
+  //       {
+  //         workflow: workflow.map((item, index) => ({
+  //           department: item.department,
+  //           sequence: index + 1,
+  //         })),
+  //       },
+  //       { withCredentials: true }
+  //     );
+
+  //     // STEP 3 → Update Status
+  //     await api.post(
+  //       "/project/status",
+  //       {
+  //         project_management_id: currentProjectId,
+  //         department: "PROJECT_MANAGER",
+  //         status: "APPROVED",
+  //         comments: "Workflow created",
+  //       },
+  //       { withCredentials: true }
+  //     );
+
+  //     // ✅ SHOW ALERT
+  //     // ✅ SHOW SUCCESS ALERT
+  //     setAlert({
+  //       type: "success",
+  //       message: "Workflow saved successfully!",
+  //     });
+
+  //     // ✅ KEEP ALERT VISIBLE
+  //     setTimeout(() => {
+  //       setShowModal(false);
+  //     }, 2000);
+
+  //     // ✅ REFRESH AFTER MODAL CLOSES
+  //     setTimeout(() => {
+  //       setAlert(null);
+  //       onUpdate();
+  //     }, 2500);
+  //   } catch (err: any) {
+  //     console.error(err);
+
+  //     setAlert({
+  //       type: "error",
+  //       message:
+  //         err.response?.data?.message ||
+  //         err.message ||
+  //         "Failed to save workflow",
+  //     });
+  //   }
+  // };
 
   return (
     <>
@@ -551,13 +594,18 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate }) => {
                   </label>
 
                   <input
-                    readOnly
-                    value={projectId ? "Assigned" : "Pending"}
-                    className={`border p-2 rounded w-full text-sm font-medium ${projectId
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                      }`}
-                  />
+  readOnly
+ value={
+  data.assigned_project_manager
+    ? "Assigned"
+    : "Pending"
+}
+  className={`border p-2 rounded w-full text-sm font-medium ${
+  data.assigned_project_manager
+    ? "bg-green-100 text-green-700"
+    : "bg-yellow-100 text-yellow-700"
+}`}
+/>
                 </div>
 
                 <div className="sm:col-span-2">
@@ -576,36 +624,35 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate }) => {
             </div>
 
             {/* ================= ASSIGN BUTTON ================= */}
-            {!projectId && (
-              <div className="flex justify-end mt-6">
-                <button
-                  onClick={async () => {
-                    try {
-                      const createdId = await handleAssignProject();
+        {isUpdateMode && (
+  <div className="bg-gray-100 p-4 rounded mt-6">
+    <h3 className="font-semibold mb-4">
+      Assign To Project Manager
+    </h3>
 
-                      setProjectId(createdId);
+    <select
+      value={selectedManager}
+      onChange={(e) => setSelectedManager(e.target.value)}
+      className="border p-2 rounded w-full"
+    >
+      <option value="">Select Project Manager</option>
+      <option value="project_manager_a">Project Manager A</option>
+      <option value="project_manager_b">Project Manager B</option>
+      <option value="project_manager_c">Project Manager C</option>
+      <option value="project_manager_d">Project Manager D</option>
+      <option value="project_manager_e">Project Manager E</option>
+    </select>
 
-                      setAlert({
-                        type: "success",
-                        message: "Project assigned successfully!",
-                      });
-                    } catch (err: any) {
-                      setAlert({
-                        type: "error",
-                        message:
-                          err.response?.data?.message ||
-                          err.message ||
-                          "Assignment failed",
-                      });
-                    }
-                  }}
-                  className="bg-green-400 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium shadow"
-                >
-                  Assign Project To Manager
-                </button>
-              </div>
-            )}
-
+    <div className="flex justify-end mt-4">
+      <button
+        onClick={handleAssignManager}
+        className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded"
+      >
+        Assign
+      </button>
+    </div>
+  </div>
+)}
             {/* ================= WORKFLOW BUILDER ================= */}
             {projectId && (
               <div className="mt-8 border border-gray-200 rounded p-4">
@@ -625,23 +672,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate }) => {
                   onChange={setWorkflow}
                 />
 
-                {/* ACTION BUTTONS */}
-                <div className="flex justify-end gap-3 mt-6">
-
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="px-4 py-2 border rounded"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    onClick={handleSaveWorkflow}
-                    className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded"
-                  >
-                    Save Workflow
-                  </button>
-                </div>
+                
               </div>
             )}
           </div>

@@ -1,21 +1,23 @@
 import React, { useEffect, useState } from "react";
 import ProjectManagerCard from "./ProjectManagerCard";
+import UpdateProjects from "./UpdateProjects";
 import { api } from "../../user/api/businessApi";
 
 const ProjectManagerPage = () => {
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("projects");
 
   const fetchProjects = async () => {
     try {
       setLoading(true);
 
       const res = await api.get(
-  "/project-manager/projects",
-  {
-    withCredentials: true,
-  }
-);
+        "/project-manager/projects",
+        {
+          withCredentials: true,
+        }
+      );
 
       setProjects(res.data?.data || []);
     } catch (err) {
@@ -28,41 +30,61 @@ const ProjectManagerPage = () => {
   useEffect(() => {
     fetchProjects();
   }, []);
+  const updateProjects = projects.filter(
+    (p) => p.project_status !== "COMPLETED"
+  );
 
   if (loading) {
     return <div className="p-4">Loading projects...</div>;
   }
 
- return (
-  <div className="min-h-screen w-full bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] px-6 py-6">
-    {/* ================= HEADING ================= */}
-   <div className="mb-8">
-  <div className="inline-flex items-center bg-white/10 rounded-full p-1 shadow-lg backdrop-blur-md">
+  return (
+    <div className="min-h-screen w-full bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] px-6 py-6">
+      {/* ================= HEADING ================= */}
+      <div className="mb-8 flex justify-between items-center">
 
-    <button className="px-6 py-2 rounded-full bg-white text-purple-700 font-semibold shadow">
-      Projects
-    </button>
+        <button
+          onClick={() => setActiveTab("projects")}
+          className={`px-6 py-2 rounded-full font-semibold transition ${activeTab === "projects"
+              ? "bg-white text-purple-700 shadow"
+              : "bg-white/10 text-white"
+            }`}
+        >
+          Projects
+        </button>
 
-  </div>
-</div>
-    
+        <button
+          onClick={() => setActiveTab("updates")}
+          className={`px-6 py-2 rounded-full font-semibold transition ${activeTab === "updates"
+              ? "bg-white text-purple-700 shadow"
+              : "bg-white/10 text-white"
+            }`}
+        >
+          Update Projects
+        </button>
 
-    {projects.length === 0 ? (
-      <p className="text-white">No projects found</p>
-    ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {projects.map((item) => (
-          <ProjectManagerCard
-            key={item.id}
-            data={item}
-            onUpdate={fetchProjects}
-          />
-        ))}
       </div>
-    )}
 
-  </div>
-);
+      {activeTab === "projects" ? (
+        projects.length === 0 ? (
+          <p className="text-white">No projects found</p>
+        ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+
+            {projects.map((item) => (
+              <ProjectManagerCard
+                key={item.id}
+                data={item}
+                onUpdate={fetchProjects}
+              />
+            ))}
+          </div>
+        )
+      ) : (
+        <UpdateProjects />
+      )}
+    </div>
+  );
 };
 
 export default ProjectManagerPage;

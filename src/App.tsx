@@ -38,6 +38,24 @@ import ProjectManagerDashboard from "./features/ProjectManager/ProjectManagerDas
 import ProjectManagerPage from "./features/ProjectManager/Pages/ProjectManagerPage";
 import ProjectManagerHome from "./features/ProjectManager/Pages/ProjectManagerHome";
 
+import ProjectManagerPageA from "./features/ProjectManagerSub/Pages/ProjectManagerPageA";
+
+const ProjectManagerProjectsRoute = () => {
+  const { user } = useAuth();
+
+  if (
+    user?.role === "project_manager_a" ||
+    user?.role === "project_manager_b" ||
+    user?.role === "project_manager_c" ||
+    user?.role === "project_manager_d" ||
+    user?.role === "project_manager_e"
+  ) {
+    return <ProjectManagerPageA />;
+  }
+
+  return <ProjectManagerPage />;
+};
+
 
 
 
@@ -216,7 +234,16 @@ export default function AppRoutes() {
 <Route
   path="/project_manager"
   element={
-    <RequireAuth roles={["project_manager"]}>
+    <RequireAuth
+      roles={[
+        "project_manager",
+        "project_manager_a",
+        "project_manager_b",
+        "project_manager_c",
+        "project_manager_d",
+        "project_manager_e",
+      ]}
+    >
       <ProjectManagerDashboard />
     </RequireAuth>
   }
@@ -231,137 +258,11 @@ export default function AppRoutes() {
     element={<ProjectManagerHome />}
   />
 
-  <Route
-    path="projects"
-    element={<ProjectManagerPage />}
-  />
+ <Route
+  path="projects"
+  element={<ProjectManagerProjectsRoute />}
+/>
 </Route>
-
-{/* PROJECT MANAGER A */}
-<Route
-  path="/project_manager_a"
-  element={
-    <RequireAuth roles={["project_manager_a"]}>
-      <ProjectManagerDashboard />
-    </RequireAuth>
-  }
->
-  <Route
-    index
-    element={<ProjectManagerHome />}
-  />
-
-  <Route
-    path="dashboard"
-    element={<ProjectManagerHome />}
-  />
-
-  <Route
-    path="projects"
-    element={<ProjectManagerPage />}
-  />
-</Route>
-
-{/* PROJECT MANAGER B */}
-<Route
-  path="/project_manager_b"
-  element={
-    <RequireAuth roles={["project_manager_b"]}>
-      <ProjectManagerDashboard />
-    </RequireAuth>
-  }
->
-  <Route
-    index
-    element={<ProjectManagerHome />}
-  />
-
-  <Route
-    path="dashboard"
-    element={<ProjectManagerHome />}
-  />
-
-  <Route
-    path="projects"
-    element={<ProjectManagerPage />}
-  />
-</Route>
-
-{/* PROJECT MANAGER C */}
-<Route
-  path="/project_manager_c"
-  element={
-    <RequireAuth roles={["project_manager_c"]}>
-      <ProjectManagerDashboard />
-    </RequireAuth>
-  }
->
-  <Route
-    index
-    element={<ProjectManagerHome />}
-  />
-
-  <Route
-    path="dashboard"
-    element={<ProjectManagerHome />}
-  />
-
-  <Route
-    path="projects"
-    element={<ProjectManagerPage />}
-  />
-</Route>
-
-{/* PROJECT MANAGER D */}
-<Route
-  path="/project_manager_d"
-  element={
-    <RequireAuth roles={["project_manager_d"]}>
-      <ProjectManagerDashboard />
-    </RequireAuth>
-  }
->
-  <Route
-    index
-    element={<ProjectManagerHome />}
-  />
-
-  <Route
-    path="dashboard"
-    element={<ProjectManagerHome />}
-  />
-
-  <Route
-    path="projects"
-    element={<ProjectManagerPage />}
-  />
-</Route>
-
-{/* PROJECT MANAGER E */}
-<Route
-  path="/project_manager_e"
-  element={
-    <RequireAuth roles={["project_manager_e"]}>
-      <ProjectManagerDashboard />
-    </RequireAuth>
-  }
->
-  <Route
-    index
-    element={<ProjectManagerHome />}
-  />
-
-  <Route
-    path="dashboard"
-    element={<ProjectManagerHome />}
-  />
-
-  <Route
-    path="projects"
-    element={<ProjectManagerPage />}
-  />
-</Route>
-
       {/* Admin Routes */}
       <Route
         path="/admin"
@@ -395,4 +296,4 @@ export default function AppRoutes() {
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
-}
+} 

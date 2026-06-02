@@ -94,7 +94,14 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
       if (user.role === "admin") navigate("/admin");
       else if (user.role === "employee") navigate("/employee");
       else if (user.role === "manager") navigate("/manager");
-     else if (user.role === "project_manager") {
+   else if (
+  user.role === "project_manager" ||
+  user.role === "project_manager_a" ||
+  user.role === "project_manager_b" ||
+  user.role === "project_manager_c" ||
+  user.role === "project_manager_d" ||
+  user.role === "project_manager_e"
+) {
   navigate("/project_manager/dashboard");
 }
       else if (user.role === "super_admin") navigate("/super_admin");
