@@ -319,12 +319,23 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
     }
   };
   const formatLabel = (key: string) => {
-    return key
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+  const customLabels: Record<string, string> = {
+    ais_compliant: "AIS Compliant",
+    cmvr_compliant: "CMVR Compliant",
+    ac: "AC",
+    cctv: "CCTV",
+    gps: "GPS",
+    usb: "USB",
+    led_board: "LED Board",
   };
 
-
+  return (
+    customLabels[key] ||
+    key
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase())
+  );
+};
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/30 p-2 sm:p-4">
       {alert && (

@@ -828,24 +828,26 @@ export default function SubmittedFinanceRequestsPage() {
 
               {/* Collect from Vendor */}
              {orderDetails.orderPlaced === "YES" &&
-  orderDetails.transportMode === "COLLECT" && (
+  orderDetails.transportMode === "IN_HOUSE" && (
     <div className="mt-4">
       <label className="block text-sm font-medium mb-1">
-        Vendor Address
+        Delivery Type
       </label>
-      <input
-        type="text"
-        value={orderDetails.vendorAddress || ""}
+
+      <select
+        value={orderDetails.inHouseType}
         onChange={(e) =>
           setOrderDetails((prev) => ({
             ...prev,
-            vendorAddress: e.target.value,
-            inHouseType: "", // reset other field
+            inHouseType: e.target.value,
           }))
         }
-        placeholder="Enter Vendor Address"
         className="border p-2 rounded w-full bg-white"
-      />
+      >
+        <option value="">Select Type</option>
+        <option value="COURIER">Courier</option>
+        <option value="TRANSPORT">Transportation</option>
+      </select>
     </div>
 )}
             </div>

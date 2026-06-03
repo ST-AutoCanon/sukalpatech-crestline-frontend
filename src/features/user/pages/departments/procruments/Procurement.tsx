@@ -87,6 +87,13 @@ export default function NewProcurementPage({ onClose, onCreated }) {
     fetchVendors();
   }, []);
 
+  const formatDepartmentName = (name: string) => {
+  return name
+    ?.replace(/_/g, " ") // replace underscores with spaces
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase()); // capitalize each word
+};
+
   const [vendorFiles, setVendorFiles] = useState({});
   const [prData, setPrData] = useState({
     department: "",
@@ -484,9 +491,10 @@ export default function NewProcurementPage({ onClose, onCreated }) {
                     onChange={handlePRChange}
                   >
                     <option value="">Select</option>
+
                     {departments.map((d) => (
-                      <option key={d.department_name} value={d.department_name}>
-                        {d.name}
+                      <option key={d.id} value={d.name}>
+                        {formatDepartmentName(d.name)}
                       </option>
                     ))}
                   </select>

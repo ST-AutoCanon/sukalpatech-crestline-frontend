@@ -312,8 +312,32 @@ export default function EmployeeManagementPage() {
                   }
                 >
                   <option value="employee">Employee</option>
+
                   <option value="manager">Manager</option>
-                  <option value="project_manager">Project Manager</option>
+
+                  <option value="project_manager">
+                    Main Project Manager
+                  </option>
+
+                  <option value="project_manager_a">
+                    Project Manager A
+                  </option>
+
+                  <option value="project_manager_b">
+                    Project Manager B
+                  </option>
+
+                  <option value="project_manager_c">
+                    Project Manager C
+                  </option>
+
+                  <option value="project_manager_d">
+                    Project Manager D
+                  </option>
+
+                  <option value="project_manager_e">
+                    Project Manager E
+                  </option>
                 </select>
                 <select
                   className="border rounded-xl px-4 py-3 md:col-span-2 focus:ring-2 focus:ring-blue-400 outline-none"
@@ -447,8 +471,32 @@ export default function EmployeeManagementPage() {
                     }
                   >
                     <option value="employee">Employee</option>
+
                     <option value="manager">Manager</option>
-                    <option value="project_manager">Project Manager</option>
+
+                    <option value="project_manager">
+                      Main Project Manager
+                    </option>
+
+                    <option value="project_manager_a">
+                      Project Manager A
+                    </option>
+
+                    <option value="project_manager_b">
+                      Project Manager B
+                    </option>
+
+                    <option value="project_manager_c">
+                      Project Manager C
+                    </option>
+
+                    <option value="project_manager_d">
+                      Project Manager D
+                    </option>
+
+                    <option value="project_manager_e">
+                      Project Manager E
+                    </option>
                   </select>
                   <select
                     className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 outline-none"
