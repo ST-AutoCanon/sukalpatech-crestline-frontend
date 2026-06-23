@@ -515,7 +515,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
       <div className="flex flex-col gap-0.5">
         {mainFields.map((item) => (
           <div key={item.key} className="flex justify-between items-center">
-            <span className="text-gray-400 font-medium shrink-0 w-32 truncate">{item.label}</span>
+            <span className="text-gray-600 font-normal shrink-0 w-32 truncate">{item.label}</span>
             <span className="font-medium text-gray-700 text-sm text-right truncate w-2/3">
               {renderValue(data[item.key as keyof typeof data])}
             </span>

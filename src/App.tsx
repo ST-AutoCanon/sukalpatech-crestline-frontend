@@ -38,26 +38,6 @@ import ProjectManagerDashboard from "./features/ProjectManager/ProjectManagerDas
 import ProjectManagerPage from "./features/ProjectManager/Pages/ProjectManagerPage";
 import ProjectManagerHome from "./features/ProjectManager/Pages/ProjectManagerHome";
 
-import ProjectManagerPageA from "./features/ProjectManagerSub/Pages/ProjectManagerPageA";
-
-const ProjectManagerProjectsRoute = () => {
-  const { user } = useAuth();
-
-  if (
-    user?.role === "project_manager_a" ||
-    user?.role === "project_manager_b" ||
-    user?.role === "project_manager_c" ||
-    user?.role === "project_manager_d" ||
-    user?.role === "project_manager_e"
-  ) {
-    return <ProjectManagerPageA />;
-  }
-
-  return <ProjectManagerPage />;
-};
-
-
-
 
 import UpdatedFeasibilityPage from "./features/user/pages/departments/Businessdevelopment/Feasibility/UpdatedFeasibilitypage";
 import Home from "./pages/Home";
@@ -260,7 +240,7 @@ export default function AppRoutes() {
 
  <Route
   path="projects"
-  element={<ProjectManagerProjectsRoute />}
+  element={<ProjectManagerPage />}
 />
 </Route>
       {/* Admin Routes */}

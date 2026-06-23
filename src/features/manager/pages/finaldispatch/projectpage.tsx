@@ -19,6 +19,8 @@ export default function ProjectPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [workflowView, setWorkflowView] = useState<any[]>([]);
+
 
   /* ===== STATUS STATES ===== */
   const [status, setStatus] = useState("");
@@ -72,6 +74,23 @@ const [filter, setFilter] = useState<FilterType>("All PR");
       console.error("Fetch status error", err);
     }
   };
+  const fetchWorkflowTasks = async (projectId: number) => {
+  try {
+    const res = await axios.get(
+      `${API_BASE}/project/${projectId}/tasks`,
+      {
+        withCredentials: true,
+      }
+    );
+
+    console.log("Workflow Tasks:", res.data);
+
+    setWorkflowView(res.data.data || []);
+  } catch (err) {
+    console.error("Workflow fetch error", err);
+    setWorkflowView([]);
+  }
+};
 
   /* ================= HELPERS ================= */
   const formatDate = (date?: string) => {
@@ -87,6 +106,7 @@ const [filter, setFilter] = useState<FilterType>("All PR");
     setComments("");
 
     fetchStatuses(p.id); // 🔥 load existing statuses
+    fetchWorkflowTasks(p.id);
   };
 
 
@@ -204,6 +224,36 @@ const [filter, setFilter] = useState<FilterType>("All PR");
                     className="border p-2 rounded w-full bg-white text-sm"
                   />
                 </div>
+                 <div className="sm:col-span-2 mt-4">
+                  <label className="text-xs font-medium">
+                    Assigned Tasks
+                  </label>
+
+                  {workflowView.length > 0 ? (
+                    <div className="border p-3 rounded bg-white">
+                      {workflowView.map((task, index) => (
+                        <div
+                          key={index}
+                          className="border-b last:border-b-0 py-2"
+                        >
+                          <p>
+                            <strong>Department:</strong> {task.department}
+                          </p>
+
+                          <p>
+                            <strong>Task:</strong> {task.task_description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <input
+                      readOnly
+                      value="No tasks assigned"
+                      className="border p-2 rounded w-full bg-white text-sm"
+                    />
+                  )}
+                </div>
               </div>
             </div>
 
@@ -237,6 +287,12 @@ const [filter, setFilter] = useState<FilterType>("All PR");
                           </p>
                           <p>
                             <strong>Comment:</strong> {s.comments || "-"}
+                          </p>
+                          <p>
+                            <strong>Completion Percentage:</strong>{" "}
+                            {s.completion_percentage != null
+                              ? `${s.completion_percentage}%`
+                              : "-"}
                           </p>
                         </div>
 

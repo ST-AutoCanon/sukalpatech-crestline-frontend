@@ -28,17 +28,19 @@ export default function ProjectPage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [alert, setAlert] = useState<{
-  type: "success" | "error";
-  message: string;
-} | null>(null);
-  
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
   const [status, setStatus] = useState("");
   const [comments, setComments] = useState("");
+  const [completionPercentage, setCompletionPercentage] = useState("");
   const [loading, setLoading] = useState(false);
   const [statusList, setStatusList] = useState<any[]>([]);
   const [expandDeptStatus, setExpandDeptStatus] = useState(true);
+  const [workflowView, setWorkflowView] = useState<any[]>([]);
 
-  const statuses = ["IN_PROGRESS","PENDING", "APPROVED", "REJECTED"];
+  const statuses = ["IN_PROGRESS", "PENDING", "APPROVED", "REJECTED"];
 
   const departmentName = "engineering_design"; // ✅ FIXED (NO HARD CODE)
 
@@ -71,6 +73,25 @@ export default function ProjectPage() {
       console.error("Fetch status error", err);
     }
   };
+  //////////////FETCH ASSIGNED TASK///////////
+
+  const fetchWorkflowTasks = async (projectId: number) => {
+    try {
+      const res = await axios.get(
+        `${API_BASE}/project/${projectId}/tasks`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log("Workflow Tasks:", res.data);
+
+      setWorkflowView(res.data.data || []);
+    } catch (err) {
+      console.error("Workflow fetch error", err);
+      setWorkflowView([]);
+    }
+  };
 
   /* ================= HELPERS ================= */
   const formatDate = (date?: string) => {
@@ -86,6 +107,7 @@ export default function ProjectPage() {
     setComments("");
 
     fetchStatuses(p.id);
+    fetchWorkflowTasks(p.id);
   };
 
   /* ================= UPDATE STATUS ================= */
@@ -136,66 +158,68 @@ export default function ProjectPage() {
   // };
 
   const handleStatusUpdate = async () => {
-  if (!status) {
-    setAlert({
-      type: "error",
-      message: "Status required",
-    });
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    // ✅ CALL BACKEND ONCE
-    const res = await axios.post(
-      `${API_BASE}/status`,
-      {
-        project_management_id: selectedProject?.id,
-        department: departmentName,
-        updated_by: user.first_name,
-        status,
-        comments,
-      },
-      { withCredentials: true }
-    );
-
-    // ✅ GET WORKFLOW INFO FROM RESPONSE
-    const workflow = res.data.workflowInfo;
-
-    let alertMessage = "";
-
-    if (workflow?.status === "APPROVED") {
-      alertMessage = `✅ Approved → moved to ${workflow.next}`;
-    } else if (workflow?.status === "REJECTED") {
-      alertMessage = `❌ Rejected → sent back to ${workflow.previous}`;
-    } else if (workflow?.status === "PENDING") {
-      alertMessage = `⏳ Pending in ${workflow.current}`;
+    if (!status) {
+      setAlert({
+        type: "error",
+        message: "Status required",
+      });
+      return;
     }
 
-    // ✅ SHOW ALERT
-    setAlert({
-      type: "success",
-      message: alertMessage || "Status updated successfully",
-    });
+    try {
+      setLoading(true);
 
-    setStatus("");
-    setComments("");
-    setModalOpen(false);
+      // ✅ CALL BACKEND ONCE
+      const res = await axios.post(
+        `${API_BASE}/status`,
+        {
+          project_management_id: selectedProject?.id,
+          department: departmentName,
+          updated_by: user.first_name,
+          status,
+          comments,
+          completion_percentage: Number(completionPercentage),
+        },
+        { withCredentials: true }
+      );
 
-    fetchProjects();
+      // ✅ GET WORKFLOW INFO FROM RESPONSE
+      const workflow = res.data.workflowInfo;
 
-  } catch (err: any) {
-    console.error("Status update error", err);
+      let alertMessage = "";
 
-    setAlert({
-      type: "error",
-      message: err?.response?.data?.message || "Error updating status",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+      // if (workflow?.status === "APPROVED") {
+      //   alertMessage = `✅ Approved → moved to ${workflow.next}`;
+      // } else if (workflow?.status === "REJECTED") {
+      //   alertMessage = `❌ Rejected → sent back to ${workflow.previous}`;
+      // } else if (workflow?.status === "PENDING") {
+      //   alertMessage = `⏳ Pending in ${workflow.current}`;
+      // }
+
+      // ✅ SHOW ALERT
+      setAlert({
+        type: "success",
+        message: alertMessage || "Status updated successfully",
+      });
+
+      setStatus("");
+      setComments("");
+      setCompletionPercentage("");
+      setModalOpen(false);
+
+      fetchProjects();
+
+    } catch (err: any) {
+      console.error("Status update error", err);
+
+      setAlert({
+        type: "error",
+        message: err?.response?.data?.message || "Error updating status",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6 text-black">
@@ -215,13 +239,13 @@ export default function ProjectPage() {
             className="bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col min-h-[200px] cursor-pointer"
           >
             <h2 className="text-purple-600 font-semibold text-lg mb-2">
-             Project ID: {p.display_id ?? p.id}
+              Project ID: {p.display_id ?? p.id}
             </h2>
 
             <div className="flex-1 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">BD Request</span>
-                 {p.bd_request_display_id ?? p.bd_request_id}
+                {p.bd_request_display_id ?? p.bd_request_id}
               </div>
 
               <div className="flex justify-between">
@@ -299,6 +323,36 @@ export default function ProjectPage() {
                     className="border p-2 rounded w-full bg-white text-sm"
                   />
                 </div>
+                <div className="sm:col-span-2 mt-4">
+                  <label className="text-xs font-medium">
+                    Assigned Tasks
+                  </label>
+
+                  {workflowView.length > 0 ? (
+                    <div className="border p-3 rounded bg-white">
+                      {workflowView.map((task, index) => (
+                        <div
+                          key={index}
+                          className="border-b last:border-b-0 py-2"
+                        >
+                          <p>
+                            <strong>Department:</strong> {task.department}
+                          </p>
+
+                          <p>
+                            <strong>Task:</strong> {task.task_description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <input
+                      readOnly
+                      value="No tasks assigned"
+                      className="border p-2 rounded w-full bg-white text-sm"
+                    />
+                  )}
+                </div>
               </div>
             </div>
 
@@ -333,6 +387,12 @@ export default function ProjectPage() {
                           </p>
                           <p>
                             <strong>Comment:</strong> {s.comments || "-"}
+                          </p>
+                          <p>
+                            <strong>Completion Percentage:</strong>{" "}
+                            {s.completion_percentage != null
+                              ? `${s.completion_percentage}%`
+                              : "-"}
                           </p>
                         </div>
 
@@ -380,6 +440,21 @@ export default function ProjectPage() {
                   onChange={(e) => setComments(e.target.value)}
                   className="border p-2 rounded w-full bg-white text-sm"
                   placeholder="Enter your comments"
+                />
+              </div>
+              <div className="mt-3">
+                <label className="text-xs font-medium">
+                  Percentage of Completion
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={completionPercentage}
+                  onChange={(e) => setCompletionPercentage(e.target.value)}
+                  className="border p-2 rounded w-full bg-white text-sm"
+                  placeholder="Enter completion percentage"
                 />
               </div>
 
