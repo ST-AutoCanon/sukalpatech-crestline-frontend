@@ -24,13 +24,17 @@ export default function ProjectPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-const [alert, setAlert] = useState<{
+   const [alert, setAlert] = useState<{
   type: "success" | "error";
   message: string;
 } | null>(null);
   const [status, setStatus] = useState("");
   const [comments, setComments] = useState("");
+    const [completionPercentage, setCompletionPercentage] = useState("");
+
   const [loading, setLoading] = useState(false);
+    const [workflowView, setWorkflowView] = useState<any[]>([]);
+
   const [statusList, setStatusList] = useState<any[]>([]);
   const [expandDeptStatus, setExpandDeptStatus] = useState(true);
 
@@ -68,6 +72,26 @@ const [alert, setAlert] = useState<{
       console.error("Fetch status error", err);
     }
   };
+   //////////////FETCH ASSIGNED TASK///////////
+   
+  const fetchWorkflowTasks = async (projectId: number) => {
+  try {
+    const res = await axios.get(
+      `${API_BASE}/project/${projectId}/tasks`,
+      {
+        withCredentials: true,
+      }
+    );
+
+    console.log("Workflow Tasks:", res.data);
+
+    setWorkflowView(res.data.data || []);
+  } catch (err) {
+    console.error("Workflow fetch error", err);
+    setWorkflowView([]);
+  }
+};
+
 
   /* ================= HELPERS ================= */
   const formatDate = (date?: string) => {
@@ -83,6 +107,7 @@ const [alert, setAlert] = useState<{
     setComments("");
 
     fetchStatuses(p.id);
+    fetchWorkflowTasks(p.id);
   };
 
   /* ================= UPDATE STATUS ================= */
@@ -152,6 +177,7 @@ const handleStatusUpdate = async () => {
         updated_by: user.first_name,
         status,
         comments,
+        completion_percentage: Number(completionPercentage),
       },
       { withCredentials: true }
     );
@@ -177,6 +203,7 @@ const handleStatusUpdate = async () => {
 
     setStatus("");
     setComments("");
+    setCompletionPercentage("");
     setModalOpen(false);
 
     fetchProjects();
@@ -295,6 +322,36 @@ const handleStatusUpdate = async () => {
                     className="border p-2 rounded w-full bg-white text-sm"
                   />
                 </div>
+                 <div className="sm:col-span-2 mt-4">
+                  <label className="text-xs font-medium">
+                    Assigned Tasks
+                  </label>
+
+                  {workflowView.length > 0 ? (
+                    <div className="border p-3 rounded bg-white">
+                      {workflowView.map((task, index) => (
+                        <div
+                          key={index}
+                          className="border-b last:border-b-0 py-2"
+                        >
+                          <p>
+                            <strong>Department:</strong> {task.department}
+                          </p>
+
+                          <p>
+                            <strong>Task:</strong> {task.task_description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <input
+                      readOnly
+                      value="No tasks assigned"
+                      className="border p-2 rounded w-full bg-white text-sm"
+                    />
+                  )}
+                </div>
               </div>
             </div>
 
@@ -329,6 +386,12 @@ const handleStatusUpdate = async () => {
                           </p>
                           <p>
                             <strong>Comment:</strong> {s.comments || "-"}
+                          </p>
+                          <p>
+                            <strong>Completion Percentage:</strong>{" "}
+                            {s.completion_percentage != null
+                              ? `${s.completion_percentage}%`
+                              : "-"}
                           </p>
                         </div>
 
@@ -376,6 +439,21 @@ const handleStatusUpdate = async () => {
                   onChange={(e) => setComments(e.target.value)}
                   className="border p-2 rounded w-full bg-white text-sm"
                   placeholder="Enter your comments"
+                />
+              </div>
+              <div className="mt-3">
+                <label className="text-xs font-medium">
+                  Percentage of Completion
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={completionPercentage}
+                  onChange={(e) => setCompletionPercentage(e.target.value)}
+                  className="border p-2 rounded w-full bg-white text-sm"
+                  placeholder="Enter completion percentage"
                 />
               </div>
 
