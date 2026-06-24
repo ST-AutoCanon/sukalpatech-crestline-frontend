@@ -484,6 +484,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
   // };
 
   const handleSave = async () => {
+    console.log("Before Save:", activePR?.required_date);
     if (!activePR) return;
 
     try {
@@ -651,6 +652,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       e.stopPropagation();
                       if (!isFeasibilityDone(pr)) return; // extra safety
                       setEditMode(true);
+                       console.log("Edit PR Date:", pr.required_date);
                       setActivePR(pr);
                     }}
                   >
@@ -797,7 +799,7 @@ export default function ViewPRPage({ filter, search, refreshKey }: Props) {
                       const date = e.target.value; // "2026-03-01"
                       setActivePR({
                         ...activePR,
-                        required_date: new Date(date).toISOString(), // full ISO
+                        required_date: date, // full ISO
                       });
                     }}
                     className={`bg-white border rounded px-2 py-1 w-full ${editMode ? "border-blue-400" : ""}`}
