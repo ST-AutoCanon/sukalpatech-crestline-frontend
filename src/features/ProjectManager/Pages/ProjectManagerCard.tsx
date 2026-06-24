@@ -61,8 +61,12 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
 
   const assignedTo = data.assigned_project_manager;
 
-  const isAssignedToSelf =
-    assignedTo && assignedTo === user?.first_name;
+  const isAssignedToSelf = Boolean(
+    assignedTo &&
+    user?.first_name &&
+    assignedTo.trim().toLowerCase() ===
+    user.first_name.trim().toLowerCase()
+  );
 
   const isAssignedToOther =
     assignedTo && assignedTo !== user?.first_name;
@@ -89,56 +93,56 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
   } | null>(null);
 
   const latestWorkflows = Object.values(
-  allWorkflows.reduce((acc: any, item: any) => {
-    const key = `${item.project_management_id}_${item.department}`;
+    allWorkflows.reduce((acc: any, item: any) => {
+      const key = `${item.project_management_id}_${item.department}`;
 
-    if (
-      !acc[key] ||
-      new Date(item.updated_at) >
+      if (
+        !acc[key] ||
+        new Date(item.updated_at) >
         new Date(acc[key].updated_at)
-    ) {
-      acc[key] = item;
-    }
+      ) {
+        acc[key] = item;
+      }
 
-    return acc;
-  }, {})
-);
+      return acc;
+    }, {})
+  );
 
 
-const latestStatuses = Object.values(
-  statusList.reduce((acc: any, item: any) => {
-    const key = item.department;
+  const latestStatuses = Object.values(
+    statusList.reduce((acc: any, item: any) => {
+      const key = item.department;
 
-    if (
-      !acc[key] ||
-      new Date(item.updated_at) >
+      if (
+        !acc[key] ||
+        new Date(item.updated_at) >
         new Date(acc[key].updated_at)
-    ) {
-      acc[key] = item;
-    }
+      ) {
+        acc[key] = item;
+      }
 
-    return acc;
-  }, {})
-);
-const taskStats = {
-  total_tasks: latestWorkflows.length,
+      return acc;
+    }, {})
+  );
+  const taskStats = {
+    total_tasks: latestWorkflows.length,
 
-  completed_tasks: latestWorkflows.filter(
-    (x) => x.status === "APPROVED"
-  ).length,
+    completed_tasks: latestWorkflows.filter(
+      (x) => x.status === "APPROVED"
+    ).length,
 
-  in_progress_tasks: latestWorkflows.filter(
-    (x) => x.status === "IN_PROGRESS"
-  ).length,
+    in_progress_tasks: latestWorkflows.filter(
+      (x) => x.status === "IN_PROGRESS"
+    ).length,
 
-  pending_tasks: latestWorkflows.filter(
-    (x) => x.status === "PENDING"
-  ).length,
+    pending_tasks: latestWorkflows.filter(
+      (x) => x.status === "PENDING"
+    ).length,
 
-  rejected_tasks: latestWorkflows.filter(
-    (x) => x.status === "REJECTED"
-  ).length,
-};
+    rejected_tasks: latestWorkflows.filter(
+      (x) => x.status === "REJECTED"
+    ).length,
+  };
 
   const statusColors: Record<string, string> = {
     APPROVED: "#22c55e",
@@ -160,17 +164,17 @@ const taskStats = {
 
 
   useEffect(() => {
-  fetchAllWorkflows();
-}, []);
+    fetchAllWorkflows();
+  }, []);
 
-const fetchAllWorkflows = async () => {
-  const res = await api.get(
-    "/project-manager/all-project-workflows",
-    { withCredentials: true }
-  );
+  const fetchAllWorkflows = async () => {
+    const res = await api.get(
+      "/project-manager/all-project-workflows",
+      { withCredentials: true }
+    );
 
-  setAllWorkflows(res.data.data || []);
-};
+    setAllWorkflows(res.data.data || []);
+  };
 
   useEffect(() => {
     if (autoOpen) {
@@ -341,20 +345,20 @@ const fetchAllWorkflows = async () => {
   const totalTasks = workflowView.length;
 
   const completedTasks = latestStatuses.filter(
-  (s) => s.status === "APPROVED"
-).length;
+    (s) => s.status === "APPROVED"
+  ).length;
 
-const inProgressTasks = latestStatuses.filter(
-  (s) => s.status === "IN_PROGRESS"
-).length;
+  const inProgressTasks = latestStatuses.filter(
+    (s) => s.status === "IN_PROGRESS"
+  ).length;
 
-const pendingTasks = latestStatuses.filter(
-  (s) => s.status === "PENDING"
-).length;
+  const pendingTasks = latestStatuses.filter(
+    (s) => s.status === "PENDING"
+  ).length;
 
-const rejectedTasks = latestStatuses.filter(
-  (s) => s.status === "REJECTED"
-).length;
+  const rejectedTasks = latestStatuses.filter(
+    (s) => s.status === "REJECTED"
+  ).length;
 
   const chartData = statusList.map((item) => ({
     department: item.department,
@@ -397,10 +401,11 @@ const rejectedTasks = latestStatuses.filter(
             : `Project assigned to ${manager.name}`,
       });
 
-      setTimeout(() => {
-        onUpdate();
-        setShowModal(false);
-      }, 1500);
+      // Refresh parent project list
+      await onUpdate();
+
+      // Close modal
+      setShowModal(false);
 
 
     } catch (err) {
@@ -426,6 +431,9 @@ const rejectedTasks = latestStatuses.filter(
 
     fetchProjectManagers();
   }, []);
+  console.log("assignedTo:", assignedTo);
+  console.log("user first_name:", user?.first_name);
+  console.log("isAssignedToSelf:", isAssignedToSelf);
 
   return (
     <>
