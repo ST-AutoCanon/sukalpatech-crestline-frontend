@@ -364,7 +364,7 @@ export default function EmployeeManagementPage() {
                       {emp.first_name} {emp.last_name}
                     </td>
                     <td className="break-all max-w-[250px]">{emp.email}</td>
-                    <td className="whitespace-nowrap capitalize">{emp.role}</td>
+                    <td className="whitespace-nowrap capitalize">{emp.role?.replace(/_/g," ")}</td>
                     <td className="p-4 break-words max-w-[150px] sm:max-w-none">
                       {emp.status || "active"}
                     </td>
@@ -455,27 +455,7 @@ export default function EmployeeManagementPage() {
                     <option value="manager">Manager</option>
 
                     <option value="project_manager">
-                      Main Project Manager
-                    </option>
-
-                    <option value="project_manager_a">
-                      Project Manager A
-                    </option>
-
-                    <option value="project_manager_b">
-                      Project Manager B
-                    </option>
-
-                    <option value="project_manager_c">
-                      Project Manager C
-                    </option>
-
-                    <option value="project_manager_d">
-                      Project Manager D
-                    </option>
-
-                    <option value="project_manager_e">
-                      Project Manager E
+                      Project Manager
                     </option>
                   </select>
                   <select
