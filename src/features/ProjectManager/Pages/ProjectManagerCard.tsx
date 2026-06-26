@@ -12,13 +12,14 @@ import {
 
 interface Props {
   data: any;
-  onUpdate: () => void;
   showAssignFlow?: boolean;
   showWorkflowFlow?: boolean;
   autoOpen?: boolean;
+  onUpdate: () => Promise<void>;
 }
 
 const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, showWorkflowFlow, autoOpen = false, }) => {
+  
   const [workflow, setWorkflow] = useState([
     {
       task_title: "",
@@ -45,6 +46,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
 
   const [tasksAssigned, setTasksAssigned] = useState(false);
   const [savedTasks, setSavedTasks] = useState<any[]>([]);
+  const [managers, setManagers] = useState([]);
 
 
   const [workflowSaved, setWorkflowSaved] = useState(false);
@@ -61,12 +63,12 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
 
   const assignedTo = data.assigned_project_manager;
 
-const isAssignedToSelf = Boolean(
-  assignedTo &&
-  user?.first_name &&
-  assignedTo.trim().toLowerCase() ===
+  const isAssignedToSelf = Boolean(
+    assignedTo &&
+    user?.first_name &&
+    assignedTo.trim().toLowerCase() ===
     user.first_name.trim().toLowerCase()
-);
+  );
 
   const isAssignedToOther =
     assignedTo && assignedTo !== user?.first_name;
@@ -93,56 +95,56 @@ const isAssignedToSelf = Boolean(
   } | null>(null);
 
   const latestWorkflows = Object.values(
-  allWorkflows.reduce((acc: any, item: any) => {
-    const key = `${item.project_management_id}_${item.department}`;
+    allWorkflows.reduce((acc: any, item: any) => {
+      const key = `${item.project_management_id}_${item.department}`;
 
-    if (
-      !acc[key] ||
-      new Date(item.updated_at) >
+      if (
+        !acc[key] ||
+        new Date(item.updated_at) >
         new Date(acc[key].updated_at)
-    ) {
-      acc[key] = item;
-    }
+      ) {
+        acc[key] = item;
+      }
 
-    return acc;
-  }, {})
-);
+      return acc;
+    }, {})
+  );
 
 
-const latestStatuses = Object.values(
-  statusList.reduce((acc: any, item: any) => {
-    const key = item.department;
+  const latestStatuses = Object.values(
+    statusList.reduce((acc: any, item: any) => {
+      const key = item.department;
 
-    if (
-      !acc[key] ||
-      new Date(item.updated_at) >
+      if (
+        !acc[key] ||
+        new Date(item.updated_at) >
         new Date(acc[key].updated_at)
-    ) {
-      acc[key] = item;
-    }
+      ) {
+        acc[key] = item;
+      }
 
-    return acc;
-  }, {})
-);
-const taskStats = {
-  total_tasks: latestWorkflows.length,
+      return acc;
+    }, {})
+  );
+  const taskStats = {
+    total_tasks: latestWorkflows.length,
 
-  completed_tasks: latestWorkflows.filter(
-    (x) => x.status === "APPROVED"
-  ).length,
+    completed_tasks: latestWorkflows.filter(
+      (x) => x.status === "APPROVED"
+    ).length,
 
-  in_progress_tasks: latestWorkflows.filter(
-    (x) => x.status === "IN_PROGRESS"
-  ).length,
+    in_progress_tasks: latestWorkflows.filter(
+      (x) => x.status === "IN_PROGRESS"
+    ).length,
 
-  pending_tasks: latestWorkflows.filter(
-    (x) => x.status === "PENDING"
-  ).length,
+    pending_tasks: latestWorkflows.filter(
+      (x) => x.status === "PENDING"
+    ).length,
 
-  rejected_tasks: latestWorkflows.filter(
-    (x) => x.status === "REJECTED"
-  ).length,
-};
+    rejected_tasks: latestWorkflows.filter(
+      (x) => x.status === "REJECTED"
+    ).length,
+  };
 
   const statusColors: Record<string, string> = {
     APPROVED: "#22c55e",
@@ -164,17 +166,17 @@ const taskStats = {
 
 
   useEffect(() => {
-  fetchAllWorkflows();
-}, []);
+    fetchAllWorkflows();
+  }, []);
 
-const fetchAllWorkflows = async () => {
-  const res = await api.get(
-    "/project-manager/all-project-workflows",
-    { withCredentials: true }
-  );
+  const fetchAllWorkflows = async () => {
+    const res = await api.get(
+      "/project-manager/all-project-workflows",
+      { withCredentials: true }
+    );
 
-  setAllWorkflows(res.data.data || []);
-};
+    setAllWorkflows(res.data.data || []);
+  };
 
   useEffect(() => {
     if (autoOpen) {
@@ -229,6 +231,23 @@ const fetchAllWorkflows = async () => {
     fetchDepartments();
   }, []);
 
+  useEffect(() => {
+    if (!showModal) return;
+
+    const loadManagers = async () => {
+      try {
+        const res = await api.get("/project-manager/managers", {
+          withCredentials: true,
+        });
+
+        setManagers(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to load managers", err);
+      }
+    };
+
+    loadManagers();
+  }, [showModal]);
   useEffect(() => {
 
     const fetchWorkflow = async () => {
@@ -291,6 +310,7 @@ const fetchAllWorkflows = async () => {
 
   const handleAssignManager = async () => {
     try {
+
       await api.put(
         `/project/${data.id}/assign`,
         {
@@ -345,20 +365,20 @@ const fetchAllWorkflows = async () => {
   const totalTasks = workflowView.length;
 
   const completedTasks = latestStatuses.filter(
-  (s) => s.status === "APPROVED"
-).length;
+    (s) => s.status === "APPROVED"
+  ).length;
 
-const inProgressTasks = latestStatuses.filter(
-  (s) => s.status === "IN_PROGRESS"
-).length;
+  const inProgressTasks = latestStatuses.filter(
+    (s) => s.status === "IN_PROGRESS"
+  ).length;
 
-const pendingTasks = latestStatuses.filter(
-  (s) => s.status === "PENDING"
-).length;
+  const pendingTasks = latestStatuses.filter(
+    (s) => s.status === "PENDING"
+  ).length;
 
-const rejectedTasks = latestStatuses.filter(
-  (s) => s.status === "REJECTED"
-).length;
+  const rejectedTasks = latestStatuses.filter(
+    (s) => s.status === "REJECTED"
+  ).length;
 
   const chartData = statusList.map((item) => ({
     department: item.department,
@@ -373,7 +393,6 @@ const rejectedTasks = latestStatuses.filter(
 
   const handleAssignToManager = async () => {
     try {
-      console.log("ASSIGN TO MANAGER CLICKED");
       if (!selectedManager) {
         setAlert({
           type: "error",
@@ -385,29 +404,27 @@ const rejectedTasks = latestStatuses.filter(
       const manager = JSON.parse(selectedManager);
 
       await api.put(
-  `/project-manager/projects/${data.id}/assign-manager`,
-  {
-    assigned_project_manager: manager.name,
-    role: manager.role,
-  },
-  { withCredentials: true }
-);
+        `/project-manager/projects/${data.id}/assign-manager`,
+        {
+          assigned_project_manager: manager.name,
+          role: manager.role,
+        },
+        { withCredentials: true }
+      );
 
-setAlert({
-  type: "success",
-  message:
-    manager.name === user?.first_name
-      ? "Project assigned successfully"
-      : `Project assigned to ${manager.name}`,
-});
+      setAlert({
+        type: "success",
+        message:
+          manager.name === user?.first_name
+            ? "Project assigned successfully"
+            : `Project assigned to ${manager.name}`,
+      });
 
-// Refresh parent project list
-await onUpdate();
-
-// Close modal
-setShowModal(false);
-
-
+      // Refresh parent project list
+      await onUpdate();
+      setTimeout(() => {
+        window.dispatchEvent(new Event("projects-updated"));
+      }, 100);
     } catch (err) {
       console.error(err);
       setAlert({
@@ -417,23 +434,32 @@ setShowModal(false);
     }
   };
   useEffect(() => {
+    if (!showModal) return;
+
     const fetchProjectManagers = async () => {
       try {
         const res = await api.get("/project-manager/project-managers", {
           withCredentials: true,
         });
 
-        setProjectManagers(res.data.data || []);
+        const managersOnly = (res.data.data || []).filter((u: any) =>
+          u.role?.toLowerCase().includes("manager")
+        );
+
+        setProjectManagers(managersOnly);
       } catch (err) {
         console.error(err);
       }
     };
 
     fetchProjectManagers();
-  }, []);
-  console.log("assignedTo:", assignedTo);
-console.log("user first_name:", user?.first_name);
-console.log("isAssignedToSelf:", isAssignedToSelf);
+  }, [showModal]);
+
+  const formatDate = (date?: string) => {
+  if (!date) return "-";
+  return date.split("T")[0]; // removes timezone completely
+};
+
 
   return (
     <>
@@ -442,7 +468,7 @@ console.log("isAssignedToSelf:", isAssignedToSelf);
         onClick={() => setShowModal(true)}
         className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-4 flex flex-col min-h-[180px] cursor-pointer"      >
         <h2 className="text-purple-600 font-semibold text-lg mb-2">
-          Project ID: {data.id}
+          Project ID: {data.bd_request_id}
         </h2>
 
         <div className="flex-1 space-y-2 text-sm">
@@ -455,9 +481,9 @@ console.log("isAssignedToSelf:", isAssignedToSelf);
 
           <div className="flex justify-between">
             <span className="text-gray-500">Required Date</span>
-            <span className="font-medium">
-              {new Date(data.required_date).toLocaleDateString()}
-            </span>
+           <span className="font-medium">
+  {formatDate(data.required_date)}
+</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Assigned Date</span>
@@ -553,7 +579,7 @@ console.log("isAssignedToSelf:", isAssignedToSelf);
 
                   <input
                     readOnly
-                    value={data.id}
+                    value={data.bd_request_id}
                     className="border p-2 rounded w-full bg-white text-sm"
                   />
                 </div>
@@ -565,11 +591,7 @@ console.log("isAssignedToSelf:", isAssignedToSelf);
 
                   <input
                     readOnly
-                    value={
-                      data.required_date
-                        ? new Date(data.required_date).toLocaleDateString()
-                        : "-"
-                    }
+                    value={formatDate(data.required_date)}
                     className="border p-2 rounded w-full bg-white text-sm"
                   />
                 </div>
@@ -795,7 +817,14 @@ console.log("isAssignedToSelf:", isAssignedToSelf);
 
                         <td className="p-2">{task.task_description || "-"}</td>
 
-                        <td className="p-2">{task.department || "-"}</td>
+                        <td className="p-2">
+                          {task.department
+                            ? task.department
+                              .replace(/_/g, " ")
+                              .toLowerCase()
+                              .replace(/\b\w/g, (c) => c.toUpperCase())
+                            : "-"}
+                        </td>
 
                         <td className="p-2">{task.assigned_to || "-"}</td>
 
@@ -951,7 +980,10 @@ console.log("isAssignedToSelf:", isAssignedToSelf);
                                     key={dept.department_id}
                                     value={dept.name}
                                   >
-                                    {dept.name}
+                                    {dept.name
+                                      ?.replace(/_/g, " ")
+                                      ?.toLowerCase()
+                                      ?.replace(/\b\w/g, (c: string) => c.toUpperCase())}
                                   </option>
                                 ))}
                               </select>
@@ -963,18 +995,23 @@ console.log("isAssignedToSelf:", isAssignedToSelf);
                                 Assigned To
                               </label>
 
-                              <input
-                                type="text"
-                                placeholder="Employee Name"
+                              <select
                                 value={item.assigned_to}
                                 onChange={(e) => {
                                   const updated = [...workflow];
                                   updated[index].assigned_to = e.target.value;
                                   setWorkflow(updated);
                                 }}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2
-                              focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                              />
+                                className="w-full border p-2 rounded"
+                              >
+                                <option value="">Select Manager</option>
+
+                                {managers.map((m: any) => (
+                                  <option key={m.id} value={`${m.first_name} ${m.last_name}`}>
+                                    {m.first_name} {m.last_name}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
 
                             {/* Priority */}

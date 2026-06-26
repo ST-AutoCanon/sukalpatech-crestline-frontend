@@ -50,7 +50,7 @@ export default function ProjectManagerHome() {
   const projects = [
     ...new Map(
       allWorkflows.map((item) => [
-        item.project_management_id,
+        item.bd_request_id,
         item,
       ])
     ).values(),
@@ -58,8 +58,8 @@ export default function ProjectManagerHome() {
 
   const selectedProjectWorkflow = allWorkflows.filter(
     (item) =>
-      item.project_management_id ===
-      selectedProject?.project_management_id
+      item.bd_request_id ===
+      selectedProject?.bd_request_id
   );
   const getStatusColor = (status?: string) => {
     switch ((status || "PENDING").toUpperCase()) {
@@ -106,6 +106,7 @@ export default function ProjectManagerHome() {
       "/project-manager/workflow-summary"
     );
     console.log("Workflow API Response:", res.data.data);
+    
 
     setWorkflow(res.data.data);
   };
@@ -123,7 +124,7 @@ export default function ProjectManagerHome() {
     const uniqueProjects = [
       ...new Map(
         data.map((item: any) => [
-          item.project_management_id,
+          item.bd_request_id,
           item,
         ])
       ).values(),
@@ -133,7 +134,7 @@ export default function ProjectManagerHome() {
     if (uniqueProjects.length > 0) {
       const lastProject = uniqueProjects.sort(
         (a: any, b: any) =>
-          b.project_management_id - a.project_management_id
+          b.bd_request_id - a.bd_request_id
       )[0];
 
       setSelectedProject(lastProject);
@@ -169,8 +170,8 @@ export default function ProjectManagerHome() {
           return statusCompare;
 
         return (
-          b.project_management_id -
-          a.project_management_id
+          b.bd_request_id -
+          a.bd_request_id
         );
       })[0];
 
@@ -180,7 +181,7 @@ export default function ProjectManagerHome() {
     }
 
     navigate(
-      `/project_manager/projects?projectId=${latestProject.project_management_id}`
+      `/project_manager/projects?projectId=${latestProject.bd_request_id}`
     );
   };
 
@@ -245,8 +246,8 @@ export default function ProjectManagerHome() {
   const projectTasks = selectedProject
     ? allWorkflows.filter(
       (item) =>
-        item.project_management_id ===
-        selectedProject.project_management_id
+        item.bd_request_id ===
+        selectedProject.bd_request_id
     )
     : [];
 
@@ -301,11 +302,11 @@ export default function ProjectManagerHome() {
           </h2>
 
           <select
-            value={selectedProject?.project_management_id || ""}
+            value={selectedProject?.bd_request_id || ""}
             onChange={(e) => {
               const project = projects.find(
                 (p) =>
-                  p.project_management_id === Number(e.target.value)
+                  p.bd_request_id === Number(e.target.value)
               );
 
               setSelectedProject(project);
@@ -316,10 +317,10 @@ export default function ProjectManagerHome() {
 
             {projects.map((project) => (
               <option
-                key={project.project_management_id}
-                value={project.project_management_id}
+                key={project.bd_request_id}
+                value={project.bd_request_id}
               >
-                Project id:{project.project_management_id}
+                Project id:{project.bd_request_id}
               </option>
             ))}
           </select>
@@ -382,7 +383,7 @@ export default function ProjectManagerHome() {
                       onClick={() => {
                         if (selectedProject) {
                           navigate(
-                            `/project_manager/projects?projectId=${selectedProject.project_management_id}`
+                            `/project_manager/projects?projectId=${selectedProject.bd_request_id}`
                           );
                         }
                       }}
