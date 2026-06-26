@@ -283,6 +283,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
           message: "BD info updated successfully!",
         });
       } else {
+        console.log("Form Required Date:", form.required_date);
         await api.post("/business-development", formData, {
           headers: {
             "Content-Type": "multipart/form-data",

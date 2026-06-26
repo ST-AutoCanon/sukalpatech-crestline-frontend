@@ -28,19 +28,18 @@ const ProjectManagerPage = () => {
 
   const { user }: any = useContext(AuthContext);
 
-  const myProjects = useMemo(() => {
-    if (!user?.first_name) return [];
+ const myProjects = useMemo(() => {
+  if (!user?.first_name) return [];
 
-    const currentUser = user.first_name.trim().toLowerCase();
+  const currentUser = user.first_name.trim().toLowerCase();
 
-    return projects.filter((p) => {
-      const assignedTo = p.assigned_project_manager?.trim().toLowerCase();
-      const assignedBy = p.assigned_by?.trim().toLowerCase();
-
-      return assignedTo === currentUser && assignedBy === currentUser;
-    });
-  }, [projects, user?.first_name]);
-
+  return projects.filter(
+    (p) =>
+      p.assigned_project_manager
+        ?.trim()
+        .toLowerCase() === currentUser
+  );
+}, [projects, user?.first_name]);
   const assignedProjects = useMemo(() => {
     return projects.filter((p) => {
       return !p.assigned_project_manager || p.assigned_project_manager.trim() === "";
@@ -70,8 +69,12 @@ const ProjectManagerPage = () => {
 
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+  fetchProjects();
+
+  window.addEventListener("projects-updated", fetchProjects);
+
+  return () => window.removeEventListener("projects-updated", fetchProjects);
+}, []);
 
   useEffect(() => {
   if (!selectedProjectId || projects.length === 0) return;
@@ -185,9 +188,9 @@ const ProjectManagerPage = () => {
                     <ProjectManagerCard
                       key={item.id}
                       data={item}
-                      onUpdate={fetchProjects}
                       showAssignFlow={false}
                       showWorkflowFlow={true}
+                      onUpdate={fetchProjects}
                     />
                   ))}
               </div>

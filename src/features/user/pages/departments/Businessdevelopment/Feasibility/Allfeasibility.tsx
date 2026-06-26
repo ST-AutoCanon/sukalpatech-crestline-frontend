@@ -430,6 +430,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
             withCredentials: true,
           }
         );
+        console.log("BD Required Date:", data.required_date);
 
         console.log("✅ PROJECT ASSIGNED:", assignRes.data);
 
