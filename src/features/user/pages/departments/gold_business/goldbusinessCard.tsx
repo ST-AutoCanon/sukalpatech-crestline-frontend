@@ -148,7 +148,7 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
           onClick={() => setShowModal(true)}
           className="mt-3 text-blue-600 underline text-sm self-start"
         >
-          Update Final Status
+           Update & Assign To Project Manager
         </button>
       )}
 
