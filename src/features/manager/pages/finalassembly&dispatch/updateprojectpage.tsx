@@ -241,7 +241,7 @@ export default function ProjectPage() {
             className="bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col min-h-[200px] cursor-pointer"
           >
             <h2 className="text-purple-600 font-semibold text-lg mb-2">
-             Project ID: {p.display_id ?? p.id}
+             Project ID: {p.display_id ?? p.bd_request_id}
             </h2>
 
             <div className="flex-1 space-y-2 text-sm">
@@ -295,7 +295,7 @@ export default function ProjectPage() {
                 {[
                   [
                     "Project ID",
-                    selectedProject.display_id ?? selectedProject.id,
+                    selectedProject.display_id ?? selectedProject.bd_request_id,
                   ],
                   [
                     "BD Request ID",

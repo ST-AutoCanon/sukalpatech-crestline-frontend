@@ -247,7 +247,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate,card
                     disabled={loading}
                     className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
                   >
-                    {loading ? "Updating..." : "Update Final Status"}
+                    {loading ? "Updating..." : " Update & Assign To Project Manager"}
                   </button>
                 </div>
               </div>

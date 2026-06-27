@@ -16,10 +16,12 @@ interface Props {
   showWorkflowFlow?: boolean;
   autoOpen?: boolean;
   onUpdate: () => Promise<void>;
+  isMyProject?: boolean;
+  showAssignmentStatus?: boolean;
 }
 
-const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, showWorkflowFlow, autoOpen = false, }) => {
-  
+const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAssignmentStatus = false, onUpdate, showAssignFlow, showWorkflowFlow, autoOpen = false, }) => {
+
   const [workflow, setWorkflow] = useState([
     {
       task_title: "",
@@ -55,6 +57,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
   const [statusList, setStatusList] = useState<any[]>([]);
   const { user }: any = useContext(AuthContext);
   const [allWorkflows, setAllWorkflows] = useState<any[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
 
   const alreadyAssignedToPM =
@@ -456,9 +459,53 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
   }, [showModal]);
 
   const formatDate = (date?: string) => {
-  if (!date) return "-";
-  return date.split("T")[0]; // removes timezone completely
-};
+    if (!date) return "-";
+    return new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kolkata",
+    }).format(new Date(date));
+  };
+
+  const handleEditTask = async (item: any) => {
+    console.log("projectId:", projectId);
+    console.log("item:", item);
+    console.log("task id:", item.id);
+
+    try {
+      const res = await api.put(
+        `/project-manager/project/${data.id}/workflow/${item.id}`,
+        {
+          task_title: item.task_title,
+          department: item.department,
+          assigned_to: item.assigned_to,
+          priority: item.priority,
+          start_date: item.start_date,
+          due_date: item.due_date,
+          estimated_days: item.estimated_days,
+          task_description: item.task_description,
+        },
+        { withCredentials: true }
+      );
+
+      setAlert({
+        type: "success",
+        message: "Task updated successfully",
+      });
+
+      console.log(res.data);
+
+    } catch (err) {
+      console.error(err);
+
+      setAlert({
+        type: "error",
+        message: "Failed to update task",
+      });
+    }
+  };
+
+  const cardTheme = isMyProject
+    ? "bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 border-emerald-300"
+    : "bg-gradient-to-br from-slate-600 via-indigo-700 to-violet-700 border-indigo-300";
 
 
   return (
@@ -466,11 +513,21 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
       {/* ================= CARD ================= */}
       <div
         onClick={() => setShowModal(true)}
-        className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-4 flex flex-col min-h-[180px] cursor-pointer"      >
-        <h2 className="text-purple-600 font-semibold text-lg mb-2">
-          Project ID: {data.bd_request_id}
-        </h2>
+        className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-4 flex flex-col min-h-[180px] cursor-pointer"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-purple-600 font-semibold text-lg">
+            Project ID: {data.bd_request_id}
+          </h2>
 
+          {showAssignmentStatus && (
+            <div
+              className={`w-3 h-3 rounded-full ${isMyProject ? "bg-green-500" : "bg-blue-500"
+                }`}
+              title={isMyProject ? "Assigned to Me" : "Assigned to Another Manager"}
+            />
+          )}
+        </div>
         <div className="flex-1 space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-500">Description</span>
@@ -481,9 +538,9 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
 
           <div className="flex justify-between">
             <span className="text-gray-500">Required Date</span>
-           <span className="font-medium">
-  {formatDate(data.required_date)}
-</span>
+            <span className="font-medium">
+              {formatDate(data.required_date)}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Assigned Date</span>
@@ -795,10 +852,14 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
                         <th className="p-2 text-left whitespace-nowrap">Duration</th>
                         <th className="p-2 text-left whitespace-nowrap">Status</th>
                         <th className="p-2 text-left whitespace-nowrap">Progress</th>
+                        {alreadyAssignedToPM && (
+                          <th className="p-2">Action</th>
+                        )}
                       </>
                     )}
                   </tr>
                 </thead>
+
                 <tbody>
                   {workflowView.map((task, index) => {
                     const departmentStatuses = statusList.filter(
@@ -813,37 +874,147 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
                         : null;
                     return (
                       <tr key={index} className="border-b">
-                        <td className="p-2">{task.task_title || "-"}</td>
-
-                        <td className="p-2">{task.task_description || "-"}</td>
-
                         <td className="p-2">
-                          {task.department
-                            ? task.department
-                              .replace(/_/g, " ")
-                              .toLowerCase()
-                              .replace(/\b\w/g, (c) => c.toUpperCase())
-                            : "-"}
-                        </td>
-
-                        <td className="p-2">{task.assigned_to || "-"}</td>
-
-                        <td className="p-2">{task.priority || "-"}</td>
-
-                        <td className="p-2">
-                          {task.start_date
-                            ? new Date(task.start_date).toLocaleDateString("en-GB")
-                            : "-"}
+                          {editingIndex === index ? (
+                            <input
+                              value={task.task_title}
+                              onChange={(e) => {
+                                const updated = [...workflowView];
+                                updated[index].task_title = e.target.value;
+                                setWorkflowView(updated);
+                              }}
+                              className="border rounded px-2 py-1 w-full"
+                            />
+                          ) : (
+                            task.task_title
+                          )}
                         </td>
 
                         <td className="p-2">
-                          {task.due_date
-                            ? new Date(task.due_date).toLocaleDateString("en-GB")
-                            : "-"}
+                          {editingIndex === index ? (
+                            <input
+                              value={task.task_description}
+                              onChange={(e) => {
+                                const updated = [...workflowView];
+                                updated[index].task_description = e.target.value;
+                                setWorkflowView(updated);
+                              }}
+                              className="border rounded px-2 py-1 w-full"
+                            />
+                          ) : (
+                            task.task_description
+                          )}
+                        </td>
+                        <td className="p-2">
+                          {editingIndex === index ? (
+                            <select
+                              value={task.department}
+                              onChange={(e) => {
+                                const updated = [...workflowView];
+                                updated[index].department = e.target.value;
+                                setWorkflowView(updated);
+                              }}
+                              className="border rounded p-1 w-full"
+                            >
+                              {departments.map((dept: any) => (
+                                <option key={dept.department_id} value={dept.name}>
+                                  {dept.name}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            task.department
+                              ? task.department
+                                .replace(/_/g, " ")
+                                .toLowerCase()
+                                .replace(/\b\w/g, (c) => c.toUpperCase())
+                              : "-"
+                          )}
                         </td>
 
-                        <td className="p-2">{task.estimated_days || "-"}</td>
+                        <td className="p-2">
+                          {editingIndex === index ? (
+                            <input
+                              value={task.assigned_to}
+                              onChange={(e) => {
+                                const updated = [...workflowView];
+                                updated[index].assigned_to = e.target.value;
+                                setWorkflowView(updated);
+                              }}
+                              className="border rounded px-2 py-1 w-full"
+                            />
+                          ) : (
+                            task.assigned_to
+                          )}
+                        </td>
+                        <td className="p-2">
+                          {editingIndex === index ? (
+                            <input
+                              value={task.priority}
+                              onChange={(e) => {
+                                const updated = [...workflowView];
+                                updated[index].priority = e.target.value;
+                                setWorkflowView(updated);
+                              }}
+                              className="border rounded px-2 py-1 w-full"
+                            />
+                          ) : (
+                            task.priority
+                          )}
+                        </td>
+                        <td className="p-2">
+                          {editingIndex === index ? (
+                            <input
+                              type="date"
+                              value={task.start_date?.split("T")[0] || ""}
+                              onChange={(e) => {
+                                const updated = [...workflowView];
+                                updated[index].start_date = e.target.value;
+                                setWorkflowView(updated);
+                              }}
+                              className="border rounded p-1"
+                            />
+                          ) : (
+                            task.start_date
+                              ? new Date(task.start_date).toLocaleDateString("en-GB")
+                              : "-"
+                          )}
+                        </td>
 
+                        <td className="p-2">
+                          {editingIndex === index ? (
+                            <input
+                              type="date"
+                              value={task.due_date?.split("T")[0] || ""}
+                              onChange={(e) => {
+                                const updated = [...workflowView];
+                                updated[index].due_date = e.target.value;
+                                setWorkflowView(updated);
+                              }}
+                              className="border rounded p-1"
+                            />
+                          ) : (
+                            task.due_date
+                              ? new Date(task.due_date).toLocaleDateString("en-GB")
+                              : "-"
+                          )}
+                        </td>
+
+                        <td className="p-2">
+                          {editingIndex === index ? (
+                            <input
+                              value={task.estimated_days}
+                              onChange={(e) => {
+                                const updated = [...workflowView];
+                                updated[index].estimated_days = e.target.value;
+                                setWorkflowView(updated);
+                              }}
+                              className="border rounded px-2 py-1 w-full"
+                            />
+                          ) : (
+                            task.estimated_days
+                          )}
+                        </td>
                         {/* STATUS */}
                         <td className="p-2">
                           <span
@@ -877,13 +1048,55 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
                             </span>
                           </div>
                         </td>
+                        {alreadyAssignedToPM && (
+                          <td className="p-2">
+                            {editingIndex === index ? (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => {
+                                    handleEditTask(workflowView[index]);
+                                    setEditingIndex(null);
+                                  }}
+                                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
+                                >
+                                  Save
+                                </button>
+
+                                <button
+                                  onClick={() => setEditingIndex(null)}
+                                  className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  if (!isAssignedToSelf) {
+                                    setAlert({
+                                      type: "error",
+                                      message:
+                                        "Only the assigned project manager can edit this workflow.",
+                                    });
+                                    return;
+                                  }
+
+                                  setEditingIndex(index);
+                                }}
+                                className="bg-blue-600 text-white px-3 py-1 rounded"
+                              >
+                                Edit
+                              </button>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
 
-              {/* ================= ASSIGN BUTTON ================= */}
+              { }
               {showAssignFlow && !alreadyAssignedToPM && (
                 <div className="bg-gray-100 p-4 rounded mt-6">
                   <h3 className="font-semibold mb-4">
@@ -946,15 +1159,17 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
 
                               <input
                                 type="text"
-                                placeholder="Enter Task Title"
                                 value={item.task_title}
+                                placeholder="Enter task title"
                                 onChange={(e) => {
                                   const updated = [...workflow];
                                   updated[index].task_title = e.target.value;
                                   setWorkflow(updated);
                                 }}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2
-                               focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                className={`w-full border rounded-lg px-3 py-2
+                                    ? "bg-gray-100 cursor-not-allowed"
+                                    : "bg-white"
+                                  }`}
                               />
                             </div>
 
@@ -1118,21 +1333,21 @@ const ProjectManagerCard: React.FC<Props> = ({ data, onUpdate, showAssignFlow, s
                               className="w-full border border-gray-300 rounded-lg px-3 py-2
                             focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                             />
+                            {/* Action Buttons */}
+                            <div className="mt-4 flex justify-end gap-3">
+                              {workflow.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setWorkflow(workflow.filter((_, i) => i !== index))
+                                  }
+                                  className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white"
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
                           </div>
-                          {/* Remove Button */}
-                          {workflow.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setWorkflow(
-                                  workflow.filter((_, i) => i !== index)
-                                );
-                              }}
-                              className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md shadow"
-                            >
-                              ✕ Remove
-                            </button>
-                          )}
                         </div>
                       ))}
                       <button
