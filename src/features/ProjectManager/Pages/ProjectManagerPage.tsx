@@ -40,9 +40,6 @@ const ProjectManagerPage = () => {
     );
   }, [projects, user?.first_name]);
 
-  const assignedProjectList = useMemo(() => {
-    return projects.filter((p) => p.assigned_project_manager);
-  }, [projects]);
 
   const fetchProjects = async () => {
     try {
@@ -150,31 +147,14 @@ const ProjectManagerPage = () => {
               ))}
           </div>
         )
-      ) : (
-        assignedProjectList.length === 0 ? (
-          <p className="text-white">No assigned projects</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {[...assignedProjectList]
-              .sort((a, b) => b.id - a.id)
-              .map((item) => (
-                <ProjectManagerCard
-                  key={item.id}
-                  data={item}
-                  showAssignFlow={false}
-                  showWorkflowFlow={true}
-                  onUpdate={fetchProjects}
-                  showAssignmentStatus={true}
-                  isMyProject={
-                    item.assigned_project_manager?.trim().toLowerCase() ===
-                    user?.first_name?.trim().toLowerCase()
-                  }
-                />
-              ))}
-          </div>
-        )
-      )}
+      ) : activeTab === "assignedprojects" ? (
+        <>
+          {/* Sub Tabs */}
 
+
+          <UpdateProjects />
+        </>
+      ) : null}
     </div>
   );
 };

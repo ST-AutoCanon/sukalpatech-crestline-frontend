@@ -20,8 +20,8 @@ const UpdateProjects = () => {
   const { user }: any = useContext(AuthContext);
 
 
-const currentUser =
-  user?.first_name?.trim().toLowerCase() || "";
+  const currentUser =
+    user?.first_name?.trim().toLowerCase() || "";
 
   const fetchProjects = async () => {
     try {
@@ -48,7 +48,7 @@ const currentUser =
   useEffect(() => {
     fetchProjects();
   }, []);
-  
+
   return (
     <div className="p-6">
 
@@ -63,15 +63,19 @@ const currentUser =
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
 
-          {projects.map((project) => ( 
-            <ProjectManagerCard 
-            key={project.id} 
-            data={project} 
-            onUpdate={fetchProjects} 
-            showAssignFlow={true} 
-            showWorkflowFlow={true} 
-            /> 
-            ))}
+          {projects.map((project) => (
+            <ProjectManagerCard
+              key={project.id}
+              data={project}
+              onUpdate={fetchProjects}
+              showAssignFlow={true}
+              showWorkflowFlow={true}
+              showAssignmentStatus={true}
+              isMyProject={
+                project.assigned_project_manager?.trim().toLowerCase() === currentUser
+              }
+            />
+          ))}
         </div>
       )}
     </div>

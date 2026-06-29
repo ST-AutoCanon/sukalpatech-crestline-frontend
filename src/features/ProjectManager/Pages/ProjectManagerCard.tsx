@@ -519,14 +519,15 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
           <h2 className="text-purple-600 font-semibold text-lg">
             Project ID: {data.bd_request_id}
           </h2>
-
-          {showAssignmentStatus && (
-            <div
-              className={`w-3 h-3 rounded-full ${isMyProject ? "bg-green-500" : "bg-blue-500"
-                }`}
-              title={isMyProject ? "Assigned to Me" : "Assigned to Another Manager"}
-            />
-          )}
+          {showAssignmentStatus &&
+            data.assigned_project_manager &&
+            data.assigned_project_manager.trim() !== "" && (
+              <div
+                className={`w-3 h-3 rounded-full ${isMyProject ? "bg-green-500" : "bg-blue-500"
+                  }`}
+                title={isMyProject ? "Assigned to Me" : "Assigned to Another Manager"}
+              />
+            )}
         </div>
         <div className="flex-1 space-y-2 text-sm">
           <div className="flex justify-between">

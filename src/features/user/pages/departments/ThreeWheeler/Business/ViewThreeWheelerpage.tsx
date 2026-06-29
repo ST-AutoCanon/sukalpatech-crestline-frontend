@@ -45,6 +45,7 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
 
   // Reset formData when modal opens
   useEffect(() => {
+     console.log("3W Data:", data);
     if (showModal) {
       setFormData({ ...data });
       setFeasibilityStatus(data.feasibility_status || "");
