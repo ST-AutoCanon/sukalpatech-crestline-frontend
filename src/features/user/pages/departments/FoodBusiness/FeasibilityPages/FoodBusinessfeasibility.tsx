@@ -51,7 +51,7 @@ const TwoWheelerFeasibility: React.FC = () => {
             activeTab === "all" ? "bg-purple-700" : "bg-purple-300"
           }`}
         >
-          All 3W BRs
+          All Food BRs
         </div>
         <button
           onClick={() => setActiveTab("update")}
