@@ -47,9 +47,19 @@ const GoldList = ({ refresh, filter }: Props) => {
 
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {requests.map((req,i) => (
-        <ViewGold key={req.id} data={req} cardIndex={i} />
-      ))}
+      {requests.map((req) => (
+  <ViewGold
+    key={req.id}
+    data={req}
+    onUpdate={(updated) => {
+      setRequests((prev) =>
+        prev.map((item) =>
+          item.id === updated.id ? updated : item
+        )
+      );
+    }}
+  />
+))}
     </div>
   );
 };

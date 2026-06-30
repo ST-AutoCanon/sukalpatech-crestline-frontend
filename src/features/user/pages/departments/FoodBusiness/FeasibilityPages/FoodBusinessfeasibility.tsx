@@ -77,7 +77,6 @@ const TwoWheelerFeasibility: React.FC = () => {
               data={pr}
               mode={activeTab}
               onUpdate={handleUpdateSuccess}
-              cardIndex={i}
             />
           ))}
         </div>

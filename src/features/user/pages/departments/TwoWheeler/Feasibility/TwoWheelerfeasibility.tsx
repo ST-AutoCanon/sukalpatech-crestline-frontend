@@ -19,10 +19,14 @@ const TwoWheelerFeasibility: React.FC = () => {
         console.log("2W API response:", res.data);
 
         // Make sure we always assign an array
-        const dataArray = Array.isArray(res.data.data)
-          ? res.data.data
-          : res.data?.data?.data || [];
-        setPrs(dataArray);
+       const resData = res.data;
+
+if (!resData.success) {
+  setPrs([]);
+  return;
+}
+
+setPrs(Array.isArray(resData.data) ? resData.data : []);
       } catch (err) {
         console.error("Fetch 2W error:", err);
         setPrs([]);
@@ -77,7 +81,7 @@ const TwoWheelerFeasibility: React.FC = () => {
               data={pr}
               mode={activeTab}
               onUpdate={handleUpdateSuccess}
-              cardIndex={i}
+
             />
           ))}
         </div>

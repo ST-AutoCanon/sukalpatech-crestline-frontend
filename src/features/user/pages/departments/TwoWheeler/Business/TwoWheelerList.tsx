@@ -13,31 +13,28 @@ const TwoWheelerList = ({ refresh, filter }: Props) => {
   const [loading, setLoading] = useState(false);
 
   const fetchRequests = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-      let url = "/business-development/2w/list";
+  try {
+    setLoading(true);
 
-      if (filter && filter !== "ALL") {
-        url += `?status=${filter}`;
-      }
-
-      const res = await api.get(url, {
+    const res = await api.get(
+      `/business-development/2w/list${filter && filter !== "ALL" ? `?status=${filter}` : ""}`,
+      {
         headers: {
-          Authorization: `Bearer ${token}`,
-          "Cache-Control": "no-cache",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      });
+      }
+    );
 
-      // Access the innermost data array
-      setRequests(res.data?.data?.data || []);
-    } catch (err) {
-      console.error("Error fetching 2W requests", err);
-      setRequests([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const list = res.data?.data;
+
+    setRequests(Array.isArray(list) ? list : []);
+  } catch (err) {
+    console.error("Error fetching 2W requests", err);
+    setRequests([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchRequests();
@@ -48,9 +45,19 @@ const TwoWheelerList = ({ refresh, filter }: Props) => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {requests.map((req,i) => (
-        <ViewTwoWheeler key={req.id} data={req} cardIndex={i}  />
-      ))}
+      {requests.map((req) => (
+  <ViewTwoWheeler
+    key={req.id}
+    data={req}
+    onUpdate={(updated) => {
+      setRequests((prev) =>
+        prev.map((item) =>
+          item.id === updated.id ? updated : item
+        )
+      );
+    }}
+  />
+))}
     </div>
   );
 };

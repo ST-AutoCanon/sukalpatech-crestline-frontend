@@ -6,16 +6,16 @@ interface Props {
   data: any;
   mode?: "update" | "default";
   onUpdate: (updatedItem: any) => void;
-  cardIndex: number; 
 }
 
 const FoodBusinessCard: React.FC<Props> = ({
   data,
   mode = "default",
   onUpdate,
-  cardIndex
 }) => {
   const [showModal, setShowModal] = useState(false);
+   const [feasibilityStatus, setFeasibilityStatus] = useState(data.feasibility_status || "");
+    const [feasibilityComments, setFeasibilityComments] = useState(data.comments || "");
   const [finalStatus, setFinalStatus] = useState(data.final_status || "");
   const [finalComment, setFinalComment] = useState(
     data.final_comment || ""
@@ -28,6 +28,15 @@ const FoodBusinessCard: React.FC<Props> = ({
   } | null>(null);
 
   const render = (v: any) => (v ? v : "-");
+
+   // ✅ Initialize state when modal opens
+  const openModal = () => {
+    setFeasibilityStatus(data.feasibility_status || "");
+    setFeasibilityComments(data.comments || "");
+    setFinalStatus(data.final_status || "");
+    setFinalComment(data.final_comment || "");
+    setShowModal(true);
+  };
 
   // ✅ FINAL UPDATE
   const handleFinalUpdate = async () => {
@@ -128,7 +137,7 @@ const FoodBusinessCard: React.FC<Props> = ({
 
       {/* Header */}
       <h3 className="text-purple-700 font-semibold text-sm mb-3">
-        FOOD ID:  {cardIndex + 1}
+        FOOD ID:  {data.id}
       </h3>
 
       {/* ✅ CLEAN ALIGNMENT */}
@@ -147,13 +156,11 @@ const FoodBusinessCard: React.FC<Props> = ({
 
       {/* Update Button */}
       {mode === "update" && (
-        <button
-          onClick={() => setShowModal(true)}
-          className="mt-3 text-blue-600 underline text-sm self-start"
-        >
-           Update & Assign To Project Manager
+        <button onClick={openModal} className="mt-3 text-blue-600 underline text-sm self-start">
+          Update 
         </button>
       )}
+
 
       {/* ================= MODAL ================= */}
       {showModal && (
@@ -279,7 +286,7 @@ const FoodBusinessCard: React.FC<Props> = ({
                     disabled={loading}
                     className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
                   >
-                    {loading ? "Updating..." : "Update Final Status"}
+                    {loading ? "Updating..." : "Update & Assign To Project Manager"}
                   </button>
                 </div>
               </>

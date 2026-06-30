@@ -78,13 +78,12 @@ const GoldBusinessFeasibility: React.FC = () => {
         <p>No Gold business requests found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {prs.map((pr,i) => (
+          {prs.map((pr) => (
             <ViewGold
               key={pr.id}
               data={pr}
               mode={activeTab}
               onUpdate={handleUpdateSuccess}
-               cardIndex={i}
             />
           ))}
         </div>

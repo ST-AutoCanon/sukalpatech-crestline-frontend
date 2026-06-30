@@ -51,12 +51,11 @@ const UpdatedFoodRequests: React.FC<Props> = ({ onBack }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8 space-y-4">
           {data
             ?.filter((item) => item && item.id)
-            .map((item, index) => (   // ✅ add index here
+            .map((item) => (   // ✅ add index here
               <FoodBusiness
                 key={item.id}
                 data={item}
                 mode="update"
-                cardIndex={index}   // ✅ pass index
                 onUpdate={(updatedItem) => {
                   if (!updatedItem?.id) return;
 

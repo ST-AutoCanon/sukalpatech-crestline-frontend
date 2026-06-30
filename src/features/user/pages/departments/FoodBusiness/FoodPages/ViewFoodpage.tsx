@@ -26,10 +26,9 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
-  cardIndex: number; 
 }
 
-const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) => {
+const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate }) => {
   const [showModal, setShowModal] = useState(false);
   const [feasibilityStatus, setFeasibilityStatus] = useState("");
   const [comments, setComments] = useState("");
@@ -38,12 +37,12 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
   const [formData, setFormData] = useState({ ...data });
 
   const [editChanges, setEditChanges] = useState<Partial<typeof formData>>({});
-  
-    // When editing any field, track the changes
-    const handleEditChange = (key: keyof typeof formData, value: string) => {
-      setFormData((prev) => ({ ...prev, [key]: value }));
-      setEditChanges((prev) => ({ ...prev, [key]: value }));
-    };
+
+  // When editing any field, track the changes
+  const handleEditChange = (key: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    setEditChanges((prev) => ({ ...prev, [key]: value }));
+  };
 
   useEffect(() => {
     if (showModal) {
@@ -57,15 +56,16 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
   const updateFood = async () => {
     try {
-     const res = await api.patch(
-  `/business-development/food/update/${data.id}`,
-  {
-    ...formData,
-    feasibility_status: feasibilityStatus,
-    comments: comments,
-  },
-  { withCredentials: true }
-);
+      const res = await api.patch(
+        `/business-development/food/update/${data.id}`,
+        {
+          ...formData,
+          feasibility_status: feasibilityStatus,
+          comments: comments,
+        },
+        { withCredentials: true }
+      );
+      console.log(res.data.data);
 
       onUpdate?.(res.data.data);
 
@@ -98,6 +98,13 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
     ["Product Name", data.product_name],
   ];
 
+  type FormKey = keyof typeof formData;
+
+  type Field = {
+    label: string;
+    key: FormKey;
+  };
+
   return (
     <div className="bg-white rounded-xl shadow p-4 w-full sm:w-[340px] m-2 flex flex-col justify-between">
 
@@ -105,7 +112,7 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
       {/* HEADER */}
       <h3 className="text-purple-700 font-semibold text-sm mb-3">
-        FOOD ID:  {cardIndex+1}
+        FOOD ID:  {data.id}
       </h3>
 
       {/* CARD FIELDS */}
@@ -121,7 +128,7 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
       </div>
 
       {/* BUTTON */}
-      <div className="mt-3 flex justify-between items-center">
+      <div className="mt-3 flex items-center gap-8">
         <button
           onClick={() => {
             setEditMode(false);
@@ -132,7 +139,7 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
           {mode === "update" ? "Update Feasibility" : "More Info"}
         </button>
 
-       {mode !== "update" && !formData.feasibility_status && (
+        {mode !== "update" && !formData.feasibility_status && (
           <button
             onClick={() => {
               setEditMode(true);
@@ -158,7 +165,11 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
             {/* HEADER */}
             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
-              FOOD-{cardIndex+1} Full Info
+              {editMode
+                ? `FOOD-${data.id} Edit Full Info`
+                : mode === "update"
+                  ? `FOOD-${data.id} Feasibility Update`
+                  : `FOOD-${data.id} Full Info`}
             </h2>
 
             {/* ================= SECTIONS ================= */}
@@ -166,42 +177,51 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
               {
                 title: "Company Details",
                 fields: [
-                  ["Company Name", data.company_name],
-                  ["Contact Person", data.contact_person],
-                  ["Phone", data.phone],
-                  ["Email", data.email],
+                  { label: "Company Name", key: "company_name" },
+                  { label: "Contact Person", key: "contact_person" },
+                  { label: "Phone", key: "phone" },
+                  { label: "Email", key: "email" },
                 ],
               },
               {
                 title: "Project Details",
                 fields: [
-                  ["Project Title", data.project_title],
-                  ["Expected Quantity", data.expected_quantity],
-                  ["Estimated Budget", data.estimated_budget],
+                  { label: "Project Title", key: "project_title" },
+                  { label: "Expected Quantity", key: "expected_quantity" },
+                  { label: "Estimated Budget", key: "estimated_budget" },
                 ],
               },
               {
                 title: "Product Details",
                 fields: [
-                  ["Product Category", data.product_category],
-                  ["Product Name", data.product_name],
-                  ["Packaging Type", data.packaging_type],
-                  ["Shelf Life", data.shelf_life],
-                  ["Storage Condition", data.storage_condition],
+                  { label: "Product Category", key: "product_category" },
+                  { label: "Product Name", key: "product_name" },
+                  { label: "Packaging Type", key: "packaging_type" },
+                  { label: "Shelf Life", key: "shelf_life" },
+                  { label: "Storage Condition", key: "storage_condition" },
                 ],
               },
               {
                 title: "Current Status",
                 fields: [
-                  ["Business Status", data.business_status],
-                  ["Comment", data.comment],
-                  ["Feasibility Status", data.feasibility_status],
-                  ["Feasibility Comments", data.comments],
+                  { label: "Business Status", key: "business_status" },
+                  { label: "Comment", key: "comment" },
+
+                  ...(formData.feasibility_status || formData.comments
+                    ? [
+                      { label: "Feasibility Status", key: "feasibility_status" },
+                      { label: "Feasibility Comments", key: "comments" },
+                    ]
+                    : []),
 
                   ...(mode !== "update"
                     ? [
-                      ["Final Status", data.final_status],
-                      ["Final Comment", data.final_comment],
+                      ...(data.final_status || data.final_comment
+                        ? [
+                          { label: "Final Status", key: "final_status" as keyof typeof formData },
+                          { label: "Final Comment", key: "final_comment" as keyof typeof formData },
+                        ]
+                        : []),
                     ]
                     : []),
                 ],
@@ -211,26 +231,25 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
                 <h3 className="text-sm font-semibold text-gray-800">{section.title}</h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {section.fields.map(([label, value]) => {
-                    const key = label.toLowerCase().replace(/ /g, "_") as keyof typeof formData;
-                    return (
-                      <div key={label} className="flex flex-col">
-                        <span className="text-gray-600 text-xs font-medium">{label}</span>
+                  {section.fields.map((field: Field) => (
+                    <div key={field.label} className="flex flex-col">
+                      <span className="text-gray-600 text-xs font-medium">
+                        {field.label}
+                      </span>
 
-                        {editMode ? (
-  <input
-    value={formData[key] || ""}
-    onChange={(e) => handleEditChange(key, e.target.value)}
-    className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
-  />
-) : (
-  <span className="bg-white border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900">
-    {render(formData[key])}
-  </span>
-)}
-                      </div>
-                    );
-                  })}
+                      {editMode ? (
+                        <input
+                          value={formData[field.key] || ""}
+                          onChange={(e) => handleEditChange(field.key, e.target.value)}
+                          className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                        />
+                      ) : (
+                        <span className="bg-white border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900">
+                          {render(formData[field.key])}
+                        </span>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}

@@ -49,9 +49,19 @@ const FoodList = ({ refresh, filter }: Props) => {
 
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {requests.map((req,i) => (
-        <ViewFood key={req.id} data={req}  cardIndex={i} />
-      ))}
+     {requests.map((req) => (
+  <ViewFood
+    key={req.id}
+    data={req}
+    onUpdate={(updated) => {
+      setRequests((prev) =>
+        prev.map((item) =>
+          item.id === updated.id ? updated : item
+        )
+      );
+    }}
+  />
+))}
     </div>
   );
 };
