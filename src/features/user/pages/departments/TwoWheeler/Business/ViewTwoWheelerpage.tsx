@@ -24,10 +24,10 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
-  cardIndex: number;
+ 
 }
 
-const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) => {
+const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate }) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...data });
@@ -108,7 +108,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) =>
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
       <h3 className="text-purple-700 font-semibold text-sm mb-3">
-        2W ID: {cardIndex + 1}  {/* index from map function */}
+        2W ID: {data.id}  {/* index from map function */}
       </h3>
       <div className="space-y-2 flex-1">
         {cardFields.map(([label, key]) => (
@@ -158,7 +158,11 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) =>
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
-              2W-{cardIndex + 1} Full Info
+              {editMode
+                ? `2W-${data.id} Edit Full Info`
+                : mode === "update"
+                  ? `2W-${data.id} Feasibility Update`
+                  : `2W-${data.id} Full Info`}
             </h2>
 
             {[{
@@ -192,16 +196,24 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) =>
                 // ❌ Hide these in edit mode
                 ...(!editMode
                   ? [
-                    { label: "Feasibility Status", key: "feasibility_status" },
-                    { label: "Feasibility Comments", key: "comments" },
+                    ...(formData.feasibility_status || formData.comments
+                      ? [
+                        { label: "Feasibility Status", key: "feasibility_status" },
+                        { label: "Comments", key: "comments" },
+                      ]
+                      : []),
                   ]
                   : []),
 
                 // ❌ Hide final fields also in edit mode
                 ...(!editMode && mode !== "update"
                   ? [
-                    { label: "Final Status", key: "final_status" },
-                    { label: "Final Comment", key: "final_comment" },
+                    ...(formData.final_status || formData.final_comment
+                      ? [
+                        { label: "Final Status", key: "final_status" },
+                        { label: "Final Comment", key: "final_comment" },
+                      ]
+                      : []),
                   ]
                   : []),
               ],
@@ -249,7 +261,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) =>
                     <textarea
                       value={comments}
                       onChange={(e) => setComments(e.target.value)}
-                      className="border p-2 rounded text-xs text-gray-900"
+                      className="border p-2 rounded text-sm text-gray-900 resize-none"
                     />
                   </div>
                 </div>

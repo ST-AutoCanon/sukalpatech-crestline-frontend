@@ -44,6 +44,24 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
     setAlertData(null);
 
     const token = localStorage.getItem("token");
+    // Email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!formData.email.trim()) {
+    setAlertData({
+      type: "error",
+      message: "Email is required.",
+    });
+    return;
+  }
+
+  if (!emailRegex.test(formData.email)) {
+    setAlertData({
+      type: "error",
+      message: "Please enter a valid email address.",
+    });
+    return;
+  }
 
     try {
       setLoading(true);
@@ -113,8 +131,15 @@ export default function ThreeWheelerPage({ onClose, onSuccess }: Props) {
                 <input name="company_name" value={formData.company_name} onChange={handleChange} placeholder="Company Name" className="bg-white border rounded-lg p-2" />
                 <input name="contact_person" value={formData.contact_person} onChange={handleChange} placeholder="Contact Person" className="bg-white border rounded-lg p-2" />
                 <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" className="bg-white border rounded-lg p-2" />
-                <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="bg-white border rounded-lg p-2" />
-              </div>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  className="bg-white border rounded-lg p-2"
+                  required
+                />              </div>
             </div>
 
             {/* ================= PROJECT DETAILS ================= */}

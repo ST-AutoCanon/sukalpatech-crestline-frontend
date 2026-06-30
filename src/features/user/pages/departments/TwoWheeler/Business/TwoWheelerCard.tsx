@@ -128,7 +128,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate,card
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
 <h3 className="text-purple-700 font-semibold text-sm mb-3">
-  2W ID: {cardIndex + 1}  {/* index from map function */}
+  2W ID: {data.id}  {/* index from map function */}
 </h3>
       <div className="flex flex-col gap-1">
         {cardFields.map(([label, value]) => (

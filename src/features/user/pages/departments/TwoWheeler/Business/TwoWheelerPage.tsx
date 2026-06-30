@@ -13,6 +13,8 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<any>(null);
   const [editId, setEditId] = useState<number | null>(null);
+  const [alertData, setAlertData] = useState<any>(null);
+
 
   const [formData, setFormData] = useState({
     company_name: "",
@@ -44,6 +46,24 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
     e.preventDefault();
     setAlert(null);
     const token = localStorage.getItem("token");
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!formData.email.trim()) {
+      setAlertData({
+        type: "error",
+        message: "Email is required.",
+      });
+      return;
+    }
+
+    if (!emailRegex.test(formData.email)) {
+      setAlertData({
+        type: "error",
+        message: "Please enter a valid email address.",
+      });
+      return;
+    }
 
     try {
       setLoading(true);
@@ -51,7 +71,7 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
       let res;
 
       if (editId) {
-       res = await api.put(`/business-development/2w/${editId}`, payload);
+        res = await api.put(`/business-development/2w/${editId}`, payload);
       } else {
         res = await api.post(`/business-development/2w/create`, payload);
       }
@@ -134,11 +154,13 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
                   className="bg-white border rounded-lg p-2"
                 />
                 <input
+                  type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Email"
                   className="bg-white border rounded-lg p-2"
+                  required
                 />
               </div>
             </div>

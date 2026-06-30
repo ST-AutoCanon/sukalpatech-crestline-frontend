@@ -6,16 +6,16 @@ interface Props {
   data: any;
   mode?: "update" | "default";
   onUpdate: (updatedItem: any) => void;
-   cardIndex: number; 
 }
 
 const ThreeWheelerCard: React.FC<Props> = ({
   data,
   mode = "default",
   onUpdate,
-  cardIndex
 }) => {
   const [showModal, setShowModal] = useState(false);
+  const [feasibilityStatus, setFeasibilityStatus] = useState(data.feasibility_status || "");
+  const [feasibilityComments, setFeasibilityComments] = useState(data.comments || "");
   const [finalStatus, setFinalStatus] = useState(data.final_status || "");
   const [finalComment, setFinalComment] = useState(data.final_comment || "");
   const [loading, setLoading] = useState(false);
@@ -26,6 +26,15 @@ const ThreeWheelerCard: React.FC<Props> = ({
   } | null>(null);
 
   const render = (v: any) => (v ? v : "-");
+
+  // ✅ Initialize state when modal opens
+  const openModal = () => {
+    setFeasibilityStatus(data.feasibility_status || "");
+    setFeasibilityComments(data.comments || "");
+    setFinalStatus(data.final_status || "");
+    setFinalComment(data.final_comment || "");
+    setShowModal(true);
+  };
 
   // ✅ Final Status Update
   const handleFinalUpdate = async () => {
@@ -126,7 +135,7 @@ const ThreeWheelerCard: React.FC<Props> = ({
 
       {/* Header */}
       <h3 className="text-purple-700 font-semibold text-sm mb-3">
-        3W ID: {cardIndex+1}
+        3W ID: {data.id}
       </h3>
 
       {/* Fields */}
@@ -144,12 +153,9 @@ const ThreeWheelerCard: React.FC<Props> = ({
       </div>
 
       {/* Button */}
-      {mode === "update" && (
-        <button
-          onClick={() => setShowModal(true)}
-          className="mt-3 text-blue-600 underline text-sm self-start"
-        >
-          Update & Assign To Project Manager
+     {mode === "update" && (
+        <button onClick={openModal} className="mt-3 text-blue-600 underline text-sm self-start">
+          Update 
         </button>
       )}
 
@@ -270,7 +276,7 @@ const ThreeWheelerCard: React.FC<Props> = ({
                     disabled={loading}
                     className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
                   >
-                    {loading ? "Updating..." : "Update Final Status"}
+                    {loading ? "Updating..." : "Update & Assign To Project Manager"}
                   </button>
                 </div>
               </>

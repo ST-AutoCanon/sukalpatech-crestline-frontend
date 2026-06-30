@@ -25,10 +25,9 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
-  cardIndex: number;
 }
 
-const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) => {
+const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate}) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...data });
@@ -99,7 +98,7 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
     <div className="bg-white rounded-xl shadow p-4 w-full  flex flex-col justify-between">
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
-      <h3 className="text-purple-700 font-semibold text-sm mb-3">3W ID: {cardIndex + 1}</h3>
+      <h3 className="text-purple-700 font-semibold text-sm mb-3">3W ID: {data.id}</h3>
 
       <div className="space-y-2 flex-1">
         {cardFields.map(([label, value]) => (
@@ -146,10 +145,13 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
           >
             {/* HEADER */}
             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
-              3W-{cardIndex+1} Full Info
+              {editMode
+                ? `3W-${data.id} Edit Full Info`
+                : mode === "update"
+                  ? `3W-${data.id} Feasibility Update`
+                  : `3W-${data.id} Full Info`}
             </h2>
-
-            {/* ================= SECTIONS ================= */}
+            { }
             {[
               {
                 title: "Company Details",
@@ -182,12 +184,20 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
                 fields: [
                   ["Business Status", data.business_status],
                   ["Comment", data.comment],
-                  ["Feasibility Status", data.feasibility_status],
-                  ["Feasibility Comments", data.comments],
+                  ...(data.feasibility_status || data.comments
+                    ? [
+                      ["Feasibility Status", data.feasibility_status],
+                      ["Feasibility Comments", data.comments],
+                    ]
+                    : []),
                   ...(mode !== "update"
                     ? [
-                      ["Final Status", data.final_status],
-                      ["Final Comment", data.final_comment],
+                      ...(data.final_status || data.final_comment
+                        ? [
+                          ["Final Status", data.final_status],
+                          ["Final Comment", data.final_comment],
+                        ]
+                        : []),
                     ]
                     : []),
                 ],
@@ -222,45 +232,62 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
             ))}
 
             {/* ================= FEASIBILITY UPDATE ================= */}
-            {mode === "update" && (
-              <div className="bg-gray-100 rounded-xl p-4 sm:p-6 shadow">
-                <h3 className="text-sm font-bold mb-3 text-gray-900">Feasibility Update</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs text-gray-900">Feasibility Status</label>
+             {mode === "update" && (
+                         <>
+                           <div className="bg-gray-100 p-5 rounded-xl">
+                  <h3 className="text-sm font-bold mb-3 text-gray-900">Feasibility Update</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <select
                       value={feasibilityStatus}
                       onChange={(e) => setFeasibilityStatus(e.target.value)}
-                      className="w-full p-2 border rounded text-xs text-gray-900"
+                      className="border p-2 rounded text-xs text-gray-900"
                     >
                       <option value="">Select</option>
                       <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
                       <option value="FEASIBILITY REJECTED">FEASIBILITY REJECTED</option>
                       <option value="FEASIBILITY PENDING">FEASIBILITY PENDING</option>
                     </select>
-                  </div>
 
-                  <div>
-                    <label className="text-xs text-gray-900">Comments</label>
                     <textarea
                       value={comments}
                       onChange={(e) => setComments(e.target.value)}
-                      className="w-full p-2 border rounded text-xs text-gray-900"
+                      className="border p-2 rounded text-sm text-gray-900 resize-none"
                     />
                   </div>
-                </div>
-
-                <div className="flex justify-end mt-2">
-                  <button
-                    onClick={updateFeasibility3W}
-                    className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
-                  >
-                    Update Feasibility
-                  </button>
-                </div>
-              </div>
-            )}
-
+                      </div>
+           
+                           <div className="flex justify-end">
+                             <button
+                               onClick={async () => {
+                                 try {
+                                   const res = await api.patch(`/business-development/3w/review`, {
+                                     id: data.id,
+                                     feasibility_status: feasibilityStatus,
+                                     comments: comments,
+                                   });
+           
+                                   // ✅ Update local state immediately
+                                   setFormData((prev) => ({
+                                     ...prev,
+                                     feasibility_status: res.data.data.feasibility_status,
+                                     comments: res.data.data.comments,
+                                   }));
+           
+                                   onUpdate?.(res.data.data);
+           
+                                   setAlert({ type: "success", message: "Feasibility updated!" });
+                                   setShowModal(false);
+                                 } catch {
+                                   setAlert({ type: "error", message: "Update failed" });
+                                 }
+                               }}
+                               className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
+                             >
+                               Update Feasibility
+                             </button>
+                           </div>
+                         </>
+                       )}
             {/* ================= EDIT BUTTONS ================= */}
             {editMode && (
               <div className="flex justify-end gap-2 mt-2">

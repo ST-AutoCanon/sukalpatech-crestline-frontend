@@ -26,10 +26,9 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
-  cardIndex: number; 
 }
 
-const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) => {
+const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate}) => {
   const [showModal, setShowModal] = useState(false);
   const [feasibilityStatus, setFeasibilityStatus] = useState("");
   const [comments, setComments] = useState("");
@@ -38,12 +37,12 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
   const [formData, setFormData] = useState({ ...data });
 
   const [editChanges, setEditChanges] = useState<Partial<typeof formData>>({});
-  
-    // When editing any field, track the changes
-    const handleEditChange = (key: keyof typeof formData, value: string) => {
-      setFormData((prev) => ({ ...prev, [key]: value }));
-      setEditChanges((prev) => ({ ...prev, [key]: value }));
-    };
+
+  // When editing any field, track the changes
+  const handleEditChange = (key: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    setEditChanges((prev) => ({ ...prev, [key]: value }));
+  };
 
   useEffect(() => {
     if (showModal) {
@@ -57,15 +56,15 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
   const updateFood = async () => {
     try {
-     const res = await api.patch(
-  `/business-development/food/update/${data.id}`,
-  {
-    ...formData,
-    feasibility_status: feasibilityStatus,
-    comments: comments,
-  },
-  { withCredentials: true }
-);
+      const res = await api.patch(
+        `/business-development/food/update/${data.id}`,
+        {
+          ...formData,
+          feasibility_status: feasibilityStatus,
+          comments: comments,
+        },
+        { withCredentials: true }
+      );
 
       onUpdate?.(res.data.data);
 
@@ -105,7 +104,7 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
       {/* HEADER */}
       <h3 className="text-purple-700 font-semibold text-sm mb-3">
-        FOOD ID:  {cardIndex+1}
+        FOOD ID:  {data.id}
       </h3>
 
       {/* CARD FIELDS */}
@@ -121,7 +120,7 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
       </div>
 
       {/* BUTTON */}
-      <div className="mt-3 flex justify-between items-center">
+      <div className="mt-3 flex items-center gap-8">
         <button
           onClick={() => {
             setEditMode(false);
@@ -132,7 +131,7 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
           {mode === "update" ? "Update Feasibility" : "More Info"}
         </button>
 
-       {mode !== "update" && !formData.feasibility_status && (
+        {mode !== "update" && !formData.feasibility_status && (
           <button
             onClick={() => {
               setEditMode(true);
@@ -158,7 +157,11 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
 
             {/* HEADER */}
             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
-              FOOD-{cardIndex+1} Full Info
+              {editMode
+                ? `FOOD-${data.id} Edit Full Info`
+                : mode === "update"
+                  ? `FOOD-${data.id} Feasibility Update`
+                  : `FOOD-${data.id} Full Info`}
             </h2>
 
             {/* ================= SECTIONS ================= */}
@@ -195,13 +198,21 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
                 fields: [
                   ["Business Status", data.business_status],
                   ["Comment", data.comment],
-                  ["Feasibility Status", data.feasibility_status],
-                  ["Feasibility Comments", data.comments],
+                  ...(formData.feasibility_status || formData.comments
+                    ? [
+                      ["Feasibility Status", formData.feasibility_status],
+                      ["Feasibility Comments", formData.comments],
+                    ]
+                    : []),
 
                   ...(mode !== "update"
                     ? [
-                      ["Final Status", data.final_status],
-                      ["Final Comment", data.final_comment],
+                      ...(data.final_status || data.final_comment
+                        ? [
+                          ["Final Status", data.final_status],
+                          ["Final Comment", data.final_comment],
+                        ]
+                        : []),
                     ]
                     : []),
                 ],
@@ -218,16 +229,16 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,cardIndex }) =
                         <span className="text-gray-600 text-xs font-medium">{label}</span>
 
                         {editMode ? (
-  <input
-    value={formData[key] || ""}
-    onChange={(e) => handleEditChange(key, e.target.value)}
-    className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
-  />
-) : (
-  <span className="bg-white border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900">
-    {render(formData[key])}
-  </span>
-)}
+                          <input
+                            value={formData[key] || ""}
+                            onChange={(e) => handleEditChange(key, e.target.value)}
+                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                          />
+                        ) : (
+                          <span className="bg-white border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900">
+                            {render(formData[key])}
+                          </span>
+                        )}
                       </div>
                     );
                   })}

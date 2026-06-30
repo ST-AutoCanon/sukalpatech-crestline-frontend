@@ -46,9 +46,19 @@ const ThreeWheelerList = ({ refresh, filter }: Props) => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {requests.map((req,i) => (
-        <ViewThreeWheeler key={req.id} data={req} cardIndex={i}  />
-      ))}
+      {requests.map((req, i) => (
+  <ViewThreeWheeler
+    key={req.id}
+    data={req}
+    onUpdate={(updated) => {
+      setRequests((prev) =>
+        prev.map((item) =>
+          item.id === updated.id ? updated : item
+        )
+      );
+    }}
+  />
+))}
     </div>
   );
 };

@@ -1,234 +1,3 @@
-// // src/pages/businessDevGold/GoldBusinessCard.tsx
-
-// import React, { useEffect, useState } from "react";
-// import Alert from "../../../components/Aleartmessage";
-// import { api } from "../../../api/businessApi";
-
-// interface Props {
-//   data: {
-//     id: number;
-//     company_name: string;
-//     contact_person: string;
-//     phone: string;
-//     email: string;
-
-//     business_type: string;
-//     gold_type: string;
-//     product_type: string;
-//     purity_required: string;
-//     expected_quantity: string;
-//     estimated_budget: string;
-
-//     making_charges: string;
-//     hallmark_required: string;
-//     design_type: string;
-//     delivery_location: string;
-//     timeline: string;
-
-//     feasibility_status: string;
-//     comments: string;
-
-//     final_status: string;
-//     final_comment: string;
-//   };
-//   mode?: "all" | "update";
-//   onUpdate?: (updated: any) => void;
-// }
-
-// const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate }) => {
-//   const [showModal, setShowModal] = useState(false);
-//   const [feasibilityStatus, setFeasibilityStatus] = useState("");
-//   const [comments, setComments] = useState("");
-
-//   const [alert, setAlert] = useState<{
-//     type: "success" | "error";
-//     message: string;
-//   } | null>(null);
-
-//   useEffect(() => {
-//     if (showModal) {
-//       setFeasibilityStatus(data.feasibility_status || "");
-//       setComments(data.comments || "");
-//     }
-//   }, [showModal, data]);
-
-//   const render = (v: any) => (v ? v : "-");
-
-//   /* ---------------- UPDATE FEASIBILITY ---------------- */
-//   const updateFeasibilityGold = async () => {
-//     try {
-//       const res = await api.patch(
-//         `/business-development/gold/review`,
-//         {
-//           id: data.id,
-//           feasibility_status: feasibilityStatus,
-//           comments: comments,
-//         },
-//         { withCredentials: true }
-//       );
-
-//       onUpdate?.(res.data.data);
-
-//       setAlert({
-//         type: "success",
-//         message: "Feasibility updated successfully!",
-//       });
-
-//       setTimeout(() => setAlert(null), 2000);
-//       setShowModal(false);
-//     } catch (err) {
-//       console.error("Gold Feasibility Update Error:", err);
-
-//       setAlert({
-//         type: "error",
-//         message: "Failed to update feasibility",
-//       });
-
-//       setTimeout(() => setAlert(null), 2000);
-//     }
-//   };
-
-//   /* ---------------- FIELDS ---------------- */
-//   const fields = [
-//     ["Company Name", data.company_name],
-//     ["Contact Person", data.contact_person],
-//     ["Phone", data.phone],
-//     ["Email", data.email],
-
-//     ["Business Type", data.business_type],
-//     ["Gold Type", data.gold_type],
-//     ["Product Type", data.product_type],
-//     ["Purity Required", data.purity_required],
-//     ["Expected Quantity", data.expected_quantity],
-//     ["Estimated Budget", data.estimated_budget],
-
-//     ["Making Charges", data.making_charges],
-//     ["Hallmark Required", data.hallmark_required],
-//     ["Design Type", data.design_type],
-//     ["Delivery Location", data.delivery_location],
-//     ["Timeline", data.timeline],
-//   ];
-
-//   return (
-//     <div className="bg-white rounded-xl shadow p-4 text-gray-900">
-//       {/* Alert */}
-//       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
-
-//       <h3 className="text-blue-700 font-semibold">
-//          ID: {data.id}
-//       </h3>
-
-//       {/* Preview fields */}
-//       {fields.slice(0, 8).map(([label, value]) => (
-//         <p key={label} className="text-sm mb-1">
-//           <strong>{label}:</strong> {render(value)}
-//         </p>
-//       ))}
-
-//       <button
-//         onClick={() => setShowModal(true)}
-//         className="mt-2 text-blue-600 underline text-xs"
-//       >
-//         {mode === "update" ? "Update Feasibility" : "More Info"}
-//       </button>
-
-//       {/* MODAL */}
-//       {showModal && (
-//         <div
-//           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-//           onClick={() => setShowModal(false)}
-//         >
-//           <div
-//             className="bg-white text-gray-900 rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6 relative"
-//             onClick={(e) => e.stopPropagation()}
-//           >
-//             <button
-//               onClick={() => setShowModal(false)}
-//               className="absolute top-3 right-3 text-xl font-bold"
-//             >
-//               ×
-//             </button>
-
-//             <h2 className="text-lg font-semibold mb-4">
-//               Gold Request Details
-//             </h2>
-
-//             {/* All fields */}
-//             {fields.map(([label, value]) => (
-//               <p key={label} className="text-sm mb-1">
-//                 <strong>{label}:</strong> {render(value)}
-//               </p>
-//             ))}
-
-//             {/* UPDATE MODE */}
-//             {mode === "update" && (
-//               <div className="mt-4 space-y-3">
-//                 <div>
-//                   <label className="block text-sm font-semibold">
-//                     Feasibility Status
-//                   </label>
-//                   <select
-//                     value={feasibilityStatus}
-//                     onChange={(e) =>
-//                       setFeasibilityStatus(e.target.value)
-//                     }
-//                     className="w-full border rounded p-2"
-//                   >
-//                     <option value="">Select</option>
-//                     <option value="FEASIBILITY APPROVED">
-//                       FEASIBILITY APPROVED
-//                     </option>
-//                     <option value="FEASIBILITY REJECTED">
-//                       FEASIBILITY REJECTED
-//                     </option>
-//                     <option value="FEASIBILITY PENDING">
-//                       FEASIBILITY PENDING
-//                     </option>
-//                   </select>
-//                 </div>
-
-//                 <div>
-//                   <label className="block text-sm font-semibold">
-//                     Comments
-//                   </label>
-//                   <textarea
-//                     value={comments}
-//                     onChange={(e) => setComments(e.target.value)}
-//                     className="w-full border rounded p-2"
-//                   />
-//                 </div>
-
-//                 <button
-//                   onClick={updateFeasibilityGold}
-//                   className="bg-yellow-600 text-white px-4 py-2 rounded"
-//                 >
-//                   Update
-//                 </button>
-//               </div>
-//             )}
-
-//             {/* SHOW FEASIBILITY (VIEW MODE) */}
-//             {mode === "all" && (
-//               <>
-//                 <p className="mt-3">
-//                   <strong>Feasibility Status:</strong>{" "}
-//                   {render(data.feasibility_status)}
-//                 </p>
-//                 <p>
-//                   <strong>Comments:</strong>{" "}
-//                   {render(data.comments)}
-//                 </p>
-//               </>
-//             )}
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default GoldBusinessCard;
-
 import React, { useEffect, useState } from "react";
 import Alert from "../../../components/Aleartmessage";
 import { api } from "../../../api/businessApi";
@@ -265,10 +34,10 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
-  cardIndex: number;
+  
 }
 
-const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) => {
+const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate}) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...data });
@@ -307,6 +76,7 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
         formData,
         { withCredentials: true }
       );
+      console.log("PAYLOAD:", formData);
 
       onUpdate?.(res.data.data);
 
@@ -336,7 +106,6 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
     ["Company Name", "company_name"],
     ["Phone", "phone"],
     ["Gold Type", "gold_type"],
-    ["Product Type", "product_type"],
     ["Expected Quantity", "expected_quantity"],
     ["Email", "email"],
     ["Estimated Budget", "estimated_budget"],
@@ -367,7 +136,7 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
       <h3 className="text-purple-700 font-semibold text-sm mb-3">
-        GOLD ID: {cardIndex + 1}
+        GOLD ID: {data.id}
       </h3>
 
       {/* CARD */}
@@ -383,7 +152,7 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
       </div>
 
       {/* ACTIONS */}
-      <div className="mt-3 flex justify-between items-center">
+     <div className="mt-3 flex  items-center gap-8">
         <button
           onClick={() => {
             setEditMode(false);
@@ -423,7 +192,11 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
           >
             {/* HEADER */}
             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
-              GOLD-{cardIndex+1} Full Info
+              {editMode
+                ? `GOLD-${data.id} Edit Full Info`
+                : mode === "update"
+                  ? `GOLD-${data.id} Feasibility Update`
+                  : `GOLD-${data.id} Full Info`}
             </h2>
 
             {/* SECTIONS */}
@@ -440,9 +213,8 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
               {
                 title: "Gold Details",
                 fields: [
-                  { label: "Business Type", key: "business_type" },
+              
                   { label: "Gold Type", key: "gold_type" },
-                  { label: "Product Type", key: "product_type" },
                   { label: "Purity Required", key: "purity_required" },
                   { label: "Expected Quantity", key: "expected_quantity" },
                   { label: "Estimated Budget", key: "estimated_budget" },
@@ -463,13 +235,21 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
                 fields: [
                   { label: "Business Status", key: "business_status" },
                   { label: "Comment", key: "comment" },
-                  { label: "Feasibility Status", key: "feasibility_status" },
-                  { label: "Comments", key: "comments" },
+                  ...(formData.feasibility_status || formData.comments
+                    ? [
+                      { label: "Feasibility Status", key: "feasibility_status" },
+                      { label: "Comments", key: "comments" },
+                    ]
+                    : []),
 
                   ...(mode !== "update"
                     ? [
-                      { label: "Final Status", key: "final_status" },
-                      { label: "Final Comment", key: "final_comment" },
+                      ...(formData.final_status || formData.final_comment
+                        ? [
+                          { label: "Final Status", key: "final_status" },
+                          { label: "Final Comment", key: "final_comment" },
+                        ]
+                        : []),
                     ]
                     : []),
                 ],
@@ -533,7 +313,7 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, cardIndex }) 
                     <textarea
                       value={comments}
                       onChange={(e) => setComments(e.target.value)}
-                      className="border p-2 rounded text-xs text-gray-900"
+                      className="border p-2 rounded text-sm text-gray-900 resize-none"
                     />
                   </div>
                 </div>

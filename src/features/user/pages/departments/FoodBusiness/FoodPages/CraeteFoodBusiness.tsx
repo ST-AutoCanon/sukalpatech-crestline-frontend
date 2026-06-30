@@ -44,6 +44,24 @@ export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
     e.preventDefault();
     setAlertData(null);
     const token = localStorage.getItem("token");
+     // Email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!formData.email.trim()) {
+    setAlertData({
+      type: "error",
+      message: "Email is required.",
+    });
+    return;
+  }
+
+  if (!emailRegex.test(formData.email)) {
+    setAlertData({
+      type: "error",
+      message: "Please enter a valid email address.",
+    });
+    return;
+  }
 
     try {
       setLoading(true);
@@ -114,8 +132,15 @@ export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
                 <input name="company_name" value={formData.company_name} onChange={handleChange} placeholder="Company Name" className="bg-white border rounded-lg p-2" />
                 <input name="contact_person" value={formData.contact_person} onChange={handleChange} placeholder="Contact Person" className="bg-white border rounded-lg p-2" />
                 <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" className="bg-white border rounded-lg p-2" />
-                <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="bg-white border rounded-lg p-2" />
-                <input name="project_title" value={formData.project_title} onChange={handleChange} placeholder="Project Title" className="bg-white border rounded-lg p-2" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  className="bg-white border rounded-lg p-2"
+                  required
+                />                <input name="project_title" value={formData.project_title} onChange={handleChange} placeholder="Project Title" className="bg-white border rounded-lg p-2" />
                 <input name="expected_quantity" value={formData.expected_quantity} onChange={handleChange} placeholder="Expected Quantity" className="bg-white border rounded-lg p-2" />
                 <input name="estimated_budget" value={formData.estimated_budget} onChange={handleChange} placeholder="Estimated Budget" className="bg-white border rounded-lg p-2" />
               </div>
