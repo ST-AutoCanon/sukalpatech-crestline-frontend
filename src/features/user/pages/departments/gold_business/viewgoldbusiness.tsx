@@ -34,10 +34,12 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
+   allowEdit?: boolean;
   
 }
 
-const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate}) => {
+const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,  allowEdit = true,
+}) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...data });
@@ -131,8 +133,7 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate}) => {
   const cardFields = allFields.slice(0, 5);
 
   return (
-    <div className="bg-white rounded-xl shadow p-4 w-full sm:w-[300px] m-2 flex flex-col justify-between">
-
+   <div className="bg-white rounded-xl shadow p-4 text-gray-900 w-full flex flex-col justify-between">
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
       <h3 className="text-purple-700 font-semibold text-sm mb-3">
@@ -163,17 +164,19 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate}) => {
           {mode === "update" ? "Update Feasibility" : "More Info"}
         </button>
 
-        {mode !== "update" && !formData.feasibility_status && (
-          <button
-            onClick={() => {
-              setEditMode(true);
-              setShowModal(true);
-            }}
-            className="text-blue-700 font-semibold text-sm"
-          >
-            Edit
-          </button>
-        )}
+        {allowEdit &&
+          mode !== "update" &&
+          !formData.feasibility_status && (
+            <button
+              onClick={() => {
+                setEditMode(true);
+                setShowModal(true);
+              }}
+              className="text-blue-700 font-semibold text-sm"
+            >
+              Edit
+            </button>
+          )}
       </div>
 
       {/* ================= MODAL ================= */}
@@ -265,12 +268,26 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate}) => {
                     <div key={f.label} className="flex flex-col">
                       <span className="text-xs text-gray-900">{f.label}</span>
 
-                      {editMode ? (
-                        <input
-                          value={formData[f.key] || ""}
-                          onChange={(e) => handleEditChange(f.key, e.target.value)}
-                          className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
-                        />
+                       {editMode ? (
+                        f.key === "business_status" ? (
+                          <select
+                            value={formData.business_status || ""}
+                            onChange={(e) =>
+                              handleEditChange("business_status", e.target.value)
+                            }
+                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                          >
+                            <option value="PENDING">PENDING</option>
+                            <option value="APPROVED">APPROVED</option>
+                            <option value="REJECTED">REJECTED</option>
+                          </select>
+                        ) : (
+                          <input
+                            value={formData[f.key] || ""}
+                            onChange={(e) => handleEditChange(f.key, e.target.value)}
+                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                          />
+                        )
                       ) : (
                         <span className="bg-white border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900">
                           {render(formData[f.key])}

@@ -31,8 +31,11 @@ const FoodList = ({ refresh, filter }: Props) => {
       });
 
       // Access innermost data array
-      setRequests(res.data?.data?.data || []);
-    } catch (err) {
+const dataArray = Array.isArray(res.data.data)
+  ? res.data.data
+  : res.data?.data?.data || [];
+
+setRequests(dataArray);    } catch (err) {
       console.error("Error fetching food requests", err);
       setRequests([]);
     } finally {
@@ -49,18 +52,20 @@ const FoodList = ({ refresh, filter }: Props) => {
 
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-     {requests.map((req) => (
-  <ViewFood
-    key={req.id}
-    data={req}
-    onUpdate={(updated) => {
-      setRequests((prev) =>
-        prev.map((item) =>
-          item.id === updated.id ? updated : item
-        )
-      );
-    }}
-  />
+      {requests
+  .filter((req) => req && req.id)
+  .map((req) => (
+    <ViewFood
+      key={req.id}
+      data={req}
+      onUpdate={(updated) => {
+        setRequests((prev) =>
+          prev.map((item) =>
+            item.id === updated.id ? updated : item
+          )
+        );
+      }}
+    />
 ))}
     </div>
   );

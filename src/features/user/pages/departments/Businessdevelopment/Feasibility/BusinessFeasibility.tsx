@@ -33,27 +33,21 @@ const FeasibilityPage = () => {
     <div className="p-6 pt-12">
 
       {/* TOP BAR */}
-      {/* FILTER TABS */}
       <div className="flex items-center justify-between mb-4 mt-2 text-white">
 
         {/* LEFT: FILTER TABS */}
-        <div className="flex gap-4">
-          {filters.map((filter) => (
-            <button
-              key={filter}
-              onClick={() => {
-                setActiveFilter(filter);
-                setActiveTab("all");
-              }}
-              className={`pb-1 px-3 ${activeFilter === filter
-                ? "border-b-2 border-white"
-                : "text-white/60"
-                }`}
-            >
-              {filter}
-            </button>
-          ))}
-        </div>
+       <div className="flex gap-6 text-white mb-5">
+        {filters.map((filter) => (
+          <button
+            key={filter}
+            onClick={() => setActiveFilter(filter)}
+            className={`pb-1 ${activeFilter === filter ? "border-b-2 border-white" : "text-white/70"
+              }`}
+          >
+            {filter}
+          </button>
+        ))}
+      </div>
 
         {/* RIGHT: UPDATE BUTTON */}
         <button

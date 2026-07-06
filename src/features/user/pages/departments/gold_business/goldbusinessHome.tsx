@@ -16,14 +16,6 @@ const GoldBusinessHome = () => {
 
   const handleSuccess = () => setRefreshList((prev) => !prev);
 
-  /* 👉 SHOW UPDATED REQUEST PAGE */
-  if (showUpdatedRequests) {
-    return (
-      <UpdatedGoldRequests
-        onBack={() => setShowUpdatedRequests(false)}
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#4b1b7a] to-[#2d2a8c] p-6">
@@ -31,43 +23,42 @@ const GoldBusinessHome = () => {
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
 
-  {/* LEFT TITLE */}
-  <button className="bg-white text-purple-700 px-4 py-2 rounded-full text-sm sm:text-base w-full sm:w-auto text-center">
-    Gold Business Requests
-  </button>
+        {/* LEFT TITLE */}
+        <button className="bg-white text-purple-700 px-4 py-2 rounded-full text-sm sm:text-base w-full sm:w-auto text-center">
+          Gold Business Requests
+        </button>
 
-  {/* RIGHT BUTTONS */}
-  <div className="flex flex-row sm:flex-row gap-2 w-full sm:w-auto">
+        {/* RIGHT BUTTONS */}
+        <div className="flex flex-row sm:flex-row gap-2 w-full sm:w-auto">
 
-    {/* CREATE */}
-    <button
-      onClick={() => setShowModal(true)}
-      className="flex-1 sm:flex-none bg-gradient-to-r from-blue-500 to-purple-600 px-3 py-2 rounded-md text-white text-sm sm:text-base whitespace-nowrap"
-    >
-      + Create Request
-    </button>
+          {/* CREATE */}
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex-1 sm:flex-none bg-gradient-to-r from-blue-500 to-purple-600 px-3 py-2 rounded-md text-white text-sm sm:text-base whitespace-nowrap"
+          >
+            + Create Request
+          </button>
 
-    {/* UPDATE */}
-    <button
-      onClick={() => setShowUpdatedRequests(true)}
-      className="flex-1 sm:flex-none bg-gradient-to-r from-blue-500 to-purple-600 px-3 py-2 rounded-md text-white text-sm sm:text-base whitespace-nowrap"
-    >
-      Updated Request
-    </button>
+          {/* UPDATE */}
+          <button
+            onClick={() => setShowUpdatedRequests((prev) => !prev)}
+            className="flex-1 sm:flex-none bg-gradient-to-r from-blue-500 to-purple-600 px-3 py-2 rounded-md text-white"
+          >
+            {showUpdatedRequests ? "All Requests" : "Updated Requests"}
+          </button>
 
-  </div>
-</div>
+        </div>
+      </div>
       {/* FILTERS */}
-      <div className="flex gap-4 text-white mb-6">
+      <div className="flex gap-8 text-white mb-6">
         {filters.map((filter) => (
           <button
             key={filter}
             onClick={() => setActiveFilter(filter)}
-            className={`pb-1 ${
-              activeFilter === filter
+            className={`pb-1 ${activeFilter === filter
                 ? "border-b-2 border-white"
                 : "text-white/70"
-            }`}
+              }`}
           >
             {filter}
           </button>
@@ -75,25 +66,27 @@ const GoldBusinessHome = () => {
       </div>
 
       {/* LIST */}
-      <GoldBusinessList
-        refresh={refreshList}
-        filter={
-          activeFilter === "All PR"
-            ? "ALL"
-            : activeFilter.toUpperCase()
-        }
-      />
+      {showUpdatedRequests ? (
+        <UpdatedGoldRequests
+          filter={activeFilter === "All PR" ? "ALL" : activeFilter.toUpperCase()}
+        />
+      ) : (
+        <GoldBusinessList
+          refresh={refreshList}
+          filter={activeFilter === "All PR" ? "ALL" : activeFilter.toUpperCase()}
+        />
+      )}
 
       {/* CREATE MODAL */}
       {showModal && (
-  <GoldBusinessPage
-    onClose={() => setShowModal(false)}
-    onSuccess={() => {
-      handleSuccess();
-      setShowModal(false);
-    }}
-  />
-)}
+        <GoldBusinessPage
+          onClose={() => setShowModal(false)}
+          onSuccess={() => {
+            handleSuccess();
+            setShowModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };

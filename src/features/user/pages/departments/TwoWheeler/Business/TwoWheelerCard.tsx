@@ -7,10 +7,9 @@ interface Props {
   data: any;
   mode?: "update" | "default";
   onUpdate: (updatedItem: any) => void;
-   cardIndex: number; 
 }
 
-const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate,cardIndex }) => {
+const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate}) => {
   const [showModal, setShowModal] = useState(false);
 
   // ✅ Local state for Feasibility & Final fields
@@ -68,12 +67,12 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate,card
           "/project-manager/projects/assign",
           {
             bd_request_id: data.id,
+            industry_type:data.industry_type,
             description:
               data.project_title ||
               data.description,
+            vehiclemodal:data.vehicle_modal,
 
-            required_date:
-              data.required_date,
 
             assigned_by:
               data.contact_person || "System",

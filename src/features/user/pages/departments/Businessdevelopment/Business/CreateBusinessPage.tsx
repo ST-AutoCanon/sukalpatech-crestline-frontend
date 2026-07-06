@@ -283,7 +283,7 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
           message: "BD info updated successfully!",
         });
       } else {
-        console.log("Form Required Date:", form.required_date);
+        console.log("Sending Required Date:", form.required_date);
         await api.post("/business-development", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -320,23 +320,23 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
     }
   };
   const formatLabel = (key: string) => {
-  const customLabels: Record<string, string> = {
-    ais_compliant: "AIS Compliant",
-    cmvr_compliant: "CMVR Compliant",
-    ac: "AC",
-    cctv: "CCTV",
-    gps: "GPS",
-    usb: "USB",
-    led_board: "LED Board",
-  };
+    const customLabels: Record<string, string> = {
+      ais_compliant: "AIS Compliant",
+      cmvr_compliant: "CMVR Compliant",
+      ac: "AC",
+      cctv: "CCTV",
+      gps: "GPS",
+      usb: "USB",
+      led_board: "LED Board",
+    };
 
-  return (
-    customLabels[key] ||
-    key
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (char) => char.toUpperCase())
-  );
-};
+    return (
+      customLabels[key] ||
+      key
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase())
+    );
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/30 p-2 sm:p-4">
       {alert && (

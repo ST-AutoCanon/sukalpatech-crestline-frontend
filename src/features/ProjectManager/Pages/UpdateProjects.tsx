@@ -74,6 +74,7 @@ const UpdateProjects = () => {
               isMyProject={
                 project.assigned_project_manager?.trim().toLowerCase() === currentUser
               }
+              allowEdit={true}
             />
           ))}
         </div>

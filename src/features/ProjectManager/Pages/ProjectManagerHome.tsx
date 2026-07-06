@@ -106,7 +106,7 @@ export default function ProjectManagerHome() {
       "/project-manager/workflow-summary"
     );
     console.log("Workflow API Response:", res.data.data);
-    
+
 
     setWorkflow(res.data.data);
   };
@@ -417,7 +417,7 @@ export default function ProjectManagerHome() {
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold">Department Task Details</h3>
 
-            
+
           </div>
           {isTableOpen && (
             <table className="w-full text-sm border">

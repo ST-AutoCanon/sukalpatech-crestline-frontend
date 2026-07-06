@@ -39,6 +39,21 @@ export default function ProjectPage() {
   const [statusList, setStatusList] = useState<any[]>([]);
   const [expandDeptStatus, setExpandDeptStatus] = useState(true);
   const [workflowView, setWorkflowView] = useState<any[]>([]);
+  const [employeeTasks, setEmployeeTasks] = useState<any[]>([]);
+
+  const [employeeWorkflow, setEmployeeWorkflow] = useState([
+    {
+      task_title: "",
+      employee_id: "",
+      priority: "Medium",
+      start_date: "",
+      due_date: "",
+      estimated_days: "",
+      task_description: "",
+    },
+  ]);
+
+  const [employees, setEmployees] = useState([]);
 
   const statuses = ["IN_PROGRESS", "PENDING", "APPROVED", "REJECTED"];
 
@@ -93,6 +108,82 @@ export default function ProjectPage() {
     }
   };
 
+  useEffect(() => {
+    axios
+      .get(`${API_BASE}/employees/${departmentName}`, {
+        withCredentials: true,
+      })
+      .then((res) => setEmployees(res.data.data));
+  }, []);
+
+  const saveEmployeeTasks = async () => {
+    try {
+      await axios.post(
+        `${API_BASE}/employee-task`,
+        {
+          project_id: selectedProject?.id,
+          tasks: employeeWorkflow,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      setAlert({
+        type: "success",
+        message: "Employee tasks assigned successfully",
+      });
+
+      // Refresh assigned task list
+      if (selectedProject) {
+        await fetchWorkflowTasks(selectedProject.id);
+      }
+
+      // Reset form
+      setEmployeeWorkflow([
+        {
+          task_title: "",
+          employee_id: "",
+          priority: "Medium",
+          start_date: "",
+          due_date: "",
+          estimated_days: "",
+          task_description: "",
+        },
+      ]);
+
+      // Close modal
+      setModalOpen(false);
+
+      // Refresh project list if required
+      fetchProjects();
+
+    } catch (err: any) {
+      setAlert({
+        type: "error",
+        message: err?.response?.data?.message || "Failed to assign tasks",
+      });
+    }
+  };
+
+  const fetchEmployeeTasks = async (projectId: number) => {
+    try {
+      const res = await axios.get(
+        `${API_BASE}/project/${projectId}/employee-tasks`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log("Employee Tasks:", res.data);
+
+      setEmployeeTasks(res.data.data || []);
+    } catch (err) {
+      console.error(err);
+      setEmployeeTasks([]);
+    }
+  };
+
   /* ================= HELPERS ================= */
   const formatDate = (date?: string) => {
     if (!date) return "-";
@@ -108,6 +199,7 @@ export default function ProjectPage() {
 
     fetchStatuses(p.id);
     fetchWorkflowTasks(p.id);
+    fetchEmployeeTasks(p.id);
   };
 
   /* ================= UPDATE STATUS ================= */
@@ -353,6 +445,43 @@ export default function ProjectPage() {
                     />
                   )}
                 </div>
+
+                <div className="sm:col-span-2 mt-6">
+                  <label className="text-xs font-medium">
+                    Employee Assigned Tasks
+                  </label>
+
+                  {employeeTasks.length > 0 ? (
+                    <div className="border rounded bg-white divide-y">
+                      {employeeTasks.map((task: any) => (
+                        <div key={task.id} className="p-3">
+
+                          <p><strong>Task:</strong> {task.task_title}</p>
+
+                          <p><strong>Description:</strong> {task.task_description}</p>
+
+                          <p>
+                            <strong>Employee:</strong>{" "}
+                            {task.first_name} {task.last_name}
+                          </p>
+
+                          <p><strong>Priority:</strong> {task.priority}</p>
+
+                          <p><strong>Start Date:</strong> {formatDate(task.start_date)}</p>
+
+                          <p><strong>Due Date:</strong> {formatDate(task.due_date)}</p>
+
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <input
+                      readOnly
+                      value="No employee tasks assigned"
+                      className="border p-2 rounded w-full bg-white text-sm"
+                    />
+                  )}
+                </div>
               </div>
             </div>
 
@@ -465,6 +594,176 @@ export default function ProjectPage() {
                 >
                   Submit Update
                 </button>
+              </div>
+            </div>
+
+            {/* Employee Task Assignment */}
+            <div className="bg-gray-100 p-4 rounded mt-6">
+              <h3 className="font-semibold mb-4">
+                Task Assignment to Employees
+              </h3>
+
+              {employeeWorkflow.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-white border rounded-xl p-4 mb-4"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+                    {/* Task Title */}
+                    <div>
+                      <label>Task Title</label>
+                      <input
+                        value={item.task_title}
+                        onChange={(e) => {
+                          const updated = [...employeeWorkflow];
+                          updated[index].task_title = e.target.value;
+                          setEmployeeWorkflow(updated);
+                        }}
+                        className="w-full border rounded p-2"
+                      />
+                    </div>
+
+                    {/* Employee */}
+                    <div>
+                      <label>Assign Employee</label>
+
+                      <select
+                        value={item.employee_id}
+                        onChange={(e) => {
+                          const updated = [...employeeWorkflow];
+                          updated[index].employee_id = e.target.value;
+                          setEmployeeWorkflow(updated);
+                        }}
+                        className="w-full border rounded p-2"
+                      >
+                        <option value="">Select Employee</option>
+
+                        {employees.map(emp => (
+                          <option
+                            key={emp.id}
+                            value={emp.id}
+                          >
+                            {emp.first_name} {emp.last_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Priority */}
+                    <div>
+                      <label>Priority</label>
+
+                      <select
+                        value={item.priority}
+                        onChange={(e) => {
+                          const updated = [...employeeWorkflow];
+                          updated[index].priority = e.target.value;
+                          setEmployeeWorkflow(updated);
+                        }}
+                        className="w-full border rounded p-2"
+                      >
+                        <option>Low</option>
+                        <option>Medium</option>
+                        <option>High</option>
+                      </select>
+                    </div>
+
+                    {/* Start */}
+                    <div>
+                      <label>Start Date</label>
+
+                      <input
+                        type="date"
+                        value={item.start_date}
+                        onChange={(e) => {
+                          const updated = [...employeeWorkflow];
+                          updated[index].start_date = e.target.value;
+                          setEmployeeWorkflow(updated);
+                        }}
+                        className="w-full border rounded p-2"
+                      />
+                    </div>
+
+                    {/* Due */}
+                    <div>
+                      <label>Due Date</label>
+
+                      <input
+                        type="date"
+                        value={item.due_date}
+                        onChange={(e) => {
+                          const updated = [...employeeWorkflow];
+                          updated[index].due_date = e.target.value;
+                          setEmployeeWorkflow(updated);
+                        }}
+                        className="w-full border rounded p-2"
+                      />
+                    </div>
+
+                    {/* Duration */}
+                    <div>
+                      <label>Estimated Days</label>
+
+                      <input
+                        type="number"
+                        value={item.estimated_days}
+                        onChange={(e) => {
+                          const updated = [...employeeWorkflow];
+                          updated[index].estimated_days = e.target.value;
+                          setEmployeeWorkflow(updated);
+                        }}
+                        className="w-full border rounded p-2"
+                      />
+                    </div>
+
+                  </div>
+
+                  <div className="mt-4">
+                    <label>Description</label>
+
+                    <textarea
+                      value={item.task_description}
+                      onChange={(e) => {
+                        const updated = [...employeeWorkflow];
+                        updated[index].task_description = e.target.value;
+                        setEmployeeWorkflow(updated);
+                      }}
+                      className="w-full border rounded p-2"
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <div className="flex gap-3 mt-3">
+
+                <button
+                  onClick={() =>
+                    setEmployeeWorkflow([
+                      ...employeeWorkflow,
+                      {
+                        task_title: "",
+                        employee_id: "",
+                        priority: "Medium",
+                        start_date: "",
+                        due_date: "",
+                        estimated_days: "",
+                        task_description: ""
+                      }
+                    ])
+                  }
+                  className="bg-gray-200 px-4 py-2 rounded"
+                >
+                  + Add Employee Task
+                </button>
+
+                <button
+                  onClick={saveEmployeeTasks}
+                  className="bg-blue-600 text-white px-5 py-2 rounded"
+                >
+                  Assign Tasks
+                </button>
+
               </div>
             </div>
           </div>

@@ -25,9 +25,10 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
+   allowEdit?: boolean;
 }
 
-const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate }) => {
+const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true }) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...data });
@@ -127,17 +128,19 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate }) => {
           {mode === "update" ? "Update Feasibility" : "More Info"}
         </button>
 
-        {mode !== "update" && !formData.feasibility_status && (
-          <button
-            onClick={() => {
-              setEditMode(true);
-              setShowModal(true);
-            }}
-            className="text-blue-700 font-semibold text-sm"
-          >
-            Edit
-          </button>
-        )}
+       {allowEdit &&
+  mode !== "update" &&
+  !formData.feasibility_status && (
+    <button
+      onClick={() => {
+        setEditMode(true);
+        setShowModal(true);
+      }}
+      className="text-blue-700 font-semibold text-sm"
+    >
+      Edit
+    </button>
+)}
       </div>
 
       {/* ================= MODAL ================= */}
@@ -231,12 +234,26 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate }) => {
                         {field.label}
                       </span>
 
-                      {editMode ? (
-                        <input
-                          value={formData[field.key] || ""}
-                          onChange={(e) => handleEditChange(field.key, e.target.value)}
-                          className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
-                        />
+                       {editMode ? (
+                        field.key === "business_status" ? (
+                          <select
+                            value={formData.business_status || ""}
+                            onChange={(e) =>
+                              handleEditChange("business_status", e.target.value)
+                            }
+                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                          >
+                            <option value="PENDING">PENDING</option>
+                            <option value="APPROVED">APPROVED</option>
+                            <option value="REJECTED">REJECTED</option>
+                          </select>
+                        ) : (
+                          <input
+                            value={formData[field.key] || ""}
+                            onChange={(e) => handleEditChange(field.key, e.target.value)}
+                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                          />
+                        )
                       ) : (
                         <span className="bg-white border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900">
                           {render(formData[field.key])}

@@ -52,7 +52,7 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
   
       // 1️⃣ Update Final Status
       const res = await api.patch(
-        "/business-development/2w/review/final",
+        "/business-development/gold/review/final",
         {
           id: data.id,
           final_status: finalStatus,
@@ -72,6 +72,7 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
             "/project-manager/projects/assign",
             {
               bd_request_id: data.id,
+              industry_type:data.industry_type,
               description:
                 data.project_title ||
                 data.description,
@@ -197,7 +198,6 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
                   { label: "Making Charges", value: data.making_charges },
                   { label: "Hallmark Required", value: data.hallmark_required },
                   { label: "Design Type", value: data.design_type },
-                  { label: "Delivery Location", value: data.delivery_location },
                   { label: "Timeline", value: data.timeline },
                 ],
               },
