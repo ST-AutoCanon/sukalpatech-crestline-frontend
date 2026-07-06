@@ -18,9 +18,10 @@ interface Props {
   onUpdate: () => Promise<void>;
   isMyProject?: boolean;
   showAssignmentStatus?: boolean;
+  allowEdit?: boolean;   // <-- add this
 }
 
-const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAssignmentStatus = false, onUpdate, showAssignFlow, showWorkflowFlow, autoOpen = false, }) => {
+const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAssignmentStatus = false, allowEdit = true, onUpdate, showAssignFlow, showWorkflowFlow, autoOpen = false, }) => {
 
   const [workflow, setWorkflow] = useState([
     {
@@ -38,7 +39,6 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
     "Low",
     "Medium",
     "High",
-    "Critical",
   ];
 
   const [showModal, setShowModal] = useState(false);
@@ -58,6 +58,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
   const { user }: any = useContext(AuthContext);
   const [allWorkflows, setAllWorkflows] = useState<any[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [requestDetails, setRequestDetails] = useState<any>(null);
 
 
   const alreadyAssignedToPM =
@@ -458,6 +459,24 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
     fetchProjectManagers();
   }, [showModal]);
 
+  useEffect(() => {
+    const fetchRequestDetails = async () => {
+      try {
+        const res = await api.get(
+          `/project-manager/project/${data.id}/request-details`,
+          { withCredentials: true }
+        );
+
+        setRequestDetails(res.data.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchRequestDetails();
+  }, [data.id]);
+
+
   const formatDate = (date?: string) => {
     if (!date) return "-";
     return new Intl.DateTimeFormat("en-GB", {
@@ -507,6 +526,37 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
     ? "bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 border-emerald-300"
     : "bg-gradient-to-br from-slate-600 via-indigo-700 to-violet-700 border-indigo-300";
 
+  const FIELD_CONFIG: Record<string, { label: string; key: string }[]> = {
+    "2W": [
+      { label: "industry_type", key: "industry_type" },
+      { label: "Company", key: "company_name" },
+    ],
+
+    "3W": [
+      { label: "industry_type", key: "industry_type" },
+      { label: "Company", key: "company_name" },
+    ],
+
+    "FOOD": [
+      { label: "industry_type", key: "industry_type" },
+      { label: "company_name", key: "company_name" },
+    ],
+
+    "GOLD_BUSINESS": [
+      { label: "industry_type", key: "industry_type" },
+      { label: "company_name", key: "company_name" },
+    ],
+  };
+  const industryFields = useMemo(() => {
+    const type = requestDetails?.industry_type?.toUpperCase() || "";
+    const config = FIELD_CONFIG[type] || [];
+
+    return config.map((field) => ({
+      label: field.label,
+      value: requestDetails?.[field.key] ?? "-",
+    }));
+  }, [requestDetails]);
+
 
   return (
     <>
@@ -530,19 +580,23 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
             )}
         </div>
         <div className="flex-1 space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-500">Description</span>
-            <span className="font-medium truncate ml-2">
-              {data.description || "-"}
-            </span>
-          </div>
+          {industryFields.map((field) => (
+            <div key={field.label} className="flex justify-between">
+              <span className="text-gray-500">{field.label}</span>
+              <span className="font-medium truncate ml-2">
+                {field.value}
+              </span>
+            </div>
+          ))}
 
-          <div className="flex justify-between">
-            <span className="text-gray-500">Required Date</span>
-            <span className="font-medium">
-              {formatDate(data.required_date)}
-            </span>
-          </div>
+          {data.required_date && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Required Date</span>
+              <span className="font-medium">
+                {formatDate(data.required_date)}
+              </span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-gray-500">Assigned Date</span>
             <span className="font-medium">
@@ -642,17 +696,19 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs font-medium">
-                    Required Date
-                  </label>
+                {data.required_date && (
+                  <div>
+                    <label className="text-xs font-medium">
+                      Required Date
+                    </label>
 
-                  <input
-                    readOnly
-                    value={formatDate(data.required_date)}
-                    className="border p-2 rounded w-full bg-white text-sm"
-                  />
-                </div>
+                    <input
+                      readOnly
+                      value={formatDate(data.required_date)}
+                      className="border p-2 rounded w-full bg-white text-sm"
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="text-xs font-medium">
                     Assigned Date
@@ -708,18 +764,19 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                   />
                 </div>
 
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-medium">
-                    Description
-                  </label>
+                {industryFields.map((field) => (
+                  <div key={field.label}>
+                    <label className="text-xs font-medium">
+                      {field.label}
+                    </label>
 
-                  <textarea
-                    readOnly
-                    value={data.description || ""}
-                    className="border p-2 rounded w-full bg-white text-sm"
-                    rows={3}
-                  />
-                </div>
+                    <input
+                      readOnly
+                      value={field.value || ""}
+                      className="border p-2 rounded w-full bg-white text-sm"
+                    />
+                  </div>
+                ))}
 
                 {/* <div className="sm:col-span-2">
                   <label className="text-xs font-medium">
@@ -853,7 +910,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                         <th className="p-2 text-left whitespace-nowrap">Duration</th>
                         <th className="p-2 text-left whitespace-nowrap">Status</th>
                         <th className="p-2 text-left whitespace-nowrap">Progress</th>
-                        {alreadyAssignedToPM && (
+                        {alreadyAssignedToPM && allowEdit && (
                           <th className="p-2">Action</th>
                         )}
                       </>
@@ -932,25 +989,35 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                               : "-"
                           )}
                         </td>
-
                         <td className="p-2">
                           {editingIndex === index ? (
-                            <input
-                              value={task.assigned_to}
+                            <select
+                              value={task.assigned_to || ""}
                               onChange={(e) => {
                                 const updated = [...workflowView];
                                 updated[index].assigned_to = e.target.value;
                                 setWorkflowView(updated);
                               }}
                               className="border rounded px-2 py-1 w-full"
-                            />
+                            >
+                              <option value="">Select Manager</option>
+
+                              {managers.map((m: any) => (
+                                <option
+                                  key={m.id}
+                                  value={`${m.first_name} ${m.last_name}`}
+                                >
+                                  {m.first_name} {m.last_name}
+                                </option>
+                              ))}
+                            </select>
                           ) : (
-                            task.assigned_to
+                            task.assigned_to || "-"
                           )}
                         </td>
                         <td className="p-2">
                           {editingIndex === index ? (
-                            <input
+                            <select
                               value={task.priority}
                               onChange={(e) => {
                                 const updated = [...workflowView];
@@ -958,7 +1025,13 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                                 setWorkflowView(updated);
                               }}
                               className="border rounded px-2 py-1 w-full"
-                            />
+                            >
+                              {priorities.map((priority) => (
+                                <option key={priority} value={priority}>
+                                  {priority}
+                                </option>
+                              ))}
+                            </select>
                           ) : (
                             task.priority
                           )}
@@ -1049,7 +1122,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                             </span>
                           </div>
                         </td>
-                        {alreadyAssignedToPM && (
+                        {alreadyAssignedToPM && allowEdit && (
                           <td className="p-2">
                             {editingIndex === index ? (
                               <div className="flex items-center gap-2">
@@ -1206,29 +1279,31 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                             </div>
 
                             {/* Assigned To */}
-                            <div>
-                              <label className="block text-sm font-medium mb-1">
-                                Assigned To
-                              </label>
+                            {alreadyAssignedToPM && (
+                              <div>
+                                <label className="block text-sm font-medium mb-1">
+                                  Assigned To
+                                </label>
 
-                              <select
-                                value={item.assigned_to}
-                                onChange={(e) => {
-                                  const updated = [...workflow];
-                                  updated[index].assigned_to = e.target.value;
-                                  setWorkflow(updated);
-                                }}
-                                className="w-full border p-2 rounded"
-                              >
-                                <option value="">Select Manager</option>
+                                <select
+                                  value={item.assigned_to}
+                                  onChange={(e) => {
+                                    const updated = [...workflow];
+                                    updated[index].assigned_to = e.target.value;
+                                    setWorkflow(updated);
+                                  }}
+                                  className="w-full border p-2 rounded"
+                                >
+                                  <option value="">Select Manager</option>
 
-                                {managers.map((m: any) => (
-                                  <option key={m.id} value={`${m.first_name} ${m.last_name}`}>
-                                    {m.first_name} {m.last_name}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
+                                  {managers.map((m: any) => (
+                                    <option key={m.id} value={`${m.first_name} ${m.last_name}`}>
+                                      {m.first_name} {m.last_name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
 
                             {/* Priority */}
                             <div>

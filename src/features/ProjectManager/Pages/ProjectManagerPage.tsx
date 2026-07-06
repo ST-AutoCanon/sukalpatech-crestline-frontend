@@ -143,6 +143,7 @@ const ProjectManagerPage = () => {
                   data={item}
                   onUpdate={fetchProjects}
                   autoOpen={item.id === selectedProjectId}
+                  allowEdit={false}
                 />
               ))}
           </div>

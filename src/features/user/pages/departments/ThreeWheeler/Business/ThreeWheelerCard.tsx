@@ -29,6 +29,7 @@ const ThreeWheelerCard: React.FC<Props> = ({
 
   // ✅ Initialize state when modal opens
   const openModal = () => {
+      console.log("3W DATA =", data);
     setFeasibilityStatus(data.feasibility_status || "");
     setFeasibilityComments(data.comments || "");
     setFinalStatus(data.final_status || "");
@@ -51,7 +52,7 @@ const ThreeWheelerCard: React.FC<Props> = ({
  
      // 1️⃣ Update Final Status
      const res = await api.patch(
-       "/business-development/2w/review/final",
+       "/business-development/3w/review/final",
        {
          id: data.id,
          final_status: finalStatus,
@@ -71,6 +72,7 @@ const ThreeWheelerCard: React.FC<Props> = ({
            "/project-manager/projects/assign",
            {
              bd_request_id: data.id,
+             industry_type:data.industry_type,
              description:
                data.project_title ||
                data.description,

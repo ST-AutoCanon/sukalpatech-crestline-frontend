@@ -136,7 +136,7 @@
 import { useState } from "react";
 import BusinessList from "./Businessdevelopmentpage";
 import CreateBusinessModal from "./CreateBusinessPage";
-import { useNavigate,useLocation} from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 
 const BusinessDevelopmentHome = () => {
@@ -146,8 +146,8 @@ const BusinessDevelopmentHome = () => {
   const [activeFilter, setActiveFilter] = useState<FilterType>("All PR");
   const [showUpdatePage, setShowUpdatePage] = useState(false);
   const location = useLocation();
-const queryParams = new URLSearchParams(location.search);
-const type = queryParams.get("type"); // "updated" or null
+  const queryParams = new URLSearchParams(location.search);
+  const type = queryParams.get("type"); // "updated" or null
 
 
 
@@ -206,17 +206,12 @@ const type = queryParams.get("type"); // "updated" or null
 
         </div>
       </div>
-      <div className="flex overflow-x-auto gap-3 sm:gap-1 text-sm font-medium text-white w-full sm:w-auto mt-10 mb-6">
+      <div className="flex gap-8 text-white mb-7">
         {filters.map((filter) => (
           <button
             key={filter}
-            onClick={() => {
-              setActiveFilter(filter);
-              setShowUpdatePage(false);
-            }}
-            className={` pb-1 px-2 sm:px-4  ${activeFilter === filter
-              ? "border-b-2 border-white text-white"
-              : "text-white/70 "
+            onClick={() => setActiveFilter(filter)}
+            className={`pb-1 ${activeFilter === filter ? "border-b-2 border-white" : "text-white/70"
               }`}
           >
             {filter}
@@ -235,7 +230,7 @@ const type = queryParams.get("type"); // "updated" or null
             ? "ALL"
             : activeFilter.toUpperCase()
         }
-        type={type} 
+        type={type}
       />
 
       {/* MODAL */}

@@ -53,7 +53,7 @@ const FoodBusinessCard: React.FC<Props> = ({
  
      // 1️⃣ Update Final Status
      const res = await api.patch(
-       "/business-development/2w/review/final",
+       "/business-development/food/review/final",
        {
          id: data.id,
          final_status: finalStatus,
@@ -73,12 +73,15 @@ const FoodBusinessCard: React.FC<Props> = ({
            "/project-manager/projects/assign",
            {
              bd_request_id: data.id,
+             industry_type:data.industry_type,
              description:
                data.project_title ||
                data.description,
+             contactperson:
+             data.contact_person,
+             productname:
+             data.product_name,
  
-             required_date:
-               data.required_date,
  
              assigned_by:
                data.contact_person || "System",
