@@ -122,11 +122,11 @@ const ThreeWheelerCard: React.FC<Props> = ({
 
   // ✅ Same 5 fields like 2W (but 3W data)
   const cardFields = [
+    ["Description", data.description],
     ["Contact Person", data.contact_person],
     ["Company Name", data.company_name],
-    ["Phone", data.phone],
+    ["Required date", data.required_date],
     ["Project Title", data.project_title],
-    ["Vehicle Model", data.vehicle_model],
   ];
 
   return (
@@ -141,15 +141,11 @@ const ThreeWheelerCard: React.FC<Props> = ({
       </h3>
 
       {/* Fields */}
-      <div className="flex flex-col gap-1">
+     <div className="flex flex-col gap-1">
         {cardFields.map(([label, value]) => (
-          <div key={label} className="flex">
-            <span className="w-32 shrink-0 text-gray-400 text-sm">
-              {label}:
-            </span>
-            <span className="font-medium text-gray-700 text-sm truncate">
-              {render(value)}
-            </span>
+          <div key={label} className="flex justify-between items-center">
+            <span className="w-32 shrink-0 text-gray-400 text-sm">{label}:</span>
+            <span className="font-medium text-gray-700 text-sm truncate">{render(value)}</span>
           </div>
         ))}
       </div>
@@ -188,6 +184,8 @@ const ThreeWheelerCard: React.FC<Props> = ({
                 title: "Project Details",
                 fields: [
                   ["Project Title", data.project_title],
+                  ["Required Date", data.required_date],
+                  ["Description", data.description],
                   ["Expected Quantity", data.expected_quantity],
                   ["Estimated Budget", data.estimated_budget],
                 ],

@@ -19,7 +19,12 @@ const UpdatedTwoWheelerRequests: React.FC<Props> = ({ filter }) => {
         const res = await api.get("/business-development/2w/review");
 
         if (res.data.success && res.data.data?.data) {
-          setData(res.data.data.data);
+          const approvedRequests = res.data.data.data.filter(
+            (item: any) =>
+              item.feasibility_status?.toUpperCase() === "FEASIBILITY APPROVED"
+          );
+
+          setData(approvedRequests);
         } else {
           setData([]);
         }

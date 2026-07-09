@@ -11,6 +11,7 @@ interface BusinessCardProps {
     place: any;
     declaration_date: any;
     requested_by_person?: string;
+    industry_type?:string;
     requested_department?: string;
     required_by?: string;
     priority_level?: string;
@@ -476,7 +477,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ data, onUpdate }) => {
                 fields: [
                   { label: "Description", value: renderEditableField("description") },
                   { label: "Priority", value: renderEditableField("priority") },
-                  { label: "Required Date", value: renderEditableField("required_date", "date") }
+                  { label: "Required Date", value: renderEditableField("required_date", "date") },
+                  {label:"Industry type",value: renderEditableField("industry_type")}
 
                 ],
               },

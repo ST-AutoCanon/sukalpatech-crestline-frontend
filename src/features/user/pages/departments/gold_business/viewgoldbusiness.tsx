@@ -17,10 +17,12 @@ interface Props {
     expected_quantity: string;
     estimated_budget: string;
 
+    description: string;
+    required_date: string;
+
     making_charges: string;
     hallmark_required: string;
-    design_type: string;
-    delivery_location: string;
+    design_type: string
     timeline: string;
 
     business_status: string;
@@ -34,11 +36,11 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
-   allowEdit?: boolean;
-  
+  allowEdit?: boolean;
+
 }
 
-const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,  allowEdit = true,
+const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = true,
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -104,8 +106,10 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,  allowEdit = 
 
   /* ================= CARD FIELDS ================= */
   const allFields: [string, keyof typeof data][] = [
+    ["Description", "description"],
     ["Contact Person", "contact_person"],
     ["Company Name", "company_name"],
+    ["Required Date", "required_date"],
     ["Phone", "phone"],
     ["Gold Type", "gold_type"],
     ["Expected Quantity", "expected_quantity"],
@@ -115,7 +119,6 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,  allowEdit = 
     ["Making Charges", "making_charges"],
     ["Hallmark Required", "hallmark_required"],
     ["Design Type", "design_type"],
-    ["Delivery Location", "delivery_location"],
     ["Timeline", "timeline"],
     ["Business Status", "business_status"],
     ["Comment", "comment"],
@@ -133,7 +136,7 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,  allowEdit = 
   const cardFields = allFields.slice(0, 5);
 
   return (
-   <div className="bg-white rounded-xl shadow p-4 text-gray-900 w-full flex flex-col justify-between">
+    <div className="bg-white rounded-xl shadow p-4 text-gray-900 w-full flex flex-col justify-between">
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
       <h3 className="text-purple-700 font-semibold text-sm mb-3">
@@ -153,7 +156,7 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,  allowEdit = 
       </div>
 
       {/* ACTIONS */}
-     <div className="mt-3 flex  items-center gap-8">
+      <div className="mt-3 flex  items-center gap-8">
         <button
           onClick={() => {
             setEditMode(false);
@@ -216,11 +219,13 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,  allowEdit = 
               {
                 title: "Gold Details",
                 fields: [
-              
+
                   { label: "Gold Type", key: "gold_type" },
                   { label: "Purity Required", key: "purity_required" },
                   { label: "Expected Quantity", key: "expected_quantity" },
                   { label: "Estimated Budget", key: "estimated_budget" },
+                  { label: "description", key: "description" },
+                  { label: "required date", key: "required_date" },
                 ],
               },
               {
@@ -229,34 +234,51 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,  allowEdit = 
                   { label: "Making Charges", key: "making_charges" },
                   { label: "Hallmark Required", key: "hallmark_required" },
                   { label: "Design Type", key: "design_type" },
-                  { label: "Delivery Location", key: "delivery_location" },
                   { label: "Timeline", key: "timeline" },
                 ],
               },
-              {
-                title: "Current Status",
-                fields: [
-                  { label: "Business Status", key: "business_status" },
-                  { label: "Comment", key: "comment" },
-                  ...(formData.feasibility_status || formData.comments
-                    ? [
-                      { label: "Feasibility Status", key: "feasibility_status" },
-                      { label: "Comments", key: "comments" },
-                    ]
-                    : []),
-
-                  ...(mode !== "update"
-                    ? [
-                      ...(formData.final_status || formData.final_comment
+              // ✅ Show Current Status section only if there is data
+              ...(
+                (
+                  (formData.feasibility_status && formData.comments) ||
+                  (mode !== "update" &&
+                    formData.final_status &&
+                    formData.final_comment)
+                )
+                  ? [{
+                    title: "Current Status",
+                    fields: [
+                      ...(formData.feasibility_status && formData.comments
                         ? [
-                          { label: "Final Status", key: "final_status" },
-                          { label: "Final Comment", key: "final_comment" },
+                          {
+                            label: "Feasibility Status",
+                            key: "feasibility_status",
+                          },
+                          {
+                            label: "Comments",
+                            key: "comments",
+                          },
                         ]
                         : []),
-                    ]
-                    : []),
-                ],
-              },
+
+                      ...(mode !== "update" &&
+                        formData.final_status &&
+                        formData.final_comment
+                        ? [
+                          {
+                            label: "Final Status",
+                            key: "final_status",
+                          },
+                          {
+                            label: "Final Comment",
+                            key: "final_comment",
+                          },
+                        ]
+                        : []),
+                    ],
+                  }]
+                  : []
+              ),
             ].map((section) => (
               <div key={section.title} className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3">
                 <h3 className="text-gray-900 text-sm font-semibold">
@@ -268,7 +290,7 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,  allowEdit = 
                     <div key={f.label} className="flex flex-col">
                       <span className="text-xs text-gray-900">{f.label}</span>
 
-                       {editMode ? (
+                      {editMode ? (
                         f.key === "business_status" ? (
                           <select
                             value={formData.business_status || ""}
@@ -281,10 +303,29 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate,  allowEdit = 
                             <option value="APPROVED">APPROVED</option>
                             <option value="REJECTED">REJECTED</option>
                           </select>
+                        ) : f.key === "description" ? (
+                          <input
+                            value={formData.description || ""}
+                            onChange={(e) =>
+                              handleEditChange("description", e.target.value)
+                            }
+                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                          />
+                        ) : f.key === "required_date" ? (
+                          <input
+                            type="date"
+                            value={formData.required_date || ""}
+                            onChange={(e) =>
+                              handleEditChange("required_date", e.target.value)
+                            }
+                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                          />
                         ) : (
                           <input
                             value={formData[f.key] || ""}
-                            onChange={(e) => handleEditChange(f.key, e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange(f.key, e.target.value)
+                            }
                             className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
                           />
                         )

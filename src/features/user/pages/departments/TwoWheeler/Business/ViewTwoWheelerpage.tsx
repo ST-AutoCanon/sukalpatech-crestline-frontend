@@ -10,6 +10,8 @@ interface Props {
     phone: string;
     email: string;
     project_title: string;
+    required_date: string;
+    description: string;
     expected_quantity: string;
     estimated_budget: string;
     vehicle_model: string;
@@ -24,11 +26,11 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
-   allowEdit?: boolean;
- 
+  allowEdit?: boolean;
+
 }
 
-const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true }) => {
+const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = true }) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...data });
@@ -80,7 +82,9 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true }
   };
 
   const allFields: [string, keyof typeof data][] = [
+    ["Description", "description"],
     ["Contact Person", "contact_person"],
+    ["Required Date", "required_date"],
     ["Company Name", "company_name"],
     ["Phone", "phone"],
     ["Project Title", "project_title"],
@@ -133,19 +137,19 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true }
         </button>
 
         {/* Right Button */}
-       {allowEdit &&
-  mode !== "update" &&
-  !formData.feasibility_status && (
-    <button
-      onClick={() => {
-        setEditMode(true);
-        setShowModal(true);
-      }}
-      className="text-blue-700 font-semibold text-sm"
-    >
-      Edit
-    </button>
-)}
+        {allowEdit &&
+          mode !== "update" &&
+          !formData.feasibility_status && (
+            <button
+              onClick={() => {
+                setEditMode(true);
+                setShowModal(true);
+              }}
+              className="text-blue-700 font-semibold text-sm"
+            >
+              Edit
+            </button>
+          )}
       </div>
       {/* Modal */}
       {showModal && (
@@ -182,6 +186,8 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true }
                 { label: "Project Title", key: "project_title" },
                 { label: "Expected Quantity", key: "expected_quantity" },
                 { label: "Estimated Budget", key: "estimated_budget" },
+                { label: "Required Date", key: "required_date" },
+                { label: "Description", key: "description" },
               ],
             }, {
               title: "Vehicle Details",
@@ -190,37 +196,49 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true }
                 { label: "Motor Capacity", key: "motor_capacity" },
                 { label: "Battery Type", key: "battery_type" },
               ],
-            }, {
-              title: "Current Status",
-              fields: [
-                { label: "Business Status", key: "business_status" },
-                { label: "Comment", key: "comment" },
-
-                // ❌ Hide these in edit mode
-                ...(!editMode
-                  ? [
-                    ...(formData.feasibility_status || formData.comments
+            },  // ✅ Show Current Status section only if there is data
+            ...(
+              (
+                (formData.feasibility_status && formData.comments) ||
+                (mode !== "update" &&
+                  formData.final_status &&
+                  formData.final_comment)
+              )
+                ? [{
+                  title: "Current Status",
+                  fields: [
+                    ...(formData.feasibility_status && formData.comments
                       ? [
-                        { label: "Feasibility Status", key: "feasibility_status" },
-                        { label: "Comments", key: "comments" },
+                        {
+                          label: "Feasibility Status",
+                          key: "feasibility_status",
+                        },
+                        {
+                          label: "Comments",
+                          key: "comments",
+                        },
                       ]
                       : []),
-                  ]
-                  : []),
 
-                // ❌ Hide final fields also in edit mode
-                ...(!editMode && mode !== "update"
-                  ? [
-                    ...(formData.final_status || formData.final_comment
+                    ...(mode !== "update" &&
+                      formData.final_status &&
+                      formData.final_comment
                       ? [
-                        { label: "Final Status", key: "final_status" },
-                        { label: "Final Comment", key: "final_comment" },
+                        {
+                          label: "Final Status",
+                          key: "final_status",
+                        },
+                        {
+                          label: "Final Comment",
+                          key: "final_comment",
+                        },
                       ]
                       : []),
-                  ]
-                  : []),
-              ],
-            }].map((section) => (
+                  ],
+                }]
+                : []
+            ),
+            ].map((section) => (
               <div key={section.title} className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3">
                 <h3 className="text-gray-900 text-sm font-semibold">{section.title}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -240,10 +258,30 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true }
                             <option value="APPROVED">APPROVED</option>
                             <option value="REJECTED">REJECTED</option>
                           </select>
+                        ) : f.key === "description" ? (
+                          <input
+                            value={formData.description || ""}
+                            onChange={(e) =>
+                              handleEditChange("description", e.target.value)
+                            }
+                           
+                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                          />
+                        ) : f.key === "required_date" ? (
+                          <input
+                            type="date"
+                            value={formData.required_date || ""}
+                            onChange={(e) =>
+                              handleEditChange("required_date", e.target.value)
+                            }
+                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                          />
                         ) : (
                           <input
                             value={formData[f.key] || ""}
-                            onChange={(e) => handleEditChange(f.key, e.target.value)}
+                            onChange={(e) =>
+                              handleEditChange(f.key, e.target.value)
+                            }
                             className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
                           />
                         )

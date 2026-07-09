@@ -580,6 +580,10 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
                     label: "Required Date",
                     value: formatDate(data.required_date || data.required_by),
                   },
+                  {
+                    label: "Industry type",
+                    value: data.industry_type,
+                  },
                 ],
               },
               {

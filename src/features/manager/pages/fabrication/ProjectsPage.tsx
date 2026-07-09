@@ -184,7 +184,7 @@ export default function ProjectPage() {
           <div className="bg-white w-full max-w-4xl rounded shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto relative">
             {/* HEADER */}
             <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-              Project Details (ID: {selectedProject.id})
+              Project Details (ID: {selectedProject.bd_request_id})
             </h2>
 
             {/* CLOSE */}

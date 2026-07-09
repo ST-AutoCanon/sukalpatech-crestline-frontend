@@ -22,6 +22,8 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
     phone: "",
     email: "",
     project_title: "",
+    required_date: "",
+    description: "",
     expected_quantity: "",
     estimated_budget: "",
     vehicle_model: "",
@@ -84,6 +86,8 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
           phone: "",
           email: "",
           project_title: "",
+          required_date: "",
+          description: "",
           expected_quantity: "",
           estimated_budget: "",
           vehicle_model: "",
@@ -131,118 +135,183 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
             {/* ================= BUSINESS DETAILS ================= */}
             <div className="bg-gray-100 rounded-xl p-4">
               <h2 className="font-medium mb-4">Business Details</h2>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  name="company_name"
-                  value={formData.company_name}
-                  onChange={handleChange}
-                  placeholder="Company Name"
-                  className="bg-white border rounded-lg p-2"
-                />
-                <input
-                  name="contact_person"
-                  value={formData.contact_person}
-                  onChange={handleChange}
-                  placeholder="Contact Person"
-                  className="bg-white border rounded-lg p-2"
-                />
-                <input
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="Phone"
-                  className="bg-white border rounded-lg p-2"
-                />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Email"
-                  className="bg-white border rounded-lg p-2"
-                  required
-                />
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Company Name
+                  </label>
+                  <input
+                    name="company_name"
+                    value={formData.company_name}
+                    onChange={handleChange}
+                    placeholder="Enter company name"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Contact Person
+                  </label>
+                  <input
+                    name="contact_person"
+                    value={formData.contact_person}
+                    onChange={handleChange}
+                    placeholder="Enter contact Person"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Phone
+                  </label>
+                  <input
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="Enter phone Number"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Enter Email"
+                    className="bg-white border rounded-lg h-11 px-3"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
             {/* ================= PROJECT DETAILS ================= */}
             <div className="bg-gray-100 rounded-xl p-4">
               <h2 className="font-medium mb-4">Project Details</h2>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  name="project_title"
-                  value={formData.project_title}
-                  onChange={handleChange}
-                  placeholder="Project Title"
-                  className="bg-white border rounded-lg p-2"
-                />
-                <input
-                  name="expected_quantity"
-                  value={formData.expected_quantity}
-                  onChange={handleChange}
-                  placeholder="Expected Quantity"
-                  className="bg-white border rounded-lg p-2"
-                />
-                <input
-                  name="estimated_budget"
-                  value={formData.estimated_budget}
-                  onChange={handleChange}
-                  placeholder="Estimated Budget"
-                  className="bg-white border rounded-lg p-2"
-                />
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Project Title
+                  </label>
+                  <input
+                    name="project_title"
+                    value={formData.project_title}
+                    onChange={handleChange}
+                    placeholder="Project Title"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Required Date
+                  </label>
+                  <input
+                    type="date"
+                    name="required_date"
+                    value={formData.required_date}
+                    onChange={handleChange}
+                    placeholder="required date"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Description
+                  </label>
+                  <input
+                    type="text"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Description"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Expected Quantity
+                  </label>
+                  <input
+                    name="expected_quantity"
+                    value={formData.expected_quantity}
+                    onChange={handleChange}
+                    placeholder="Expected quantity"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Estimated Budget
+                  </label>
+                  <input
+                    name="estimated_budget"
+                    value={formData.estimated_budget}
+                    onChange={handleChange}
+                    placeholder="Estimated budget"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
               </div>
             </div>
 
             {/* ================= VEHICLE DETAILS ================= */}
             <div className="bg-gray-100 rounded-xl p-4">
               <h2 className="font-medium mb-4">Vehicle Details</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  name="vehicle_model"
-                  value={formData.vehicle_model}
-                  onChange={handleChange}
-                  placeholder="Vehicle Model"
-                  className="bg-white border rounded-lg p-2"
-                />
-                <input
-                  name="motor_capacity"
-                  value={formData.motor_capacity}
-                  onChange={handleChange}
-                  placeholder="Motor Capacity"
-                  className="bg-white border rounded-lg p-2"
-                />
-                <input
-                  name="battery_type"
-                  value={formData.battery_type}
-                  onChange={handleChange}
-                  placeholder="Battery Type"
-                  className="bg-white border rounded-lg p-2"
-                />
-              </div>
-            </div>
 
-            {/* ================= BUSINESS REVIEW ================= */}
-            <div className="bg-gray-100 rounded-xl p-4">
-              <h2 className="font-medium mb-4">Business Review</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <select
-                  name="business_status"
-                  value={formData.business_status}
-                  onChange={handleChange}
-                  className="bg-white border rounded-lg p-2"
-                >
-                  <option value="">Select Status</option>
-                  <option value="APPROVED">APPROVED</option>
-                  <option value="PENDING">PENDING</option>
-                  <option value="REJECTED">REJECTED</option>
-                </select>
-                <textarea
-                  name="comment"
-                  value={formData.comment}
-                  onChange={handleChange}
-                  placeholder="Comment"
-                  className="bg-white border rounded-lg p-2"
-                />
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Vehicle Model
+                  </label>
+                  <input
+                    name="vehicle_model"
+                    value={formData.vehicle_model}
+                    onChange={handleChange}
+                    placeholder="Vehicle modal"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Motor Capacity
+                  </label>
+                  <input
+                    name="motor_capacity"
+                    value={formData.motor_capacity}
+                    onChange={handleChange}
+                    placeholder="motor capacity"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Battery Type
+                  </label>
+                  <input
+                    name="battery_type"
+                    value={formData.battery_type}
+                    onChange={handleChange}
+                    placeholder="battery type"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
               </div>
             </div>
 

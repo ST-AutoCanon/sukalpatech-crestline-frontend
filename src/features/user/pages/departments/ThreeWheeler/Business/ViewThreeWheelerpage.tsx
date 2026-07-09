@@ -10,6 +10,9 @@ interface Props {
     phone: string;
     email: string;
     project_title: string;
+    description: string;
+    required_date: string;
+
     expected_quantity: string;
     estimated_budget: string;
     vehicle_model: string;
@@ -25,10 +28,10 @@ interface Props {
   };
   mode?: "all" | "update";
   onUpdate?: (updated: any) => void;
-   allowEdit?: boolean;
+  allowEdit?: boolean;
 }
 
-const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true }) => {
+const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = true }) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...data });
@@ -87,12 +90,12 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true
     }
   };
 
-  const cardFields = [
-    ["Company Name", data.company_name],
+ const cardFields = [
+    ["Description", data.description],
     ["Contact Person", data.contact_person],
-    ["Phone", data.phone],
+    ["Company Name", data.company_name],
+    ["Required date", data.required_date],
     ["Project Title", data.project_title],
-    ["Vehicle Model", data.vehicle_model],
   ];
 
   type FormKey = keyof typeof formData;
@@ -128,19 +131,19 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true
           {mode === "update" ? "Update Feasibility" : "More Info"}
         </button>
 
-       {allowEdit &&
-  mode !== "update" &&
-  !formData.feasibility_status && (
-    <button
-      onClick={() => {
-        setEditMode(true);
-        setShowModal(true);
-      }}
-      className="text-blue-700 font-semibold text-sm"
-    >
-      Edit
-    </button>
-)}
+        {allowEdit &&
+          mode !== "update" &&
+          !formData.feasibility_status && (
+            <button
+              onClick={() => {
+                setEditMode(true);
+                setShowModal(true);
+              }}
+              className="text-blue-700 font-semibold text-sm"
+            >
+              Edit
+            </button>
+          )}
       </div>
 
       {/* ================= MODAL ================= */}
@@ -176,8 +179,11 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true
                 title: "Project Details",
                 fields: [
                   { label: "Project Title", key: "project_title" },
+                  { label: "Description", key: "description" },
+                  { label: "Required Date", key: "required_date" },
                   { label: "Expected Quantity", key: "expected_quantity" },
                   { label: "Estimated Budget", key: "estimated_budget" },
+
                 ] as Field[],
               },
               {
@@ -189,40 +195,48 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true
                   { label: "Load Capacity", key: "load_capacity" },
                 ] as Field[],
               },
-              {
-                title: "Current Status",
-                fields: [
-                  { label: "Business Status", key: "business_status" },
-                  { label: "Comment", key: "comment" },
+              // ✅ Show Current Status section only if there is data
+              ...(
+                (
+                  (formData.feasibility_status && formData.comments) ||
+                  (mode !== "update" &&
+                    formData.final_status &&
+                    formData.final_comment)
+                )
+                  ? [{
+                    title: "Current Status",
+                    fields: [
+                      ...(formData.feasibility_status && formData.comments
+                        ? [
+                          {
+                            label: "Feasibility Status",
+                            key: "feasibility_status",
+                          },
+                          {
+                            label: "Comments",
+                            key: "comments",
+                          },
+                        ]
+                        : []),
 
-                  ...(formData.feasibility_status || formData.comments
-                    ? [
-                      {
-                        label: "Feasibility Status",
-                        key: "feasibility_status" as FormKey,
-                      },
-                      {
-                        label: "Feasibility Comments",
-                        key: "comments" as FormKey,
-                      },
-                    ]
-                    : []),
-
-                  ...(mode !== "update" &&
-                    (formData.final_status || formData.final_comment)
-                    ? [
-                      {
-                        label: "Final Status",
-                        key: "final_status" as FormKey,
-                      },
-                      {
-                        label: "Final Comment",
-                        key: "final_comment" as FormKey,
-                      },
-                    ]
-                    : []),
-                ] as Field[],
-              },
+                      ...(mode !== "update" &&
+                        formData.final_status &&
+                        formData.final_comment
+                        ? [
+                          {
+                            label: "Final Status",
+                            key: "final_status",
+                          },
+                          {
+                            label: "Final Comment",
+                            key: "final_comment",
+                          },
+                        ]
+                        : []),
+                    ],
+                  }]
+                  : []
+              ),
             ].map((section) => (
               <div key={section.title} className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3">
                 <h3 className="text-sm font-semibold text-gray-800">{section.title}</h3>
@@ -234,7 +248,7 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true
                         {field.label}
                       </span>
 
-                       {editMode ? (
+                      {editMode ? (
                         field.key === "business_status" ? (
                           <select
                             value={formData.business_status || ""}
@@ -247,8 +261,22 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate,allowEdit=true
                             <option value="APPROVED">APPROVED</option>
                             <option value="REJECTED">REJECTED</option>
                           </select>
+                        ) : field.key === "required_date" ? (
+                          <input
+                            type="date"
+                            value={
+                              formData.required_date
+                                ? formData.required_date.split("T")[0]
+                                : ""
+                            }
+                            onChange={(e) =>
+                              handleEditChange("required_date", e.target.value)
+                            }
+                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                          />
                         ) : (
                           <input
+                            type="text"
                             value={formData[field.key] || ""}
                             onChange={(e) => handleEditChange(field.key, e.target.value)}
                             className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"

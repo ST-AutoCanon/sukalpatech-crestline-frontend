@@ -139,12 +139,12 @@ const [filter, setFilter] = useState<FilterType>("All PR");
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         {projects.map((p) => (
           <div
-            key={p.id}
+            key={p.bd_request_id}
             onClick={() => openProject(p)}
             className="bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col min-h-[200px] cursor-pointer"
           >
             <h2 className="text-purple-600 font-semibold text-lg mb-2">
-              Project ID: {p.id}
+              Project ID: {p.bd_request_id}
             </h2>
 
             <div className="flex-1 space-y-2 text-sm">
@@ -196,7 +196,7 @@ const [filter, setFilter] = useState<FilterType>("All PR");
             <div className="bg-gray-100 p-4 rounded mt-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  ["Project ID", selectedProject.id],
+                  ["Project ID", selectedProject.bd_request_id],
                   ["BD Request ID", selectedProject.bd_request_id],
                   ["Required Date", formatDate(selectedProject.required_date)],
                   ["Assigned Date", formatDate(selectedProject.assigned_date)],
