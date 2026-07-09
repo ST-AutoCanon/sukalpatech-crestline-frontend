@@ -18,10 +18,15 @@ const UpdatedFoodRequests: React.FC<Props> = ({ filter }) => {
         const res = await api.get("/business-development/food/review");
 
         if (res.data.success && res.data.data?.data) {
-          setData(res.data.data.data);
+          const approvedRequests = res.data.data.data.filter(
+            (item: any) =>
+              item.feasibility_status?.toUpperCase() === "FEASIBILITY APPROVED"
+          );
+
+          setData(approvedRequests);
         } else {
-          setData([]);
-        }
+  setData([]);
+}
       } catch (err) {
         console.error("Fetch Updated Requests Error:", err);
         setData([]);
@@ -39,7 +44,7 @@ const UpdatedFoodRequests: React.FC<Props> = ({ filter }) => {
       {loading ? (
         <p className="text-white">Loading...</p>
       ) : data.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {data
             ?.filter((item) => item && item.id)
             .map((item) => (   // ✅ add index here

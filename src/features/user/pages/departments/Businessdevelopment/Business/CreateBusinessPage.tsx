@@ -7,6 +7,7 @@ import { Upload } from "lucide-react";
 interface Request {
   id: number;
   description: string;
+  industry_type:string;
   priority: string;
   required_date: string;
   requested_by_department: string;
@@ -57,6 +58,7 @@ const initialForm = {
   required_date: "",
   requested_by_department: "",
   requested_by_person: "",
+  industry_type:"",
   applicant_name: "",
   contact_person: "",
   mobile_number: "",
@@ -388,6 +390,17 @@ const TestBusinessDev = ({ onClose, onSuccess }: { onClose: () => void; onSucces
                     name="description"
                     placeholder="Enter Description"
                     value={form.description}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
+                  />
+                </div>
+
+               <div>
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 block">Industry type <span className="text-red-500">*</span></label>
+                  <input
+                    name="industry_type"
+                    placeholder="industry type"
+                    value={form.Industry_type}
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-md p-2 sm:p-3 text-sm sm:text-base"
                   />

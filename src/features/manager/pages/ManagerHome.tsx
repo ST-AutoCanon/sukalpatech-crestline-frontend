@@ -542,36 +542,24 @@ interface WorkflowType {
 ========================================================= */
 
 export default function ManagerHome() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [workflow, setWorkflow] = useState<
-    WorkflowType[]
-  >([]);
-  const [allStatuses, setAllStatuses] =
-    useState<StatusType[]>([]);
+ const [projects, setProjects] = useState<Project[]>([]);
+const [workflow, setWorkflow] = useState<WorkflowType[]>([]);
+const [allStatuses, setAllStatuses] = useState<StatusType[]>([]);
 
-  const [activeDepartment, setActiveDepartment] =
-  useState("");
- 
-// GET UNIQUE DEPARTMENTS FROM WORKFLOW
+const [activeDepartment, setActiveDepartment] = useState("");
 
-const currentProjectWorkflow = workflow.filter(
-  (w) =>
-    w.project_management_id === projects[0]?.id
-);
+// GET UNIQUE DEPARTMENTS FROM ALL WORKFLOW
 
 const departments = Array.from(
   new Set(
-    currentProjectWorkflow.map((w) =>
-      w.department?.toLowerCase()
-    )
+    workflow
+      .map((w) => w.department?.toLowerCase())
+      .filter(Boolean)
   )
-).filter(Boolean);
+);
 
 useEffect(() => {
-  if (
-    departments.length > 0 &&
-    !activeDepartment
-  ) {
+  if (departments.length > 0 && !activeDepartment) {
     setActiveDepartment(departments[0]);
   }
 }, [departments, activeDepartment]);

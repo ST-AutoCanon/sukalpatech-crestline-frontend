@@ -275,6 +275,27 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
   }, [showModal, data.id]);
 
   const handleSaveWorkflow = async () => {
+    // Validate required fields
+    const hasEmptyFields = workflow.some(
+      (item) =>
+        !item.task_title?.trim() ||
+        !item.department ||
+        !item.assigned_to ||
+        !item.priority ||
+        !item.start_date ||
+        !item.due_date ||
+        !item.estimated_days ||
+        !item.task_description?.trim()
+    );
+
+    if (hasEmptyFields) {
+      setAlert({
+        type: "error",
+        message: "Please fill all required fields before assigning the task.",
+      });
+      return;
+    }
+
     try {
       await api.put(`/project/${data.id}/workflow`, {
         workflow: workflow.map((item, index) => ({
@@ -290,15 +311,11 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
         })),
       });
 
-
       setWorkflowSaved(true);
 
-      // 🔥 IMPORTANT: re-fetch updated workflow
-      const res = await api.get(
-        `/project/${data.id}/workflow`,
-        { withCredentials: true }
-      );
-      console.log("WORKFLOW RESPONSE shown:", res.data.data);
+      const res = await api.get(`/project/${data.id}/workflow`, {
+        withCredentials: true,
+      });
 
       setWorkflow(res.data?.data || []);
 
@@ -306,9 +323,13 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
         type: "success",
         message: "Tasks saved successfully",
       });
-
     } catch (err) {
       console.error(err);
+
+      setAlert({
+        type: "error",
+        message: "Failed to save tasks.",
+      });
     }
   };
 
@@ -528,23 +549,22 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
 
   const FIELD_CONFIG: Record<string, { label: string; key: string }[]> = {
     "2W": [
-      { label: "industry_type", key: "industry_type" },
-      { label: "Company", key: "company_name" },
+      { label: "Contact Person", key: "contact_person" },
     ],
 
     "3W": [
-      { label: "industry_type", key: "industry_type" },
-      { label: "Company", key: "company_name" },
+      { label: "Contact Person", key: "contact_person" },
     ],
 
     "FOOD": [
-      { label: "industry_type", key: "industry_type" },
-      { label: "company_name", key: "company_name" },
+      { label: "Contact Person", key: "contact_person" },
     ],
 
     "GOLD_BUSINESS": [
-      { label: "industry_type", key: "industry_type" },
-      { label: "company_name", key: "company_name" },
+      { label: "Contact Person", key: "contact_person" },
+    ],
+    "BUS": [
+      { label: "Contact Person", key: "contact_person" },
     ],
   };
   const industryFields = useMemo(() => {
@@ -579,58 +599,39 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
               />
             )}
         </div>
-        <div className="flex-1 space-y-2 text-sm">
-          {industryFields.map((field) => (
-            <div key={field.label} className="flex justify-between">
-              <span className="text-gray-500">{field.label}</span>
-              <span className="font-medium truncate ml-2">
-                {field.value}
-              </span>
-            </div>
-          ))}
 
-          {data.required_date && (
-            <div className="flex justify-between">
-              <span className="text-gray-500">Required Date</span>
-              <span className="font-medium">
-                {formatDate(data.required_date)}
-              </span>
-            </div>
-          )}
-          <div className="flex justify-between">
-            <span className="text-gray-500">Assigned Date</span>
-            <span className="font-medium">
-              {data.assigned_date
-                ? new Date(data.assigned_date).toLocaleDateString()
-                : "-"}
-            </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-gray-500">Assigned By</span>
-            <span className="font-medium truncate ml-2">
-              {data.assigned_by || "-"}
-            </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-gray-500">Assigned To</span>
-            <span className="font-medium truncate ml-2">
-              {data.assigned_project_manager || "-"}
-            </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-gray-500">Created At</span>
-            <span className="font-medium">
-              {data.created_at
-                ? new Date(data.created_at).toLocaleDateString()
-                : "-"}
-            </span>
-          </div>
-
-
+        <div className="flex justify-between">
+          <span className="text-gray-500">Industry Type</span>
+          <span className="font-base">
+            {requestDetails?.industry_type
+              ? requestDetails.industry_type.replace(/_/g, " ").toUpperCase()
+              : "-"}
+          </span>
         </div>
+
+        <div className="flex justify-between">
+          <span className="text-gray-500">Required Date</span>
+          <span className="font-base">
+            {data.required_date ? formatDate(data.required_date) : "-"}
+          </span>
+        </div>
+
+        <div className="flex justify-between">
+          <span className="text-gray-500">Description</span>
+          <span className="font-base truncate ml-2">
+            {requestDetails?.description || "-"}
+          </span>
+        </div>
+
+        {industryFields.map((field) => (
+          <div key={field.label} className="flex justify-between">
+            <span className="text-gray-500">{field.label}</span>
+            <span className="font-medium truncate ml-2">
+              {field.value}
+            </span>
+          </div>
+        ))}
+
 
 
 
@@ -763,6 +764,43 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                     className="border p-2 rounded w-full bg-white text-sm"
                   />
                 </div>
+                <div>
+                  <label className="text-xs font-medium">
+                    Industry Type
+                  </label>
+
+                  <input
+                    readOnly
+                    value={requestDetails?.industry_type
+                      ? requestDetails.industry_type.replace(/_/g, " ").toUpperCase()
+                      : "-"}
+                    className="border p-2 rounded w-full bg-white text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium">
+                    Required Date
+                  </label>
+
+                  <input
+                    readOnly
+                    value={data.required_date ? formatDate(data.required_date) : "-"}
+                    className="border p-2 rounded w-full bg-white text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium">
+                    Description
+                  </label>
+
+                  <input
+                    readOnly
+                    value={requestDetails?.description || "-"}
+                    className="border p-2 rounded w-full bg-white text-sm"
+                  />
+                </div>
 
                 {industryFields.map((field) => (
                   <div key={field.label}>
@@ -777,6 +815,8 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                     />
                   </div>
                 ))}
+
+
 
                 {/* <div className="sm:col-span-2">
                   <label className="text-xs font-medium">
@@ -1282,7 +1322,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                             {alreadyAssignedToPM && (
                               <div>
                                 <label className="block text-sm font-medium mb-1">
-                                  Assigned To
+                                  Assigned To <span className="text-red-500">*</span>
                                 </label>
 
                                 <select
@@ -1308,7 +1348,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                             {/* Priority */}
                             <div>
                               <label className="block text-sm font-medium mb-1">
-                                Priority
+                                Priority <span className="text-red-500">*</span>
                               </label>
 
                               <select
@@ -1335,7 +1375,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                             {/* Start Date */}
                             <div>
                               <label className="block text-sm font-medium mb-1">
-                                Start Date
+                                Start Date <span className="text-red-500">*</span>
                               </label>
 
                               <input
@@ -1354,7 +1394,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                             {/* Due Date */}
                             <div>
                               <label className="block text-sm font-medium mb-1">
-                                Due Date
+                                Due Date <span className="text-red-500">*</span>
                               </label>
 
                               <input
@@ -1373,7 +1413,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
                             {/* Estimated Days */}
                             <div>
                               <label className="block text-sm font-medium mb-1">
-                                Estimated Duration
+                                Estimated Duration <span className="text-red-500">*</span>
                               </label>
 
                               <input

@@ -122,16 +122,15 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
 
   /* ---------------- CARD FIELDS (ONLY 5) ---------------- */
   const cardFields = [
+    ["Description",data.description],
     ["Company Name", data.company_name],
     ["Contact Person", data.contact_person],
-    ["Phone", data.phone],
+    ["Required date", data.required_date],
     ["Gold Type", data.gold_type],
-    ["Product Type", data.product_type],
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow p-3 w-full sm:w-[360px] md:w-[400px] m-2 flex flex-col justify-between">
-      
+    <div className="bg-white rounded-xl shadow p-3 w-full flex flex-col justify-between">
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
       {/* HEADER */}
@@ -154,9 +153,9 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
       </div>
 
       {/* UPDATE BUTTON */}
-     {mode === "update" && (
+      {mode === "update" && (
         <button onClick={openModal} className="mt-3 text-blue-600 underline text-sm self-start">
-          Update 
+          Update
         </button>
       )}
 
@@ -168,7 +167,7 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
-             <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
+            <h2 className="bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent text-2xl font-medium">
               GOLD-{data.id} Full Info
             </h2>
             {/* ================= SECTIONS ================= */}
@@ -186,7 +185,6 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
                 title: "Gold Details",
                 fields: [
                   { label: "Gold Type", value: data.gold_type },
-                  { label: "Product Type", value: data.product_type },
                   { label: "Purity Required", value: data.purity_required },
                   { label: "Expected Quantity", value: data.expected_quantity },
                   { label: "Estimated Budget", value: data.estimated_budget },

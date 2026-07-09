@@ -18,6 +18,8 @@ export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
     phone: "",
     email: "",
     project_title: "",
+    required_date: "",
+    description: "",
     expected_quantity: "",
     estimated_budget: "",
     product_category: "",
@@ -44,24 +46,24 @@ export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
     e.preventDefault();
     setAlertData(null);
     const token = localStorage.getItem("token");
-     // Email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (!formData.email.trim()) {
-    setAlertData({
-      type: "error",
-      message: "Email is required.",
-    });
-    return;
-  }
+    if (!formData.email.trim()) {
+      setAlertData({
+        type: "error",
+        message: "Email is required.",
+      });
+      return;
+    }
 
-  if (!emailRegex.test(formData.email)) {
-    setAlertData({
-      type: "error",
-      message: "Please enter a valid email address.",
-    });
-    return;
-  }
+    if (!emailRegex.test(formData.email)) {
+      setAlertData({
+        type: "error",
+        message: "Please enter a valid email address.",
+      });
+      return;
+    }
 
     try {
       setLoading(true);
@@ -80,6 +82,8 @@ export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
           phone: "",
           email: "",
           project_title: "",
+          required_date: "",
+          description: "",
           expected_quantity: "",
           estimated_budget: "",
           product_category: "",
@@ -128,49 +132,184 @@ export default function FoodBusinessPage({ onClose, onSuccess }: Props) {
             {/* BUSINESS DETAILS */}
             <div className="bg-gray-100 rounded-xl p-4">
               <h2 className="font-medium mb-4">Business Details</h2>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input name="company_name" value={formData.company_name} onChange={handleChange} placeholder="Company Name" className="bg-white border rounded-lg p-2" />
-                <input name="contact_person" value={formData.contact_person} onChange={handleChange} placeholder="Contact Person" className="bg-white border rounded-lg p-2" />
-                <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" className="bg-white border rounded-lg p-2" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Email"
-                  className="bg-white border rounded-lg p-2"
-                  required
-                />                <input name="project_title" value={formData.project_title} onChange={handleChange} placeholder="Project Title" className="bg-white border rounded-lg p-2" />
-                <input name="expected_quantity" value={formData.expected_quantity} onChange={handleChange} placeholder="Expected Quantity" className="bg-white border rounded-lg p-2" />
-                <input name="estimated_budget" value={formData.estimated_budget} onChange={handleChange} placeholder="Estimated Budget" className="bg-white border rounded-lg p-2" />
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Company Name</label>
+                  <input
+                    name="company_name"
+                    value={formData.company_name}
+                    onChange={handleChange}
+                    placeholder="Company Name"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Contact Person</label>
+                  <input
+                    name="contact_person"
+                    value={formData.contact_person}
+                    onChange={handleChange}
+                    placeholder="Contact Person"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Phone</label>
+                  <input
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="Phone"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Email"
+                    className="bg-white border rounded-lg h-11 px-3"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Required date</label>
+                  <input
+                    type="date"
+                    name="required_date"
+                    value={formData.required_date}
+                    onChange={handleChange}
+                    placeholder="Required date"
+                    className="bg-white border rounded-lg h-11 px-3"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Description</label>
+                  <input
+                    type="description"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="description"
+                    className="bg-white border rounded-lg h-11 px-3"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
+            {/* PROJECT DETAILS */}
+            <div className="bg-gray-100 rounded-xl p-4">
+              <h2 className="font-medium mb-4">Project Details</h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Project Title</label>
+                  <input
+                    name="project_title"
+                    value={formData.project_title}
+                    onChange={handleChange}
+                    placeholder="Project Title"
+                    className="bg-white border rounded-lg h-11 px-3"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Expected Quantity</label>
+                  <input
+                    name="expected_quantity"
+                    value={formData.expected_quantity}
+                    onChange={handleChange}
+                    placeholder="Expected Quantity"
+                    className="bg-white border rounded-lg h-11 px-3"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Estimated Budget</label>
+                  <input
+                    name="estimated_budget"
+                    value={formData.estimated_budget}
+                    onChange={handleChange}
+                    placeholder="Estimated Budget"
+                    className="bg-white border rounded-lg h-11 px-3"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
             {/* PRODUCT DETAILS */}
             <div className="bg-gray-100 rounded-xl p-4">
               <h2 className="font-medium mb-4">Product Details</h2>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input name="product_category" value={formData.product_category} onChange={handleChange} placeholder="Product Category" className="bg-white border rounded-lg p-2" />
-                <input name="product_name" value={formData.product_name} onChange={handleChange} placeholder="Product Name" className="bg-white border rounded-lg p-2" />
-                <input name="packaging_type" value={formData.packaging_type} onChange={handleChange} placeholder="Packaging Type" className="bg-white border rounded-lg p-2" />
-                <input name="shelf_life" value={formData.shelf_life} onChange={handleChange} placeholder="Shelf Life" className="bg-white border rounded-lg p-2" />
-                <input name="storage_condition" value={formData.storage_condition} onChange={handleChange} placeholder="Storage Condition" className="bg-white border rounded-lg p-2" />
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Product Category</label>
+                  <input
+                    name="product_category"
+                    value={formData.product_category}
+                    onChange={handleChange}
+                    placeholder="Product Category"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Product Name</label>
+                  <input
+                    name="product_name"
+                    value={formData.product_name}
+                    onChange={handleChange}
+                    placeholder="Product Name"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Packaging Type</label>
+                  <input
+                    name="packaging_type"
+                    value={formData.packaging_type}
+                    onChange={handleChange}
+                    placeholder="Packaging Type"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Shelf Life</label>
+                  <input
+                    name="shelf_life"
+                    value={formData.shelf_life}
+                    onChange={handleChange}
+                    placeholder="Shelf Life"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">Storage Condition</label>
+                  <input
+                    name="storage_condition"
+                    value={formData.storage_condition}
+                    onChange={handleChange}
+                    placeholder="Storage Condition"
+                    className="bg-white border rounded-lg h-11 px-3"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* BUSINESS REVIEW */}
-            <div className="bg-gray-100 rounded-xl p-4">
-              <h2 className="font-medium mb-4">Business Review</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <select name="business_status" value={formData.business_status} onChange={handleChange} className="bg-white border rounded-lg p-2">
-                  <option value="">Select Status</option>
-                  <option value="APPROVED">APPROVED</option>
-                  <option value="PENDING">PENDING</option>
-                  <option value="REJECTED">REJECTED</option>
-                </select>
-                <textarea name="comment" value={formData.comment} onChange={handleChange} placeholder="Comment" className="bg-white border rounded-lg p-2" />
-              </div>
-            </div>
 
             {/* SUBMIT */}
             <div className="flex justify-end">

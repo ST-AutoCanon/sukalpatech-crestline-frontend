@@ -10,6 +10,8 @@ interface Props {
     phone: string;
     email: string;
     project_title: string;
+    description: string;
+    required_date: string;
     expected_quantity: string;
     estimated_budget: string;
     product_category: string;
@@ -93,9 +95,9 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
 
   // ✅ Only 5 fields like 2W
   const cardFields = [
-    ["Contact Person", data.contact_person],
-    ["Company Name", data.company_name],
-    ["Phone", data.phone],
+    ["Description", data.description],
+    ["Contact person", data.contact_person],
+    ["Required date", data.required_date],
     ["Project Title", data.project_title],
     ["Product Name", data.product_name],
   ];
@@ -108,7 +110,7 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
   };
 
   return (
-  <div className="bg-white rounded-xl shadow p-4 text-gray-900 w-full flex flex-col justify-between">
+    <div className="bg-white rounded-xl shadow p-4 text-gray-900 w-full flex flex-col justify-between">
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
       {/* HEADER */}
@@ -195,6 +197,8 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
                   { label: "Project Title", key: "project_title" },
                   { label: "Expected Quantity", key: "expected_quantity" },
                   { label: "Estimated Budget", key: "estimated_budget" },
+                  { label: "description", key: "description" },
+                  { label: "required date", key: "required_date" },
                 ],
               },
               {
@@ -207,31 +211,48 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
                   { label: "Storage Condition", key: "storage_condition" },
                 ],
               },
-              {
-                title: "Current Status",
-                fields: [
-                  { label: "Business Status", key: "business_status" },
-                  { label: "Comment", key: "comment" },
-
-                  ...(formData.feasibility_status || formData.comments
-                    ? [
-                      { label: "Feasibility Status", key: "feasibility_status" },
-                      { label: "Feasibility Comments", key: "comments" },
-                    ]
-                    : []),
-
-                  ...(mode !== "update"
-                    ? [
-                      ...(data.final_status || data.final_comment
+              // ✅ Show Current Status section only if there is data
+              ...(
+                (
+                  (formData.feasibility_status && formData.comments) ||
+                  (mode !== "update" &&
+                    formData.final_status &&
+                    formData.final_comment)
+                )
+                  ? [{
+                    title: "Current Status",
+                    fields: [
+                      ...(formData.feasibility_status && formData.comments
                         ? [
-                          { label: "Final Status", key: "final_status" as keyof typeof formData },
-                          { label: "Final Comment", key: "final_comment" as keyof typeof formData },
+                          {
+                            label: "Feasibility Status",
+                            key: "feasibility_status",
+                          },
+                          {
+                            label: "Comments",
+                            key: "comments",
+                          },
                         ]
                         : []),
-                    ]
-                    : []),
-                ],
-              },
+
+                      ...(mode !== "update" &&
+                        formData.final_status &&
+                        formData.final_comment
+                        ? [
+                          {
+                            label: "Final Status",
+                            key: "final_status",
+                          },
+                          {
+                            label: "Final Comment",
+                            key: "final_comment",
+                          },
+                        ]
+                        : []),
+                    ],
+                  }]
+                  : []
+              ),
             ].map((section) => (
               <div key={section.title} className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow flex flex-col gap-3">
                 <h3 className="text-sm font-semibold text-gray-800">{section.title}</h3>
@@ -243,7 +264,7 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
                         {field.label}
                       </span>
 
-                       {editMode ? (
+                      {editMode ? (
                         field.key === "business_status" ? (
                           <select
                             value={formData.business_status || ""}
@@ -257,11 +278,27 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
                             <option value="REJECTED">REJECTED</option>
                           </select>
                         ) : (
-                          <input
-                            value={formData[field.key] || ""}
-                            onChange={(e) => handleEditChange(field.key, e.target.value)}
-                            className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
-                          />
+                          field.key === "required_date" ? (
+                            <input
+                              type="date"
+                              value={
+                                formData.required_date
+                                  ? formData.required_date.split("T")[0]
+                                  : ""
+                              }
+                              onChange={(e) =>
+                                handleEditChange("required_date", e.target.value)
+                              }
+                              className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              value={formData[field.key] || ""}
+                              onChange={(e) => handleEditChange(field.key, e.target.value)}
+                              className="border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900"
+                            />
+                          )
                         )
                       ) : (
                         <span className="bg-white border rounded px-3 py-2 text-sm sm:text-base font-medium text-gray-900">
@@ -276,75 +313,75 @@ const FoodBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
 
             {/* ================= FEASIBILITY UPDATE ================= */}
             {mode === "update" && (
-                         <>
-                           <div className="bg-gray-100 p-5 rounded-xl">
-                             <h3 className="text-sm font-bold mb-3 text-gray-900">
-                               Feasibility Update
-                             </h3>
-           
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                               <select
-                                 value={feasibilityStatus}
-                                 onChange={(e) =>
-                                   setFeasibilityStatus(e.target.value)
-                                 }
-                                 className="border p-2 rounded text-xs text-gray-900"
-                               >
-                                 <option value="">Select</option>
-                                 <option value="FEASIBILITY APPROVED">
-                                   FEASIBILITY APPROVED
-                                 </option>
-                                 <option value="FEASIBILITY REJECTED">
-                                   FEASIBILITY REJECTED
-                                 </option>
-                                 <option value="FEASIBILITY PENDING">
-                                   FEASIBILITY PENDING
-                                 </option>
-                               </select>
-           
-                               <textarea
-                                 value={comments}
-                                 onChange={(e) => setComments(e.target.value)}
-                                 className="border p-2 rounded text-sm text-gray-900 resize-none"
-                               />
-                             </div>
-                           </div>
-           
-                           <div className="flex justify-end">
-                             <button
-                               onClick={async () => {
-                                 try {
-                                   const res = await api.patch(
-                                     `/business-development/food/review`,
-                                     {
-                                       id: data.id,
-                                       feasibility_status: feasibilityStatus,
-                                       comments: comments,
-                                     }
-                                   );
-           
-                                   onUpdate?.(res.data.data);
-           
-                                   setAlert({
-                                     type: "success",
-                                     message: "Feasibility updated!",
-                                   });
-           
-                                   setShowModal(false);
-                                 } catch {
-                                   setAlert({
-                                     type: "error",
-                                     message: "Update failed",
-                                   });
-                                 }
-                               }}
-                               className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
-                             >
-                               Update Feasibility
-                             </button>
-                           </div>
-                         </>
-                       )}
+              <>
+                <div className="bg-gray-100 p-5 rounded-xl">
+                  <h3 className="text-sm font-bold mb-3 text-gray-900">
+                    Feasibility Update
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <select
+                      value={feasibilityStatus}
+                      onChange={(e) =>
+                        setFeasibilityStatus(e.target.value)
+                      }
+                      className="border p-2 rounded text-xs text-gray-900"
+                    >
+                      <option value="">Select</option>
+                      <option value="FEASIBILITY APPROVED">
+                        FEASIBILITY APPROVED
+                      </option>
+                      <option value="FEASIBILITY REJECTED">
+                        FEASIBILITY REJECTED
+                      </option>
+                      <option value="FEASIBILITY PENDING">
+                        FEASIBILITY PENDING
+                      </option>
+                    </select>
+
+                    <textarea
+                      value={comments}
+                      onChange={(e) => setComments(e.target.value)}
+                      className="border p-2 rounded text-sm text-gray-900 resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await api.patch(
+                          `/business-development/food/review`,
+                          {
+                            id: data.id,
+                            feasibility_status: feasibilityStatus,
+                            comments: comments,
+                          }
+                        );
+
+                        onUpdate?.(res.data.data);
+
+                        setAlert({
+                          type: "success",
+                          message: "Feasibility updated!",
+                        });
+
+                        setShowModal(false);
+                      } catch {
+                        setAlert({
+                          type: "error",
+                          message: "Update failed",
+                        });
+                      }
+                    }}
+                    className="bg-purple-700 text-white px-5 py-2 rounded text-sm"
+                  >
+                    Update Feasibility
+                  </button>
+                </div>
+              </>
+            )}
             {editMode && (
               <div className="flex justify-end gap-2">
                 {/* Cancel Button */}

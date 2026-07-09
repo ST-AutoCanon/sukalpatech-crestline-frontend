@@ -71,6 +71,8 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate}) =>
             description:
               data.project_title ||
               data.description,
+              required_date:
+                data.required_date,
             vehiclemodal:data.vehicle_modal,
 
 
@@ -115,20 +117,20 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate}) =>
 
   // ✅ Only 5 fields on card
   const cardFields = [
+    ["Description",data.description],
     ["Contact Person", data.contact_person],
     ["Company Name", data.company_name],
-    ["Phone", data.phone],
+    ["Required date", data.required_date],
     ["Project Title", data.project_title],
-    ["Vehicle Model", data.vehicle_model],
   ];
 
   return (
     <div className="bg-white rounded-xl shadow p-3 w-full flex flex-col justify-between">
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
-<h3 className="text-purple-700 font-semibold text-sm mb-3">
-  2W ID: {data.id}  {/* index from map function */}
-</h3>
+      <h3 className="text-purple-700 font-semibold text-sm mb-3">
+        2W ID: {data.id}  {/* index from map function */}
+      </h3>
       <div className="flex flex-col gap-1">
         {cardFields.map(([label, value]) => (
           <div key={label} className="flex justify-between items-center">
@@ -164,6 +166,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate}) =>
                   { label: "Contact Person", value: data.contact_person },
                   { label: "Phone", value: data.phone },
                   { label: "Email", value: data.email },
+              
                 ],
               },
               {
@@ -172,6 +175,8 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate}) =>
                   { label: "Project Title", value: data.project_title },
                   { label: "Expected Quantity", value: data.expected_quantity },
                   { label: "Estimated Budget", value: data.estimated_budget },
+                   { label: "description", value: data.description },
+                  { label: "required date", value: data.required_date },
                 ],
               },
               {

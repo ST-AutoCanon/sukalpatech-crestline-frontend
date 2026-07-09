@@ -77,6 +77,8 @@ const FoodBusinessCard: React.FC<Props> = ({
              description:
                data.project_title ||
                data.description,
+               required_date:
+                data.required_date,
              contactperson:
              data.contact_person,
              productname:
@@ -124,17 +126,16 @@ const FoodBusinessCard: React.FC<Props> = ({
  
 
   // ✅ SAME 5 FIELDS LIKE 2W
-  const cardFields = [
-    ["Contact Person", data.contact_person],
-    ["Company Name", data.company_name],
-    ["Phone", data.phone],
+   const cardFields = [
+    ["Description", data.description],
+    ["Contact person", data.contact_person],
+    ["Required date", data.required_date],
     ["Project Title", data.project_title],
     ["Product Name", data.product_name],
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow p-3 w-full sm:w-[360px] md:w-[400px] m-2 flex flex-col justify-between">
-      
+ <div className="bg-white rounded-xl shadow p-3 w-full flex flex-col justify-between">      
       {/* Alert */}
       {alert && <Alert {...alert} onClose={() => setAlert(null)} />}
 
@@ -144,15 +145,11 @@ const FoodBusinessCard: React.FC<Props> = ({
       </h3>
 
       {/* ✅ CLEAN ALIGNMENT */}
-      <div className="flex flex-col gap-1">
+     <div className="flex flex-col gap-1">
         {cardFields.map(([label, value]) => (
-          <div key={label} className="flex">
-            <span className="w-32 shrink-0 text-gray-400 text-sm">
-              {label}:
-            </span>
-            <span className="font-medium text-gray-700 text-sm truncate">
-              {render(value)}
-            </span>
+          <div key={label} className="flex justify-between items-center">
+            <span className="w-32 shrink-0 text-gray-400 text-sm">{label}:</span>
+            <span className="font-medium text-gray-700 text-sm truncate">{render(value)}</span>
           </div>
         ))}
       </div>

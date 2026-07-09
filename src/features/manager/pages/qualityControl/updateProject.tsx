@@ -330,7 +330,7 @@ const handleStatusUpdate = async () => {
             className="bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col min-h-[200px] cursor-pointer"
           >
             <h2 className="text-purple-600 font-semibold text-lg mb-2">
-            Project ID: {p.display_id ?? p.id}
+            Project ID: {p.bd_request_id}
             </h2>
 
             <div className="flex-1 space-y-2 text-sm">
@@ -367,7 +367,7 @@ const handleStatusUpdate = async () => {
           <div className="bg-white w-full max-w-4xl rounded shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto relative">
             {/* HEADER */}
             <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-600 via-purple-500 to-purple-700 bg-clip-text text-transparent">
-             Project Details (ID: {selectedProject.display_id ?? selectedProject.id})
+             Project Details (ID: {selectedProject.id})
             </h2>
 
             {/* CLOSE */}
@@ -384,7 +384,7 @@ const handleStatusUpdate = async () => {
                 {[
                   [
                     "Project ID",
-                    selectedProject.display_id ?? selectedProject.id,
+                    selectedProject.bd_request_id ?? selectedProject.id,
                   ],
                   [
                     "BD Request ID",

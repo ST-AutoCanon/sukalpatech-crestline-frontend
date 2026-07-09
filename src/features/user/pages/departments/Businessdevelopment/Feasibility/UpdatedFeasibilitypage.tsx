@@ -209,10 +209,10 @@ const UpdatedFeasibilityPage = () => {
       let data = res.data.data;
 
       if (type === "updated") {
-        // only keep PRs with feasibility_status
-        data = data.filter((pr: any) => pr.feasibility_status);
+        data = data.filter(
+          (pr: any) => pr.feasibility_status === "APPROVED"
+        );
       }
-
       setPrs(data);
     };
     fetchPRs();
