@@ -50,7 +50,7 @@ export default function ProjectManagerHome() {
   const projects = [
     ...new Map(
       allWorkflows.map((item) => [
-        item.bd_request_id,
+        item.project_management_id,
         item,
       ])
     ).values(),
@@ -58,8 +58,8 @@ export default function ProjectManagerHome() {
 
   const selectedProjectWorkflow = allWorkflows.filter(
     (item) =>
-      item.bd_request_id ===
-      selectedProject?.bd_request_id
+      item.project_management_id ===
+      selectedProject?.project_management_id
   );
   const getStatusColor = (status?: string) => {
     switch ((status || "PENDING").toUpperCase()) {
@@ -124,7 +124,7 @@ export default function ProjectManagerHome() {
     const uniqueProjects = [
       ...new Map(
         data.map((item: any) => [
-          item.bd_request_id,
+          item.project_management_id,
           item,
         ])
       ).values(),
@@ -134,7 +134,7 @@ export default function ProjectManagerHome() {
     if (uniqueProjects.length > 0) {
       const lastProject = uniqueProjects.sort(
         (a: any, b: any) =>
-          b.bd_request_id - a.bd_request_id
+          b.project_management_id - a.project_management_id
       )[0];
 
       setSelectedProject(lastProject);
@@ -144,6 +144,33 @@ export default function ProjectManagerHome() {
   useEffect(() => {
     fetchAllWorkflows();
   }, []);
+
+  const formatIndustryType = (type?: string) => {
+    if (!type) return "";
+
+    switch (type.toLowerCase()) {
+      case "gold_business":
+        return "GOLD";
+      case "food":
+        return "FOOD";
+      case "2w":
+        return "2W";
+      case "3w":
+        return "3W";
+      case "bus":
+        return "BUS";
+      default:
+        return type.replace(/_/g, " ").toUpperCase();
+    }
+  };
+
+  const formatDepartment = (department?: string) => {
+    if (!department) return "-";
+
+    return department
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
 
   const handleDepartmentClick = (deptKey: string) => {
 
@@ -170,8 +197,8 @@ export default function ProjectManagerHome() {
           return statusCompare;
 
         return (
-          b.bd_request_id -
-          a.bd_request_id
+          b.project_management_id -
+          a.project_management_id
         );
       })[0];
 
@@ -181,7 +208,7 @@ export default function ProjectManagerHome() {
     }
 
     navigate(
-      `/project_manager/projects?projectId=${latestProject.bd_request_id}`
+      `/project_manager/projects?projectId=${latestProject.project_management_id}`
     );
   };
 
@@ -246,8 +273,8 @@ export default function ProjectManagerHome() {
   const projectTasks = selectedProject
     ? allWorkflows.filter(
       (item) =>
-        item.bd_request_id ===
-        selectedProject.bd_request_id
+        item.project_management_id ===
+        selectedProject.project_management_id
     )
     : [];
 
@@ -302,11 +329,11 @@ export default function ProjectManagerHome() {
           </h2>
 
           <select
-            value={selectedProject?.bd_request_id || ""}
+            value={selectedProject?.project_management_id || ""}
             onChange={(e) => {
               const project = projects.find(
                 (p) =>
-                  p.bd_request_id === Number(e.target.value)
+                  p.project_management_id === Number(e.target.value)
               );
 
               setSelectedProject(project);
@@ -317,10 +344,10 @@ export default function ProjectManagerHome() {
 
             {projects.map((project) => (
               <option
-                key={project.bd_request_id}
-                value={project.bd_request_id}
+                key={project.project_management_id}
+                value={project.project_management_id}
               >
-                Project id:{project.bd_request_id}
+                Project ID: {project.project_management_id} - {formatIndustryType(project.industry_type)}
               </option>
             ))}
           </select>
@@ -383,7 +410,7 @@ export default function ProjectManagerHome() {
                       onClick={() => {
                         if (selectedProject) {
                           navigate(
-                            `/project_manager/projects?projectId=${selectedProject.bd_request_id}`
+                            `/project_manager/projects?projectId=${selectedProject.project_management_id}`
                           );
                         }
                       }}
@@ -445,7 +472,7 @@ export default function ProjectManagerHome() {
                     <tr key={index} className="border-b">
                       <td className="p-2">{task.task_title || "-"}</td>
                       <td className="p-2">{task.task_description || "-"}</td>
-                      <td className="p-2">{task.department || "-"}</td>
+                       <td className="p-2">{formatDepartment(task.department)}</td>
                       <td className="p-2">{task.assigned_to || "-"}</td>
                       <td className="p-2">{task.priority || "-"}</td>
 

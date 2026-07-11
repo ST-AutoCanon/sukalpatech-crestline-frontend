@@ -587,7 +587,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
       >
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-purple-600 font-semibold text-lg">
-            Project ID: {data.bd_request_id}
+            Project ID: {data.id}
           </h2>
           {showAssignmentStatus &&
             data.assigned_project_manager &&
@@ -680,7 +680,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
 
                   <input
                     readOnly
-                    value={data.bd_request_id || ""}
+                    value={data.id || ""}
                     className="border p-2 rounded w-full bg-white text-sm"
                   />
                 </div>
@@ -692,7 +692,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
 
                   <input
                     readOnly
-                    value={data.bd_request_id}
+                    value={data.id}
                     className="border p-2 rounded w-full bg-white text-sm"
                   />
                 </div>

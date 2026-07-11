@@ -302,7 +302,7 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
                     <select
                       value={feasibilityStatus}
                       onChange={(e) => setFeasibilityStatus(e.target.value)}
-                      className="border p-2 rounded text-xs text-gray-900"
+                      className="border p-2 rounded text-base text-gray-900"
                     >
                       <option value="">Select</option>
                       <option value="FEASIBILITY APPROVED">FEASIBILITY APPROVED</option>
@@ -313,7 +313,7 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
                     <textarea
                       value={comments}
                       onChange={(e) => setComments(e.target.value)}
-                      className="border p-2 rounded text-sm text-gray-900 resize-none"
+                      className="border p-2 rounded text-base text-gray-900 resize-none"
                     />
                   </div>
                 </div>

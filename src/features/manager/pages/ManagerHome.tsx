@@ -389,7 +389,7 @@
 //               setActiveDepartment(dept)
 //             }
 //             className={`px-5 py-3 rounded-xl font-semibold transition-all duration-300
-            
+
 //             ${
 //               activeDepartment === dept
 //                 ? "bg-white text-[#2d2a8c] shadow-lg scale-105"
@@ -510,6 +510,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  CartesianGrid,
 } from "recharts";
 
 /* =========================================================
@@ -542,27 +543,29 @@ interface WorkflowType {
 ========================================================= */
 
 export default function ManagerHome() {
- const [projects, setProjects] = useState<Project[]>([]);
-const [workflow, setWorkflow] = useState<WorkflowType[]>([]);
-const [allStatuses, setAllStatuses] = useState<StatusType[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [workflow, setWorkflow] = useState<WorkflowType[]>([]);
+  const [allStatuses, setAllStatuses] = useState<StatusType[]>([]);
 
-const [activeDepartment, setActiveDepartment] = useState("");
+  const [activeDepartment, setActiveDepartment] = useState("");
 
-// GET UNIQUE DEPARTMENTS FROM ALL WORKFLOW
+  // GET UNIQUE DEPARTMENTS FROM ALL WORKFLOW
 
-const departments = Array.from(
-  new Set(
-    workflow
-      .map((w) => w.department?.toLowerCase())
-      .filter(Boolean)
-  )
-);
+  const departments = Array.from(
+    new Set(
+      workflow
+        .map((w) => w.department?.toLowerCase())
+        .filter(Boolean)
+    )
+  );
 
-useEffect(() => {
-  if (departments.length > 0 && !activeDepartment) {
-    setActiveDepartment(departments[0]);
-  }
-}, [departments, activeDepartment]);
+  useEffect(() => {
+    if (departments.length > 0 && !activeDepartment) {
+      setActiveDepartment(departments[0]);
+    }
+  }, [departments, activeDepartment]);
+
+
   /* =========================================================
      FETCH DATA
   ========================================================= */
@@ -584,28 +587,28 @@ useEffect(() => {
 
         setProjects(projectData);
 
-     
+
         // ================= WORKFLOW =================
 
         const workflowPromises = projectData.map(
-  (project: Project) =>
-    axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/api/project/${project.id}/workflow`,
-      {
-        withCredentials: true,
-      }
-    )
-);
+          (project: Project) =>
+            axios.get(
+              `${import.meta.env.VITE_BACKEND_URL}/api/project/${project.id}/workflow`,
+              {
+                withCredentials: true,
+              }
+            )
+        );
 
-const workflowResponses =
-  await Promise.all(workflowPromises);
+        const workflowResponses =
+          await Promise.all(workflowPromises);
 
-const mergedWorkflow =
-  workflowResponses.flatMap(
-    (res) => res.data.data || []
-  );
+        const mergedWorkflow =
+          workflowResponses.flatMap(
+            (res) => res.data.data || []
+          );
 
-setWorkflow(mergedWorkflow);
+        setWorkflow(mergedWorkflow);
 
 
 
@@ -645,66 +648,66 @@ setWorkflow(mergedWorkflow);
 
   // GET FIRST DEPARTMENT OF EACH PROJECT
 
-/* =========================================================
-   CURRENT ACTIVE WORKFLOW DEPARTMENT
-========================================================= */
+  /* =========================================================
+     CURRENT ACTIVE WORKFLOW DEPARTMENT
+  ========================================================= */
 
-/* =========================================================
-   ASSIGNED PROJECTS BASED ON WORKFLOW MOVEMENT
-========================================================= */
+  /* =========================================================
+     ASSIGNED PROJECTS BASED ON WORKFLOW MOVEMENT
+  ========================================================= */
 
-const assignedProjectIds = projects
-  .filter((project) => {
-    // workflow for project
-    const projectWorkflow = workflow
-      .filter(
-        (w) =>
-          w.project_management_id ===
-          project.id
-      )
-      .sort(
-        (a, b) => a.sequence - b.sequence
-      );
+  const assignedProjectIds = projects
+    .filter((project) => {
+      // workflow for project
+      const projectWorkflow = workflow
+        .filter(
+          (w) =>
+            w.project_management_id ===
+            project.id
+        )
+        .sort(
+          (a, b) => a.sequence - b.sequence
+        );
 
-    // current active department step
-    const currentStep =
-      projectWorkflow.find(
-        (w) =>
-          w.department?.toLowerCase() ===
-          activeDepartment.toLowerCase()
-      );
-
-    if (!currentStep) return false;
-
-    // statuses for this project + department
-    const deptStatuses =
-      allStatuses.filter(
-        (s) =>
-          s.project_management_id ===
-            project.id &&
-          s.department?.toLowerCase() ===
+      // current active department step
+      const currentStep =
+        projectWorkflow.find(
+          (w) =>
+            w.department?.toLowerCase() ===
             activeDepartment.toLowerCase()
-      );
+        );
 
-    // NO STATUS YET = ASSIGNED
-    return deptStatuses.length === 0;
-  })
-  .map((p) => p.id);
+      if (!currentStep) return false;
 
-/* =========================================================
-   TOTAL ASSIGNED
-========================================================= */
+      // statuses for this project + department
+      const deptStatuses =
+        allStatuses.filter(
+          (s) =>
+            s.project_management_id ===
+            project.id &&
+            s.department?.toLowerCase() ===
+            activeDepartment.toLowerCase()
+        );
 
-const total = assignedProjectIds.length;
+      // NO STATUS YET = ASSIGNED
+      return deptStatuses.length === 0;
+    })
+    .map((p) => p.id);
+
+  /* =========================================================
+     TOTAL ASSIGNED
+  ========================================================= */
+
+  const total = assignedProjectIds.length;
   /* =========================================================
      FILTER STATUSES
   ========================================================= */
 
   const filteredStatuses = allStatuses.filter(
-  (status) =>
-    status.department?.toLowerCase() ===
-    activeDepartment.toLowerCase()
-);
+    (status) =>
+      status.department?.toLowerCase() ===
+      activeDepartment.toLowerCase()
+  );
 
   /* =========================================================
      LATEST STATUS OF EACH PROJECT
@@ -720,7 +723,7 @@ const total = assignedProjectIds.length;
     if (
       !existing ||
       new Date(status.updated_at) >
-        new Date(existing.updated_at)
+      new Date(existing.updated_at)
     ) {
       latestMap.set(
         status.project_management_id,
@@ -775,33 +778,33 @@ const total = assignedProjectIds.length;
   ========================================================= */
 
   const chartData = [
-  {
-    name: "Completed",
-    value: approved,
-  },
+    {
+      name: "Completed",
+      value: approved,
+    },
 
-  {
-    name: "In Progress",
-    value: inProgress,
-  },
+    {
+      name: "In Progress",
+      value: inProgress,
+    },
 
-  {
-    name: "Pending",
-    value: pending,
-  },
+    {
+      name: "Pending",
+      value: pending,
+    },
 
-  {
-    name: "Rejected",
-    value: rejected,
-  },
-];
+    {
+      name: "Rejected",
+      value: rejected,
+    },
+  ];
 
   const COLORS = [
-  "#22c55e", // completed
-  "#3b82f6", // in progress
-  "#eab308", // pending
-  "#ef4444", // rejected
-];
+    "#22c55e", // completed
+    "#3b82f6", // in progress
+    "#eab308", // pending
+    "#ef4444", // rejected
+  ];
 
   /* =========================================================
      FORMAT DEPARTMENT
@@ -846,11 +849,10 @@ const total = assignedProjectIds.length;
             }
             className={`px-5 py-3 rounded-xl font-semibold transition-all duration-300
             
-            ${
-              activeDepartment === dept
+            ${activeDepartment === dept
                 ? "bg-white text-[#2d2a8c] shadow-lg scale-105"
                 : "bg-white/20 text-white hover:bg-white hover:text-[#2d2a8c]"
-            }
+              }
           `}
           >
             {formatDepartment(dept)}
@@ -884,7 +886,7 @@ const total = assignedProjectIds.length;
             </h2>
           </div>
 
-            <div className="bg-green-50 rounded-xl p-5 border-l-4 border-green-500">
+          <div className="bg-green-50 rounded-xl p-5 border-l-4 border-green-500">
             <p className="text-gray-600 text-sm">
               In_Progress
             </p>
@@ -933,31 +935,68 @@ const total = assignedProjectIds.length;
 
         {/* CHART */}
 
-        <div className="w-full h-[350px] min-w-0">
-          <ResponsiveContainer
-            width="100%"
-            height={350}
-          >
-            <BarChart data={chartData}>
-              <XAxis dataKey="name" />
+        <div className="w-full h-[380px] bg-white rounded-2xl p-4 shadow-sm">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{
+                top: 20,
+                right: 20,
+                left: 40,
+                bottom: 10,
+              }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#94A3B8"
+                strokeOpacity={1}
+              />
 
-              <YAxis />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: "#6B7280", fontSize: 13 }}
+                tickLine={false}
+                axisLine={false}
+              />
 
-              <Tooltip />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fill: "#1F2937", fontSize: 13, fontWeight: 600 }}
+                tickLine={false}
+                axisLine={false}
+                label={{
+                  value: "No. of Projects",
+                  angle: -90,
+                  position: "left",
+                  style: {
+                    fill: "#4B5563",
+                    fontSize: 15,
+                    fontWeight: 700,
+                  },
+                }}
+              />
+              <Tooltip
+                cursor={false}
+                contentStyle={{
+                  borderRadius: 12,
+                  border: "none",
+                  boxShadow: "0 8px 25px rgba(0,0,0,0.12)",
+                }}
+              />
 
               <Bar
                 dataKey="value"
-                barSize={60}
-                radius={[10, 10, 0, 0]}
+                radius={[12, 12, 0, 0]}
+                maxBarSize={55}
+                isAnimationActive
               >
-                {chartData.map(
-                  (_, index) => (
-                    <Cell
-                      key={index}
-                      fill={COLORS[index]}
-                    />
-                  )
-                )}
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={index}
+                    fill={COLORS[index]}
+                  />
+                ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
