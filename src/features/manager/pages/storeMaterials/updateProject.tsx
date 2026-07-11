@@ -7,10 +7,10 @@ interface Project {
   id: number;
   display_id?: number;
   bd_request_id: number;
-  bd_request_display_id?: number;
 
   description: string;
   required_date: string;
+  industry_type:string;
   assigned_date: string;
   assigned_by: string;
   created_at: string;
@@ -334,13 +334,13 @@ const saveEmployeeTasks = async () => {
             className="bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col min-h-[200px] cursor-pointer"
           >
             <h2 className="text-purple-600 font-semibold text-lg mb-2">
-              Project ID: {p.bd_request_id}
+              Project ID: {p.id}
             </h2>
 
-            <div className="flex-1 space-y-2 text-sm">
+            <div className="flex-1 space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-500">BD Request</span>
-                <span className="font-medium"> {p.bd_request_display_id ?? p.bd_request_id}</span>
+                <span className="font-medium"> {p.bd_request_id}</span>
               </div>
 
               <div className="flex justify-between">
@@ -388,14 +388,15 @@ const saveEmployeeTasks = async () => {
                 {[
                   [
                     "Project ID",
-                    selectedProject.bd_request_id,
+                    selectedProject.id,
                   ],
                   [
                     "BD Request ID",
-                    selectedProject.bd_request_display_id ??
+                   
                     selectedProject.bd_request_id,
                   ],
                   ["Required Date", formatDate(selectedProject.required_date)],
+                 ["Industry type", selectedProject.industry_type],
                   ["Assigned Date", formatDate(selectedProject.assigned_date)],
                   ["Assigned By", selectedProject.assigned_by],
                   ["Created At", formatDate(selectedProject.created_at)],

@@ -73,41 +73,33 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ✅ Skip org validation for this specific user
-    const isSuperAdminLogin =
-      email === "kiran@gmail.com" && password === "Password123";
-
-    // ✅ Apply validation only for others
-    if (!isSuperAdminLogin && !orgCode) {
-      alert("Please select organization");
-      return;
-    }
-
     try {
-      const result = await login(email, password, orgCode || "");
+      const result = await login(email, password, orgCode);
 
       const token = result.data.token || result.data.data.token;
       const user: any = jwtDecode(token);
 
       if (onSuccess) onSuccess();
 
-      if (user.role === "admin") navigate("/admin");
-      else if (user.role === "employee") navigate("/employee");
-      else if (user.role === "manager") navigate("/manager");
-   else if (
-  user.role === "project_manager" ||
-  user.role === "project_manager_a" ||
-  user.role === "project_manager_b" ||
-  user.role === "project_manager_c" ||
-  user.role === "project_manager_d" ||
-  user.role === "project_manager_e"
-) {
-  navigate("/project_manager/dashboard");
-}
-      else if (user.role === "super_admin") navigate("/super_admin");
-
+      switch (user.role) {
+        case "admin":
+          navigate("/admin");
+          break;
+        case "employee":
+          navigate("/employee");
+          break;
+        case "manager":
+          navigate("/manager");
+          break;
+        case "project_manager":
+          navigate("/project_manager/dashboard");
+          break;
+        case "super_admin":
+          navigate("/super_admin");
+          break;
+      }
     } catch (err) {
-      console.error("Login failed", err);
+      console.error(err);
     }
   };
 

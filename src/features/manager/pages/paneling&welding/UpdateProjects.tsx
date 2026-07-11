@@ -9,7 +9,7 @@ interface Project {
   display_id?: number;
 
   bd_request_id: number;
-  bd_request_display_id?: number;
+   industry_type:string;
 
   description: string;
   required_date: string;
@@ -338,10 +338,10 @@ const saveEmployeeTasks = async () => {
              Project ID: {p.display_id ?? p.id}
             </h2>
 
-            <div className="flex-1 space-y-2 text-sm">
+            <div className="flex-1 space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-500">BD Request</span>
-                 {p.bd_request_display_id ?? p.bd_request_id}
+                 { p.bd_request_id}
               </div>
 
               <div className="flex justify-between">
@@ -393,10 +393,11 @@ const saveEmployeeTasks = async () => {
                   ],
                   [
                     "BD Request ID",
-                    selectedProject.bd_request_display_id ??
+                   
                     selectedProject.bd_request_id,
                   ],
                   ["Required Date", formatDate(selectedProject.required_date)],
+                  ["Industry type", selectedProject.industry_type],
                   ["Assigned Date", formatDate(selectedProject.assigned_date)],
                   ["Assigned By", selectedProject.assigned_by],
                   ["Created At", formatDate(selectedProject.created_at)],
