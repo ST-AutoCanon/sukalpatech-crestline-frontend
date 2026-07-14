@@ -152,7 +152,7 @@ const ThreeWheelerCard: React.FC<Props> = ({
 
       {/* Button */}
      {mode === "update" && (
-        <button onClick={openModal} className="mt-3 text-blue-600 underline text-sm self-start">
+        <button onClick={openModal} className="mt-3 text-blue-600 text-sm self-start">
           Update 
         </button>
       )}

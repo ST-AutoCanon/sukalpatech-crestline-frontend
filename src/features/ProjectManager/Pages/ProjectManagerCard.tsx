@@ -489,6 +489,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
         );
 
         setRequestDetails(res.data.data);
+        console.log("Request Details:", res.data.data);
       } catch (err) {
         console.error(err);
       }
@@ -576,6 +577,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
       value: requestDetails?.[field.key] ?? "-",
     }));
   }, [requestDetails]);
+  
 
 
   return (

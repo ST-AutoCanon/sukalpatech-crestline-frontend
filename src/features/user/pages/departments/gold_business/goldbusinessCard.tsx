@@ -139,22 +139,18 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
       </h3>
 
       {/* FIELDS */}
-      <div className="flex flex-col gap-1">
+       <div className="flex flex-col gap-1">
         {cardFields.map(([label, value]) => (
-          <div key={label} className="flex">
-            <span className="w-32 shrink-0 text-gray-400 text-sm">
-              {label}:
-            </span>
-            <span className="font-medium text-gray-700 text-sm truncate">
-              {render(value)}
-            </span>
+          <div key={label} className="flex justify-between items-center">
+            <span className="w-32 shrink-0 text-gray-400 text-sm">{label}:</span>
+            <span className="font-medium text-gray-700 text-sm truncate">{render(value)}</span>
           </div>
         ))}
       </div>
 
       {/* UPDATE BUTTON */}
       {mode === "update" && (
-        <button onClick={openModal} className="mt-3 text-blue-600 underline text-sm self-start">
+        <button onClick={openModal} className="mt-3 text-blue-600 text-sm self-start">
           Update
         </button>
       )}
