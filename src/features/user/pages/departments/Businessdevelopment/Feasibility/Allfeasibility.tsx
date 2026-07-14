@@ -425,6 +425,7 @@ const FeasibilityCard: React.FC<FeasibilityCardProps> = ({
             required_date: data.required_date,
             assigned_by: user.first_name,
             current_department: "PROJECT_MANAGER",
+             industry_type: data.industry_type,
           },
           {
             withCredentials: true,

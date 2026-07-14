@@ -52,8 +52,11 @@ const [filter, setFilter] = useState<FilterType>("All PR");
     });
 
     console.log("✅ API Response:", res.data);
+    console.log("Selected Project:", selectedProject);
+    console.log("Industry Type:", selectedProject?.industry_type);
 
     setProjects(res.data.data || []);
+    console.log(res.data.data);
   } catch (err) {
     console.error("❌ Project fetch error", err);
   }

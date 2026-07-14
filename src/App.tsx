@@ -3,6 +3,7 @@ import React, { Suspense } from "react";
 
 import AuthLayout from "./components/layout/AuthLayout";
 import { useAuth } from "./features/auth/hooks/useAuth";
+import SessionTimeout from "./components/Sessiontimeout";
 
 import AdminDashboard from "./features/admin/pages/AdminDashboard";
 import EmployeeDashboard from "./features/user/pages/EmployeeDashboard";
@@ -90,7 +91,12 @@ const RequireAuth = ({
     return <Navigate to="/" replace />;
   }
 
-  return children;
+ return (
+  <>
+    <SessionTimeout />
+    {children}
+  </>
+);
 };
 
 /* =========================
