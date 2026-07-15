@@ -9,6 +9,7 @@ interface Props {
     contact_person: string;
     phone: string;
     email: string;
+    address:string;
     project_title: string;
     description: string;
     required_date: string;
@@ -173,7 +174,9 @@ const ThreeWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
                   { label: "Contact Person", key: "contact_person" },
                   { label: "Phone", key: "phone" },
                   { label: "Email", key: "email" },
+                  {label:"Address",key:"address"},
                 ] as Field[],
+                
               },
               {
                 title: "Project Details",

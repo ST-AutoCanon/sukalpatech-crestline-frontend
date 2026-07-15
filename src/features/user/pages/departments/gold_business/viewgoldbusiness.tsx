@@ -9,6 +9,7 @@ interface Props {
     contact_person: string;
     phone: string;
     email: string;
+    address:string;
 
     business_type: string;
     gold_type: string;
@@ -114,6 +115,7 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
     ["Gold Type", "gold_type"],
     ["Expected Quantity", "expected_quantity"],
     ["Email", "email"],
+    ["Address","address"],
     ["Estimated Budget", "estimated_budget"],
     ["Purity Required", "purity_required"],
     ["Making Charges", "making_charges"],
@@ -214,6 +216,7 @@ const GoldBusinessCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = t
                   { label: "Contact Person", key: "contact_person" },
                   { label: "Phone", key: "phone" },
                   { label: "Email", key: "email" },
+                  {label:"Address",key:"address"},
                 ],
               },
               {

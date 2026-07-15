@@ -21,6 +21,7 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
     contact_person: "",
     phone: "",
     email: "",
+    address:"",
     project_title: "",
     required_date: "",
     description: "",
@@ -85,6 +86,7 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
           contact_person: "",
           phone: "",
           email: "",
+          address:"",
           project_title: "",
           required_date: "",
           description: "",
@@ -186,6 +188,21 @@ export default function TwoWheelerPage({ onClose, onSuccess }: Props) {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter Email"
+                    className="bg-white border rounded-lg h-11 px-3"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">
+                    Address
+                  </label>
+                  <input
+                    
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    placeholder="Enter Address"
                     className="bg-white border rounded-lg h-11 px-3"
                     required
                   />

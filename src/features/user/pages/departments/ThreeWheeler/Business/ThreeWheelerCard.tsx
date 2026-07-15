@@ -178,6 +178,7 @@ const ThreeWheelerCard: React.FC<Props> = ({
                   ["Contact Person", data.contact_person],
                   ["Phone", data.phone],
                   ["Email", data.email],
+                  ["Address",data.address]
                 ],
               },
               {

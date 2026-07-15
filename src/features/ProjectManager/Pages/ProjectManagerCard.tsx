@@ -682,7 +682,7 @@ const ProjectManagerCard: React.FC<Props> = ({ data, isMyProject = false, showAs
 
                   <input
                     readOnly
-                    value={data.id || ""}
+                    value={data.bd_request_id || ""}
                     className="border p-2 rounded w-full bg-white text-sm"
                   />
                 </div>
