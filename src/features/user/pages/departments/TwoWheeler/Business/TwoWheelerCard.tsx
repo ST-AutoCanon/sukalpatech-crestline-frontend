@@ -166,6 +166,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode = "default", onUpdate}) =>
                   { label: "Contact Person", value: data.contact_person },
                   { label: "Phone", value: data.phone },
                   { label: "Email", value: data.email },
+                  { label: "Address", value: data.address },
               
                 ],
               },

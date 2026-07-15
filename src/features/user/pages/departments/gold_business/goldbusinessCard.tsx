@@ -175,6 +175,7 @@ const GoldFinalBusinessCard: React.FC<Props> = ({
                   { label: "Contact Person", value: data.contact_person },
                   { label: "Phone", value: data.phone },
                   { label: "Email", value: data.email },
+                  {label:"Address",value:data.address},
                 ],
               },
               {

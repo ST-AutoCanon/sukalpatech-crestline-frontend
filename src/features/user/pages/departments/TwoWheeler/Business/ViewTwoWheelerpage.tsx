@@ -9,6 +9,7 @@ interface Props {
     contact_person: string;
     phone: string;
     email: string;
+    address:string;
     project_title: string;
     required_date: string;
     description: string;
@@ -91,6 +92,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = tru
     ["Vehicle Model", "vehicle_model"],
     ["Expected Quantity", "expected_quantity"],
     ["Email", "email"],
+    ["Address","address"],
     ["Estimated Budget", "estimated_budget"],
     ["Motor Capacity", "motor_capacity"],
     ["Battery Type", "battery_type"],
@@ -179,6 +181,7 @@ const TwoWheelerCard: React.FC<Props> = ({ data, mode, onUpdate, allowEdit = tru
                 { label: "Contact Person", key: "contact_person" },
                 { label: "Phone", key: "phone" },
                 { label: "Email", key: "email" },
+                { label: "Adress", key: "address" },
               ],
             }, {
               title: "Project Details",
